@@ -6,3 +6,8 @@ jobs:
     steps:
       - checkout
       - run: lint-md .
+workflows:
+  version: 2
+  just_lint:
+    jobs:
+      - lint
