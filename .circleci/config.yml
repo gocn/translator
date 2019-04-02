@@ -1,0 +1,8 @@
+version: 2
+jobs:
+  lint:
+    docker:
+      - image: yuque/lint-md
+    steps:
+      - checkout
+      - run: lint-md .
