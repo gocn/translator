@@ -182,7 +182,7 @@ func (rw *RWMutex) Lock() {
     rw.w.Lock()
     r := atomic.AddInt32(&rw.readerCount, -rwmutexMaxReader) + rwmutexMaxReader
     if r != 0 && atomic.AddInt32(&rw.readerWait, r) != 0 {     
-        runtime_SemacquireMutex(&rw.WritField readerWait is used to remember current number of readers and block writer on semaphore., false)
+        runtime_SemacquireMutex(&rw.writerSem, false)
     }
     ...
 }
@@ -370,7 +370,7 @@ func main() {
 > ./mutexcontention
 ```
 当`mutexcontention`程序运行时，执行 pprof：
-```sh
+```plain
 > go tool pprof mutexcontention http://localhost:8888/debug/pprof/mutex?debug=1
 Fetching profile over HTTP from http://localhost:8888/debug/pprof/mutex?debug=1
 Saved profile in /Users/mlowicki/pprof/pprof.mutexcontention.contentions.delay.003.pb.gz
@@ -379,7 +379,7 @@ Type: delay
 Entering interactive mode (type "help" for commands, "o" for options)
 (pprof) list main
 Total: 57.28s
-ROUTINE ======= main.main.func1 in /Users/mlowicki/projects/golang/src/github.com/mlowicki/mutexcontention/mutexcontention.go
+ROUTINE ================= main.main.func1 in /Users/mlowicki/projects/golang/src/github.com/mlowicki/mutexcontention/mutexcontention.go
 0     57.28s (flat, cum)   100% of Total
 .          .     14:   for i := 0; i < 10; i++ {
 .          .     15:           go func() {
