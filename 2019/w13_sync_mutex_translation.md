@@ -394,7 +394,9 @@ ROUTINE main.main.func1 in .../src/github.com/mlowicki/mutexcontention/mutexcont
 .          .     24:   http.ListenAndServe(":8888", nil)
 ```
 注意，为什么这里耗时 57.28s，且指向了`mu.Unlock()`呢？
+
 当 goroutine 调用`Lock`而阻塞时，会记录当前发生的准确时间--叫做`acquiretime`。当另一个 groutine 解锁，至少存在一个 goroutine 在等待获得锁，则其中一个解除阻塞并调用其`mutexevent`函数。该`mutexevent`函数通过检查`SetMutexProfileFraction`设置的速率来决定此事件应被保留还是丢弃。此事件包含整个等待的时间（当前时间 - 获得时间）。从上面的例子可以看出，所有阻塞在特定互斥锁的 goroutines 的总等待时间会被收集和展示。
+
 
 在 Go 1.11（[sync: enable profiling of RWMutex](https://github.com/golang/go/commit/88ba64582703cea0d66a098730215554537572de)）中将增加读锁（Rlock 和 RUnlock）的争用。
 
