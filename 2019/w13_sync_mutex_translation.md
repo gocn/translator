@@ -18,13 +18,13 @@
 - Reader 不能无限等待
 - 不允许线程出现无限等待
 
-多读/单写互斥锁(如[sync.RWMutex](https://golang.org/pkg/sync/#RWMutex))的具体实现解决了一种并发读写问题。接下来，让我们看下在`Go`语言中是如何实现的，同时它提供了哪些的数据可靠性保证机制。
+多读/单写互斥锁(如[sync.RWMutex](https://golang.org/pkg/sync/#RWMutex))的具体实现解决了一种并发读写问题。接下来，让我们看下在 Go 语言中是如何实现的，同时它提供了哪些的数据可靠性保证机制。
 
 作为额外的工作，我们将深入研究分析竞态情况下的互斥锁。
 
 ## 用法
 
-在深入研究实现细节之前，我们先看看`sync.RWMutex`的使用实例。下面的程序使用读写互斥锁来保护临界区。为了使整个过程可视化，临界区部分计算了当前正在执行的 Reader 和 Writer 的数量([源码](https://play.golang.org/p/xoiqW0RQQE9))。
+在深入研究实现细节之前，我们先看看`sync.RWMutex`的使用实例。下面的程序使用读写互斥锁来保护临界区。为了更好的展示整个过程，临界区部分计算了当前正在执行的 Reader 和 Writer 的数量([源码](https://play.golang.org/p/xoiqW0RQQE9))。
 ```golang
 package main
 import (
@@ -116,7 +116,7 @@ W
 ```
 
 > 译者注：不同机器上运行的结果会有所不同
-每次执行完一组`goroutine`(Reader 和 Writer)的临界区代码后，都会打印新的一行。很显然，RWMutex 允许至少一个 Reader(一个或多个 Reader)存在而 Writer 同时只能存在一个。
+每次执行完一组 goroutine(Reader 和 Writer)的临界区代码后，都会打印新的一行。很显然，RWMutex 允许至少一个 Reader(一个或多个 Reader)存在而 Writer 同时只能存在一个。
 
 同样重要且将进一步讨论的是：Writer 调用到`Lock()`时，将会使新的 Reader/Writer 被阻塞。当存在 Reader 加了 RLock 时，Writer 会等待这一组 Reader 完成正在执行的任务，当这一组任务完成后，Writer 将开始执行。从输出可以很明显的看到，每一行的 R 都会递减一个，直到没有 R 之后将打印一个 W。
 ```plain
@@ -164,7 +164,7 @@ return *addr
 
 > 如果没有 Writer，则`readerCount`总是会大于或等于 0（译者注：因为 Writer 会把 readerCount 置为负数，通过 Lock 函数的 atomic.AddInt32(&rw.readerCount, -rwmutexMaxReaders)，此时 Reader 是一种运行速度很快的非阻塞方式，因为只需要调用`atomic.AddInt32`。
 ## 信号量 Semaphore
-信号量是`Edsger Dijkstra`发明的数据结构，在解决多种同步问题时很有用。其本质是一个整数，并关联两个操作：
+信号量是 Edsger Dijkstra 发明的数据结构，在解决多种同步问题时很有用。其本质是一个整数，并关联两个操作：
 - 申请`acquire`(也称为 wait、decrement 或 P 操作)
 - 释放`release`(也称 signal、increment 或 V 操作)
 
@@ -270,7 +270,7 @@ fatal error: sync: Unlock of unlocked RWMutex
 ```
 ## 递归读锁定 Recursive read locking
 文档描述：
-> 如果一个`Reader goroutine`持有了读锁，而此时另一个`Writer goroutine`调用`Lock`申请加写锁，此后在最初的读锁被释放前其他`goroutine`不能获取到读锁。特定情况下，这能防止递归读锁，这种策略保证了锁的可用性，`Lock`的调用会阻止其他新的 Reader 来获得锁。
+> 如果一个`Reader goroutine`持有了读锁，而此时另一个`Writer goroutine`调用`Lock`申请加写锁，此后在最初的读锁被释放前其他 goroutine 不能获取到读锁。特定情况下，这能防止递归读锁，这种策略保证了锁的可用性，`Lock`的调用会阻止其他新的 Reader 来获得锁。
 `RWMutex`的工作方式是，如果有一个等待中的 Writer，那么不论读锁是否已获取到，所有尝试调用`RLock`的都将被阻塞。
 
 RWMutex 的工作方式是，如果有一个 Writer 调用了 Lock，则所有调用 RLock 都将被锁定，无论是否已经获得了读锁定 (source code):
@@ -394,7 +394,7 @@ ROUTINE main.main.func1 in .../src/github.com/mlowicki/mutexcontention/mutexcont
 .          .     24:   http.ListenAndServe(":8888", nil)
 ```
 注意，为什么这里耗时 57.28s，且指向了`mu.Unlock()`呢？
-当`goroutine`调用`Lock`而阻塞时，会记录当前发生的准确时间--叫做`acquiretime`。当另一个`groutine`解锁，至少存在一个`goroutine`在等待获得锁，则其中一个解除阻塞并调用其`mutexevent`函数。该`mutexevent`函数通过检查`SetMutexProfileFraction`设置的速率来决定此事件应被保留还是丢弃。此事件包含整个等待的时间（当前时间 - 获得时间）。从上面的例子可以看出，所有阻塞在特定互斥锁的`goroutines`的总等待时间会被收集和展示。
+当 goroutine 调用`Lock`而阻塞时，会记录当前发生的准确时间--叫做`acquiretime`。当另一个 groutine 解锁，至少存在一个 goroutine 在等待获得锁，则其中一个解除阻塞并调用其`mutexevent`函数。该`mutexevent`函数通过检查`SetMutexProfileFraction`设置的速率来决定此事件应被保留还是丢弃。此事件包含整个等待的时间（当前时间 - 获得时间）。从上面的例子可以看出，所有阻塞在特定互斥锁的 goroutines 的总等待时间会被收集和展示。
 
 在 Go 1.11（[sync: enable profiling of RWMutex](https://github.com/golang/go/commit/88ba64582703cea0d66a098730215554537572de)）中将增加读锁（Rlock 和 RUnlock）的争用。
 
