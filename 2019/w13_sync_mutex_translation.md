@@ -177,8 +177,8 @@ return *addr
 
 ## 信号量 Semaphore
 信号量是 Edsger Dijkstra 发明的数据结构，在解决多种同步问题时很有用。其本质是一个整数，并关联两个操作：
-- 申请`acquire`(也称为 wait、decrement 或 P 操作)
-- 释放`release`(也称 signal、increment 或 V 操作)
+- 申请`acquire`(也称为 `wait`、`decrement` 或 `P` 操作)
+- 释放`release`(也称 `signal`、`increment` 或 `V` 操作)
 
 `acquire`操作将信号量减 1，如果结果值为负则线程阻塞，且直到其他线程进行了信号量累加为正数才能恢复。如结果为正数，线程则继续执行。
 
