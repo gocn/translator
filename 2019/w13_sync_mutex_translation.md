@@ -296,7 +296,7 @@ fatal error: sync: Unlock of unlocked RWMutex
 
 文档描述：
 
-> 如果一个`reader goroutine`持有了读锁，而此时另一个`writer goroutine`调用`Lock`申请加写锁，此后在最初的读锁被释放前其他 goroutine 不能获取到读锁。特定情况下，这能防止递归读锁，这种策略保证了锁的可用性，`Lock`的调用会阻止其他新的 reader 来获得锁。
+> 如果一个 reader goroutine 持有了读锁，而此时另一个 writer goroutine 调用`Lock`申请加写锁，此后在最初的读锁被释放前其他 goroutine 不能获取到读锁。特定情况下，这能防止递归读锁，这种策略保证了锁的可用性，`Lock`的调用会阻止其他新的 reader 来获得锁。
 
 RWMutex 的工作方式是，如果有一个 writer 调用了 Lock，则所有调用 RLock 都将被锁定，无论是否已经获得了读锁定([示例源码](https://play.golang.org/p/oHvZh4u3nJl)):
 示例代码：
