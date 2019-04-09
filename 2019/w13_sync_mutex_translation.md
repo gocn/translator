@@ -1,30 +1,30 @@
 # sync.RWMutex - 解决并发读写问题
 
-- 原文地址: https://medium.com/golangspec/sync-rwmutex-ca6c6c3208a0
-- 原文作者: [Michał Łowicki](https://medium.com/@mlowicki)
-- 译文出处: https://medium.com
-- 本文永久链接: https://github.com/gocn/translator/blob/master/2019/w13_sync_mutex_translation.md
-- 译者: [fivezh](https://github.com/fivezh)
-- 校对者: [咔叽咔叽](https://github.com/watermelo)
+- 原文地址：https://medium.com/golangspec/sync-rwmutex-ca6c6c3208a0
+- 原文作者：[Michał Łowicki](https://medium.com/@mlowicki)
+- 译文出处：https://medium.com
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w13_sync_mutex_translation.md
+- 译者：[fivezh](https://github.com/fivezh)
+- 校对者：[咔叽咔叽](https://github.com/watermelo)
 
 ![](https://cdn-images-1.medium.com/max/1000/1*qmHZVxZmPP9w5iMqN7GWMw.jpeg)
 
-当多个线程访问共享数据时，会出现并发读写问题([reader-writer problems](https://en.wikipedia.org/wiki/readers%E2%80%93writers_problem))。有两种访问数据的线程类型：
+当多个线程访问共享数据时，会出现并发读写问题（[reader-writer problems](https://en.wikipedia.org/wiki/readers%E2%80%93writers_problem)）。有两种访问数据的线程类型：
 - 读线程 reader：只进行数据读取
 - 写线程 writer：进行数据修改
 
-当 writer 获取到数据的访问权限后，其他任何线程(reader 或 writer)都无权限访问此数据。这种约束亦存在于现实中，比如，当 writer 在修改数据无法保证原子性时(如数据库)，此时读取未完成的修改必须被阻塞，以防止加载脏数据(译者注：数据库中的脏读)。还有许多诸如此类的核心问题，例如：
+当 writer 获取到数据的访问权限后，其他任何线程（reader 或 writer）都无权限访问此数据。这种约束亦存在于现实中，比如，当 writer 在修改数据无法保证原子性时（如数据库），此时读取未完成的修改必须被阻塞，以防止加载脏数据（译者注：数据库中的脏读）。还有许多诸如此类的核心问题，例如：
 - writer 不能无限等待
 - reader 不能无限等待
 - 不允许线程出现无限等待
 
-多读/单写互斥锁(如[sync.RWMutex](https://golang.org/pkg/sync/#RWMutex))的具体实现解决了一种并发读写问题。接下来，让我们看下在 Go 语言中是如何实现的，同时它提供了哪些的数据可靠性保证机制。
+多读/单写互斥锁（如[sync.RWMutex](https://golang.org/pkg/sync/#RWMutex)）的具体实现解决了一种并发读写问题。接下来，让我们看下在 Go 语言中是如何实现的，同时它提供了哪些的数据可靠性保证机制。
 
 作为额外的工作，我们将深入研究分析竞态情况下的互斥锁。
 
 ## 用法
 
-在深入研究实现细节之前，我们先看看`sync.RWMutex`的使用实例。下面的程序使用读写互斥锁来保护临界区--`sleep()`。为了更好的展示整个过程，临界区部分计算了当前正在执行的 reader 和 writer 的数量([源码](https://play.golang.org/p/xoiqW0RQQE9))。
+在深入研究实现细节之前，我们先看看`sync.RWMutex`的使用实例。下面的程序使用读写互斥锁来保护临界区--`sleep()`。为了更好的展示整个过程，临界区部分计算了当前正在执行的 reader 和 writer 的数量（[源码](https://play.golang.org/p/xoiqW0RQQE9)）。
 ```golang
 package main
 
@@ -94,7 +94,7 @@ func main() {
 }
 ```
 
-> play.golang.org 加载的程序环境是确定的(比如开始时间)，所以`rand.Seed(time.Now().Unix())`总是返回相同的数值，此时程序的执行结果可能总是相同的。为了避免这种情况，可通过修改不同的随机种子值或者在自己的机器上执行程序。
+> play.golang.org 加载的程序环境是确定的（比如开始时间），所以`rand.Seed(time.Now().Unix())`总是返回相同的数值，此时程序的执行结果可能总是相同的。为了避免这种情况，可通过修改不同的随机种子值或者在自己的机器上执行程序。
 
 程序执行结果：
 ```plain
@@ -126,7 +126,7 @@ W
 ```
 
 > 译者注：不同机器上运行的结果会有所不同
-每次执行完一组 goroutine(reader 和 writer)的临界区代码后，都会打印新的一行。很显然，RWMutex 允许至少一个 reader(一个或多个 reader)存在而 writer 同时只能存在一个。
+每次执行完一组 goroutine（reader 和 writer）的临界区代码后，都会打印新的一行。很显然，RWMutex 允许至少一个 reader（一个或多个 reader）存在而 writer 同时只能存在一个。
 
 同样重要且将进一步讨论的是：writer 调用到`Lock()`时，将会使新的 reader/writer 被阻塞。当存在 reader 加了 RLock 时，writer 会等待这一组 reader 完成正在执行的任务，当这一组任务完成后，writer 将开始执行。从输出可以很明显的看到，每一行的 R 都会递减一个，直到没有 R 之后将打印一个 W。
 ```plain
@@ -148,11 +148,11 @@ W
 ![](https://cdn-images-1.medium.com/max/1000/1*Gg_vmyWlU35r3w_L4r4SYw.jpeg)
 
 > 注意，本文针对的`RWMutex`实现([Go commit: 718d6c58](https://github.com/golang/go/blob/718d6c5880fe3507b1d224789b29bc2410fc9da5/src/sync/rwmutex.go))在 Go 不同版本中可能随时有修改。
-`RWMutex`为 reader 提供两个方法(`RLock`和`RUnlock`)、也为 writer 提供了两个方法(`Lock`和`Unlock`)
+`RWMutex`为 reader 提供两个方法（`RLock`和`RUnlock`）、也为 writer 提供了两个方法（`Lock`和`Unlock`）
 
 ## 读锁 RLock
 
-为了简洁起见，我们先跳过源码中竞态检测相关部分(它们将被`...`代替)。
+为了简洁起见，我们先跳过源码中竞态检测相关部分（它们将被`...`代替）。
 ```golang
 func (rw *RWMutex) RLock() {
     ...
@@ -163,7 +163,7 @@ func (rw *RWMutex) RLock() {
 }
 ```
 
-`readerCount`字段是`int32`类型的值，表示待处理的 reader 数量(正在读取数据或被 writer 阻塞)。这基本上是已调用 RLock 函数，但尚未调用 RUnlock 函数的 reader 数量。
+`readerCount`字段是`int32`类型的值，表示待处理的 reader 数量（正在读取数据或被 writer 阻塞）。这基本上是已调用 RLock 函数，但尚未调用 RUnlock 函数的 reader 数量。
 
 [atomic.AddInt32](https://golang.org/pkg/sync/atomic/#AddInt32)等价于如下原子性表达：
 ```golang
@@ -171,14 +171,14 @@ func (rw *RWMutex) RLock() {
 return *addr
 ```
 
-`addr`是`*int32`类型变量，`delta`是`int32`类型。因为此操作具有原子性，所以累加`delta`操作不会影响其他线程(更多详见[Fetch-and-add](https://en.wikipedia.org/wiki/Fetch-and-add))。
+`addr`是`*int32`类型变量，`delta`是`int32`类型。因为此操作具有原子性，所以累加`delta`操作不会影响其他线程（更多详见[Fetch-and-add](https://en.wikipedia.org/wiki/Fetch-and-add)）。
 
 > 如果没有 writer，则`readerCount`总是会大于或等于 0（译者注：因为 writer 会把 readerCount 置为负数，通过 Lock 函数的 atomic.AddInt32(&rw.readerCount, -rwmutexMaxreaders)，此时 reader 是一种运行速度很快的非阻塞方式，因为只需要调用`atomic.AddInt32`。
 
 ## 信号量 Semaphore
 信号量是 Edsger Dijkstra 发明的数据结构，在解决多种同步问题时很有用。其本质是一个整数，并关联两个操作：
-- 申请`acquire`(也称为 `wait`、`decrement` 或 `P` 操作)
-- 释放`release`(也称 `signal`、`increment` 或 `V` 操作)
+- 申请`acquire`（也称为 `wait`、`decrement` 或 `P` 操作）
+- 释放`release`（也称 `signal`、`increment` 或 `V` 操作）
 
 `acquire`操作将信号量减 1，如果结果值为负则线程阻塞，且直到其他线程进行了信号量累加为正数才能恢复。如结果为正数，线程则继续执行。
 
@@ -257,7 +257,7 @@ func (rw *RWMutex) RUnlock() {
 }
 ```
 
-每次调用此方法将使`readerCount`减 1(RLock 方法中增加 1)。如果减完后`readerCount`值为负，则表示当前存在 writer 正在等待或运行。这是因为在`Lock()`方法中`readerCount`减去了`rwmutexMaxreader`。然后，当检查到将完成的 reader 数量(readerWait 数值)最终为 0 时，则表示 writer 可以最终申请信号量。(译者注：`r < 0`时，存在两个分支，当走 r+1 == 0 的分支时，表示 readerCount 此时为 0 即没有 RLock，所以 throw 了。当走下面那个分支时，`r < 0`则是因为存在 writer 把 readerCount 置为了负数在等待 reader 结束，那么当最后一个 reader 解锁时需要将 WriteSem 信号量加 1，唤醒 writer)
+每次调用此方法将使`readerCount`减 1（RLock 方法中增加 1）。如果减完后`readerCount`值为负，则表示当前存在 writer 正在等待或运行。这是因为在`Lock()`方法中`readerCount`减去了`rwmutexMaxreader`。然后，当检查到将完成的 reader 数量（readerWait 数值）最终为 0 时，则表示 writer 可以最终申请信号量。（译者注：`r < 0`时，存在两个分支，当走 r+1 == 0 的分支时，表示 readerCount 此时为 0 即没有 RLock，所以 throw 了。当走下面那个分支时，`r < 0`则是因为存在 writer 把 readerCount 置为了负数在等待 reader 结束，那么当最后一个 reader 解锁时需要将 WriteSem 信号量加 1，唤醒 writer）
 
 ## 解锁 Unlock
 
@@ -279,7 +279,7 @@ func (rw *RWMutex) Unlock() {
 ```
 解锁被 writer 持有的互斥锁时，首先通过`atomic.AddInt32`将`readerCount`加上`rwmutexMaxreader`，这时`readerCount`将变成非负值。如`readerCount`比 0 大，则表示存在 reader 正在等待 writer 执行完成，此时应唤醒这些等待的 reader。之后写锁将被释放，从而允许其他 writer 为了写入而锁定互斥锁。（译者注：如果还存在挂起的 reader，则在 writer 解锁之前需要通过信号量 readerSem 唤醒这些 reader 执行）
 
-如果 reader 或 writer 尝试解锁未锁定的互斥锁时，调用`Unlock`或`Runlock`方法将抛出错误([示例源码](https://play.golang.org/p/YMdFET74olU))。
+如果 reader 或 writer 尝试解锁未锁定的互斥锁时，调用`Unlock`或`Runlock`方法将抛出错误（[示例源码](https://play.golang.org/p/YMdFET74olU)）。
 
 ```golang
 m := sync.RWMutex{}
@@ -298,7 +298,7 @@ fatal error: sync: Unlock of unlocked RWMutex
 
 > 如果一个 reader goroutine 持有了读锁，而此时另一个 writer goroutine 调用`Lock`申请加写锁，此后在最初的读锁被释放前其他 goroutine 不能获取到读锁。特定情况下，这能防止递归读锁，这种策略保证了锁的可用性，`Lock`的调用会阻止其他新的 reader 来获得锁。
 
-RWMutex 的工作方式是，如果有一个 writer 调用了 Lock，则所有调用 RLock 都将被锁定，无论是否已经获得了读锁定([示例源码](https://play.golang.org/p/oHvZh4u3nJl)):
+RWMutex 的工作方式是，如果有一个 writer 调用了 Lock，则所有调用 RLock 都将被锁定，无论是否已经获得了读锁定（[示例源码](https://play.golang.org/p/oHvZh4u3nJl)）:
 示例代码：
 ```golang
 package main
@@ -377,7 +377,7 @@ if atomic.AddInt32(&rw.readerCount, 1) < 0 {
 
 ## 争用 Contention
 
-Go 版本 ≥ 1.8 之后，支持分析争用的互斥锁([runtime: Profile goroutines holding contended mutexes.](https://github.com/golang/go/commit/ca922b6d363b6ca47822188dcbc5b92d912c7a4b))。我们来看下如何做：
+Go 版本 ≥ 1.8 之后，支持分析争用的互斥锁（[runtime: Profile goroutines holding contended mutexes.](https://github.com/golang/go/commit/ca922b6d363b6ca47822188dcbc5b92d912c7a4b)）。我们来看下如何做：
 ```golang
 package main
 
