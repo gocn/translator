@@ -116,13 +116,13 @@ Go （目前）并不支持泛型。
 
 下面是 Java 中一个泛型方法的例子：
 
-```
+```Java
 public <T> T load(Class<T> clazz, String id) {
 ```
 
 调用者：
 
-```
+```Java
 Foo foo = load(Foo.class, "id")
 ```
 
@@ -132,7 +132,7 @@ Foo foo = load(Foo.class, "id")
 
 在一些情况下我可以使用反射，上面的代码可以移植为：
 
-```
+```Go
 func Load(result interface{}, id string) error
 ```
 
@@ -140,7 +140,7 @@ func Load(result interface{}, id string) error
 
 调用方的代码：
 
-```
+```Go
 var result *Foo
 err := Load(&result, "id")
 ```
@@ -153,7 +153,7 @@ Go 不支持（很大可能用于不会支持）函数重载。
 
 在一些情况下，重载用于创建更简短的帮助函数：
 
-```
+```Java
 void foo(int a, String b) {}
 void foo(int a) { foo(a, null); }
 ```
@@ -162,14 +162,14 @@ void foo(int a) { foo(a, null); }
 
 有时我会写两个函数：
 
-```
+```Go
 func foo(a int) {}
 func fooWithB(a int, b string) {}
 ```
 
 当潜在的参数数量很大时，有时我会这么做：
 
-```
+```Go
 type FooArgs struct {
 	A int
 	B string
@@ -183,13 +183,13 @@ Go 并不是面向对象语言，没有继成。
 
 简单情况下的继承可以使用嵌套的方法移植。
 
-```
+```Java
 class B : A { }
 ```
 
 有时可以移植为：
 
-```
+```Go
 type A struct { }
 type B struct {
 	A
@@ -254,7 +254,7 @@ Java
 
 RavenDB 用于复杂的查询能力。Java 客户端使用链式方法进行查询构建：
 
-```
+```Java
 List<ReduceResult> results = session.query(User.class)
                         .groupBy("name")
                         .selectKey()
@@ -268,7 +268,7 @@ List<ReduceResult> results = session.query(User.class)
 
 为了在 Go 中复制链式调用，我使用了一个“状态错误”的方法：
 
-```
+```Go
 type Query struct {
 	err error
 }
@@ -299,7 +299,7 @@ func (q *Query) Execute(result inteface{}) error {
 
 链式调用可以这么些：
 
-```
+```Go
 var result *Foo
 err := NewQuery().WhereEquals("Name", "Frank").GroupBy("Age").Execute(&result)
 ```
@@ -318,7 +318,7 @@ Go 在标准库中有 JSON 的支持，但它并没有提供太多调整解析�
 
 在 Java 中，setter 和 getter 方法很常见。比如，Java 代码：
 
-```
+```Java
 class Foo {
 	private int bar;
 
@@ -334,7 +334,7 @@ class Foo {
 
 Go 语言版本如下：
 
-```
+```Go
 type Foo struct {
 	Bar int
 }
