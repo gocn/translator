@@ -227,7 +227,7 @@ Go 不允许。
 
 为了简化，我使用一个包。这种方法不太理想，因为这个包最后会变得很臃肿。实际上，这个包臃肿到在 Windows 下 Go 1.10 无法处理单个包内的那么多源文件。幸运的是，Go 1.11 修复了这个问题。
 
-### 私有、公开、保护
+### 私有（private）、公开（public）、保护（protected）
 
 Go 的设计师们被低估了。他们简化概念的能力是无与伦比的，权限控制就是其中的一个例子。
 
@@ -268,7 +268,7 @@ List<ReduceResult> results = session.query(User.class)
 
 链式调用仅在通过异常进行错误交互的语言中有效。当一个函数额外返回一个错误，就没法向上面那样进行链式调用。
 
-为了在 Go 中复制链式调用，我使用了一个“状态错误”的方法：
+为了在 Go 中复制链式调用，我使用了一个“状态错误（stateful error）”的方法：
 
 ```Go
 type Query struct {
@@ -310,13 +310,13 @@ err := NewQuery().WhereEquals("Name", "Frank").GroupBy("Age").Execute(&result)
 
 Java 没有内建的 JSON 解析函数，客户端使用 Jackson JSON 库。
 
-Go 在标准库中有 JSON 的支持，但它并没有提供太多调整解析过程的钩子。
+Go 在标准库中有 JSON 的支持，但它没有提供足够多的钩子函数来展现 JSON 解析的过程。
 
 我并没有尝试匹配所有的 Java 功能，因为 Go 内置的 JSON 支持看起来已经足够灵活。
 
 ### Go 代码更短
 
-这与其说是 Java 的属性，倒不如说是一种文化，即符合语言习惯的代码是什么样的。
+简短不是 Java 的属性，而是写出符合语言习惯代码的文化的属性。
 
 在 Java 中，setter 和 getter 方法很常见。比如，Java 代码：
 
@@ -356,7 +356,7 @@ type Foo struct {
 
 下面是具体的内容：
 
-- 上面没有展示，我有一个带日历视图的页面，用来记录在特定时间工作内容和花费时间的简短笔记。因为这次合约是按小时收费，所以这是很重要的信息。感谢这些笔记，我知道我在 11 个月里花费了 601 个小时。
+- 我有一个没有在上面展示的带日历视图的页面，用来记录在特定时间的工作内容和花费时间的简短笔记。因为这次合约是按小时付费，所以工作时长的统计是很重要的信息。感谢这些笔记，我知道我在 11 个月里在这次开发上花费了 601 个小时。
 
 - 客户喜欢了解进展。我有一个页面，记录了每月的工作总结，如下所示：
 
@@ -364,7 +364,7 @@ type Foo struct {
 
 这些页面与客户共享。
 
-- 当开始每天的工作时，短期的待办列表很有用。
+- 当开始每天的工作时，短期的 todo list 很有用。
 
 ![](https://d33wubrfki0l68.cloudfront.net/f9649c1c901a565ca8d85f9f92a16e058b84cda7/e6c75/img/c145ac2f6f21c39228e8c1316e75180dd57fc5e1.png)
 
@@ -372,11 +372,11 @@ type Foo struct {
 
 ## 待招聘的 Go 程序员
 
-你公司需要额外的 Go 程序员吗？你可以[雇用我](https://blog.kowalczyk.info/goconsultantforhire.html)
+你的公司还需要 Go 开发者吗？你可以[雇用我](https://blog.kowalczyk.info/goconsultantforhire.html)
 
 ## 额外的资源
 
-针对问题，我提供了一些额外的评论：
+针对问题，我提供了一些额外的说明：
 
 - [Hacker News discussion](https://news.ycombinator.com/item?id=19589614)
 - [/r/golang discussion](https://old.reddit.com/r/golang/comments/ba0lsm/lessons_learned_porting_50k_loc_from_java_to_go/)
