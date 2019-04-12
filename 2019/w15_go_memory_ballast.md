@@ -155,7 +155,10 @@ func main() {
 We’ll run the program and then inspect with `ps`:
 
 ```plain
-ps -eo pmem,comm,pid,maj_flt,min_flt,rss,vsz --sort -rss | numfmt --header --to=iec --field 4-5 | numfmt --header --from-unit=1024 --to=iec --field 6-7 | column -t | egrep "[t]est|[P]ID"
+ps -eo pmem,comm,pid,maj_flt,min_flt,rss,vsz --sort -rss | \
+    numfmt --header --to=iec --field 4-5 | \
+    numfmt --header --from-unit=1024 --to=iec --field 6-7 | \
+    column -t | egrep "[t]est|[P]ID"
 %MEM  COMMAND          PID    MAJFL  MINFL  RSS   VSZ
 0.2   test_alloc       27826  0      1003   4.8M  108M
 ```
