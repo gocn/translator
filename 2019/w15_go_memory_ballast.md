@@ -39,17 +39,17 @@ So after taking a look at our Go application’s profiles, we made the following
 3. During traffic spikes the number of GC cycles would increase
 4. Our heap size on average was fairly small (<450Mib)
 
-![](./static/images/w15_go_memory_ballast/1_UJ-9EI7LGTXZ4DxXsMJnYw.png)
+![](../static/images/w15_go_memory_ballast/1_UJ-9EI7LGTXZ4DxXsMJnYw.png)
 
 Visage application GC cycles per second
 
-![](./static/images/w15_go_memory_ballast/1_Z0oRgkJB7JG0fxx9UjRTsg.png)
+![](../static/images/w15_go_memory_ballast/1_Z0oRgkJB7JG0fxx9UjRTsg.png)
 
 Visage application MiB of [heap in use](https://golang.org/pkg/runtime/#MemStats)
 
 If you haven’t guessed it already the improvements we made relate to the performance of garbage collection in our application. Before I get into the improvements, below is a quick primer / recap on what GCs are and what they do. Feel free to skip ahead if you’re well versed in the concepts.
 
-## What is a garbage collector (GC) 
+## What is a garbage collector (GC)
 
 In modern applications, there are generally two ways to allocate memory: the stack and the heap. Most programmers are familiar with the stack from the first time writing a recursive program that caused the [stack to overflow](https://stackoverflow.com/questions/26158/how-does-a-stack-overflow-occur-and-how-do-you-prevent-it). The heap, on the other hand, is a pool of memory that can be used for dynamic allocation.
 
@@ -119,13 +119,13 @@ So in summary, the ballast increases the base size of the heap so that our GC tr
 
 Rolling out this change worked as expected — we saw ~ 99% reduction in GC cycles:
 
-![](./static/images/w15_go_memory_ballast/1_F9d8rSHzS658hlbNp8XB2A.png)
+![](../static/images/w15_go_memory_ballast/1_F9d8rSHzS658hlbNp8XB2A.png)
 
 Log base 2 scale graph showing GC cycles per minute
 
 So this looks good, what about CPU utilization?
 
-![](./static/images/w15_go_memory_ballast/1_YR6ejQbz7P0hVRMKLjKLow.png)
+![](../static/images/w15_go_memory_ballast/1_YR6ejQbz7P0hVRMKLjKLow.png)
 
 Visage application CPU utilization
 
@@ -265,13 +265,13 @@ In our API frontend, this meant that API responses would see increased latency d
 
 You can see this quite clearly from an [execution trace](https://golang.org/pkg/runtime/trace/) of our application. Below are two slices from the same execution trace of Visage; one while the GC cycle was running and one while it was not.
 
-![](./static/images/w15_go_memory_ballast/1_6C8HBcmknrzXgIfYt4fQ2g.png)
+![](../static/images/w15_go_memory_ballast/1_6C8HBcmknrzXgIfYt4fQ2g.png)
 
 Execution trace during a GC cycle
 
 The trace shows which goroutines are running on which processor. Anything labeled `app-code` is a goroutine running useful code for our application (e.g., logic to serve an API request). Notice, how besides the four dedicated procs running the GC code, our other goroutines are being delayed and forced to do `MARK ASSIST` (i.e.`runtime.gcAssistAlloc`) work.
 
-![](./static/images/w15_go_memory_ballast/1_BzAILx-isjcO0RjIb351ow.png)
+![](../static/images/w15_go_memory_ballast/1_BzAILx-isjcO0RjIb351ow.png)
 
 Profile from same application as above, not during a GC cycle
 
@@ -279,7 +279,7 @@ Contrast that with this profile from the same running application not during a G
 
 So by simply reducing GC frequency, we saw close to a ~99% drop in mark assist work, which translated to a~45% improvement in 99th percentile API latency at peak traffic.
 
-![](./static/images/w15_go_memory_ballast/1_d45hQzrPFIluoZDyGw_tAw.png)
+![](../static/images/w15_go_memory_ballast/1_d45hQzrPFIluoZDyGw_tAw.png)
 
 You may be wondering why Go would choose such a strange design (using assists) for its GC, but it actually makes a lot of sense. The GC’s main function is to ensure that we keep the heap to a reasonable size and don’t let it grow unbound with garbage. This is easy enough in a stop-the-world (STW) GC, but in a concurrent GC, we need a mechanism to ensure that the allocations happening during the GC cycle don’t grow without bound. Having each goroutine pay the allocation tax proportional to what it wants to allocate in the GC cycle is a pretty elegant design in my opinion.
 
