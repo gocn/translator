@@ -49,7 +49,7 @@ Visage application MiB of [heap in use](https://golang.org/pkg/runtime/#MemStats
 
 If you haven’t guessed it already the improvements we made relate to the performance of garbage collection in our application. Before I get into the improvements, below is a quick primer / recap on what GCs are and what they do. Feel free to skip ahead if you’re well versed in the concepts.
 
-## What is a garbage collector (GC) ?
+## What is a garbage collector (GC) 
 
 In modern applications, there are generally two ways to allocate memory: the stack and the heap. Most programmers are familiar with the stack from the first time writing a recursive program that caused the [stack to overflow](https://stackoverflow.com/questions/26158/how-does-a-stack-overflow-occur-and-how-do-you-prevent-it). The heap, on the other hand, is a pool of memory that can be used for dynamic allocation.
 
@@ -187,7 +187,7 @@ As expected, half of the byte array is now in the RSS occupying physical memory.
 
 So as long as we don’t read or write to the ballast, we can be assured that it will remain on the heap as a virtual allocation only.
 
-## What about the API latency?
+## What about the API latency
 
 As mentioned above, we saw an API latency improvement (especially during high load) as a result of the GC running less frequency. Initially, we thought this may be due to a decrease in GC pause time — this is the amount of time the GC actually stops the world during a GC cycle. However, the GC pause times before and after the change were not significantly different. Furthermore, our pause times were on the order of single digit milliseconds, not the 100s of milliseconds improvement we saw at peak load.
 
