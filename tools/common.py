@@ -55,6 +55,7 @@ def download_image(url):
     r.raise_for_status()
     with open(filename, 'wb') as f:
         f.write(r.content)
+    print('download:', filename)
     return filename
 
 
