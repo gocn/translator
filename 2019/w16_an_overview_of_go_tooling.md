@@ -54,7 +54,8 @@ CGO_CXXFLAGS="-g -O2"
 CGO_FFLAGS="-g -O2"
 CGO_LDFLAGS="-g -O2"
 PKG_CONFIG="pkg-config"
-GOGCCFLAGS="-fPIC -m64 -pthread -fmessage-length=0 -fdebug-prefix-map=/tmp/go-build245740092=/tmp/go-build -gno-record-gcc-switches"
+GOGCCFLAGS="-fPIC -m64 -pthread -fmessage-length=0 \
+    -fdebug-prefix-map=/tmp/go-build245740092=/tmp/go-build -gno-record-gcc-switches"
 ```
 
 If there are specific values that you're interested in, you can pass them as arguments to `go env`. For example:
