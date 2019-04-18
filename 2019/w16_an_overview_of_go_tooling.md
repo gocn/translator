@@ -1,6 +1,6 @@
 # An Overview of Go's Tooling
 
-Occasionally I get asked *“why do you like using Go?”* And one of the things I often mention is the thoughtful tooling that exists alongside the language as part of the `go` command. There are some tools that I use everyday &#8212; like `go fmt` and `go build` &#8212; and others like `go tool pprof` that I only use to help solve a specific issue. But in all cases I appreciate the fact that they make managing and maintaining my projects easier.
+Occasionally I get asked *“why do you like using Go?”* And one of the things I often mention is the thoughtful tooling that exists alongside the language as part of the `go` command. There are some tools that I use everyday — like `go fmt` and `go build` — and others like `go tool pprof` that I only use to help solve a specific issue. But in all cases I appreciate the fact that they make managing and maintaining my projects easier.
 
 In this post I hope to provide a little background and context about the tools I find most useful, and importantly, explain how they can fit into the workflow of a typical project. I hope it'll give you a good start if you're new to Go.
 
@@ -141,7 +141,7 @@ func bar() {
 To do this you can use `gofmt`  with the `-r` flag to implement a rewrite rule, the `-d` flag to display a diff of the changes, and the `-w` flag to make the changes *in place*,  like so:
 
 ```shell
-$ gofmt -d -w -r 'foo -&gt; Foo' .
+$ gofmt -d -w -r 'foo -> Foo' .
 -var foo int
 +var Foo int
 
@@ -159,14 +159,14 @@ If you want to use this functionality, I recommend running rewrite rules *withou
 Let's take a look at a slightly more complicated example. Say you want to update your code to use the new Go 1.12 [strings.ReplaceAll()](https://golang.org/pkg/strings/#ReplaceAll) function instead of [strings.Replace()](https://golang.org/pkg/strings/#Replace). To make this change you can run:
 
 ```shell
-$ gofmt -w -r 'strings.Replace(a, b, c, -1) -&gt; strings.ReplaceAll(a, b, c)' .
+$ gofmt -w -r 'strings.Replace(a, b, c, -1) -> strings.ReplaceAll(a, b, c)' .
 ```
 
 In rewrite rules, single lowercase characters act as wildcards matching arbitrary expressions, and those expressions will be substituted-in in the replacement.
 
 ### Viewing Go Documentation
 
-You can view documentation for the standard library packages via your terminal using the `go doc` tool. I often use this during development to quickly check something &#8212; like the name or signature of a specific function. I find it faster than navigating the [web-based documentation](https://golang.org/pkg) and it's always available offline too.
+You can view documentation for the standard library packages via your terminal using the `go doc` tool. I often use this during development to quickly check something — like the name or signature of a specific function. I find it faster than navigating the [web-based documentation](https://golang.org/pkg) and it's always available offline too.
 
 ```shell
 $ go doc strings            # View simplified documentation for the strings package
@@ -202,7 +202,7 @@ $ go test -race ./...
 
 It's important to note that enabling the race detector will increase the overall running time of your tests. So if you're running tests very frequently part of a TDD workflow, you might prefer to save using this for a pre-commit test run only.
 
-Since 1.10, Go [caches test results](https://golang.org/doc/go1.10#test) at the package-level. If a package hasn't changed between test runs &#8212; and you're using the same, cachable, flags for `go test` &#8212; then the cached test result will be displayed with a `"(cached)"` next to it. This is hugely helpful in speeding up the test runtime for large codebases. If you want force your tests to run in full (and avoid the cache) you can use the `-count=1` flag, or clear all cached test results by using the `go clean` tool.
+Since 1.10, Go [caches test results](https://golang.org/doc/go1.10#test) at the package-level. If a package hasn't changed between test runs — and you're using the same, cachable, flags for `go test` — then the cached test result will be displayed with a `"(cached)"` next to it. This is hugely helpful in speeding up the test runtime for large codebases. If you want force your tests to run in full (and avoid the cache) you can use the `-count=1` flag, or clear all cached test results by using the `go clean` tool.
 
 ```shell
 $ go test -count=1 ./...    # Bypass the test cache when running tests
@@ -276,7 +276,7 @@ You can use the `go test -count` command to run a test multiple times in success
 $ go test -run=^TestFooBar$ -count=500 .
 ```
 
-In this example, the `TestFooBar` test will be repeated 500 times in a row. But it's important to note that the test will be repeated *in serial* &#8212; even if it contains a `t.Parallel()` instruction. So if your test is doing something relatively slow, like making a round trip to a database, hard disk or the internet, running a large number of tests can take quite a long time.
+In this example, the `TestFooBar` test will be repeated 500 times in a row. But it's important to note that the test will be repeated *in serial* — even if it contains a `t.Parallel()` instruction. So if your test is doing something relatively slow, like making a round trip to a database, hard disk or the internet, running a large number of tests can take quite a long time.
 
 In that case you might want to use the [`stress`](golang.org/x/tools/cmd/stress) tool to repeat the same test multiple times *in parallel* instead. You can install it like so:
 
@@ -310,13 +310,13 @@ Before you build an executable for release or deployment, or distribute your cod
 $ go test all
 ```
 
-This will run tests on all packages in your module and all dependencies &#8212; include testing *test dependencies* and the necessary *standard library packages* &#8212; and it can help validate that the exact versions of the dependencies being used are compatible with each other. This can take quite a long time to run, but the results cache well so any subsequent tests should be faster in the future. If you want, you could also use `go test -short all` to skip any long-running tests.
+This will run tests on all packages in your module and all dependencies — include testing *test dependencies* and the necessary *standard library packages* — and it can help validate that the exact versions of the dependencies being used are compatible with each other. This can take quite a long time to run, but the results cache well so any subsequent tests should be faster in the future. If you want, you could also use `go test -short all` to skip any long-running tests.
 
 ## Pre-Commit Checks
 
 ### Formatting Code
 
-Go provides two tools to automatically format your code according to the Go conventions: `gofmt` and `go fmt`. Using these helps keep your code consistent across your files and projects, and &#8212; if you use them before committing code &#8212; helps reduce noise when examining a diff between file versions.
+Go provides two tools to automatically format your code according to the Go conventions: `gofmt` and `go fmt`. Using these helps keep your code consistent across your files and projects, and — if you use them before committing code — helps reduce noise when examining a diff between file versions.
 
 I like to use the `gofmt` tool with the following flags:
 
@@ -329,7 +329,7 @@ In these commands, the `-w` flag instructs the tool to rewrite files in place, t
 
 Note: The `gofmt` command works recursively. If you pass it a directory like `.` or `./cmd/foo` it'll format all `.go` files under the directory.
 
-The other formatting tool &#8212; `go fmt` &#8212; tool is a wrapper which essentially calls `gofmt -l -w` on a specified file or directory. You can use it like this:
+The other formatting tool — `go fmt` — tool is a wrapper which essentially calls `gofmt -l -w` on a specified file or directory. You can use it like this:
 
 ```shell
 $ go fmt ./...
@@ -365,7 +365,7 @@ And you can then use it like so:
 $ go vet -vettool=$(which nilness) ./...
 ```
 
-Note: when the `-vettool`  flag is used it will *only* run the specified analyzer &#8212; all the other `go vet` analyzers won't be run.
+Note: when the `-vettool`  flag is used it will *only* run the specified analyzer — all the other `go vet` analyzers won't be run.
 
 As a side note, since Go 1.10 the `go test` tool automatically executes a small, high-confidence, subset of the `go vet` checks before running any tests. You can turn this behavior off when running tests like so:
 
@@ -402,7 +402,7 @@ $ go mod tidy
 $ go mod verify
 ```
 
-The `go mod tidy` command will prune any unused dependencies from your `go.mod` and `go.sum` files, and update the files to include dependencies for all possible build tags/OS/architecture combinations (note: `go run`, `go test`, `go build` etc are &#8216;lazy' and will only fetch packages needed for the current build tags/OS/architecture). Running this before each commit will make it easier to determine which of your code changes were responsible for adding or removing which dependencies when looking at the version control history.
+The `go mod tidy` command will prune any unused dependencies from your `go.mod` and `go.sum` files, and update the files to include dependencies for all possible build tags/OS/architecture combinations (note: `go run`, `go test`, `go build` etc are ‘lazy' and will only fetch packages needed for the current build tags/OS/architecture). Running this before each commit will make it easier to determine which of your code changes were responsible for adding or removing which dependencies when looking at the version control history.
 
 I also recommend using the `go mod verify` command to check that the dependencies on your computer haven't accidentally (or purposely) been changed since they were downloaded and that they match the cryptographic hashes in your `go.sum` file. Running this helps ensure that the dependencies being used are the exact ones that you expect, and  any build for that commit will be reproducible at a later point.
 
@@ -428,7 +428,7 @@ $ go env GOCACHE
 /home/alex/.cache/go-build
 ```
 
-Using the build cache comes with one [important caveat](https://golang.org/pkg/cmd/go/internal/help/) &#8212; it does not detect changes to C libraries imported with `cgo`. So if your code imports a C library via `cgo` and you've made changes to it since the last build, you'll need to use the `-a` flag which forces all packages to be rebuilt. Alternatively, you could use `go clean` to purge the cache:
+Using the build cache comes with one [important caveat](https://golang.org/pkg/cmd/go/internal/help/) — it does not detect changes to C libraries imported with `cgo`. So if your code imports a C library via `cgo` and you've made changes to it since the last build, you'll need to use the `-a` flag which forces all packages to be rebuilt. Alternatively, you could use `go clean` to purge the cache:
 
 ```shell
 $ go build -a -o=/tmp/foo .     # Force all packages to be rebuilt
@@ -494,7 +494,7 @@ $ go build -gcflags="-m -m" -o=/tmp/foo . # Print information about optimization
 In the above example I used the `-m` flag twice to indicate that I want to print decision information two-levels deep. You can get simpler output by using just one.
 
 
-Also, as of Go 1.10, compiler flags only apply to the specific packages passed to `go build` &#8212; which in the example above is the package in the current directory (represented by `.`). If you want to print optimization decisions for all packages including dependencies can use this command instead:
+Also, as of Go 1.10, compiler flags only apply to the specific packages passed to `go build` — which in the example above is the package in the current directory (represented by `.`). If you want to print optimization decisions for all packages including dependencies can use this command instead:
 
 ```shell
 $ go build -gcflags="all=-m" -o=/tmp/foo .
@@ -573,9 +573,9 @@ $ GO111MODULE=on go get golang.org/x/tools/cmd/benchcmp
 You can then use it like this:
 
 ```shell
-$ go test -run=^$ -bench=. -benchmem ./... &gt; /tmp/old.txt
+$ go test -run=^$ -bench=. -benchmem ./... > /tmp/old.txt
 # make changes
-$ go test -run=^$ -bench=. -benchmem ./... &gt; /tmp/new.txt
+$ go test -run=^$ -bench=. -benchmem ./... > /tmp/new.txt
 $ benchcmp /tmp/old.txt /tmp/new.txt
 benchmark              old ns/op     new ns/op     delta
 BenchmarkExample-8     21234         5510          -74.05%
@@ -670,7 +670,7 @@ It's critical to note that race-detector-enabled binaries will use more CPU and 
 
 But you may want to deploy a race-detector-enabled binary on one server within a pool of many. Or use it to help track down a suspected race-condition by using a load-test tool to throw traffic concurrently at a race-detector-enabled binary.
 
-By default, if any races are detected while the binary is running a log will be written to `stderr`. You can change this by using the `GORACE` environment variable if necessary. For example, to run the binary located at `/tmp/foo` and output any race logs to `/tmp/race.&lt;pid&gt;` you can use:
+By default, if any races are detected while the binary is running a log will be written to `stderr`. You can change this by using the `GORACE` environment variable if necessary. For example, to run the binary located at `/tmp/foo` and output any race logs to `/tmp/race.<pid>` you can use:
 
 ```shell
 $ GORACE="log_path=/tmp/race" /tmp/foo
@@ -725,7 +725,7 @@ go 1.12
 
 require github.com/alexedwards/argon2id v0.0.0-20190109181859-24206601af6c
 
-replace github.com/alexedwards/argon2id =&gt; /home/alex/Projects/playground/argon2id
+replace github.com/alexedwards/argon2id => /home/alex/Projects/playground/argon2id
 ```
 
 Once it's no longer necessary, you can remove the replace rule with the command:
