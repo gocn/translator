@@ -534,7 +534,7 @@ Note: If binary size is something that you need to optimize for you might want t
 
 ### Running and Comparing Benchmarks
 
-A nice feature of Go is that it makes it easy to benchmark your code. If you're not familiar with the general process for writing benchmarks there are good guides [here](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go) and [here](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go).
+A nice feature of Go is that it makes it easy to benchmark your code. If you're not familiar with the general process for writing benchmarks there are good guides [here](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go).
 
 To run benchmarks you'll need to use the `go test` tool, with the `-bench` flag set to a regular expression that matches the benchmarks you want to execute. For example:
 
