@@ -7,7 +7,7 @@ import requests
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='解析 Markdow.')
+    parser = argparse.ArgumentParser(description='解析 Markdown.')
     parser.add_argument('--url', type=str, help='源地址')
     parser.add_argument('--file', type=str, help='存储文件名')
 
