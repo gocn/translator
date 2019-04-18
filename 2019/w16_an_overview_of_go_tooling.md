@@ -130,7 +130,8 @@ Chances are you're probably familiar with using the `gofmt` tool to automaticall
 
 Let's say that you have the following code and you want to change the `foo` variable to `Foo` so it is exported.
 
-```filevar foo int
+```golang
+var foo int
 
 func bar() {
     foo = 1
