@@ -133,12 +133,12 @@ Object-orientation is incredibly useful. The last decades of using it have been 
 
 Many of the currently used programming languages (Java, JavaScript, Python, Ruby) were designed before the internet was the ubiquitous computing platform it is today. Hence, the standard libraries of these languages provide only relatively generic support for networking that isn’t optimized for the modern internet. Go was created a decade ago when the internet was already in full swing. Go’s standard library allows creating even sophisticated network services without third-party libraries. This prevents the usual problems with third-party libraries:
 
-- --fragmentation:-- there are always multiple choices implementing the same functionality
-- --bloat:-- libraries often implement more than what they are used for
-- --dependency hell:-- libraries often depend on other libraries at specific versions
-- --unknown quality:-- third-party code can have questionable quality and security
-- --unknown support:-- development of third-party libraries can stop at any time
-- --unexpected changes:-- third-party libraries are often not as rigorously versioned as standard libraries
+- **fragmentation:** there are always multiple choices implementing the same functionality
+- **bloat:** libraries often implement more than what they are used for
+- **dependency hell:** libraries often depend on other libraries at specific versions
+- **unknown quality:** third-party code can have questionable quality and security
+- **unknown support:** development of third-party libraries can stop at any time
+- **unexpected changes:** third-party libraries are often not as rigorously versioned as standard libraries
 
 [More background](https://research.swtch.com/deps) on this by Russ Cox.
 
@@ -148,9 +148,9 @@ Many of the currently used programming languages (Java, JavaScript, Python, Ruby
 
 Gofmt is a program that formats Go code in a standardized way. It is not the prettiest way of formatting, but the simplest and least disagreeable one. Standardized source code formatting has a surprising amount of positive effects:
 
-1.  --focus conversations on important topics:-- it eliminates a whole array of [bike-shed](https://en.wikipedia.org/wiki/Law_of_triviality) debates around tabs vs spaces, indentation depth, line length, empty lines, placement of curly braces, and others.
-2.  --developers feel at home in each others code bases-- because other code looks a lot like code they would have written. Everybody loves having the liberty to format code the way they prefer, but everybody hates it if others take the liberty to format code the way they prefer.
-3.  --automated code changes-- don’t mess up the formatting of hand-written code, for example by introducing accidental whitespace changes.
+1.  **focus conversations on important topics:** it eliminates a whole array of [bike-shed](https://en.wikipedia.org/wiki/Law_of_triviality) debates around tabs vs spaces, indentation depth, line length, empty lines, placement of curly braces, and others.
+2.  **developers feel at home in each others code bases** because other code looks a lot like code they would have written. Everybody loves having the liberty to format code the way they prefer, but everybody hates it if others take the liberty to format code the way they prefer.
+3.  **automated code changes** don’t mess up the formatting of hand-written code, for example by introducing accidental whitespace changes.
 
 Many other language communities are developing gofmt equivalents now. When built as third-party solutions, there are often several competing formatting standards. The JavaScript world, for example, offers [Prettier](https://prettier.io/) and [StandardJS](https://standardjs.com/). One can use either or both together. Many JS projects adopt none of them because it is an extra decision to make. Go’s formatter is built into the standard toolchain of the language, so there is only one standard and everybody is using it.
 
