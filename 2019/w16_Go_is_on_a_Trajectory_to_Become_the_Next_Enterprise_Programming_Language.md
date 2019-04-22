@@ -13,34 +13,34 @@
 
 Go — a programming language designed for large-scale software development — provides a robust development experience and avoids many issues that existing programming languages have. These factors make it one of the most likely candidates to succeed Java as the dominating enterprise software platform in the future. Companies and open-source initiatives looking for a safe and forward-looking technology choice for creating large-scale cloud infrastructures in the coming decades are well advised to consider Go as their primary programming language. The strengths of Go are that it:
 
--   is based on real-world experience
--   focuses on large-scale engineering
--   focuses on maintainability
--   keeps it simple and straightforward
--   makes things explicit and obvious
--   is easy to learn
--   provides one way to do things
--   allows easy, built-in concurrency
--   provides compute-oriented language primitives
--   uses OO — the good parts
--   has a modern standard library
--   enforces standardized formatting
--   has an extremely fast compiler
--   makes cross compilation easy
--   executes very fast
--   requires a small memory footprint
--   results in a small deployment size
--   deploys completely self-contained
--   vendors dependencies
--   provides a compatibility guarantee
--   encourages good documentation
--   is built as commercially backed open source
+- is based on real-world experience
+- focuses on large-scale engineering
+- focuses on maintainability
+- keeps it simple and straightforward
+- makes things explicit and obvious
+- is easy to learn
+- provides one way to do things
+- allows easy, built-in concurrency
+- provides compute-oriented language primitives
+- uses OO — the good parts
+- has a modern standard library
+- enforces standardized formatting
+- has an extremely fast compiler
+- makes cross compilation easy
+- executes very fast
+- requires a small memory footprint
+- results in a small deployment size
+- deploys completely self-contained
+- vendors dependencies
+- provides a compatibility guarantee
+- encourages good documentation
+- is built as commercially backed open source
 
 Read on for more details about each point. Before committing to Go, however, you should look out for:
 
--   immature libraries
--   upcoming changes
--   no hard real-time
+- immature libraries
+- upcoming changes
+- no hard real-time
 
 ### introduction
 
@@ -56,12 +56,12 @@ Go was created by experienced software industry veterans who have felt the pain 
 
 Small engineering projects can be built successfully in pretty much any programming language. The really painful problems happen when thousands of developers collaborate under constant time pressure over decades on massive code bases containing tens of millions of lines of code. This leads to problems like:
 
--   long compile times interrupt development
--   the code base has been owned by several people/teams/departments/companies, mixing different programming styles
--   the company employs thousands of engineers, architects, testers, Ops specialists, auditors, interns, etc who need to understand the code base but have a wide range of coding experience
--   dependency on lots of external libraries or runtimes, some of them no longer existing in their original form
--   each line of code has been [rewritten an average of 10 times](https://www.ybrikman.com/writing/2018/08/12/the-10-to-1-rule-of-writing-and-programming) over the course of the lifetime of the code base, leaving scars, warts, and technical drift
--   incomplete documentation
+- long compile times interrupt development
+- the code base has been owned by several people/teams/departments/companies, mixing different programming styles
+- the company employs thousands of engineers, architects, testers, Ops specialists, auditors, interns, etc who need to understand the code base but have a wide range of coding experience
+- dependency on lots of external libraries or runtimes, some of them no longer existing in their original form
+- each line of code has been [rewritten an average of 10 times](https://www.ybrikman.com/writing/2018/08/12/the-10-to-1-rule-of-writing-and-programming) over the course of the lifetime of the code base, leaving scars, warts, and technical drift
+- incomplete documentation
 
 Go focuses on [alleviating these large-scale engineering pains](https://talks.golang.org/2012/splash.article), sometimes at the cost of making engineering in the small a bit more cumbersome, for example by requiring a few extra lines of code here and there.
 
@@ -93,8 +93,8 @@ Go is so small and simple that the entire language and its underlying concepts c
 
 In Go (and Python) all language features are orthogonal and complementary to each other and there is usually one way to do something. If you ask 10 Python or Go programmers to solve a problem, you’ll get 10 relatively similar solutions. The different programmers feel more at home in each other’s code bases. There are fewer [WTFs per minute](https://www.osnews.com/story/19266/wtfsm) when looking at other people’s code, and people’s work fits better into each other, adding up to a consistent whole that everybody is proud of and enjoys working on. This avoids large-scale engineering problems like:
 
--   Developers dismiss good working code as “messy” and demand to rewrite it before they can work on it because they don’t think in the same way as the original author.
--   Different team members write parts of the same code base in different subsets of the language.
+- Developers dismiss good working code as “messy” and demand to rewrite it before they can work on it because they don’t think in the same way as the original author.
+- Different team members write parts of the same code base in different subsets of the language.
 
 
 
@@ -112,11 +112,11 @@ Most programming languages in use today (Java, JavaScript, Python, Ruby, C, C++)
 
 On a fundamental level, computer systems receive data, massage it (often over several steps), and output the resulting data. As an example, a web server receives an HTTP request from a client and transforms it into a series of database or backend calls. Once these calls return, it transforms the received data into HTML or JSON and outputs it to the caller. Go’s built-in language primitives support this paradigm directly:
 
--   structs represent data
--   readers and writers represent streaming IO
--   functions process data
--   goroutines provide (almost unlimited) concurrency
--   channels pipe data between concurrent processing steps
+- structs represent data
+- readers and writers represent streaming IO
+- functions process data
+- goroutines provide (almost unlimited) concurrency
+- channels pipe data between concurrent processing steps
 
 Because all compute primitives are provided in a direct form by the language, Go source code expresses what a server does more directly.
 
@@ -133,12 +133,12 @@ Object-orientation is incredibly useful. The last decades of using it have been 
 
 Many of the currently used programming languages (Java, JavaScript, Python, Ruby) were designed before the internet was the ubiquitous computing platform it is today. Hence, the standard libraries of these languages provide only relatively generic support for networking that isn’t optimized for the modern internet. Go was created a decade ago when the internet was already in full swing. Go’s standard library allows creating even sophisticated network services without third-party libraries. This prevents the usual problems with third-party libraries:
 
--   --fragmentation:-- there are always multiple choices implementing the same functionality
--   --bloat:-- libraries often implement more than what they are used for
--   --dependency hell:-- libraries often depend on other libraries at specific versions
--   --unknown quality:-- third-party code can have questionable quality and security
--   --unknown support:-- development of third-party libraries can stop at any time
--   --unexpected changes:-- third-party libraries are often not as rigorously versioned as standard libraries
+- --fragmentation:-- there are always multiple choices implementing the same functionality
+- --bloat:-- libraries often implement more than what they are used for
+- --dependency hell:-- libraries often depend on other libraries at specific versions
+- --unknown quality:-- third-party code can have questionable quality and security
+- --unknown support:-- development of third-party libraries can stop at any time
+- --unexpected changes:-- third-party libraries are often not as rigorously versioned as standard libraries
 
 [More background](https://research.swtch.com/deps) on this by Russ Cox.
 
@@ -187,11 +187,11 @@ Go applications are deployed as a single executable file that includes all depen
 
 Go intentionally avoids a central repository for third-party libraries. Go applications link directly to the respective Git repositories and download (“vendor”) all dependent code into their own code base. This has many advantages:
 
--   We can review, analyze, and test third-party code before using it. This code is as much a part of our application as our own code and should conform to the same quality, security, and reliability standards.
--   No need for permanent access to the various locations that store dependencies. Get your third-party libraries from anywhere (including private Git repos) once and you have them forever.
--   No further downloads of dependencies are necessary to compile the code base after checkout.
--   No surprises if a code repository somewhere on the internet suddenly serves different code.
--   Deployments never break, even if package repositories slow down or hosted packages cease to exist
+- We can review, analyze, and test third-party code before using it. This code is as much a part of our application as our own code and should conform to the same quality, security, and reliability standards.
+- No need for permanent access to the various locations that store dependencies. Get your third-party libraries from anywhere (including private Git repos) once and you have them forever.
+- No further downloads of dependencies are necessary to compile the code base after checkout.
+- No surprises if a code repository somewhere on the internet suddenly serves different code.
+- Deployments never break, even if package repositories slow down or hosted packages cease to exist
 
 ### Compatibility Guarantee
 
@@ -201,11 +201,11 @@ The Go team [promises](https://golang.org/doc/go1compat) that existing program
 
 When engineering in the large, documentation becomes important to make software accessible and maintainable. Similar to the other features, documentation is simple and pragmatic in Go:
 
--   It is embedded in the source code so that both can be maintained at the same time.
--   It requires no special syntax — documentation is just normal source code comments.
--   Runnable unit tests are often the best form of documentation, so Go let’s you [embed them into the documentation](https://blog.golang.org/examples).
--   All the documentation [utilities](https://blog.golang.org/godoc-documenting-go-code) are built into the toolchain and therefore everybody uses them.
--   The Go linter requires documentation for exported elements to prevent the build-up of “documentation debt”.
+- It is embedded in the source code so that both can be maintained at the same time.
+- It requires no special syntax — documentation is just normal source code comments.
+- Runnable unit tests are often the best form of documentation, so Go let’s you [embed them into the documentation](https://blog.golang.org/examples).
+- All the documentation [utilities](https://blog.golang.org/godoc-documenting-go-code) are built into the toolchain and therefore everybody uses them.
+- The Go linter requires documentation for exported elements to prevent the build-up of “documentation debt”.
 
 ### Commercially Backed Open Source
 
