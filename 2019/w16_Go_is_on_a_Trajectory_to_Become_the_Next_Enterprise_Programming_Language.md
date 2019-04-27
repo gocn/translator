@@ -2,14 +2,14 @@
 
  [![Go to the profile of Kevin Goslar](https://cdn-images-1.medium.com/fit/c/100/100/0-XdfObs4UVykr8LBr.jpg)](https://hackernoon.com/@kevingoslar?source=post_header_lockup)
 
- [Kevin Goslar](https://hackernoon.com/@kevingoslar)Follow
+ [Kevin Goslar](https://hackernoon.com/@kevingoslar)
 
- Apr 10
+ Apr 11
 
 
 ![](https://cdn-images-1.medium.com/max/1600/1-oNcoMWxpNsVqcJE60WDZug.png)
 
-### summary
+## summary
 
 Go — a programming language designed for large-scale software development — provides a robust development experience and avoids many issues that existing programming languages have. These factors make it one of the most likely candidates to succeed Java as the dominating enterprise software platform in the future. Companies and open-source initiatives looking for a safe and forward-looking technology choice for creating large-scale cloud infrastructures in the coming decades are well advised to consider Go as their primary programming language. The strengths of Go are that it:
 
@@ -60,7 +60,7 @@ Small engineering projects can be built successfully in pretty much any programm
 - the code base has been owned by several people/teams/departments/companies, mixing different programming styles
 - the company employs thousands of engineers, architects, testers, Ops specialists, auditors, interns, etc who need to understand the code base but have a wide range of coding experience
 - dependency on lots of external libraries or runtimes, some of them no longer existing in their original form
-- each line of code has been [rewritten an average of 10 times](https://www.ybrikman.com/writing/2018/08/12/the-10-to-1-rule-of-writing-and-programming) over the course of the lifetime of the code base, leaving scars, warts, and technical drift
+- each line of code has been [rewritten an average of 10 times](https://www.ybrikman.com/writing/2018/08/12/the-10-to-1-rule-of-writing-and-programming) over the course of the lifetime of the code base, leaving scars, warts, and [technical drift](https://codeclimate.com/blog/are-you-experiencing-technical-drift/)
 - incomplete documentation
 
 Go focuses on [alleviating these large-scale engineering pains](https://talks.golang.org/2012/splash.article), sometimes at the cost of making engineering in the small a bit more cumbersome, for example by requiring a few extra lines of code here and there.
@@ -71,7 +71,7 @@ Go emphasizes offloading as much work as possible to automated code maintenance 
 
 ### Keep it Simple and Straightforward
 
-> _Junior programmers create simple solutions to simple problems. Senior programmers create complex solutions to complex problems. Great programmers find simple solutions to complex problems. — _[_Charles Connell_](http://www.chc-3.com/pub/beautifulsoftware_v10.htm)
+> _Junior programmers create simple solutions to simple problems. Senior programmers create complex solutions to complex problems. Great programmers find simple solutions to complex problems._ — [_Charles Connell_](http://www.chc-3.com/pub/beautifulsoftware_v10.htm)
 
 Many people are surprised that Go doesn’t contain concepts they love in other languages. Go is indeed a very small and simple language that contains only a minimal selection of orthogonal and proven concepts. This encourages developers to write the simplest possible code with the least amount of cognitive overhead so that many other people can understand and work with it.
 
