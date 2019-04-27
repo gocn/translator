@@ -101,7 +101,7 @@ A load test client was implemented in Go, using gRPC client stubs generated from
 
 For one user, we may expect (on average) one refresh token request per six months, one access token request per day, and one action token request per hour. Combining these assumptions with a simulated population size p produces an estimation of the average load on the system: l(p) = p × 2.894 × 10⁻⁴ requests per second, with 95% of those requests being action token requests. Given a population size of 100k users, the load tester would generate roughly 29 token requests per second. By adjusting the simulated population size, and/or running multiple load test processes in parallel (on different machines, if necessary), the load on the service was adjusted.
 
-对于一个用户，我们可能期望(平均)每六个月有一个 refresh token 的请求，每天有一个 access token 请求，每小时有一个 action token 请求。将这些假设与模拟人口规模 p 产生估计的平均负载系统:l(p) = p×2.894×10⁻⁴ QPS,与 95%的请求被 action token 请求。假设用户总数为 10 万，那么负载测试器每秒将生成大约 29 个 token 请求。通过调整模拟的总体大小或并行运行多个负载测试进程(如果需要，在不同的机器上)，可以调整服务上的负载。
+对于一个用户，我们预计(平均)每六个月有一个 refresh token 的请求，每天有一个 access token 请求，每小时有一个 action token 请求。将这些假设与模拟人口规模 p 产生估计的平均负载系统:l(p) = p×2.894×10⁻⁴ QPS,与 95%的请求被 action token 请求。假设用户总数为 10 万，那么负载测试器每秒将生成大约 29 个 token 请求。通过调整模拟的总体大小或并行运行多个负载测试进程(如果需要，在不同的机器上)，可以调整服务上的负载。
 
 The load testing client recorded the round trip time for every request made in microseconds, and any errors that occur. This information was then used to produce request scatter plots, histograms, and other statistics. We could tell when a service starts to reach its scaling limits when its average latency and/or 90th percentile starts to climb noticeably — this typically indicated some form of resource starvation.
 
@@ -189,7 +189,7 @@ Three key decisions were made in the Kotlin implementation, that had a strong in
 
 在 Kotlin 的实现中有三个非常重要的因素，它们对最终代码的结构和性能有很大的影响:
 
-* 除了 gRPC-java 本身引入的类似框架的元素外，我们的代码(Token Mint Service)中应该避免引入框架。我们的服务非常简单，我们感觉 Spring Boot、Lagom 或 Vert 之类的框架带来的好处很少，相反这些框架很重，反而会混给实现代码带来复杂性，让我们的工程师对代码产生混淆，特别是对于那些不熟悉 Kotlin 或 JVM 的工程师。因此，系统的初始化逻辑和与数据库的交互应该比使用框架要更加直白。
+* 除了 gRPC-java 本身引入的类似框架的元素外，我们的代码(Token Mint Service)中应该避免引入框架。我们的服务非常简单，我们感觉 Spring Boot、Lagom 或 Vert 之类的框架带来的好处很少，相反这些框架很重，反而会给实现代码带来复杂性，让我们的工程师对代码产生混淆，特别是对于那些不熟悉 Kotlin 或 JVM 的工程师。因此，系统的初始化逻辑和与数据库的交互应该比使用框架要更加直白。
 * 函数式编程库 Arrow 被广泛的应用在促进函数式编程风格，特别是，这两种类型都被广泛使用，而不是使用为错误抛出异常的方式。在方法调用上显式地检查错误，这让代码风格看起来很像 Go 一样，不过 Arrow 的 monad comprehensions 和 flatMap chaining 的使用相比同等的命令式 Go 代码来说，其对可读性的破坏要小一些。
 * 协程与 async/ wait 结合使用，试图简化代码的并发和异步部分。
 
@@ -219,7 +219,7 @@ As a relatively new language that gives the programmer a wide variety of linguis
 
 Some awkward issues were found in using Kotlin coroutines, which are still an experimental part of the language. In particular, composing coroutines with Arrow’s Either type monad comprehensions is difficult. Arrow’s EitherT monad transformer helps but is somewhat magical to a layman.
 
-比较尴尬的是，Kotlin 的协程任然处于实验性阶段，并不完善，所以使用起来有很多顾略。特别是，组合协程和 Arrow 的任意一种类型的理解都是困难的。Arrow 的 EitherT monad 转换器对理解有帮助，但对一个外行人来说，这个可能比较神奇
+比较尴尬的是，Kotlin 的协程仍然处于实验性阶段，并不完善，所以使用起来有很多顾略。特别是，组合协程和 Arrow 的任意一种类型的理解都是困难的。Arrow 的 EitherT monad 转换器对理解有帮助，但对一个外行人来说，这个可能比较神奇
 
 Some of the core Java APIs are starting to show their age, and do not fit well with contemporary asynchronous programming. JDBC is a prime example: operations like acquiring a database connection and dispatching queries are blocking operations. Until the asynchronous successor to JDBC is available, JDBC calls must be made via a separate thread pool to avoid blocking coroutine threads.
 
@@ -297,11 +297,11 @@ We used gruf, written by BigCommerce, to manage gRPC requests. It abstracts out 
 ### 多线程/水平扩展
 Asynchronicity is handled purely at the server level — each request operates in its own thread from the Controller down to the Database calls. The interpreter has a global lock, and therefore more complex threading is generally not idiomatic in application-level Ruby code. This may cause the alternate implementations to scale horizontally more easily.
 
-服务端的处理是完全异步的——从 controller 到数据库死亡调用，每个请求都在自己的线程中运行。解释器有一个全局锁，因此更复杂的线程在 Ruby 应用程序代码中并不常用。相对于 Ruby，其他语言的实现更容易水平扩展。
+服务端的处理是完全异步的——从 controller 到数据库的调用，每个请求都在自己的线程中运行。解释器有一个全局锁，因此更复杂的线程在 Ruby 应用程序代码中并不常用。相对于 Ruby，其他语言的实现更容易水平扩展。
 
 The Docker images are noticeably larger (a comparable deploy image using alpine is still 2.5x the size of the Kotlin or Go containers), but this is not a huge difference in most deployments since only the initial pull to the orchestration will be dealing with the network time.
 
-Docker 映像相对来说明显更大(使用 alpine 的类似部署镜像仍然是 Kotlin 或 Go 容器大小的 2.5 倍)，但在大多数部署中，这并不是很大的差别，因为只有在初始拉取镜像的时候才需要耗用网络处理时间。
+Docker 镜像相对来说明显更大(使用 alpine 的类似部署镜像仍然是 Kotlin 或 Go 容器大小的 2.5 倍)，但在大多数部署中，这并不是很大的差别，因为只有在初始拉取镜像的时候才需要耗用网络处理时间。
 
 Ruby gRPC server (using the official library) does not queue requests (since the merge of this pr), which means that under heavy load it will reject many incoming requests.
 
@@ -333,7 +333,7 @@ Dealing with UUIDs as bytes is not difficult to do, but it is not a first class 
 
 Cryptography in Ruby is generally done through system libraries (Ruby NaCl or OpenSSL), but this project in particular specified Tink. Since Tink is not implemented in Ruby (only in C++, Java, and Go at the time of this posting), multiple imports and handlers were needed to match the other implementations.
 
-Ruby 中的密码学通常通过系统库(Ruby NaCl 或 OpenSSL)来完成，但是这个项目特别指定了 Tink。由于 Tink 不是用 Ruby 实现的(在本文发布时仅用 c++、Java 和 Go 实现)，因此需要多个导入和处理程序来匹配其他实现。
+Ruby 中的加密通常通过系统库(Ruby NaCl 或 OpenSSL)来完成，但是这个项目特别指定了 Tink。由于 Tink 不是用 Ruby 实现的(在本文发布时仅用 c++、Java 和 Go 实现)，因此需要多个导入和处理程序来匹配其他实现。
 
 A major pain point in the syntax of the Ruby generated code has been resolved as of the writing of this analysis: ruby_package can now be used to declare namespaces dynamically, making the Ruby code a bit more idiomatic (release and gRPC pr).
 
