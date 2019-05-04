@@ -55,6 +55,7 @@ You'll notice that this middleware function has a `func(http.Handler) http.Handl
 
 - Because it returns a handler we can register the middleware function directly with the standard ServeMux provided by the net/http package.
 - We can create an arbitrarily long handler chain by nesting middleware functions inside each other. For example:
+
 ```golang
 http.Handle("/", middlewareOne(middlewareTwo(finalHandler)))
 ```
@@ -107,7 +108,7 @@ func main() {
 
 Run this application and make a request to `http://localhost:3000`. You should get log output similar to this:
 
-```golang
+```sh
 $ go run main.go
 2014/10/13 20:27:36 Executing middlewareOne
 2014/10/13 20:27:36 Executing middlewareTwo
@@ -121,7 +122,7 @@ It's clear to see how control is being passed through the handler chain in the o
 We can stop control propagating through the chain at any point by issuing a `return` from a middleware handler.
 
 In the example above I've included a conditional return in the `middlewareTwo` function. 
-Try it by visiting `http://localhost:3000/foo` and checking the log again – you'll see that this time the request gets no further than `middlewareTwo` before passing back up the chain.
+Try it by visiting [http://localhost:3000/foo](http://localhost:3000/foo) and checking the log again – you'll see that this time the request gets no further than `middlewareTwo` before passing back up the chain.
 
 ## Understood. How About a Proper Example
 
