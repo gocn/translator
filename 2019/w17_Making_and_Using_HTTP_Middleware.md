@@ -117,7 +117,7 @@ $ go run main.go
 2014/10/13 20:27:36 Executing middlewareOne again
 ```
 
-It's clear to see how control is being passed through the handler chain in the order we nested them, and then back up again in the reverse direction.
+It's clear to see how control is being passed through the handler chain in the order we nested them, and then back up again in the *reverse direction*.
 
 We can stop control propagating through the chain at any point by issuing a `return` from a middleware handler.
 
