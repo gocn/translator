@@ -1,10 +1,10 @@
 # Go 在成为下一代企业级编程语言的道路上已经步入正轨
 
- [![Go to the profile of Kevin Goslar](https://cdn-images-1.medium.com/fit/c/100/100/0*XdfObs4UVykr8LBr.jpg)](https://hackernoon.com/@kevingoslar?source=post_header_lockup)
-
- [Kevin Goslar](https://hackernoon.com/@kevingoslar)
-
- Apr 11
+- 原文地址：[Go is on a Trajectory to Become the Next Enterprise Programming Language](https://link.medium.com/ikbLXCmmxW)
+- 原文作者： [Kevin Goslar](https://hackernoon.com/@kevingoslar)
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w16_Go_is_on_a_Trajectory_to_Become_the_Next_Enterprise_Programming_Language.md
+- 译者：[Ryan](https://github.com/ryankwak)
+- 校对：[cvley](https://github.com/cvley)
 
 
 
