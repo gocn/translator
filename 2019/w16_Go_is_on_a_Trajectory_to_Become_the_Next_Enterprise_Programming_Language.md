@@ -1,232 +1,258 @@
-# Go is on a Trajectory to Become the Next Enterprise Programming Language
+# Go 在成为下一代企业级编程语言的道路上已经步入正轨
 
- [![Go to the profile of Kevin Goslar](https://cdn-images-1.medium.com/fit/c/100/100/0-XdfObs4UVykr8LBr.jpg)](https://hackernoon.com/@kevingoslar?source=post_header_lockup)
+ [![Go to the profile of Kevin Goslar](https://cdn-images-1.medium.com/fit/c/100/100/0*XdfObs4UVykr8LBr.jpg)](https://hackernoon.com/@kevingoslar?source=post_header_lockup)
 
  [Kevin Goslar](https://hackernoon.com/@kevingoslar)
 
  Apr 11
 
 
-![](https://cdn-images-1.medium.com/max/1600/1-oNcoMWxpNsVqcJE60WDZug.png)
 
-## summary
+![](https://cdn-images-1.medium.com/max/1600/1*oNcoMWxpNsVqcJE60WDZug.png)
 
-Go — a programming language designed for large-scale software development — provides a robust development experience and avoids many issues that existing programming languages have. These factors make it one of the most likely candidates to succeed Java as the dominating enterprise software platform in the future. Companies and open-source initiatives looking for a safe and forward-looking technology choice for creating large-scale cloud infrastructures in the coming decades are well advised to consider Go as their primary programming language. The strengths of Go are that it:
+## 概览
 
-- is based on real-world experience
-- focuses on large-scale engineering
-- focuses on maintainability
-- keeps it simple and straightforward
-- makes things explicit and obvious
-- is easy to learn
-- provides one way to do things
-- allows easy, built-in concurrency
-- provides compute-oriented language primitives
-- uses OO — the good parts
-- has a modern standard library
-- enforces standardized formatting
-- has an extremely fast compiler
-- makes cross compilation easy
-- executes very fast
-- requires a small memory footprint
-- results in a small deployment size
-- deploys completely self-contained
-- vendors dependencies
-- provides a compatibility guarantee
-- encourages good documentation
-- is built as commercially backed open source
+Go - 专为大规模软件开发而生的编程语言 - 提供了健壮性的开发体验并且避免了当前许多其他编程语言本身的问题。这些因素使得 Go 成为未来最有可能战胜 Java 作为企业级软件开发平台主导编程语言的有力候选之一。未来几十年，为创建大规模云基础设施而寻找安全且具有前瞻性的技术选型的公司与开源社区会被建议考虑 Go 作为他们的主力编程语言。Go 语言的优势在于：
 
-Read on for more details about each point. Before committing to Go, however, you should look out for:
+- 基于现实经验
 
-- immature libraries
-- upcoming changes
-- no hard real-time
+- 专注于大型工程
 
-### introduction
+- 专注于稳定性
 
-Go, a programming language developed at Google, has seen a lot of success in the last couple of years. A large portion of modern cloud, networking, and DevOps software is written in Go, for example [Docker](https://www.docker.com/), [Kubernetes](https://kubernetes.io/), [Terraform](https://www.terraform.io/), [etcd](https://github.com/etcd-io/etcd), or [ist.io](https://github.com/istio/istio).[Many companies are using it](https://github.com/golang/go/wiki/GoUsers#united-states) for general-purpose development as well. The capabilities that Go enables have allowed these projects to attract a large number of users, while Go’s ease of use has enabled many contributions.
+- 保持简单直接
 
-Go’s strengths come from combining simple and proven ideas while avoiding many of the problems found in other languages. This blog post outlines some of the design principles and engineering wisdom behind Go to show how — taken together — they qualify it as an excellent candidate to become the next large-scale software development platform. Many languages are stronger in individual areas, but no other language scores so consistently well when looking at all of them combined, especially in regards to large-scale software engineering.
+- 明确且清晰
 
-### Based on real-world Experience
+- 易学
 
-Go was created by experienced software industry veterans who have felt the pain from shortcomings of the existing languages for a long time. Rob Pike and Ken Thompson played a major role in the invention of Unix, C, and parts of Unicode many decades ago. Robert Griesemer has decades of experience around compilers and garbage collection after working on the V8 and HotSpot virtual machines for JavaScript and Java. Motivated by one too many times [they had to wait for their Google-sized C++/Java code bases to compile](http://radar.oreilly.com/2012/09/golang.html), they set out to create one more programming language that contains everything they learned through half a century of writing code.
+- 提供了一种解决问题的方式
 
-### Focus on large-scale Engineering
+- 内置简洁的并发处理
 
-Small engineering projects can be built successfully in pretty much any programming language. The really painful problems happen when thousands of developers collaborate under constant time pressure over decades on massive code bases containing tens of millions of lines of code. This leads to problems like:
+- 围绕计算的语言单元
 
-- long compile times interrupt development
-- the code base has been owned by several people/teams/departments/companies, mixing different programming styles
-- the company employs thousands of engineers, architects, testers, Ops specialists, auditors, interns, etc who need to understand the code base but have a wide range of coding experience
-- dependency on lots of external libraries or runtimes, some of them no longer existing in their original form
-- each line of code has been [rewritten an average of 10 times](https://www.ybrikman.com/writing/2018/08/12/the-10-to-1-rule-of-writing-and-programming) over the course of the lifetime of the code base, leaving scars, warts, and [technical drift](https://codeclimate.com/blog/are-you-experiencing-technical-drift/)
-- incomplete documentation
+- 使用面向对象模型
 
-Go focuses on [alleviating these large-scale engineering pains](https://talks.golang.org/2012/splash.article), sometimes at the cost of making engineering in the small a bit more cumbersome, for example by requiring a few extra lines of code here and there.
+- 现代化的标准库
 
-### Focus on Maintainability
+- 强制标准格式化
 
-Go emphasizes offloading as much work as possible to automated code maintenance tools. The Go toolchain provides the most frequently needed functionality like formatting code and imports, finding definitions and usages of symbols, simple refactorings, and identification of code smells. Thanks to standardized code formatting and a single idiomatic way of doing things, machine-generated code changes look very close to human-generated changes in Go and use similar patterns, allowing more seamless collaboration of humans and machines.
+- 编译器极快
 
-### Keep it Simple and Straightforward
+- 使得交叉编译非常简单
 
-> _Junior programmers create simple solutions to simple problems. Senior programmers create complex solutions to complex problems. Great programmers find simple solutions to complex problems._ — [_Charles Connell_](http://www.chc-3.com/pub/beautifulsoftware_v10.htm)
+- 执行速度快
 
-Many people are surprised that Go doesn’t contain concepts they love in other languages. Go is indeed a very small and simple language that contains only a minimal selection of orthogonal and proven concepts. This encourages developers to write the simplest possible code with the least amount of cognitive overhead so that many other people can understand and work with it.
+- 需要的内存少
 
-### Make things Explicit and Obvious
+- 部署文件小
 
-> _Good code is obvious, avoids cleverness, obscure language features, twisted control flow, and indirections._
+- 完全自包含部署
 
-Many languages focus on making it efficient to write code. However, over the course of its lifetime, people will have spent far (100x) more time reading code than was needed to write it in the first place. Examples are to review, understand, debug, change, refactor, or reuse it. When looking at code, one typically only sees and understands small parts of it, often without a complete overview of the entire code base. To account for this, Go makes everything explicit.
+- 供应商依赖
 
-An example is error handling. It would be easier to just let exceptions interrupt code at various points and bubble up the call chain. Go requires to [handle or return each error manually](https://tour.golang.org/methods/19). This makes it explicit exactly where code can be interrupted and how errors are handled or wrapped. Overall, this makes error handling more cumbersome to write but easier to understand.
+- 保证兼容性
 
-### Easy to Learn
+- 文档完善
 
-Go is so small and simple that the entire language and its underlying concepts can be studied in just a couple of days. In our experience, after no more than a week of training (compared to months in other languages) Go beginners can make sense of code written by Go experts and contribute to it. To make it easy to ramp up large numbers of people, the Go website provides all the tutorials and in-depth articles needed. These tutorials run in the browser, allowing people to learn and play with Go before even installing it on their local machine.
+- 商业支持的开放源码
 
-### One Way to do Things
+继续阅读详细内容。但是投入 Go 怀抱之前你需要注意：
 
-> _Go empowers teamwork over individual self-expression._
+- 库不够成熟
 
-In Go (and Python) all language features are orthogonal and complementary to each other and there is usually one way to do something. If you ask 10 Python or Go programmers to solve a problem, you’ll get 10 relatively similar solutions. The different programmers feel more at home in each other’s code bases. There are fewer [WTFs per minute](https://www.osnews.com/story/19266/wtfsm) when looking at other people’s code, and people’s work fits better into each other, adding up to a consistent whole that everybody is proud of and enjoys working on. This avoids large-scale engineering problems like:
+- 随之而来的变化
 
-- Developers dismiss good working code as “messy” and demand to rewrite it before they can work on it because they don’t think in the same way as the original author.
-- Different team members write parts of the same code base in different subsets of the language.
+- 没有硬实时
 
+### 介绍
 
+Go，是由 Google 开发的一门编程语言，在过去的几年中已经收获了非常大的成功。现代云基础设施，网络，运维开发软件大部分都是用Go写的。例如，[Docker](https://www.docker.com/), [Kubernetes](https://kubernetes.io/), [Terraform](https://www.terraform.io/), [etcd](https://github.com/etcd-io/etcd), or [ist.io](https://github.com/istio/istio)。[许多公司正在使用] Go 进行日常的开发。Go的这些特性使得这些项目吸引了很多的用户来参与，同时 Go 的易用性也让参与贡献代码变得简单。
 
-![](https://cdn-images-1.medium.com/max/1600/1-5RhyUqWmrXugwrjchoA5rA.jpeg)
+Go 的长处来自于综合了简单性且可靠性俩种优势，同时又避免了在其他语言中发现的许多问题。这篇博客介绍了一些 Go 背后的设计原则与工程智慧，来解释一下其如何被视为下一个构建大规模软件开发平台编程语言的有力竞争者。许多语言在各自单独的领域都很强大，但是当把它们结合起来看时，没有一门语言能像 Go 一样在诸多领域得分能如此一致，尤其是在大型软件工程方面。
+
+### 基于现实经验
+
+Go 是由经验丰富的软件开发老兵们创造的一门语言，他们在工作中长期受制于其他编程语言的短板并感觉很不爽。Rob Pike 和 Ken Thompson 在 Unix ， C 语言 以及多年之后的 Unicode 编码的创建过程中扮演了重要的角色。Robert Griesemer 有着丰富的编译器与垃圾回收（ GC ）处理经验，曾长期致力于 Javascript V8 和 Java HotSpot 虚拟机开发。在 Google 工作时，他们常常不得不等待大量的 C++/Java 代码编译完成，次数一多，他们决定自己编写一门语言来解决这个问题，想必这门语言也包含了他们半个世纪以来写代码的的内功。
+
+### 专注于大型工程
+
+小的工程项目能够使用非常多的编程语言编译成功。当有数以千计的开发者在持续的时间压力和包含数十百万行代码的大量基础代码库长时间负荷之下，非常痛苦的问题这时就发生了。这导致的问题比如：
+
+- 长时间的编译过程中断了开发进程
+
+- 代码库归许多个人/团队/部门/公司所有，融合了不同的代码风格。
+
+- 公司雇佣了数千个开发工程师，架构师，测试工程师，运维专家，审核人员，实习生，等等，他们需要理解代码库并且有各种编码体验。
+
+- 依赖了大量了的内部代码库和运行时，其中有些代码已经不是原来的模样。
+
+- 代码库的生命周期中，平均每行代码都被重写了十次，会留下缺陷和技术隐患。
+
+- 文档不完备
+
+Go 致力于减轻构建大规模工程带来的痛苦(https://talks.golang.org/2012/splash.article),有时候会以付出一些小的麻烦为代价，比如不时地要添加一些额外的代码行。
+
+### 专注稳定性
+
+Go 强调尽可能将工作都转移给自动化的代码维护工具。Go 工具链提供了最常用的功能，比如代码格式化和导入代码，查找符号的定义和用法、简单的重构和代码识别。由于标准化的代码格式和一种惯用的代码风格，在Go中，由机器生成的代码看起来非常接近于人工编写的，而且使用这种模式，人和机器之间可以无缝协作。
+
+### 保持简单直接
+
+> _初级程序员面对简单的问题会给出简单的解决方案。高级程序员面对复杂的问题会给出复杂的解决方案。伟大的程序员面对复杂的问题会给出简单的解决方案。— _[_Charles Connell_](http://www.chc-3.com/pub/beautifulsoftware_v10.htm)
+
+许多人往往惊讶于 Go 并没有包含他们在其他语言中所喜爱的一些概念。Go 本质上就是一门精巧且非常简洁的语言，只包含非常可靠的少数一些概念和特性。这鼓励开发人员用最少的认知开销编写尽可能简单的代码，以便其他人能够理解并使用它。
+
+### 明确清晰
+
+> _好的代码是显而易见的，没有什么小聪明以及晦涩的语言特性、混乱的控制流和间接性。
+
+许多语言都致力于提高代码的编写效率。然而，在代码生命周期中，阅读代码的时间会远远超过最初编写代码所需的时间(100倍)。包括检查、理解、调试、更改、重构或重用。在查看代码时，通常只看到并理解其中的一小部分，通常不会完整地查看整个代码库。考虑到这一点，Go把所有内容都给明确了。
+
+错误处理就是一个不错的例子。让异常在断点处中断并抛出调用链会更简单。Go需要 [手动处理和返回每一个 error](https://tour.golang.org/methods/19)。这使得代码中断，错误处理非常清晰。总的来说，虽然错误处理编写起来更麻烦，但是更容易理解。
+
+### 易学
+
+Go 是如此的精巧简单，整个语言和它的基本概念在几天内就能学完。根据我们的经验，经过不超过一周的训练(相比于其他语言的几个月)，Go 初学者就能理解 Go 专家编写的代码，并为之做出贡献。为了吸引更多的人，Go 网站提供了学习需要的教程和进阶的文章。这些教程在浏览器里面运行，甚至允许学习者在将 Go 安装到本地机器之前就能学习和使用它。
+
+### 万法归一
+
+> _Go 给团队合作赋能，而不是单兵作战。_
+
+在 Go ( Python )中，所有的语言特性都是互相交叉和互补的，并且通常只有一种方法可以做一些事情。如果你让10个 Python 或 Go 程序员来解决一个问题，你会得到10个相对相似的解决方案。不同的程序员在彼此的代码库中感觉更自在。当查看其他人的代码时，每分钟有更少的[WTFs](https://www.osnews.com/story/19266/wtfsm)，而且程序员们的工作更加和谐，这就形成了一个统一的整体，每个人都为之自豪，并享受工作的过程。下面的特点避免了大型工程问题：
+
+- 开发人员会将当前的工作代码当成是“混乱的”状态，并要求在开始工作之前重写代码，因为他们认为自己的思维方式与代码原始作者不同。
+- 不同的团队成员用不同的语言子集编写相同代码库的部分代码。
+
+![](https://cdn-images-1.medium.com/max/1600/1*5RhyUqWmrXugwrjchoA5rA.jpeg)
 
 source: [https://www.osnews.com/story/19266/wtfsm](https://www.osnews.com/story/19266/wtfsm/)
 
-### easy, built-in concurrency
+### 简单且内置并发
 
-> _Go is designed for modern multi-core hardware._
+> _Go 是为现代多核硬件设计而生。
 
-Most programming languages in use today (Java, JavaScript, Python, Ruby, C, C++) have been designed in the 1980s-2000s when most CPUs had only one compute core. That’s why they are single-threaded in nature and treat parallelization as an afterthought for edge cases, implemented via add-ons like threads and sync points that are cumbersome and difficult to use correctly. Third-party libraries offer easier forms of concurrency like the Actor model but there are always multiple options available, causing fragmentation of the language ecosystem. Today’s hardware has increasing numbers of compute cores and software must be parallelized to run efficiently on it. Go was written in the age of multi-core CPUs and has easy, high-level [CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)-style concurrency built into the language.
+目前使用的大多数编程语言(Java、JavaScript、Python、Ruby、C、c++)都是在20世纪80年代至21世纪初设计的，当时大多数 CPU 只有一个计算核心。
+这就是为什么它们本质上是单线程的，并将并行化作为边缘情况在之后在添加进去，通过诸如线程和同步点之类的附加组件来实现，而这些附加组件既笨重又难以正确使用。
 
-### Compute-oriented Language Primitives
+第三方库提供了更简单的并发形式，比如 Actor 模型，但是总是有多个可用选项，这导致了语言生态系统的碎片化。
+今天的硬件有越来越多的计算核心，软件必须并行化才能有效地运行。
+Go 是在多核 CPU 时代编写的，它内置了简单、高级的[CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)风格的并发模型。
 
-On a fundamental level, computer systems receive data, massage it (often over several steps), and output the resulting data. As an example, a web server receives an HTTP request from a client and transforms it into a series of database or backend calls. Once these calls return, it transforms the received data into HTML or JSON and outputs it to the caller. Go’s built-in language primitives support this paradigm directly:
+### 围绕计算的语言单元
 
-- structs represent data
-- readers and writers represent streaming IO
-- functions process data
-- goroutines provide (almost unlimited) concurrency
-- channels pipe data between concurrent processing steps
+在基本层面上，计算机系统接收数据，对其进行处理(通常经过几个步骤)，然后输出处理结果。例如，web 服务器接收来自客户机的 HTTP 请求，并将其转换为一系列数据库查询或后端调用。一旦这些调用返回，它将把接收到的数据转换成 HTML 或 JSON 并将其输出给调用者。Go 内置的语言特性直接支持这个范例:
 
-Because all compute primitives are provided in a direct form by the language, Go source code expresses what a server does more directly.
+- 以结构体表示数据
+- readers 和 writers 代表了 IO 流
+- 用函数处理数据
+- 使用 goroutine 提供(几乎无限)的并发性
+- 在并发处理步骤之间使用channel传输数据
 
-### OO — the good parts
+因为所有的计算原语都是由语言层面直接提供的，所以Go源代码更直接地包含了服务器的功能。
 
+### 面向对象
 
-![](https://cdn-images-1.medium.com/max/1600/1-HzxrebFDiPqElPZIokHdoA.gif)
+![](https://cdn-images-1.medium.com/max/1600/1*HzxrebFDiPqElPZIokHdoA.gif)
 
-side effects of changing something in a base class
+在基类上进行更改的副作用
 
-Object-orientation is incredibly useful. The last decades of using it have been productive and given us insights about which parts of it scale better than others. Go takes a fresh approach at object-orientation with those learnings in mind. It keeps the good parts like encapsulation and message passing. Go avoids inheritance because it is now [considered harmful](https://www.javaworld.com/article/2073649/why-extends-is-evil.html) and provides [first-class support for composition](https://golang.org/doc/effective_go.html#embedding) instead.
+面向对象毫无疑问非常有用。过去几十年业界使用面向对象确实生产效率高，也让我们发现了其实面向对象并不都是非常完美的，只能说是一小部分比其他的方面要好很多。Go 使用了一种非常良好的面向对象的思考方式。它保留了封装以及消息传递这样的优秀特点但是避免了使用继承这一概念，因为在设计者们的眼里这被认为是有害的，相反使用组合来进行替代。
 
-### Modern Standard Library
+### 现代标准库
 
-Many of the currently used programming languages (Java, JavaScript, Python, Ruby) were designed before the internet was the ubiquitous computing platform it is today. Hence, the standard libraries of these languages provide only relatively generic support for networking that isn’t optimized for the modern internet. Go was created a decade ago when the internet was already in full swing. Go’s standard library allows creating even sophisticated network services without third-party libraries. This prevents the usual problems with third-party libraries:
+许多目前被广泛使用的编程语言（Java, JavaScript, Python, Ruby）都是在网络成为普遍的计算平台之前被设计出来的。所以这些语言的标准库提供的网络方面的原生支持并没有针对现代互联网架构进行过优化。Go相比而言是几十年后被发明出来的语言，此时的互联网早已腾飞。 Go 的标准库甚至支持不使用第三方库直接构建一个复杂的网络服务。这可以避免一些第三方库带来的普遍的问题：
 
-- **fragmentation:** there are always multiple choices implementing the same functionality
-- **bloat:** libraries often implement more than what they are used for
-- **dependency hell:** libraries often depend on other libraries at specific versions
-- **unknown quality:** third-party code can have questionable quality and security
-- **unknown support:** development of third-party libraries can stop at any time
-- **unexpected changes:** third-party libraries are often not as rigorously versioned as standard libraries
+- **支离破碎:** 总是有多种不同的方式实现同一种功能
+- **功能过度:** 第三方库通常要实现超出它们本来使用的方式的功能
+- **依赖层:** 第三方库之间相互依赖某个特定的版本
+- **质量未知:** 第三方代码通常质量和安全性得不到保障
+- **支持不够:** 第三方库的开发随时可能终止
+- **更新未知:** 第三方库通常没有标准库那样进行规律性的版本更新
 
-[More background](https://research.swtch.com/deps) on this by Russ Cox.
+[更多背景知识参考](https://research.swtch.com/deps)Russ Cox的这篇博文。
 
-### Standardized Formatting
+### 标准格式化
 
-> _Gofmt’s style is nobody’s favorite, but gofmt is everybody’s favorite. — Rob Pike_
+> _Gofmt风格不一定大家都喜欢但是gofmt能格式化代码这一特性每个人都喜欢。 — Rob Pike_
+Gofmt是一种能将 Go 代码给格式化的程序。这并不是格式化最优雅的解决方式但却是最简单最让没有争议的方式。标准化的源代码格式化有非常积极的作用。
 
-Gofmt is a program that formats Go code in a standardized way. It is not the prettiest way of formatting, but the simplest and least disagreeable one. Standardized source code formatting has a surprising amount of positive effects:
+1.  **聚焦重要议题：**它消除了一系列[bike-shed]（https://en.wikipedia.org/wiki/law-of-triviality）关于制表符与空格、缩进深度、行长、空行、花括号位置等的争论。
+2.  **开发者就像感觉回到家了一样自然地面对其他同事的代码仓库**因为看起来他们写的代码和自己写的非常的类似。每一个开发者都喜欢按照自己的风格来自由地格式化自己的代码。但是不喜欢其他开发者对自己的代码这么做。
+3.  **自动化的代码更改** 不要弄乱手写代码的格式，例如，通过引入意料之外的空白格更改。
+现在，其他许多语言社区正在开发与gofmt等价的功能。当作为第三方解决方案构建时，通常有几个相互竞争的格式标准。例如，javascript世界提供了[prettier]（https://prettier.io/）和[standardjs]（https://standardjs.com/）。可以使用其中之一或一起用。许多 JS 项目都不采用它们，因为这是一个额外的方案。Go 的格式化程序内置于语言的标准工具链中，因此只有一个标准，每个人都使用这种方式。
 
-1.  **focus conversations on important topics:** it eliminates a whole array of [bike-shed](https://en.wikipedia.org/wiki/Law_of_triviality) debates around tabs vs spaces, indentation depth, line length, empty lines, placement of curly braces, and others.
-2.  **developers feel at home in each others code bases** because other code looks a lot like code they would have written. Everybody loves having the liberty to format code the way they prefer, but everybody hates it if others take the liberty to format code the way they prefer.
-3.  **automated code changes** don’t mess up the formatting of hand-written code, for example by introducing accidental whitespace changes.
+### 编译极快
 
-Many other language communities are developing gofmt equivalents now. When built as third-party solutions, there are often several competing formatting standards. The JavaScript world, for example, offers [Prettier](https://prettier.io/) and [StandardJS](https://standardjs.com/). One can use either or both together. Many JS projects adopt none of them because it is an extra decision to make. Go’s formatter is built into the standard toolchain of the language, so there is only one standard and everybody is using it.
-
-### Fast Compilation
-
-
-![](https://cdn-images-1.medium.com/max/1600/0-XEJeEXJHvRouzOZy)
+![](https://cdn-images-1.medium.com/max/1600/0*XEJeEXJHvRouzOZy)
 
 source: [https://xkcd.com/303](https://xkcd.com/303/)
 
-Long compilation times for large code bases was the drop in the bucket that sparked Go’s genesis. Google uses mostly C++ and Java, which compile relatively quickly compared to more sophisticated languages like Haskell, Scala, or Rust. Still, when compiling large code bases even small amounts of slowness compound to infuriating and flow-disrupting compilation delays. Go is designed from the ground up to make compilation efficient and as a result its compiler is so fast that there are almost no compilation delays. This gives a Go developer instant feedback similar to scripting languages, with the added benefits of static type checking.
+大型代码库编译时间长只是促成 Go 语言诞生的一小部分原因。谷歌主要使用C++和Java，与Haskell、Scala或Rust等更复杂的语言相比，C++ 与 Java 编译器的编译速度相对更快。尽管如此，在编译大型代码库时，即使只有少量代码编译缓慢也会导致令人愤怒的编译延迟甚至中断。Go 的设计初衷就是为了提高编译效率，因此它的编译器速度非常之快，几乎没有编译延迟。这给了 Go 开发人员脚本语言一般的即时反馈体验，而且也支持静态类型检查。
 
-### Cross-compilation
+### 交叉编译
+因为 Go 语言运行时非常简单，它已经被移植到许多平台上，如 MacOS、Linux、Windows、BSD、ARM 等等。 Go 可以开箱即用地为所有这些平台编译二进制文件。这使得单个机器部署代码变得简单。
 
-Because the language runtime is so simple, it has been ported to many platforms like macOS, Linux, Windows, BSD, ARM, and more. Go can compile binaries for all these platforms out of the box. This makes deployment from a single machine easy.
+### 极快地执行速度
 
-### Fast Execution
+Go 的运行速度与 C 语言差不多快，不像 JIT 语言（Java、JavaScript、Python等），Go 二进制文件不需要启动或预热时间，因为它们以编译好且完全经过优化的本机代码形式进行传输。Go 垃圾收集器引入了[微秒]级别的暂停机制，几乎可以忽略不记（https://twitter.com/brianhatfield/status/80435581080751104）。在其高效的单核性能基础之上，Go能够利用所有CPU核心[简单]（https://tour.golang.org/concurrency/1）。
 
-Go runs close to the speed of C. Unlike JITed languages (Java, JavaScript, Python, etc), Go binaries require no startup or warmup time because they ship as compiled and fully optimized native code. The Go garbage collector introduces only negligible pauses in the order of [microseconds](https://twitter.com/brianhatfield/status/804355831080751104). On top of its fast single-core performance, Go makes utilizing all CPU cores [easy](https://tour.golang.org/concurrency/1).
+### 超小的内存占用
 
-### Small Memory Footprint
+运行时（如 JVM, Python, 或 Node）不只是在运行程序时加载程序代码。它们还加载超多且非常复杂的程序基础结构代码，以便在每次运行程序时对其进行编译和优化。这会使它们的启动时间变慢，并导致它们使用大量（数百MB）的RAM。Go 进程的开销更少，因为它们已经被编译和优化好了，只需要运行即可。Go 也可以[用非常节省内存的方式存储数据]（https://dave.cheney.net/2014/06/07/Five Things That Make Go Fast）。在内存有限且昂贵的云环境中，在开发过程中，我们希望在单台机器上快速启动整个堆栈，同时留足够内存给其他软件，这一点非常重要。
 
-Runtimes like the JVM, Python, or Node don’t just load your program code when running it. They also load large and highly complex pieces of infrastructure to compile and optimize your program each time you run it. This makes their startup time slower and causes them to use large amounts (hundreds of MB) of RAM. Go processes have less overhead because they are already fully compiled and optimized and just needs to run. Go also [stores data in very memory-efficient ways](https://dave.cheney.net/2014/06/07/five-things-that-make-go-fast). This is important in cloud environments where memory is limited and expensive, as well as during development where we want to boot up an entire stack on a single machine quickly while leaving memory for other software.
+### 部署文件小
 
-### Small Deployment Size
+Go 二进制文件非常精炼。一个 Go 应用程序的DOCKER镜像相比 Java 或 Node 编写的同样的程序通常只有他们的[10分之一甚至更小]（HTTPS://DekLayely.com／2017／03／09／selecting-a-node-js-image-for-docker），因为它不需要包含编译器、 JIT 且运行时基础结构更少。这在部署大型应用程序时很重要。想象一下，在100台生产服务器上部署一个简单的应用程序。当使用 Node/JVM 时，我们的 Docker 注册仓库必须以200 MB每台总计20 GB的总容量为100个 Docker 映像提供服务。这需要一定时间才能搞定，假设我们一天要部署100次。使用 Go 服务时，Docker 注册仓库只需在每台20 MB共2 GB 时提供100个 Docker 镜像。大型 Go 应用程序可以更快、更频繁地部署，允许重要的更新更快地进入生产环境。
 
-Go binaries are very concise in size. A Docker image for a Go application is often over [10x smaller](https://derickbailey.com/2017/03/09/selecting-a-node-js-image-for-docker) than the equivalent written in Java or Node because it doesn't need to contain compilers, JITs, and less runtime infrastructure. This matters when deploying large applications. Imagine deploying a simple application onto 100 production servers. When using Node/JVM, our docker registry has to serve 100 docker images @ 200 MB = 20 GB in total. This will take some time to serve. Imagine we want to deploy 100 times a day. When using Go services, the Docker registry only has to serve 100 docker images @ 20 MB = 2 GB. Large Go applications can be deployed faster and more frequently, allowing important updates to reach production faster.
+### 自容器化部署
 
-### Self-contained Deployment
+Go 应用程序被部署为一个包含所有依赖包的可执行文件。不需要安装特定版本的 JVM、Node或Python运行时。无需将库下载到生产服务器上。不需要对运行 Go 二进制文件的机器进行任何更改。甚至不需要将 Go 二进制文件包装到 Docker 中来共享它们。只需将 Go 二进制文件放到服务器上，它就可以在服务器上运行，而不管该服务器上运行的其他程序。上面表述的唯一例外是在使用`net`和`os/user`包时针对`glibc`进行动态链接会需要特别处理。
 
-Go applications are deployed as a single executable file that includes all dependencies. No JVM, Node, or Python runtime at a specific version needs to be installed. No libraries have to be downloaded onto production servers. No changes to the machine running the Go binary have to be made at all. It isn’t even necessary to wrap Go binaries into Docker to share them. You just drop a Go binary onto a server and it will run there no matter what else is running on that server. The only exception to the above statement is dynamic linking against `glibc` when using the `net` and `os/user` packages.
+### 第三方依赖
 
-### Vendoring Dependencies
+Go刻意没有为第三方库建立中央仓库。Go应用程序直接链接到各自的Git仓库，并将所有相关代码下载到各自的代码库中（“依赖”）。这有许多好处：
+- 我们可以在使用第三方代码之前对其进行审查、分析和测试。这些代码与我们自己的代码一样是我们应用程序的一部分，并且应该有相同的质量、安全性和可靠性标准。
+- 不需要永久访问存储着依赖包的各个位置。从任何地方获取一次第三方库（包括私有 git 仓库），您就可以永远拥有它们。
+- checkout后，不需要进一步下载依赖包来编译代码库。
+- 如果互联网上某个地方的代码库突然出现了不同的代码，其实并不受影响。
+- 即使包存储仓库连接速度慢甚至时托管包不再存在，部署也不会中断。
 
-Go intentionally avoids a central repository for third-party libraries. Go applications link directly to the respective Git repositories and download (“vendor”) all dependent code into their own code base. This has many advantages:
+### 兼容性保证
 
-- We can review, analyze, and test third-party code before using it. This code is as much a part of our application as our own code and should conform to the same quality, security, and reliability standards.
-- No need for permanent access to the various locations that store dependencies. Get your third-party libraries from anywhere (including private Git repos) once and you have them forever.
-- No further downloads of dependencies are necessary to compile the code base after checkout.
-- No surprises if a code repository somewhere on the internet suddenly serves different code.
-- Deployments never break, even if package repositories slow down or hosted packages cease to exist
+Go 团队[承诺]（https://golang.org/doc/go1compat）现有程序会兼容新版本的 Go 语言。这使得将大型项目升级到更新版本的编译器变得容易，并且能受益于它们带来的许多性能和安全性方面的改进。同时，由于Go二进制文件包含了它们需要的所有依赖，因此可以在同一台服务器计算机上并行运行使用不同版本的 Go 编译器编译的二进制文件，而无需复杂地设置多个版本的运行时或虚拟化。
 
-### Compatibility Guarantee
+### 文档
 
-The Go team [promises](https://golang.org/doc/go1compat) that existing programs will continue to work on newer generations of the language. This makes it easy to upgrade even large projects to newer versions of the compiler and benefit from the many performance and security improvements they bring. At the same time, thanks to the fact that Go binaries include all the dependencies they need, it is possible to run binaries compiled with different versions of the Go compiler side by side on the same server machine, without the need for a complex setup of multiple versions of runtimes or virtualization.
+在大型工程中，文档对于软件实用性和可维护性而言就变得非常重要。与其他特点类似，Go语言文档简单且实用：
 
-### Documentation
+- 嵌入在源代码中，以便可以同时维护。
+- 无需特殊的语法-文档只是普通的源代码注释。
+- 可运行的单元测试通常是最好的文档形式，所以 Go 允许你[将它们嵌入文档中]（https://blog.golang.org/examples）。
+- 所有文档[工具]（https://blog.golang.org/godoc documenting go code）都构建在工具链中，因此每个人都能使用它们。
+- Go-Linter要求文档必须及时更新，以防止“文档债务”的累积。
 
-When engineering in the large, documentation becomes important to make software accessible and maintainable. Similar to the other features, documentation is simple and pragmatic in Go:
+###商业支持的开源
 
-- It is embedded in the source code so that both can be maintained at the same time.
-- It requires no special syntax — documentation is just normal source code comments.
-- Runnable unit tests are often the best form of documentation, so Go let’s you [embed them into the documentation](https://blog.golang.org/examples).
-- All the documentation [utilities](https://blog.golang.org/godoc-documenting-go-code) are built into the toolchain and therefore everybody uses them.
-- The Go linter requires documentation for exported elements to prevent the build-up of “documentation debt”.
+当商业实体在开放的环境中进行开发时，就会出现一些最流行的、经过彻底设计的软件。此模式结合了商业软件开发的优势-系统持续更新迭代而更加具有鲁棒性可靠性。而开源的优势就是能受到更多行业更多社区更多用户的广泛，甚至是商业支持中断开源社区也能长期继续开发。Go 就是这样发展起来的。
 
-### Commercially Backed Open Source
+### 缺憾
 
-Some of the most popular and thoroughly engineered software happens when commercial entities develop in the open. This setup combines the strengths of commercial software development — consistency and polish to make a system robust, reliable, and performant — with the strengths of open development like widespread support across many industries, support from multiple large entities and many users, and long-term support even if commercial backing stops. Go is developed this way.
+当然，Go 并不完美，每一种技术选型总是有利弊。下面几点是你考虑投入 Go 怀抱之前需要注意的：
 
-### Disadvantages
+### 不成熟度
 
-Of course, Go is not perfect and there are always pros and cons with every technical choice. Here is a small selection of areas to consider before committing to Go.
+虽然 Go 的标准库在支持许多新特性方面处于行业领先地位，例如[HTTP 2 Server Push]（http s://blog.golang.org/h2push），但与 JVM 生态系统中目前的情况相比，可供使用外部 API 的第三方库可能还不太成熟。
 
-### Immaturity
+###即将发生的更改
 
-While Go’s standard library is industry-leading in supporting many new concepts like [HTTP 2 server push](https://blog.golang.org/h2push), third-party Go libraries for external APIs can be less mature compared to what exists for example in the JVM ecosystem.
+你要知道几乎不可能更改现有的语言元素，Go 团队小心地只在完全开发好之后才添加新特性。经过10年的稳定期，Go 语言开发团队正在考虑进行一系列[更大的改进]（https://blog.golang.org/go2draft）并将其作为 Go 2.0大版本的其中一部分。
 
-### Upcoming Changes
+### 没有硬实时概念
 
-Knowing that it is almost impossible to change existing language elements, the Go team is careful to only add new features once they are fully developed. After an intentional phase of 10 years of stability, the Go team is contemplating a set of [larger improvements](https://blog.golang.org/go2draft) to the language as part of the journey towards Go 2.0.
+虽然 Go 的垃圾收集器只引入了非常短的中断机制，但是支持硬实时需要不引入垃圾收集的技术，例如 Rust 。
 
-### No Hard Real-time
+### 结论
 
-While Go’s garbage collector introduces only very short interruptions, supporting hard real-time requires technologies without garbage collection like for example Rust.
-
-### Conclusion
-
-This blog post has given some background on the wise but often not so obvious choices that went into the design of Go and how they will save large engineering projects from many pains as their code bases and teams grow orders of magnitudes. Taken as a whole, they position Go as an excellent choice for large development projects looking for a modern programming language beyond Java.
+这篇博客文章提供了一些背景知识，讲解了 Go 的设计理念，以及如何在代码库和团队呈数量级增长的同时，将开发大型工程项目从痛苦中撤身出来，但这并不是在给出明确的选择。整体而言，对于开发大型项目，想要在 Java 之外寻找一门现代编程语言，Go 绝对是非常好的选择。
