@@ -9,13 +9,13 @@
 
 在构建 Web 应用程序时，可能需要为很多（甚至所有）的 HTTP 请求运行一些共有的函数。在执行一些繁重的处理之前，你可能想给每个请求记录日志，用 gzip 压缩每个返回数据或者检查缓存。
 
-实现这种共有函数的一种方法是将其设置为中间件，它是在正常的应用处理程序之前或之后用自包含代码的方式独立地处理请求。在 Go 中，使用中间件的常见位置是 ServeMux 和应用处理程序之间，因此 HTTP 请求的控制流程如下所示：
+实现这种共有函数的一种方法是将其设置为中间件，它在正常的应用处理程序之前或之后用自包含代码的方式独立地处理请求。在 Go 中，使用中间件的常见位置是 ServeMux 和应用处理程序之间，因此 HTTP 请求的控制流程如下所示：
 
 ```sh
 ServeMux => Middleware Handler => Application Handler
 ```
 
-在这篇文章中，我将解释如何实现在这种模式下运行的自定义的中间件，以及运行使用第三方中间件的一些具体示例。
+在这篇文章中，我将解释如何实现这种模式下的自定义中间件，并运行一些使用第三方中间件的具体示例。
 
 ## 基本原则
 
@@ -121,7 +121,7 @@ $ go run main.go
 
 我们随时可以通过让中间件处理程序使用`return`来停止控制在链中的传播。
 
-在上面的例子中，我在`middlewareTwo`函数中包含了一个满足条件的返回。尝试访问[http://localhost:3000/foo](http://localhost:3000/foo)并再次检查日志 - 你会看到，这次请求在通过中间件链的时候不会超过`middlewareTwo`。
+在上面的例子中，我在`middlewareTwo`函数中包含了一个满足条件的返回。尝试访问[http://localhost:3000/foo](http://localhost:3000/foo)并再次检查日志 - 你会看到，这次请求在通过中间件调用链的时候不会超过`middlewareTwo`。
 
 ## 理解了吗，再来一个恰当的例子如何
 
@@ -295,13 +295,13 @@ func final(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-在这样一个简单的例子中，我们的代码相当清楚。但是，如果我们想将`LoggingHandler`作为更长的中间件链的一部分，会发生什么？我们很容易得到一个看起来像这样的声明……
+在这样一个简单的例子中，我们的代码相当清楚。但是，如果我们想将`LoggingHandler`作为更长的中间件调用链的一部分，会发生什么？我们很容易得到一个看起来像这样的声明……
 
 ```golang
 http.Handle("/", handlers.LoggingHandler(logFile, authHandler(enforceXMLHandler(finalHandler))))
 ```
 
-……这让我的脑袋疼！
+……这种方式真是让我很头疼！
 
 一种让它更清晰的方法是使用签名`func(http.Handler) http.Handler`来创建一个构造函数（命名为`myLoggingHandler`）。这会使得它与其他中间件的嵌套更整洁：
 
@@ -331,7 +331,7 @@ $ cat server.log
 127.0.0.1 - - [21/Oct/2014:18:56:43 +0100] "PUT / HTTP/1.1" 200 2
 ```
 
-如果你有兴趣，这里把该文章的[3 个中间件处理函数](https://gist.github.com/alexedwards/6f9496caecb2996ac61d)的要点结合在了一个例子。
+如果你有兴趣，这里给出一份把该文章的[3 个中间件处理函数](https://gist.github.com/alexedwards/6f9496caecb2996ac61d)的要点结合在了一个例子。
 
 边注：注意`Gorilla LoggingHandler`正在记录日志中的响应状态（`200`）和响应长度（`2`）。这比较有趣，上游日志记录中间件怎么获取了应用处理程序写入的响应体的信息？
 
