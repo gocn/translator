@@ -7,9 +7,9 @@
 - 译者：[咔叽咔叽](https://github.com/watermelo)
 - 校对：[fivezh](https://github.com/fivezh)
 
-在构建 Web 应用程序时，可能需要为很多（甚至所有）的 HTTP 请求运行一些共有的函数。在执行一些繁重的处理之前，你可能想给每个请求记录日志，用 gzip 压缩每个返回数据或者检查缓存。
+在构建 Web 应用程序时，可能需要为很多（甚至所有）的 HTTP 请求运行一些共享的功能。在执行一些繁重的处理之前，你可能想给每个请求记录日志，用 gzip 压缩每个返回数据或者检查缓存。
 
-实现这种共有函数的一种方法是将其设置为中间件，它在正常的应用处理程序之前或之后用自包含代码的方式独立地处理请求。在 Go 中，使用中间件的常见位置是 ServeMux 和应用处理程序之间，因此 HTTP 请求的控制流程如下所示：
+实现这种共享功能的一种方法是将其设置为中间件 - 它在正常的应用处理程序之前或之后用自包含代码的方式独立地处理请求。在 Go 中，使用中间件的常见位置是 ServeMux 和应用处理程序之间，因此 HTTP 请求的控制流程如下所示：
 
 ```sh
 ServeMux => Middleware Handler => Application Handler
@@ -24,7 +24,7 @@ ServeMux => Middleware Handler => Application Handler
 - 实现我们的中间件，使它满足[http.Handler](https://golang.org/pkg/net/http/#Handler)接口。
 - 构建链式的处理程序，包含我们的中间件处理程序和我们的普通应用处理程序，我们可以使用[http.ServeMux](https://golang.org/pkg/net/http/#ServeMux)进行注册。
 
-我来解释一下怎么回事儿。
+我将解释具体的实现方法。
 
 希望你已经熟悉了下面构造处理程序的方法（如果没有，最好在继续之前先阅读[入门手册](https://www.alexedwards.net/blog/a-recap-of-request-handling)）。
 
@@ -36,9 +36,9 @@ func messageHandler(message string) http.Handler {
 }
 ```
 
-在这个处理程序中，我们将逻辑（一个简单的`w.Write`）放在一个匿名函数中，然后引用函数体外的`message`变量以形成一个闭包。我们通过使用[http.HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc)适配器来将此闭包转换为处理程序，然后返回它。
+在这个处理程序中，我们将逻辑（一个简单的`w.Write`）放在一个匿名函数中，然后引用函数体外的`message`变量以形成一个闭包。接下来，我们通过使用[http.HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc)适配器来将此闭包转换为处理程序，然后返回它。
 
-我们可以使用相同的方法来实现链式的处理程序，即使用调用链中的下一个处理程序取代字符串作为变量传递给闭包（如上所述），然后通过调用它的`ServeHTTP()`方法将控制转移到下一个处理程序。
+我们可以使用相同的方法来实现链式的处理程序，可以不用将字符串传递给闭包（如上所述），而是将链中的下一个处理程序作为变量传递，然后通过调用它的`ServeHTTP()`方法将控制转移到下一个处理程序。
 
 下面提供了一个构建中间件的完整模式：
 
@@ -259,7 +259,7 @@ Unauthorized
 
 Gorilla 的`LoggingHandler`  - 记录了[Apache 风格的日志](http://httpd.apache.org/docs/1.3/logs.html#common) - 这个中间件跟之前的会有一点不同。
 
-它使用签名`func(out io.Writer, h http.Handler) http.Handler`，因此它不仅需要下一个处理程序，还需要用来写入日志的[io.Writer](http://golang.org/pkg/io/#Writer)。
+它使用签名`func(out io.Writer, h http.Handler) http.Handler`，因此它不仅需要下一个处理程序的参数，还需要用来写入日志的[io.Writer](http://golang.org/pkg/io/#Writer)的参数。
 
 下面这个简单的例子，我们将日志写入 server.log 文件：
 
@@ -295,7 +295,7 @@ func final(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-在这样一个简单的例子中，我们的代码相当清楚。但是，如果我们想将`LoggingHandler`作为更长的中间件调用链的一部分，会发生什么？我们很容易得到一个看起来像这样的声明……
+在这样一个简单的例子中，我们的代码相当清楚。但是，如果我们想将`LoggingHandler`作为更长的中间件调用链的一部分，会发生什么？我们很容易想到一个看起来像这样的声明……
 
 ```golang
 http.Handle("/", handlers.LoggingHandler(logFile, authHandler(enforceXMLHandler(finalHandler))))
@@ -331,11 +331,11 @@ $ cat server.log
 127.0.0.1 - - [21/Oct/2014:18:56:43 +0100] "PUT / HTTP/1.1" 200 2
 ```
 
-如果你有兴趣，这里给出一份把该文章的[3 个中间件处理函数](https://gist.github.com/alexedwards/6f9496caecb2996ac61d)的要点结合在了一个例子。
+如果你有兴趣，这里给出一个把该文章的[3 个中间件处理函数](https://gist.github.com/alexedwards/6f9496caecb2996ac61d)结合在一个例子中的 gist 仓库。
 
 边注：注意`Gorilla LoggingHandler`正在记录日志中的响应状态（`200`）和响应长度（`2`）。这比较有趣，上游日志记录中间件怎么获取了应用处理程序写入的响应体的信息？
 
-它通过定义自己的`responseLogger`类型来实现这一点，该类型装饰`http.ResponseWriter`，并创建自定义`responseLogger.Write()`和`responseLogger.WriteHeader()`方法。这些方法不仅可以写入响应，还可以存储响应的大小和状态以供后面检查。 Gorilla 的`LoggingHandler`将`responseLogger`传递给链中的下一个处理程序，取代了普通的`http.ResponseWriter`。
+它通过定义自己的`responseLogger`类型来实现这一点，该类型封装了`http.ResponseWriter`，并创建自定义`responseLogger.Write()`和`responseLogger.WriteHeader()`方法。这些方法不仅可以写入响应，还可以存储响应的大小和状态以供后面检查。 Gorilla 的`LoggingHandler`将`responseLogger`传递给链中的下一个处理程序，取代了普通的`http.ResponseWriter`。
 
 ## 额外的工具
 
