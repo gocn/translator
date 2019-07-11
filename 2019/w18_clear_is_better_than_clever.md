@@ -261,5 +261,3 @@ If software cannot be maintained, then it will be rewritten; and that could be t
 2.  [Unhelpful abstractions](https://dave.cheney.net/2016/02/06/unhelpful-abstractions "Unhelpful abstractions")
 3.  [What is the zero value, and why is it useful?](https://dave.cheney.net/2013/01/19/what-is-the-zero-value-and-why-is-it-useful "What is the zero value, and why is it useful?")
 4.  [Let’s talk about logging](https://dave.cheney.net/2015/11/05/lets-talk-about-logging "Let’s talk about logging")
-
-This entry was posted in [Go](https://dave.cheney.net/category/golang), [Programming](https://dave.cheney.net/category/programming-2), [Small ideas](https://dave.cheney.net/category/small-ideas) on [<time class="entry-date" datetime="2019-07-09T00:11:46+11:00">July 9, 2019</time>](https://dave.cheney.net/2019/07/09/clear-is-better-than-clever "12:11 am") by [Dave Cheney](https://dave.cheney.net/author/davecheney "View all posts by Dave Cheney")
