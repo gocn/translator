@@ -5,7 +5,7 @@
 - 译文出处: https://dave.cheney.net/
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w18_clear_is_better_than_clever.md
 - 译者：[咔叽咔叽](https://github.com/watermelo)
-- 校对：[](https://github.com/***)
+- 校对：[cvley](https://github.com/cvley)
 
 *本篇文章基于我在 [GopherCon Singapore 2019](https://2019.gophercon.sg/)  的演讲。在演讲中，我引用的一些资料来自于我的一篇[关于声明变量](https://dave.cheney.net/2014/05/24/on-declaring-variables)的文章和我在[2017 年的 GolangUK 会议中关于 SOLID 设计模式的演讲](https://dave.cheney.net/2016/08/20/solid-go-design)。为了简洁起见，本文已经省略了谈话的那些部分。如果你想看，可以[观看演讲的视频](https://www.youtube.com/watch?v=NwEuRO_w8HE)。*
 
