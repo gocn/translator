@@ -7,7 +7,7 @@
 - 译者：[咔叽咔叽](https://github.com/watermelo)
 - 校对：[cvley](https://github.com/cvley)
 
-*本篇文章基于我在 [GopherCon Singapore 2019](https://2019.gophercon.sg/)  的演讲。在演讲中，我引用的一些资料来自于我的一篇[关于声明变量](https://dave.cheney.net/2014/05/24/on-declaring-variables)的文章和我在[2017 年的 GolangUK 会议中关于 SOLID 设计模式的演讲](https://dave.cheney.net/2016/08/20/solid-go-design)。为了简洁起见，本文已经省略了谈话的那些部分。如果你想看，可以[观看演讲的视频](https://www.youtube.com/watch?v=NwEuRO_w8HE)。*
+*本篇文章基于我在 [GopherCon Singapore 2019](https://2019.gophercon.sg/) 的演讲。在演讲中，我引用的一些资料来自于我的一篇[关于声明变量](https://dave.cheney.net/2014/05/24/on-declaring-variables)的文章和我在[2017 年的 GolangUK 会议中关于 SOLID 设计模式的演讲](https://dave.cheney.net/2016/08/20/solid-go-design)。为了简洁起见，本文已经省略了谈话的那些部分。如果你想看，可以[观看演讲的视频](https://www.youtube.com/watch?v=NwEuRO_w8HE)。*
 
 * * *
 
@@ -129,7 +129,7 @@ func comp(a, b int) int {
 
 现在，虽然这个代码不是任何人都觉得是可读的 - 在 Go 中不鼓励 `if else if` 语句链，读者更清楚的是，只有在没有条件满足的情况下才返回 0。
 
-我们怎么知道的呢？ 这个函数声明了必须在语句结束时返回一个值。这意味着所有条件的主体必须返回一个值。因此，这将编译失败：
+我们怎么知道的呢？这个函数声明了必须在语句结束时返回一个值。这意味着所有条件的主体必须返回一个值。因此，这将编译失败：
 
 ```go
 func comp(a, b int) int {
