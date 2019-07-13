@@ -19,7 +19,7 @@
 
 我认为 Russ Cox 引用 Titus Winters 的话说得很对：
 
-> *软件工程就是随着时间的推移和添加其他程序员协作编程时所发生的事情*
+> *软件工程就是随着时间的推移和添加其他程序员协作编程时所发生的事情。*
 > 
 > *–Russ Cox, GopherCon Singapore 2018*
 
@@ -31,7 +31,7 @@ Russ 正在区分软件编程和软件工程。前者是你自己编写的程序
 
 ## 我们不要读代码，我们要解码它
 
-> *在一次演讲之后的某个时候，我终于意识到了这一点：代码不是文学。我们不要读代码，我们要解码它*
+> *在一次演讲之后的某个时候，我终于意识到了这一点：代码不是文学。我们不要读代码，我们要解码它。*
 > 
 > *–[Peter Seibel](http://www.gigamonkeys.com/code-reading/)*
 
@@ -65,7 +65,7 @@ func ReadConfig(path string) (*Config, error) {
  }
 ```
 
-这个典型的例子是经典的 Go 语言检查错误的惯用语法; `if err！= nil` 然后将其返回给调用者，否则继续执行该函数。我们可以用伪代码稍微概括一下这个模式：
+这个典型的例子是 Go 语言检查错误的惯用语法; `if err != nil` 然后将其返回给调用者，否则继续执行该函数。我们可以用伪代码稍微概括一下这个模式：
 
 ```go
  if some condition {
@@ -178,7 +178,7 @@ func comp(a, b int) int {
 
 通过移动 switch 内部的默认条件，读者只需考虑与其条件匹配的情况，因为默认子句不会使任何情况掉出 switch 块。(`fallthrough` 关键字使这种分析变得复杂，因此普遍不赞成 switch 语句中的 `fallthrough`。)
 
-> *结构化编程淡化了结构并强调了行为*
+> *结构化编程淡化了结构并强调了行为。*
 > 
 > *–Richard Bircher, [软件的限制](https://www.amazon.com/Limits-Software-People-Projects-Perspectives/dp/0201433230)*
 
@@ -200,7 +200,7 @@ func comp(a, b int) int {
 
 代码被读的次数比被写的次数多。一段代码在其生命周期内将被读数百次，甚至数千次，因为它必须被理解。代码清晰非常重要，因为所有软件，不仅仅是 Go 程序，都是由人写的，并被其他人阅读的。软件也被机器执行的事实是次要的。
 
-> *程序员最重要的技能是具有高效沟通想法的能力*
+> *程序员最重要的技能是具有高效沟通想法的能力。*
 > 
 > *–Gastón Jorquera*
 
@@ -256,7 +256,7 @@ Go 程序员不用花几天时间去调试难以理解的编译错误。他们�
 
 ## 相关文章
 
-1.  [Accidental method value](https://dave.cheney.net/2014/05/19/accidental-method-value "Accidental method value")
-2.  [Unhelpful abstractions](https://dave.cheney.net/2016/02/06/unhelpful-abstractions "Unhelpful abstractions")
-3.  [What is the zero value, and why is it useful?](https://dave.cheney.net/2013/01/19/what-is-the-zero-value-and-why-is-it-useful "What is the zero value, and why is it useful?")
-4.  [Let’s talk about logging](https://dave.cheney.net/2015/11/05/lets-talk-about-logging "Let’s talk about logging")
+1. [Accidental method value](https://dave.cheney.net/2014/05/19/accidental-method-value "Accidental method value")
+2. [Unhelpful abstractions](https://dave.cheney.net/2016/02/06/unhelpful-abstractions "Unhelpful abstractions")
+3. [What is the zero value, and why is it useful?](https://dave.cheney.net/2013/01/19/what-is-the-zero-value-and-why-is-it-useful "What is the zero value, and why is it useful?")
+4. [Let’s talk about logging](https://dave.cheney.net/2015/11/05/lets-talk-about-logging "Let’s talk about logging")
