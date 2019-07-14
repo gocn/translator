@@ -191,7 +191,7 @@ go tool pprof -http=":" main http://localhost:4321/debug/pprof/profile
 
 ## 使用`#ctop`管理你的 Docker 容器
 
-如果你在云端开发软件服务，大概率你会使用 Docker. Docker 就像`go`会有很多有用的子命令，但是记住这么多也挺乏味的。[ctop](https://github.com/bcicen/ctop)是一个 docker 状态检查工具。他是一个终端用户界面，你可以看到且与当前运行的 docker 容器交互。它设计的非常的棒即使我只运行了一个 docker 容器。
+如果你在云端开发软件服务，大概率你会使用 Docker。 Docker 就像`go`会有很多有用的子命令，但是记住这么多也挺乏味的。[ctop](https://github.com/bcicen/ctop) 是一个 docker 状态检查工具。他是一个终端用户界面，你可以看到且与当前运行的 docker 容器交互。它设计的非常的棒即使我只运行了一个 docker 容器。
 
 ![Docker stats terminal user interface.](https://global-uploads.webflow.com/5c741219fd0819aad790e78b/5d24bb24489f206f1e2fb419_At5IKwh5al8d-Yf8p0GnV3-tagN1Met7ta-pqBxcPNvbM4278J9o9wQq1qyGA_V6YHHLokUYygfzW5X712-TMHTDQVV5oz3oXeNyjMpeqCjYr8lJWnHwF4KtWZ1u2yJwbjDIiLcz.png)
 
