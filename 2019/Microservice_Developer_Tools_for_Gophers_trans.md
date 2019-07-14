@@ -25,8 +25,8 @@ Go 是由与开发者有共鸣的资深工程师构建的，最终体现在于 g
 有一个非常棒的工具 [panicparse](https://github.com/maruel/panicparse)。使用这个工具你可以把你的程序导入到这个工具里，如果检测到了 panic 他会自动清晰的打印出来结果，所以你可以快速鉴别出哪里出了问题。
 
 > <code>go get github.com/maruel/panicparse/cmd/pp
-> # 取决于你的$PATH如何设置，`pp`会被解析
-> # 作为 Perl 包管理器
+> #取决于你的 $PATH 如何设置，`pp`会被解析
+> #作为 Perl 包管理器
 > alias pp="$GOPATH/bin/pp"</code>
 
 运行这个程序，使用 _|&_ 管道将标准输出和错误输出 _STDOUT_ 和 _STDERR_ 到 _pp_,他会持续标准输出直到他辨识出有panic，然后会打印出来。
@@ -45,7 +45,7 @@ Go 是由与开发者有共鸣的资深工程师构建的，最终体现在于 g
 
 ## 写 gRPC endpoints 程序，但是你没有 Postman? 使用 gRPCurl吧
 
-REST APIs 因为他们的可实验性和测试性的特性，开发者生态中有对应的成熟工具，例如[Postman](https://www.getpostman.com/)。但不幸的是，很多公司发现 REST APIs不是适用于所有的场景。在 Bugsnag 也是如此。在我们的内部服务里我们使用 gRPC 来做同步通信。如果你想要学习 gRPC，它是如何工作的，我们为何使用他，请参考[我同事的文章](https://www.bugsnag.com/blog/grpc-and-microservices-architecture)。那么也就是说我们不使用类似 Postman 这样的工具。不过这也是一种解决方案。
+REST APIs 因为他们的可实验性和测试性的特性，开发者生态中有对应的成熟工具，例如[Postman](https://www.getpostman.com/)。但不幸的是，很多公司发现 REST APIs 不是适用于所有的场景。在 Bugsnag 也是如此。在我们的内部服务里我们使用 gRPC 来做同步通信。如果你想要学习 gRPC，它是如何工作的，我们为何使用他，请参考[我同事的文章](https://www.bugsnag.com/blog/grpc-and-microservices-architecture)。那么也就是说我们不使用类似 Postman 这样的工具。不过这也是一种解决方案。
 
 [gRPCurl](https://github.com/fullstorydev/grpcurl)是一个命令行工具，你可以使用他来与一台 gRPC 服务器使用 json 进行交互，使得读取响应信息非常简单。
 
@@ -95,7 +95,7 @@ _gRPCurl_ 很好且足够了但是大多数时候你不想折腾语法，你想
 
 ## 用 ghz 进行载入测试
 
-有好些工具测试HTTP终端节点的载入性能，但是测试 gRPC 的就不是很多了。我发现测试 gRPC 的最好的工具是[ghz](https://github.com/bojand/ghz)，该工具受到_hey_ 和 _grpcurl_项目启发。支持高度自定义，对于熟悉_grpcurl_的人来说 上手 ghz 不难。
+有好些工具测试 HTTP 终端节点的载入性能，但是测试 gRPC 的就不是很多了。我发现测试 gRPC 的最好的工具是[ghz](https://github.com/bojand/ghz)，该工具受到_hey_ 和 _grpcurl_项目启发。支持高度自定义，对于熟悉_grpcurl_的人来说 上手 ghz 不难。
 
 比如：
 
@@ -144,7 +144,7 @@ _gRPCurl_ 很好且足够了但是大多数时候你不想折腾语法，你想
 
 ## 使用 pprof 和 ghz 剖析微服务性能发现瓶颈
 
-我们可以组合ghz和[标准库中的pprof](https://blog.golang.org/profiling-go-programs)剖析我们的代码，比如可以清晰定位出应用的性能瓶颈。咱们使用这个对比一下 fizzbuzz gRPC 服务器。
+我们可以组合 ghz 和[标准库中的 pprof](https://blog.golang.org/profiling-go-programs)剖析我们的代码，比如可以清晰定位出应用的性能瓶颈。咱们使用这个对比一下 fizzbuzz gRPC 服务器。
 
 > <code># 这里的 'main' 是运行在 gRPC 服务器上的二进制程序
 > go tool pprof -http=":" main http://localhost:4321/debug/pprof/profile</code>
