@@ -24,10 +24,12 @@ Go 是由与开发者有共鸣的资深工程师构建的，最终体现在于 g
 
 有一个非常棒的工具 [panicparse](https://github.com/maruel/panicparse)。使用这个工具你可以把你的程序导入到这个工具里，如果检测到了 panic 他会自动清晰的打印出来结果，所以你可以快速鉴别出哪里出了问题。
 
-> <code>go get github.com/maruel/panicparse/cmd/pp
-> #取决于你的 $PATH 如何设置，`pp`会被解析
-> #作为 Perl 包管理器
-> alias pp="$GOPATH/bin/pp"</code>
+```
+go get github.com/maruel/panicparse/cmd/pp
+# 取决于你的 $PATH 如何设置，`pp`会被解析
+# 作为 Perl 包管理器
+alias pp="$GOPATH/bin/pp"
+```
 
 运行这个程序，使用 `|&` 管道将标准输出和错误输出 `STDOUT` 和 `STDERR` 到 `pp`,他会持续标准输出直到他辨识出有panic，然后会打印出来。
 
@@ -173,7 +175,7 @@ Status code distribution:
 
 ## 使用 pprof 和 ghz 剖析微服务性能发现瓶颈
 
-我们可以组合 ghz 和[标准库中的 pprof](https://blog.golang.org/profiling-go-programs)剖析我们的代码，比如可以清晰定位出应用的性能瓶颈。咱们使用这个对比一下 fizzbuzz gRPC 服务器。
+我们可以组合 ghz 和[标准库中的 pprof](https://blog.golang.org/profiling-go-programs) 剖析我们的代码，比如可以清晰定位出应用的性能瓶颈。咱们使用这个对比一下 fizzbuzz gRPC 服务器。
 
 ```
 # 这里的 'main' 是运行在 gRPC 服务器上的二进制程序
@@ -195,7 +197,7 @@ go tool pprof -http=":" main http://localhost:4321/debug/pprof/profile
 
 使用 `ctop` 你可以很方便地：
 
-* 和`docker stats`一样查看所有容器的统计信息
+* 和 `docker stats` 一样查看所有容器的统计信息
 * 过滤，搜索指定的容器
 * 基于基本属性给容器排序
 * 深入单个容器内部，在仪表盘上展示其状态
@@ -204,4 +206,4 @@ go tool pprof -http=":" main http://localhost:4321/debug/pprof/profile
 
 ## 自信开发
 
-我希望你在想学习本文的几个新工具之后开发体验能有提升。Go 最大的优点之一是包容开放的社区。本文上面提到的所有的工具都是社区开发的，而且基本都是开发者用自己的时间开发的。请给你使用的这些工具的开发者们表达一些感谢，比如在GitHub上给他们的仓库点亮星星，或者发有关内容的推特。
+我希望你在想学习本文的几个新工具之后开发体验能有提升。Go 最大的优点之一是包容开放的社区。本文上面提到的所有的工具都是社区开发的，而且基本都是开发者用自己的时间开发的。请给你使用的这些工具的开发者们表达一些感谢，比如在 GitHub 上给他们的仓库点亮星星，或者发有关内容的推特。
