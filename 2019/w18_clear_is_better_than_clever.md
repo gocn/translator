@@ -1,57 +1,58 @@
-# Clear is better than clever
+# 清晰胜过聪明
 
 - 原文地址：[Clear is better than clever](https://dave.cheney.net/category/golang)
 - 原文作者：[Dave Cheney](https://dave.cheney.net/author/davecheney)
 - 译文出处: https://dave.cheney.net/
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w18_clear_is_better_than_clever.md
 - 译者：[咔叽咔叽](https://github.com/watermelo)
-- 校对：[](https://github.com/***)
+- 校对：[cvley](https://github.com/cvley)，[fivezh](https://github.com/fivezh)
 
-*This article is based on my [GopherCon Singapore 2019](https://2019.gophercon.sg/) presentation. In the presentation I referenced material from my post [on declaring variables](https://dave.cheney.net/2014/05/24/on-declaring-variables) and my [GolangUK 2017 presentation on SOLID design](https://dave.cheney.net/2016/08/20/solid-go-design). For brevity those parts of the talk have been elided from this article. If you prefer, you can [watch the recording of the talk](https://www.youtube.com/watch?v=NwEuRO_w8HE).*
+*本篇文章基于我在 [GopherCon Singapore 2019](https://2019.gophercon.sg/) 的演讲。在演讲中，我引用的一些资料来自于我的一篇[关于声明变量](https://dave.cheney.net/2014/05/24/on-declaring-variables)的文章和我在[2017 年的 GolangUK 会议中关于 SOLID 设计模式的演讲](https://dave.cheney.net/2016/08/20/solid-go-design)。为了简洁起见，本文已经省略了谈话的那些部分。如果你想看，可以[观看演讲的视频](https://www.youtube.com/watch?v=NwEuRO_w8HE)。*
 
 * * *
 
-Readability is often cited as one of Go’s core tenets, I disagree. In this article I’ll discuss the differences between clarity and readability, show you what I mean by clarity and how it applies to Go code, and argue that Go programmers should strive for clarity–not just readability–in their programs.
+可读性通常被认为是 Go 的核心原则之一，但我不同意。在本文中，我将讨论清晰度和可读性之间的差异，通过展示什么是清晰度以及它如何应用于 Go 代码来向你们表达我的意思，并且我认为 Go 程序员应该在他们的程序中努力做到让代码清晰 - 而不仅仅是可读性。
 
-## Why would I read your code
+## 为什么我会读你的代码
 
-Before I pick apart the difference between clarity and readability, perhaps the question to ask is, “why would I read your code?” To be clear, when I say *I*, I don’t mean me, I mean you. And when I say *your code* I also mean you, but in the third person. So really what I’m asking is, “why would *you read* another person’s code?”
+在我说明清晰度和可读性之间的区别之前，或许要问的问题是，“为什么我会阅读你的代码？”要明确的是，当我说*我*时，我不是指我，我的意思是指你。当我说*你的代码*我也意味着你，只是第三人称而已。所以我真正要问的是，“为什么*你会读*另一个人的代码？”
 
-I think Russ Cox, paraphrasing Titus Winters, put it best:
+我认为 Russ Cox 引用 Titus Winters 的话说得很对：
 
-> *Software engineering is what happens to programming when you add time and other programmers.*
+> *软件工程就是随着时间的推移和添加其他程序员协作编程时所发生的事情。*
 > 
 > *–Russ Cox, GopherCon Singapore 2018*
 
-The answer to the question, “why would I read your code” is, because we have to work together. Maybe we don’t work in the same office, or live in the same city, maybe we don’t even work at the same company, but we do collaborate on a piece of software, or more likely consume it as a dependency.
+“我为什么要阅读你的代码”这个问题的答案是因为我们需要协同工作。也许我们不在同一个办公室工作，或者也不住在同一个城市，甚至不在同一家公司工作，但我们可能为了同一个软件而合作，或者更可能将别人的代码作为依赖使用。
 
-This is the essence of Russ and Titus’ observation; software engineering is the collaboration of software engineers over time. I have to read your code, and you read mine, so that I can understand it, so that you can maintain it, and in short, so that any programmer can change it.
+这是 Russ 和 Titus 通过观察得出的真理;软件工程就是软件工程师们不断地协作。我必须要阅读你的代码，并且你也会读我的代码，这样我才能理解它，这样你就可以维护它，简而言之，任何程序员都可以修改它。
 
-Russ is making the distinction between software programming and software engineering. The former is a program you write for yourself, the latter is a program, a project, a service, a product, that many people will contribute to over time. Engineers will come and go, teams will grow and shrink, requirements will change, features will be added and bugs fixed. This is the nature of software engineering.
+Russ 正在区分软件编程和软件工程。前者是你自己编写的程序，后者是程序，项目，服务，产品，随着时间的推移很多人会给它们做贡献。工程师会来来去去，团队会成长和缩小，需求会发生变化，功能会被添加，错误也会得到修复。这是软件工程的本质。
 
-## We don’t read code, we decode it
+## 我们不要读代码，我们要解码它
 
-> *It was sometime after that presentation that I finally realized the obvious: Code is not literature. We don’t read code, we decode it.*
+> *在一次演讲之后的某个时候，我终于意识到了这一点：代码不是文学。我们不要读代码，我们要解码它。*
 > 
 > *–[Peter Seibel](http://www.gigamonkeys.com/code-reading/)*
 
-The author Peter Seibel suggests that programs are not read, but are instead decoded. In hindsight this is obvious, after all we call it source code, not source literature. The source code of a program is an intermediary form, somewhere between our concept–what’s inside our heads–and the computer’s executable notation.
+作者 Peter Seibel 建议不要阅读程序，而是解码程序。事后看来，这很明显，毕竟我们称之为源代码，而不是源文献。程序的源代码是一种中介形式，介于这两个概念之间 - 我们脑海里的东西 - 计算机的可执行符号。
 
-In my experience, the most common complaint when faced with a foreign codebase written by someone, or some team, is the code is unreadable. Perhaps you agree with me?
+根据我的经验，当遇到由其他人或其他团队编写的对外的代码库时，最常见的抱怨是代码不可读。也许你也同意我的看法？
 
-But readability as a concept is subjective. Readability is nit picking about line length and variable names. Readability is holy wars about brace position. Readability is the hand to hand combat of style guides and code review guidelines that regulate the use of whitespace.
+但可读性作为一个概念是主观的。可读性是关于代码行的长度和变量名称的选择。可读性是关于代码样式的神圣战争。可读性是代码风格指南和代码审查指南的一对一战斗从而规范了空格的使用方法。
 
-## Clarity ≠ Readability
+## 清晰度 ≠ 可读性
 
-Clarity, on the other hand, is the property of the code on the page. Clear code is independent of the low level details of function names and indentation because clear code is concerned with what the code is doing, not just how it is written down.
+换个角度说，清晰度是代码的属性。清晰的代码独立于函数名称和缩进的低级细节，因为清晰的代码关注代码正在做什么，而不仅仅是如何写下来。
 
-When you or I say that a foreign codebase is unreadable, what I think what we really mean is, *I don’t understand it*. For the remainder of this article I want to try to explore the difference between clear code and code that is simply readable, because the goal is not how quickly you can read a piece of code, but how quickly you can grasp its meaning.
+当你或我说别人的代码不可读时，我认为我们真正的意思是，*我不理解它*。对于本文剩下的部分，我想尝试去探索清晰的代码和简单可读的代码之间的区别，因为我们的目标不是阅读代码的速度有多快，而是能够以多快的速度掌握其含义。
 
-## Keep to the left
+## 保持在左侧
 
-Go programs are traditionally written in a style that favours guard clauses and preconditions. This encourages the successful path to proceed down the page rather than indented inside a conditional block. Mat Ryer calls this [line of sight coding](https://medium.com/@matryer/line-of-sight-in-code-186dd7cdea88), because, the active part of your function is not at risk of sliding out of sight beyond the right hand margin of your screen.
+Go 程序传统上以一种有利于 Guard Clause 和 前置条件的编码风格编写（译者注：Guard Clause 直译过来不太好理解，后文都会保留原文。为什么叫 Guard Clause？因为 if 子句扮演着「看守」角色。只要 Guard Clause 成立，程序就会终止并返回。）
+。这鼓励执行成功的代码路径沿着页面继续往下，而不是缩进到条件代码块里面。 Mat Ryer 把它叫做[视线编码](https://medium.com/@matryer/line-of-sight-in-code-186dd7cdea88)，因为，你主要功能的代码不会有超出屏幕右边从而滑出视线的风险。
 
-By keeping conditional blocks short, and for the exceptional condition, we avoid nested blocks and potentially complex value shadowing. The successful flow of control continues down the page. At every point in the sequence of statements, if you’ve arrived at that point, you are confident that a growing set of preconditions holds true.
+通过保持条件代码块简短，并且对于异常条件，我们避免嵌套代码块和使潜在复杂的值处在看不见的位置。控制成功流程继续在代码页面下方。在声明序列的每一点上，如果你已到达那一点，你确信越来越多的前置条件为真。
 
 ```go
 func ReadConfig(path string) (*Config, error) {
@@ -64,7 +65,7 @@ func ReadConfig(path string) (*Config, error) {
  }
 ```
 
-The canonical example of this is the classic Go error check idiom; `if err != nil` then return it to the caller, else continue with the function. We can generalise this pattern a little and in pseudocode we have:
+这个典型的例子是 Go 语言检查错误的惯用语法; `if err != nil` 然后将其返回给调用者，否则继续执行该函数。我们可以把这个模式泛化一下，使用伪代码表示：
 
 ```go
  if some condition {
@@ -74,15 +75,15 @@ The canonical example of this is the classic Go error check idiom; `if err != ni
  // false: continue
 ```
 
-If *some condition* is true, then return to the caller, else continue onwards towards the end of the function.
+如果 *some condition* 为真，则返回给调用者，否则继续执行。
 
-This form holds true for all preconditions, error checks, map lookups, length checks, and so forth. The exact form of the precondition’s check changes, but the pattern is always the same; the cleanup code is inside the block, terminating with a return, the success condition lies outside the block, and is only reachable if the precondition is false.
+前置检查的具体形式可以不同，但模式总是保持一样；代码块内是清理逻辑，使用返回来终止，代码块外的是成功的条件，仅在前置条件为假时才可以访问。
 
-Even if you are unsure what the preceding and succeeding code does, how the precondition is formed, and how the cleanup code works, it is clear to the reader that this is a guard clause.
+即使你不确定前文和后文的代码是做什么的，前置条件如何形成，以及清理代码如何工作，阅读代码的人也清楚这是一个 Guard Clause 模式。
 
-## Structured programming
+## 结构化编程
 
-Here we have a `comp` function that takes two `int`s and returns an `int`;
+这里我们有一个 `comp` 函数，它接受两个 `int` 变量并返回一个 `int` 变量;
 
 ```go
 func comp(a, b int) int {
@@ -96,7 +97,7 @@ func comp(a, b int) int {
 }
 ```
 
-The `comp` function is written in a similar form to guard clauses from earlier. If `a` is less than `b`, the return -1 path is taken. If `a` is greater than `b`, the return 1 path is taken. Else, `a` and `b` are by induction equal, so the final return 0 path is taken.
+`comp` 函数的编写方式与之前的 Guard Clause 类似。如果 `a` 小于 `b`，则返回 -1。如果 `a` 大于 `b`，则返回 1 。否则，`a` 和 `b` 应该是相等的，因此最终返回 0。
 
 ```go
 func comp(a, b int) int {
@@ -110,9 +111,9 @@ func comp(a, b int) int {
 }
 ```
 
-The problem with `comp` as written is, unlike the guard clause, someone maintaining this function has to read all of it. To understand when 0 is returned, the reader has to consult the conditions *and the body* of each clause. This is reasonable when you’re dealing with functions which fit on a slide, but in the real world complicated functions–the ones we’re paid for our expertise to maintain–are rarely slide sized, and their conditions and bodies are rarely simple.
+`comp` 函数的问题是，与 Guard Clause 不同，维护此函数的人必须阅读所有这些内容。要了解何时返回 0，读者必须阅读每个语句的*条件和内容*。当你处理的函数用在幻灯片演示时，这通常是合理的，但现实世界充斥着复杂函数-我们付出专业知识来维护的功能-很少是幻灯片演示这种级别的，他们的条件和内容也通常不会是很简单的。
 
-Let’s address the problem of making it clear under which condition 0 will be returned:
+我们来解决一下这个问题，即明确返回 0 的条件：
 
 ```go
 func comp(a, b int) int {
@@ -126,14 +127,14 @@ func comp(a, b int) int {
 }
 ```
 
-Now, although this code is not what anyone would argue is readable– long chains of `if else if` statements are broadly discouraged in Go– it is clearer to the reader that zero is only returned if none of the conditions are met.
+现在，虽然这个代码不是任何人都觉得是可读的 - 在 Go 中不鼓励 `if else if` 语句链，读者更清楚的是，只有在没有条件满足的情况下才返回 0。
 
-How do we know this? The Go spec declares that each function that returns a value must end in a terminating statement. This means that the body of all conditions must return a value. Thus, this does not compile:
+我们怎么知道的呢？这个函数声明了必须在语句结束时返回一个值。这意味着所有条件的主体必须返回一个值。因此，这将编译失败：
 
 ```go
 func comp(a, b int) int {
         if a > b {
-                a = b // does not compile
+                a = b // 不能编译
         } else if a < b {
                 return 1
         } else {
@@ -142,7 +143,7 @@ func comp(a, b int) int {
 }
 ```
 
-Further, it is now clear to the reader that this code isn’t actually a series of conditions. This is an example of selection. Only one path can be taken regardless of the operation of the condition blocks. Based on the inputs one of -1, 0, or 1 will always be returned.
+此外，现在读者清楚，该代码实际上不是一系列的条件。这是一个选择的例子。无论条件块是什么操作，只能选择一个路径。根据输入，将始终返回 -1, 0 或 1 中的一个。
 
 ```go
 func comp(a, b int) int {
@@ -156,9 +157,9 @@ func comp(a, b int) int {
 }
 ```
 
-However this code is hard to read as each of the conditions is written differently, the first is a simple `if a < b`, the second is the unusual `else if a > b`, and the last conditional is actually unconditional.
+然而，这个代码让人难以阅读，因为每个条件的写法都不同，第一个是简单的 `if a < b`，第二个是异常的，`else if a >  b`，最后一个是无条件的默认情况。
 
-But it turns out there is a statement which we can use to make our intention much clearer to the reader; `switch`.
+事实证明，我们可以使用一种语句来使读者的意图更加清晰；switch 语句。
 
 ```go
 func comp(a, b int) int {
@@ -173,91 +174,89 @@ func comp(a, b int) int {
 }
 ```
 
-Now it is clear to the reader that this is a selection. Each of the selection conditions are documented in their own case statement, rather than varying `else` or `else if` clauses.
+现在读者很清楚这是一个选项。每个选项条件都记录在它们自己的 case 语句中，而不是随着 else 或者 else if 子句变化。
 
-By moving the default condition inside the switch, the reader only has to consider the cases that match their condition, as none of the cases can fall out of the switch block because of the default clause.[<sup>1</sup>](#easy-footnote-bottom-1-3748)
+通过移动 switch 内部的默认条件，读者只需考虑与其条件匹配的情况，因为默认子句不会使任何情况掉出 switch 块。(`fallthrough` 关键字使这种分析变得复杂，因此普遍不赞成 switch 语句中的 `fallthrough`。)
 
-> *Structured programming submerges structure and emphasises behaviour*
+> *结构化编程淡化了结构并强调了行为。*
 > 
-> *–Richard Bircher, [The limits of software](https://www.amazon.com/Limits-Software-People-Projects-Perspectives/dp/0201433230)*
+> *–Richard Bircher, [软件的限制](https://www.amazon.com/Limits-Software-People-Projects-Perspectives/dp/0201433230)*
 
-I found this quote recently and I think it is apt. My arguments for clarity are in truth arguments intended to emphasise the behaviour of the code, rather than be side tracked by minutiae of the structure itself. Said another way, what is the code trying to do, *not how is it is trying to do it*.
+最近发现了这句话，我认为这很贴切。我认为这句话的中心思想是在强调代码的行为，而不是被结构本身的细节所左右。换句话说，代码试图做什么，*而不是试图怎么做*。
 
-## Guiding principles
+## 指导原则
 
-I opened this article with a discussion of readability vs clarity and hinted that there were other principles of well written Go code. It seems fitting to close on a discussion of those other principles.
+我在这篇文章的开头，讨论了可读性与清晰度，并暗示了编写 Go 代码的其他原则。在文章结束的时候再来探讨一下其他原则似乎很合适。
 
-Last year [Bryan Cantrill gave a wonderful presentation on operating system principles](https://www.slideshare.net/bcantrill/platform-values-rust-and-the-implications-for-system-software), wherein he highlighted that different operating systems focus on different principles. It is not that they ignore the principles that differ between their competitors, just that when the chips are down, they prioritise a core set. So what is that core set of principles for Go?
+去年，[Bryan Cantrill 对操作系统原理做了精彩的演讲](https://www.slideshare.net/bcantrill/platform-values-rust-and-the-implications-for-system-software)，他强调不同的操作系统关注不同的原则。并不是他们忽略了竞争对手之间不同的原则，而是当处在困难的境地时，他们需要优先考虑核心原则。那么 Go 的核心原则是什么？
 
-### Clarity
+### 清晰
 
-If you were going to say readability, hopefully I’ve provided you with an alternative.
+如果你要说可读性，希望我为你提供了另一种选择。
 
-> *Programs must be written for people to read, and only incidentally for machines to execute.*
+> *程序是写给人看的，只是顺便给机器执行。*
 > 
-> *–Hal Abelson and Gerald Sussman. Structure and Interpretation of Computer Programs*
+> *Hal Abelson 和 Gerald Sussman。计算机程序的结构与解释*
 
-Code is read many more times than it is written. A single piece of code will, over its lifetime, be read hundreds, maybe thousands of times. It will be read hundreds or thousands of times because it must be understood. Clarity is important because all software, not just Go programs, is written by people to be read by other people. The fact that software is also consumed by machines is secondary.
+代码被读的次数比被写的次数多。一段代码在其生命周期内将被读数百次，甚至数千次，因为它必须被理解。代码清晰非常重要，因为所有软件，不仅仅是 Go 程序，都是由人写的，并被其他人阅读的。软件也被机器执行的事实是次要的。
 
-> *The most important skill for a programmer is the ability to effectively communicate ideas.*
+> *程序员最重要的技能是具有高效沟通想法的能力。*
 > 
 > *–Gastón Jorquera*
 
-Legal documents are double spaced to aide the reader, but to the layperson that does nothing to help them comprehend what they just read. Readability is a property of how easy it was to read the words on the screen. Clarity, on the other hand, is the answer to the question “did you understand what you just read?”.
+法律文件用双倍间距来帮助读者阅读，但对于外行来说没有任何东西帮助他们理解所阅读的是什么。可读性是读取屏幕上文字的难易程度的一个特性。另一方面，清晰度是“你明白你刚才读到了什么吗？”这个问题的答案。
 
-If you’re writing a program for yourself, maybe it only has to run once, or you’re the only person who’ll ever see it, then do what ever works for you. But if this is a piece of software that more than one person will contribute to, or that will be used by people over a long enough time that requirements, features, or the environment it runs in may change, then your goal must be for your program to be maintainable.
+如果你正在为自己编写一个程序，也许它只需运行一次，或者你是唯一一个曾经看过它的人，然后做你曾经做过的事情。但是，如果这是一个不止一个人会贡献的软件，或者人们使用软件的需求，功能或环境在很长一段时间内可能会发生改变，那么你必须保证你的程序是可维护的。
 
-The first step towards writing maintainable code is making sure intent of the code is clear.
+编写可维护代码的第一步是确保代码的意图清晰。
 
-### Simplicity
+### 简单
 
-The next principle is obviously simplicity. Some might argue the most important principle for any programming language, perhaps the most important principle full stop.
+下一个原则显然是简单。有些人可能认为这是任何编程语言最重要的原则，也许是最重要的原则。
 
-Why should we strive for simplicity? Why is important that Go programs be simple?
+我们为什么要追求简单？为什么 Go 程序保持简单是重要的 ？
 
-> *The ability to simplify means to eliminate the unnecessary so that the necessary may speak*
+> *简单化意味着消除不必要的，以至于突出必要的。*
 > 
 > *–Hans Hofmann*
 
-We’ve all been in a situation where we say “I can’t understand this code”. We’ve all worked on programs we were scared to make a change because we worried that it’ll break another part of the program; a part you don’t understand and don’t know how to fix. 
+我们都遇到过“我无法理解这段代码”的情况。我们都在研究我们害怕改变的程序，因为我们担心它会破坏程序的另一部分;你不理解的部分，不知道如何修复。
 
-This is complexity. Complexity turns reliable software in unreliable software. Complexity is what leads to unmaintainable software. Complexity is what kills software projects. Clarity and simplicity are interlocking forces that lead to maintainable software.
+这很复杂。复杂性让可靠的软件变成不可靠的软件。复杂性是导致无法维护的软件的原因。复杂性是杀死软件项目的原因。清晰和简单是导致可维护软件的两个重要因素。
 
-### Productivity
+### 生产力
 
-The last Go principle I want to highlight is productivity. Developer productivity boils down to this; how much time do you spend doing useful work verses waiting for your tools or hopelessly lost in a foreign code-base? Go programmers should feel that they can get a lot done with Go.
+我最后强调的 Go 的指导原则是生产力。开发人员的生产力归结为此;你花了多少时间做有用的工作，等待你的工具或在第三方代码库中绝望地迷失？Go 程序员应该觉得他们可以用 Go 完成很多工作。
 
-> *“I started another compilation, turned my chair around to face Robert, and started asking pointed questions. Before the compilation was done, we’d roped Ken in and had decided to do something.”*
+> *“我开始了另一个编译，转过身去面对 Robert，并开始提出尖锐的问题。在编译完成之前，我们已经把 Ken 绳之以法并决定做点什么。”*
 > 
-> *–Rob Pike, [Less is Exponentially more](https://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html)[](https://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html)*
+> *–Rob Pike, [少意味着更多](https://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html)[](https://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html)*
 
-The joke goes that Go was designed while waiting for a C++ program to compile. Fast compilation is a key feature of Go and a key recruiting tool to attract new developers. While compilation speed remains a constant battleground, it is fair to say that compilations which take minutes in other languages, take seconds in Go. This helps Go developers feel as productive as their counterparts working in dynamic languages without the maintenance issues inherent in those languages.
+这个玩笑说 Go 是在等待 C++ 编译时设计的。快速编译是 Go 的一个关键特性，也是吸引新开发人员的关键工具。虽然编译速度仍然是一个恒定的战场，但可以说，在其他语言中需要几分钟的编译，在 Go 中需要几秒钟。这有助于 Go 开发人员感受到与使用动态语言一样的高效，并且没有动态语言难维护问题。
 
-> *Design is the art of arranging code to work _today_, and be changeable forever.*
+> *设计是不仅能使代码在今天工作，而且能永远可扩展的艺术。*
 > 
 > *–Sandi Metz*
 
-More fundamental to the question of developer productivity, Go programmers realise that code is written to be read and so place the act of reading code above the act of writing it. Go goes so far as to enforce, via tooling and custom, that all code be formatted in a specific style. This removes the friction of learning a project specific dialect and helps spot mistakes because they just look incorrect.
+开发人员的生产力是更根本的问题，Go 程序员意识到写代码就是为了阅读，因此将读代码的行为置于写代码的行为之上。Go 甚至通过工具和自定义强制执行所有代码以特定的样式格式化。这消除了学习项目的特定方言格式的阻力，并帮助发现错误，因为这些特定方言格式看起来不正确。
 
-Go programmers don’t spend days debugging inscrutable compile errors. They don’t waste days with complicated build scripts or deploying code to production. And most importantly they don’t spend their time trying to understand what their coworker wrote.
+Go 程序员不用花几天时间去调试难以理解的编译错误。他们不会浪费时间在复杂的编译脚本或将代码部署到生产环境中。最重要的是，他们不用花时间去理解他们的同事所写的内容。
 
-> *Complexity is anything that makes software hard to understand or to modify.*
+> *复杂性使软件难以理解或修改。*
 > 
-> *–John Ousterhout, [A Philosophy of Software Design](https://www.amazon.com/Philosophy-Software-Design-John-Ousterhout/dp/1732102201/ref=sr_1_3?ie=UTF8&qid=1524677319&sr=8-3&keywords=john+ousterhout)*
+> *–John Ousterhout，[软件设计哲学](https://www.amazon.com/Philosophy-Software-Design-John-Ousterhout/dp/1732102201/ref=sr_1_3?ie=UTF8&qid=1524677319&sr=8-3&keywords=john+ousterhout)*
 
-Something I know about each of you reading this post is you will eventually leave your current employer. Maybe you’ll be moving on to a new role, or perhaps a promotion, perhaps you’ll move cities, or follow your partner overseas. Whatever the reason, we must all consider the succession of the maintainership of the programs we create.
+我知道你们每个人在阅读这篇文章时你最终会离开你现在的雇主。也许你会转向一个新的角色，或者也许是一次升职，也许你会换一个城市，或者跟随你的伴侣到海外。无论是什么原因，我们都必须考虑我们创建的程序的能够被继续维护。
 
-If we strive to write programs that are clear, programs that are simple, and to focus on the productivity of those working with us that will set all Go programmers in good stead.
+如果我们努力编写清晰的程序，简单的程序，并专注于我们合作的生产力，这将使所有 Go 程序员处于有利位置。
 
-Because if we don’t, as we move from job to job, we’ll leave behind programs which cannot be maintained. Programs which cannot be changed. Programs which are too hard to onboard new developers, and programs which feel like career digression for those that work on them.
+因为如果我们不这样做，当我们从一个工作换到另一个工作时，我们将留下无法维护的程序。无法修改的程序。对于新的开发人员来说太难的程序，以及那些对其工作的人会说一些题外话的程序。
 
-If software cannot be maintained, then it will be rewritten; and that could be the last time your company invests in Go.
+如果软件无法维护，那么它将被重写;这可能是贵公司最后一次投资 Go。
 
-1. The `fallthrough` keyword complicates this analysis, hence the general disapproval of `fallthrough` in switch statements.[](#easy-footnote-1-3748)
+## 相关文章
 
-## Related posts
-
-1.  [Accidental method value](https://dave.cheney.net/2014/05/19/accidental-method-value "Accidental method value")
-2.  [Unhelpful abstractions](https://dave.cheney.net/2016/02/06/unhelpful-abstractions "Unhelpful abstractions")
-3.  [What is the zero value, and why is it useful?](https://dave.cheney.net/2013/01/19/what-is-the-zero-value-and-why-is-it-useful "What is the zero value, and why is it useful?")
-4.  [Let’s talk about logging](https://dave.cheney.net/2015/11/05/lets-talk-about-logging "Let’s talk about logging")
+1. [Accidental method value](https://dave.cheney.net/2014/05/19/accidental-method-value "Accidental method value")
+2. [Unhelpful abstractions](https://dave.cheney.net/2016/02/06/unhelpful-abstractions "Unhelpful abstractions")
+3. [What is the zero value, and why is it useful?](https://dave.cheney.net/2013/01/19/what-is-the-zero-value-and-why-is-it-useful "What is the zero value, and why is it useful?")
+4. [Let’s talk about logging](https://dave.cheney.net/2015/11/05/lets-talk-about-logging "Let’s talk about logging")
