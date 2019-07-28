@@ -31,7 +31,7 @@ go get github.com/maruel/panicparse/cmd/pp
 alias pp="$GOPATH/bin/pp"
 ```
 
-运行这个程序，使用 `|&` 管道将标准输出和错误输出 `STDOUT` 和 `STDERR` 到 `pp`,他会持续标准输出直到他辨识出有panic，然后会打印出来。
+运行这个程序，使用 `|&` 管道将标准输出和错误输出 `STDOUT` 和 `STDERR` 到 `pp`,他会持续标准输出直到他辨识出有 panic ，然后会打印出来。
 
 这里有一个使用以及不使用panicparse进行输出对比的例子：
 
@@ -39,7 +39,7 @@ alias pp="$GOPATH/bin/pp"
 
 ### panicparse 非常棒 不过现在把他忘了吧
 
-在 Bugsnag ，我们都是处理 panic 的专家，必须[不时处理panic](https://github.com/bugsnag/bugsnag-go)，这个小工具可以帮上忙。但是 panic 的出现通常是无法预料的。为了确保你能正确地调试 panic,在 `.bashrc`或者 `.zshrc` 文件里创建常用 go 命令的别名,将输出传递给 `pp`。
+在 Bugsnag ，我们都是处理 panic 的专家，必须[不时处理 panic](https://github.com/bugsnag/bugsnag-go)，这个小工具可以帮上忙。但是 panic 的出现通常是无法预料的。为了确保你能正确地调试 panic,在 `.bashrc`或者 `.zshrc` 文件里创建常用 go 命令的别名,将输出传递给 `pp`。
 
 ```
 alias gt="go test -timeout 3s ./... 2>&1 | pp"
@@ -47,11 +47,11 @@ alias gt="go test -timeout 3s ./... 2>&1 | pp"
 
 通过这种方式，你发现一个 panic 之后，不需要再运行任何命令。如果 panic 只是偶尔发生那得到的结果就是排序好的。
 
-## 写 gRPC endpoints 程序，但是你没有 Postman? 使用 gRPCurl吧
+## 写 gRPC endpoints 程序，但是你没有 Postman? 使用 gRPCurl 吧
 
-REST APIs 因为他们的可实验性和测试性的特性，开发者生态中有对应的成熟工具，例如[Postman](https://www.getpostman.com/)。但不幸的是，很多公司发现 REST APIs 不是适用于所有的场景。在 Bugsnag 也是如此。在我们的内部服务里我们使用 gRPC 来做同步通信。如果你想要学习 gRPC，它是如何工作的，我们为何使用他，请参考[我同事的文章](https://www.bugsnag.com/blog/grpc-and-microservices-architecture)。那么也就是说我们不使用类似 Postman 这样的工具。不过这也是一种解决方案。
+REST APIs 因为他们的可实验性和测试性的特性，开发者生态中有对应的成熟工具，例如 [Postman](https://www.getpostman.com/)。但不幸的是，很多公司发现 REST APIs 不是适用于所有的场景。在 Bugsnag 也是如此。在我们的内部服务里我们使用 gRPC 来做同步通信。如果你想要学习 gRPC，它是如何工作的，我们为何使用他，请参考[我同事的文章](https://www.bugsnag.com/blog/grpc-and-microservices-architecture)。那么也就是说我们不使用类似 Postman 这样的工具。不过这也是一种解决方案。
 
-[gRPCurl](https://github.com/fullstorydev/grpcurl)是一个命令行工具，你可以使用他来与一台 gRPC 服务器使用 json 进行交互，使得读取响应信息非常简单。
+[gRPCurl](https://github.com/fullstorydev/grpcurl) 是一个命令行工具，你可以使用他来与一台 gRPC 服务器使用 json 进行交互，使得读取响应信息非常简单。
 
 在某个相关的仓库里我们有一个`GetFizzBuzzSequence` gRPC 终端节点，其 protobuf 文件位于 `fizzbuzz/fizzbuzz.proto` 中用于计算臭名昭著的 FizzBuzz 的面试问题的答案。你可以关注[指导文档](https://github.com/kinbiko/microsvcgotools#run-and-manually-test-grpc-server-with-grpcurl) 去运行一个试验 gRPC 服务器。我们可以使用 `gRPCurl` 命中此原型文件中定义的终端结点，其命令如下：
 
@@ -111,11 +111,11 @@ grpcui -plaintext localhost:1234
 
 注意，如果你想要使用 gRPC 传递流式信息那使用 `gRPCui` 就有点儿别扭了，这样得话你可能会想要退回到 `gRPCurl`。
 
-我也听说[BloomRPC](https://github.com/uw-labs/bloomrpc)，他能像 Postman 一样运行在你的本地电脑上，但是写 BloomRPC 的时候还不支持 gRPC 服务端反射特性，所以你还是需要原型文件。
+我也听说 [BloomRPC](https://github.com/uw-labs/bloomrpc)，他能像 Postman 一样运行在你的本地电脑上，但是写 BloomRPC 的时候还不支持 gRPC 服务端反射特性，所以你还是需要原型文件。
 
 ## 用 ghz 进行载入测试
 
-有好些工具测试 HTTP 终端节点的载入性能，但是测试 gRPC 的就不是很多了。我发现测试 gRPC 的最好的工具是[ghz](https://github.com/bojand/ghz)，该工具受到`hey` 和 `grpcurl`项目启发。支持高度自定义，对于熟悉`grpcurl`的人来说 上手 ghz 不难。
+有好些工具测试 HTTP 终端节点的载入性能，但是测试 gRPC 的就不是很多了。我发现测试 gRPC 的最好的工具是 [ghz](https://github.com/bojand/ghz)，该工具受到`hey` 和 `grpcurl`项目启发。支持高度自定义，对于熟悉`grpcurl`的人来说 上手 ghz 不难。
 
 比如：
 
