@@ -41,7 +41,7 @@ func BenchmarkAddNative(b *testing.B) {
         for i := 0; i < b.N; i++ {
                 r = int64(i) + int64(i)
         }
-        Result = r 
+        Result = r
 }
 
 func BenchmarkAddAsm(b *testing.B) {
@@ -183,7 +183,7 @@ TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB) /examples/popcnt
    popcnt_test.go:45     0x10f8687               e884eef5ff              CALL runtime.morestack_noctxt(SB)
    popcnt_test.go:45     0x10f868c               eb82                    JMP examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
    :-1                   0x10f868e               cc                      INT $0x3
-   :-1                   0x10f868f               cc                      INT $0x3 
+   :-1                   0x10f868f               cc                     INT $0x3 
  ```
 
 There’s quite a bit going on here, but the key take away is on line 48 (taken from the source code of the `_test.go` file) the program is using the x86 `POPCNT` instruction as we hoped. This turns out to be faster than bit twiddling.
