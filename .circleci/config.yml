@@ -1,6 +1,8 @@
 version: 2
 jobs:
   lint:
+    docker:
+      - image: circleci/ruby:2.5.3-stretch-node-browsers
     steps:
       - checkout
       - run: gem install mdl && mdl .
