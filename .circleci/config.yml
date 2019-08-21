@@ -1,12 +1,9 @@
 version: 2
 jobs:
   lint:
-    docker:
-      - image: circleci/node:10.4.0
     steps:
       - checkout
-      - run: mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && export PATH=~/.npm-global/bin:$PATH && source ~/.profile
-      - run: npm i -g lint-md && lint .
+      - run: gem install mdl && mdl .
 workflows:
   version: 2
   just_lint:
