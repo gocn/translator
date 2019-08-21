@@ -2,10 +2,10 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: yuque/lint-md
+      - image: circleci/node:10.4.0
     steps:
       - checkout
-      - run: lint-md .
+      - run: npm i -g lint-md && lint .
 workflows:
   version: 2
   just_lint:
