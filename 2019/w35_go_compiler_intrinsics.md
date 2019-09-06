@@ -1,25 +1,32 @@
 # Go compiler intrinsics
 
-Go allows authors to write functions in assembly if required. This is called a *stub* or *forward* declaration.
+- 原文地址：https://dave.cheney.net/2019/08/20/go-compiler-intrinsics
+- 原文作者：[Dave Cheney](https://dave.cheney.net/)
+- 译文出处：https://dave.cheney.net/
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w35_go_compiler_intrinsics.md
+- 译者：[fivezh](https://github.com/fivezh)、[咔叽咔叽](https://github.com/watermelo)
+- 校对者：
+
+如有需要，Go允许使用者通过汇来编写函数。这被称作 *stub* 或 *forward* 声明.
 
 ```go
 package asm
 
 // Add returns the sum of a and b.
-func Add(a int64, b int64) int64</pre>
+func Add(a int64, b int64) int64
 ```
 
-Here we’re declaring `Add`, a function which takes two `int64`‘s and returns their sum.`Add` is a normal Go function declaration, except it is missing the function body.
+这里，我们声明了`Add`函数，其接受2个`int64`类型入参，并返回二者之和。`Add`函数除了不包含函数体部分外，是常见的Go形式的函数声明。
 
-If we were to try to compile this package the compiler, justifiably, complains;
+如果我们尝试编译这个包时，编译器自然是会给出警告信息的：
 
 ```shell
-% **go build**
+% go build
 examples/asm
 ./decl.go:4:6: missing function body
 ```
 
-To satisfy the compiler we must supply a body for `Add` via assembly, which we do by adding a `.s` file in the same package.
+为了满足编译器要求，我们通过汇编的方式为`Add`提供函数体，这里可以在同一个包下新增`.s`文件。
 
 ```plain
 TEXT ·Add(SB),$0-24
@@ -29,9 +36,9 @@ TEXT ·Add(SB),$0-24
         RET
 ```
 
-Now we can build, test, and use our `Add` function just like normal Go code. But, there’s a problem, assembly functions cannot be inlined.
+现在我们可以进行`build`，`test`操作，像普通的Go代码一样使用`Add`函数。但是，有一个问题，汇编函数无法被内联。
 
-This has long been a complaint by Go developers who want to use assembly either for performance or to access operations which are not exposed in the language. Some examples would be vector instructions, atomic instructions, and so on. Without the ability to inline assembly functions writing these functions in Go can have a relatively large overhead.
+这一直是被Go开发者所抱怨的，他们希望通过汇编来提高性能或访问未被语言暴露的操作。比如说，矢量指令，原子指令等等。如果没有内联汇编的能力，在Go中编写这些函数会产生相对较大的负担。
 
 ```go
 var Result int64
@@ -51,31 +58,37 @@ func BenchmarkAddAsm(b *testing.B) {
         }
         Result = r
  }
- ```
+```
 
 ```plain
 BenchmarkAddNative-8  1000000000        0.300 ns/op
 BenchmarkAddAsm-8     606165915         1.93 ns/op
 ```
 
-Over the years there have been various proposals for an inline assembly syntax similar to gcc’s `asm(...)` directive. None have been accepted by the Go team. Instead, Go has added *intrinsic functions* [<sup>1</sup>](#easy-footnote-1-3803).
+> 译者注：Go原生的方式，性能优于汇编方式，这也就是本文关注的Go内建函数的优化。
 
-An intrinsic function is Go code written in regular Go. These functions are known the the Go compiler which contains replacements which it can substitute during compilation. As of Go 1.13 the packages which the compiler knows about are:
+多年来，已经有多种提案来支持内联汇编的语法，比如类似与gcc的`asm(...)`指令。但没有任何一个提案被Go团队接受。相反，Go添加了一种内建函数*intrinsic functions*。
+> 注1：内建函数 可能不是他们的正式名称，但是这个词在编译器及其测试中是很常用的。
+> 译者注：参见维基百科[Intrinsic function](https://en.wikipedia.org/wiki/Intrinsic_function)
 
-*   `math/bits`
-*   `sync/atomic`
+内建函数*intrinsic function*是使用常规Go编写的Go代码。这些函数在Go编译器中是已知的，它包含可在编译期间进行替换的待替换元素。从Go 1.13开始，编译器支持的包有：
 
-The functions in these packages have baroque signatures but this lets the compiler, if your architecture supports a more efficient way of performing the operation, transparently replace the function call with comparable native instructions.
+- `math/bits`
+- `sync/atomic`
 
-For the remainder of this post we’ll study two different ways the Go compiler produces more efficient code using intrinsics.
+这些包中的函数具有巴洛克式签名（译者注：这里是形容复古的签名形式），但在你的系统架构支持更有效的执行方式时，编译器可以使用相近的原生指令来进行透明的替换函数调用。
 
-## Ones count
+对于本文的其余部分，我们将研究Go编译器使用内建函数*intrinsic function*生成更高效代码的两种不同方式。
 
-Population count, the number of `1` bits in a word, is an important cryptographic and compression primitive. Because this is an important operation most modern CPUs provide a native hardware implementation.
+## Ones count 位为1的计数
 
-The `math/bits` package exposes support for this operation via the `OnesCount` series of functions. The various `OnesCount` functions are recognised by the compiler and, depending on the CPU architecture and the version of Go, will be replaced with the native hardware instruction.
+一个词中位为“1”的数量，这类计数是一种重要的加密和压缩原语。因为这是一项基础且重要的操作，所以大多数现代CPU都提供了原生硬件实现。
 
-To see how effective this can be lets compare three different ones count implementations. The first is Kernighan’s Algorithm[<sup>2</sup>](#easy-footnote-2-3803).
+`math / bits`包通过`OnesCount`系列函数提供了对该操作的支持。 各种`OnesCount`函数被编译器识别，并且取决于CPU体系结构和Go的版本，将被本机硬件指令替换。
+
+要了解这有多么有效，我们可以比较三种不同的计数实现。 第一个是Kernighan在《The C Programming Language 2nd Ed, 1998》书中提到的算法。
+
+> 注2：Kernighan 《The C Programming Language 2nd Ed, 1998》，C语言Bible
 
 ```go
 func kernighan(x uint64) int {
@@ -87,9 +100,9 @@ func kernighan(x uint64) int {
 }
 ```
 
-This algorithm has a maximum loop count of the number of bits set; the more bits set, the more loops it will take.
+该算法最大循环次数由数字本身的位数决定; 数字具有的位数越多，则它的循环次数越多。
 
-The second algorithm is taken from Hacker’s Delight via [issue 14813](https://github.com/golang/go/issues/14813).
+第二个算法会令黑客们会心一笑，来自[issue 14813](https://github.com/golang/go/issues/14813)。
 
 ```go
 func hackersdelight(x uint64) int {
@@ -103,11 +116,11 @@ func hackersdelight(x uint64) int {
         x = (x + (x >> 4)) & m4
         return int((x * h01) >> 56)
  }
- ```
+```
 
-Lots of clever bit twiddling allows this version to run in constant time and optimises very well if the input is a constant (the whole thing optimises away if the compiler can figure out the answer at compiler time).
+如果输入是一个常量（如果编译器可以在编译器时间找出答案的话，整个事情会优化掉），这个版本算法中很多比特位都会在恒定时间内运行并且非常好地优化。
 
-Let’s benchmark these implementations against `math/bits.OnesCount64`.
+让我们根据`math / bits.OnesCount64`对这些实现进行基准测试。
 
 ```go
 var Result int
@@ -137,7 +150,11 @@ func BenchmarkMathBitsOnesCount64(b *testing.B) {
 }
 ```
 
-To keep it fair, we’re feeding each function under test the same input; a sequence of integers from zero to `b.N`. This is fairer to Kernighan’s method as its runtime increases with the number of one bits in the input argument.[<sup>3</sup>](#easy-footnote-3-3803)
+为了保持公平，我们在为每个被测函数提供相同的输入：从零到“b.N”的整数序列。 这对于Kernighan的方法更为公平，因为它的运行时间随着入参的位数而主键增加。
+
+> 注3：作为加分小作业，可以尝试将`0xdeadbeefdeadbeef`传递给每个被测试的函数，看看运行结果如何。
+
+来看下测试结果：`go test -bench=. -run=none`
 
 ```plain
 BenchmarkKernighan-8        100000000       11.2 ns/op
@@ -145,7 +162,7 @@ BenchmarkPopcnt-8           618312062       2.02 ns/op
 BenchmarkMathBitsOnesCount64-8  1000000000  0.565 ns/op
 ```
 
-The winner by nearly 4x is `math/bits.OnesCount64`, but is this really using a hardware instruction, or is the compiler just doing a better job at optimising this code? Let’s check the assembly
+胜出的是`math/bits.OnesCount64`，有近4倍的速度优势，但是这真的是使用硬件指令，还是编译器在代码优化方面做得更好？让我们来检查下汇编的过程。
 
 ```plain
 % go test -c
@@ -184,25 +201,25 @@ TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB) /examples/popcnt
    popcnt_test.go:45     0x10f868c               eb82                    JMP examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
    :-1                   0x10f868e               cc                      INT $0x3
    :-1                   0x10f868f               cc                     INT $0x3 
- ```
+```
 
-There’s quite a bit going on here, but the key take away is on line 48 (taken from the source code of the `_test.go` file) the program is using the x86 `POPCNT` instruction as we hoped. This turns out to be faster than bit twiddling.
+这里输出了很多内容，但关键的内容是第48行（取自`_test.go`文件的源代码），程序确实使用了我们期望的x86`POPCNT`指令。事实证明这比操作位运算更快。
 
-Of interest is the comparison two instructions prior to the `POPCNT`,
+有趣的是比较`POPCNT`之前的两条指令：
 
 ```palin
 CMPB $0x0, runtime.x86HasPOPCNT(SB)
 ```
 
-As not all intel CPUs support `POPCNT` the Go runtime records at startup if the CPU has the necessary support and stores the result in `runtime.x86HasPOPCNT`. Each time through the benchmark loop the program is checking *does the CPU have POPCNT support* before it issues the `POPCNT` request.
+并非所有的英特尔CPU都支持`POPCNT`，如果CPU支持此指令，那么Go运行时在启动时，就会将此结果存储在`runtime.x86HasPOPCNT`中。这样每次进行基准测试循环时，程序通过检查*CPU是否支持POPCNT*，然后再发出`POPCNT`请求。
 
-The value of `runtime.x86HasPOPCNT` isn’t expected to change during the life of the program’s execution so the result of the check should be highly predictable making the check relatively cheap.
+`runtime.x86HasPOPCNT`的值在程序执行期间不会变化，因此检查结果是高度可预测的，这使得这种检查的成本相对低廉。
 
-## Atomic counter
+## Atomic counter 原子计数器
 
-As well as generating more efficient code, intrinsic functions are just regular Go code, the rules of inlining (including mid stack inlining) apply equally to them.
+除了生成更高效的代码之外，内建函数*intrinsic functions*只是常规的Go代码，内联规则（包括中间堆栈内联）同样适用于它们。
 
-Here’s an example of an atomic counter type. It’s got methods on types, method calls several layers deep, multiple packages, etc.
+这是一个原子计数器类型的例子。它有类型的方法，深层的方法调用，多个包等情况。
 
 ```go
 import (
@@ -232,7 +249,9 @@ func f() uint64 {
 }
 ```
 
-You’d be forgiven for thinking this would have a lot of overhead. However, because of the interaction between inlining and compiler intrinsics, this code collapses down to efficient native code on most platforms.
+> 译者注：原文代码有误无法编译，代码进行了部分修改， `(uint64)(c)`修改为`(*uint64)(&c)`
+
+你会认为上述这种操作会产生很多开销，这是可以原谅的。 但由于内联和编译器内建函数之间的交互，这些代码在大多数平台上会转换为很高效的原生代码。
 
 ```plain
 TEXT main.f(SB) examples/counter/counter.go
@@ -248,17 +267,13 @@ TEXT main.f(SB) examples/counter/counter.go
    counter.go:16         0x1051300               c3                      RET 
 ```
 
-By way of explanation. The first operation, `counter.go:13` is `c.inc` a `LOCK`ed `XADDQ`, which on x86 is an atomic increment. The second, `counter.go:10` is `c.get` which on x86, due to its strong memory consistency model, is a regular load from memory. The final operation, `counter.go:16`, `c.reset` is an atomic exchange of the address in `CX` with `AX` which was zeroed on the previous line. This puts the value in `AX`, zero, into the address stored in `CX`. The value previously stored at `(CX)` is discarded.
+下面我们逐一解释下。第一个操作，`counter.go:13`是`c.inc`一个`LOCK`和`XADDQ`指令，这在x86上是一个原子性的增量。第二个，`counter.go:10`是`c.get`，由于x86强大的内存一致性模型，它是内存级的常规操作。最后一个操作，`counter.go:16`，`c.reset`是`CX`中地址与`AX`的原子交换，而`AX`在前一行被归零(`XORL AX, AX`，按位异或，相当于清零)。这将`AX`中的值（零）放入存储在`CX`中的地址中，而先前存储在`（CX）`的值被丢弃。
 
-## Conclusion
+## Conclusion 总结
 
-Intrinsics are a neat solution that give Go programmers access to low level architectural operations without having to extend the specification of the language. If an architecture doesn’t have a specific `sync/atomic` primitive (like some ARM variants), or a `math/bits` operation, then the compiler transparently falls back to the operation written in pure Go.
+内建函数是一种简洁的解决方案，它使Go程序员可以进行低层架构的操作，而无需扩展语言规范。如果某个体系结构没有特定的`sync/atomic`原语（比如某些ARM的变体）或者`math/bits`操作，那么编译器会隐式地降级为用纯Go编写的操作。
 
-1.  <span id="easy-footnote-bottom-1-3803" class="easy-footnote-margin-adjust"></span>This may not be their official name, however the word is in common use inside the compiler and its tests[](#easy-footnote-1-3803)
-2.  <span id="easy-footnote-bottom-2-3803" class="easy-footnote-margin-adjust"></span>The C Programming Language 2nd Ed, 1998[](#easy-footnote-2-3803)
-3.  <span id="easy-footnote-bottom-3-3803" class="easy-footnote-margin-adjust"></span>As extra credit homework, try passing `0xdeadbeefdeadbeef` to each function under test and observe the results.[](#easy-footnote-3-3803)
-
-## Related posts
+## Related posts 相关文章
 
 1.  [Notes on exploring the compiler flags in the Go compiler suite](https://dave.cheney.net/2012/10/07/notes-on-exploring-the-compiler-flags-in-the-go-compiler-suite "Notes on exploring the compiler flags in the Go compiler suite")
 2.  [Padding is hard](https://dave.cheney.net/2015/10/09/padding-is-hard "Padding is hard")
