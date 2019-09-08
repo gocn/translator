@@ -2,10 +2,10 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: fivezh/lint-md:cli
+      - image: fivezh/lint-md
     steps:
       - checkout
-      - run: lint-md .
+      - run: echo "hello world" && lint-md .
 workflows:
   version: 2
   just_lint:
