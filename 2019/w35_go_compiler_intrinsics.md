@@ -150,40 +150,43 @@ The winner by nearly 4x is `math/bits.OnesCount64`, but is this really using a h
 ```plain
 % go test -c
 % go tool objdump -s MathBitsOnesCount popcnt-intrinsic.test
-TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB) /examples/popcnt-intrinsic/popcnt_test.go
-   popcnt_test.go:45     0x10f8610               65488b0c2530000000      MOVQ GS:0x30, CX
-   popcnt_test.go:45     0x10f8619               483b6110                CMPQ 0x10(CX), SP
-   popcnt_test.go:45     0x10f861d               7668                    JBE 0x10f8687
-   popcnt_test.go:45     0x10f861f               4883ec20                SUBQ $0x20, SP
-   popcnt_test.go:45     0x10f8623               48896c2418              MOVQ BP, 0x18(SP)
-   popcnt_test.go:45     0x10f8628               488d6c2418              LEAQ 0x18(SP), BP
-   popcnt_test.go:47     0x10f862d               488b442428              MOVQ 0x28(SP), AX
-   popcnt_test.go:47     0x10f8632               31c9                    XORL CX, CX
-   popcnt_test.go:47     0x10f8634               31d2                    XORL DX, DX
-   popcnt_test.go:47     0x10f8636               eb03                    JMP 0x10f863b
-   popcnt_test.go:47     0x10f8638               48ffc1                  INCQ CX
-   popcnt_test.go:47     0x10f863b               48398808010000          CMPQ CX, 0x108(AX)
-   popcnt_test.go:47     0x10f8642               7e32                    JLE 0x10f8676
-   popcnt_test.go:48     0x10f8644               803d29d5150000          CMPB $0x0, runtime.x86HasPOPCNT(SB)
-   popcnt_test.go:48     0x10f864b               740a                    JE 0x10f8657
-   popcnt_test.go:48     0x10f864d               4831d2                  XORQ DX, DX
-   popcnt_test.go:48     0x10f8650               f3480fb8d1              POPCNT CX, DX // math/bits.OnesCount64
-   popcnt_test.go:48     0x10f8655               ebe1                    JMP 0x10f8638
-   popcnt_test.go:47     0x10f8657               48894c2410              MOVQ CX, 0x10(SP)
-   popcnt_test.go:48     0x10f865c               48890c24                MOVQ CX, 0(SP)
-   popcnt_test.go:48     0x10f8660               e87b28f8ff              CALL math/bits.OnesCount64(SB)
-   popcnt_test.go:48     0x10f8665               488b542408              MOVQ 0x8(SP), DX
-   popcnt_test.go:47     0x10f866a               488b442428              MOVQ 0x28(SP), AX
-   popcnt_test.go:47     0x10f866f               488b4c2410              MOVQ 0x10(SP), CX
-   popcnt_test.go:48     0x10f8674               ebc2                    JMP 0x10f8638
-   popcnt_test.go:50     0x10f8676               48891563d51500          MOVQ DX, examples/popcnt-intrinsic.Result(SB)
-   popcnt_test.go:51     0x10f867d               488b6c2418              MOVQ 0x18(SP), BP
-   popcnt_test.go:51     0x10f8682               4883c420                ADDQ $0x20, SP
-   popcnt_test.go:51     0x10f8686               c3                      RET
-   popcnt_test.go:45     0x10f8687               e884eef5ff              CALL runtime.morestack_noctxt(SB)
-   popcnt_test.go:45     0x10f868c               eb82                    JMP examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
-   :-1                   0x10f868e               cc                      INT $0x3
-   :-1                   0x10f868f               cc                     INT $0x3 
+TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB) 
+/examples/popcnt-intrinsic/popcnt_test.go
+   popcnt_test.go:45     0x10f8610    65488b0c2530000000  MOVQ GS:0x30, CX
+   popcnt_test.go:45     0x10f8619    483b6110            CMPQ 0x10(CX), SP
+   popcnt_test.go:45     0x10f861d    7668                JBE 0x10f8687
+   popcnt_test.go:45     0x10f861f    4883ec20            SUBQ $0x20, SP
+   popcnt_test.go:45     0x10f8623    48896c2418          MOVQ BP, 0x18(SP)
+   popcnt_test.go:45     0x10f8628    488d6c2418          LEAQ 0x18(SP), BP
+   popcnt_test.go:47     0x10f862d    488b442428          MOVQ 0x28(SP), AX
+   popcnt_test.go:47     0x10f8632    31c9                XORL CX, CX
+   popcnt_test.go:47     0x10f8634    31d2                XORL DX, DX
+   popcnt_test.go:47     0x10f8636    eb03                JMP 0x10f863b
+   popcnt_test.go:47     0x10f8638    48ffc1              INCQ CX
+   popcnt_test.go:47     0x10f863b    48398808010000      CMPQ CX, 0x108(AX)
+   popcnt_test.go:47     0x10f8642    7e32                JLE 0x10f8676
+   popcnt_test.go:48     0x10f8644    803d29d5150000      CMPB $0x0, runtime.x86HasPOPCNT(SB)
+   popcnt_test.go:48     0x10f864b    740a                JE 0x10f8657
+   popcnt_test.go:48     0x10f864d    4831d2              XORQ DX, DX
+   popcnt_test.go:48     0x10f8650    f3480fb8d1          POPCNT CX, DX // math/bits.OnesCount64
+   popcnt_test.go:48     0x10f8655    ebe1                JMP 0x10f8638
+   popcnt_test.go:47     0x10f8657    48894c2410          MOVQ CX, 0x10(SP)
+   popcnt_test.go:48     0x10f865c    48890c24            MOVQ CX, 0(SP)
+   popcnt_test.go:48     0x10f8660    e87b28f8ff          CALL math/bits.OnesCount64(SB)
+   popcnt_test.go:48     0x10f8665    488b542408          MOVQ 0x8(SP), DX
+   popcnt_test.go:47     0x10f866a    488b442428          MOVQ 0x28(SP), AX
+   popcnt_test.go:47     0x10f866f    488b4c2410          MOVQ 0x10(SP), CX
+   popcnt_test.go:48     0x10f8674    ebc2                JMP 0x10f8638
+   popcnt_test.go:50     0x10f8676    48891563d51500      MOVQ DX, examples/
+   popcnt-intrinsic.Result(SB)
+   popcnt_test.go:51     0x10f867d    488b6c2418          MOVQ 0x18(SP), BP
+   popcnt_test.go:51     0x10f8682    4883c420            ADDQ $0x20, SP
+   popcnt_test.go:51     0x10f8686    c3                  RET
+   popcnt_test.go:45     0x10f8687    e884eef5ff          CALL runtime.morestack_noctxt(SB)
+   popcnt_test.go:45     0x10f868c    eb82                JMP examples/
+   popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
+   :-1                   0x10f868e    cc                  INT $0x3
+   :-1                   0x10f868f    cc                  INT $0x3 
  ```
 
 There’s quite a bit going on here, but the key take away is on line 48 (taken from the source code of the `_test.go` file) the program is using the x86 `POPCNT` instruction as we hoped. This turns out to be faster than bit twiddling.
@@ -236,16 +239,16 @@ You’d be forgiven for thinking this would have a lot of overhead. However, bec
 
 ```plain
 TEXT main.f(SB) examples/counter/counter.go
-   counter.go:23         0x10512e0               90                      NOPL
-   counter.go:29         0x10512e1               b801000000              MOVL $0x1, AX
-   counter.go:13         0x10512e6               488d0d0bca0800          LEAQ main.c(SB), CX
-   counter.go:13         0x10512ed               f0480fc101              LOCK XADDQ AX, 0(CX) // c.inc
-   counter.go:24         0x10512f2               90                      NOPL
-   counter.go:10         0x10512f3               488b05fec90800          MOVQ main.c(SB), AX // c.get
-   counter.go:25         0x10512fa               90                      NOPL
-   counter.go:16         0x10512fb               31c0                    XORL AX, AX
-   counter.go:16         0x10512fd               488701                  XCHGQ AX, 0(CX) // c.reset
-   counter.go:16         0x1051300               c3                      RET 
+   counter.go:23   0x10512e0   90                      NOPL
+   counter.go:29   0x10512e1   b801000000              MOVL $0x1, AX
+   counter.go:13   0x10512e6   488d0d0bca0800          LEAQ main.c(SB), CX
+   counter.go:13   0x10512ed   f0480fc101              LOCK XADDQ AX, 0(CX) // c.inc
+   counter.go:24   0x10512f2   90                      NOPL
+   counter.go:10   0x10512f3   488b05fec90800          MOVQ main.c(SB), AX // c.get
+   counter.go:25   0x10512fa   90                      NOPL
+   counter.go:16   0x10512fb   31c0                    XORL AX, AX
+   counter.go:16   0x10512fd   488701                  XCHGQ AX, 0(CX) // c.reset
+   counter.go:16   0x1051300               c3                      RET 
 ```
 
 By way of explanation. The first operation, `counter.go:13` is `c.inc` a `LOCK`ed `XADDQ`, which on x86 is an atomic increment. The second, `counter.go:10` is `c.get` which on x86, due to its strong memory consistency model, is a regular load from memory. The final operation, `counter.go:16`, `c.reset` is an atomic exchange of the address in `CX` with `AX` which was zeroed on the previous line. This puts the value in `AX`, zero, into the address stored in `CX`. The value previously stored at `(CX)` is discarded.
