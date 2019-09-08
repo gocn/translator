@@ -5,7 +5,7 @@ jobs:
       - image: yuque/lint-md
     steps:
       - checkout
-      - run: echo "hello world" && lint-md .
+      - run: lint-md .
 workflows:
   version: 2
   just_lint:
