@@ -2,7 +2,7 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: fivezh/lint-md
+      - image: yuque/lint-md
     steps:
       - checkout
       - run: echo "hello world" && lint-md .
