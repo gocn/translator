@@ -1974,7 +1974,7 @@ This section lists some of those ideas in the hopes that it will help
 to reduce repetitive discussion.
 The ideas are presented in the form of a FAQ.
 
-##### Why not use interfaces instead of contracts?
+##### Why not use interfaces instead of contracts
 
 _The interface method syntax is familiar._
 _Why introduce another way to write methods?_
@@ -2026,7 +2026,7 @@ with a single type parameter that lists only methods.
 But that should not mislead us into thinking that contracts are
 interfaces.
 
-##### Why not permit contracts to describe a type?
+##### Why not permit contracts to describe a type
 
 _In order to use operators contracts have to explicitly and tediously_
 _list types._
@@ -2039,7 +2039,7 @@ syntactic constructs, making contracts complicated and hard to read.
 The approach used in this design is simpler and relies on only a few
 new syntactic constructs and names.
 
-##### Why not put type parameters on packages?
+##### Why not put type parameters on packages
 
 We investigated this extensively.
 It becomes problematic when you want to write a `list` package, and
@@ -2053,7 +2053,7 @@ There is no particular reason to think that the uses of parameterized
 types will break down neatly into packages.
 Sometimes they will, sometimes they won't.
 
-##### Why not use the syntax `F<T>` like C++ and Java?
+##### Why not use the syntax `F<T>` like C++ and Java
 
 When parsing code within a function, such as `v := F<T>`, at the point
 of seeing the `<` it's ambiguous whether we are seeing a type
@@ -2061,7 +2061,7 @@ instantiation or an expression using the `<` operator.
 Resolving that requires effectively unbounded lookahead.
 In general we strive to keep the Go parser simple.
 
-##### Why not use the syntax `F[T]`?
+##### Why not use the syntax `F[T]`
 
 When parsing a type declaration `type A [T] int` it's ambiguous
 whether this is a parameterized type defined (uselessly) as `int` or
@@ -2087,12 +2087,12 @@ More generally, we felt that the square brackets were too intrusive on
 the page and that parentheses were more Go like.
 We will reevaluate this decision as we gain more experience.
 
-##### Why not use `F«T»`?
+##### Why not use `F«T»`
 
 We considered it but we couldn't bring ourselves to require
 non-ASCII.
 
-##### Why not define contracts in a standard package?
+##### Why not define contracts in a standard package
 
 _Instead of writing out contracts, use names like_
 _`contracts.Arithmetic` and `contracts.Comparable`._

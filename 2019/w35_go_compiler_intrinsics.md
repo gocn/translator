@@ -68,7 +68,7 @@ BenchmarkAddAsm-8     606165915         1.93 ns/op
 > 译者注：Go 原生的方式，性能优于汇编方式，这也是本文所关注的 Go 内建函数的优化。
 
 多年来，已经有多种提案来支持内联汇编的语法，比如类似与 gcc 的 `asm(...)` 指令。但没有任何一个提案被 Go 团队接受。相反，Go 添加了一种内建函数 *intrinsic functions* 。
-> 注1：内建函数 可能不是他们的正式名称，但是这个词在编译器及其测试中是很常用的。
+> 注 1：内建函数 可能不是他们的正式名称，但是这个词在编译器及其测试中是很常用的。
 > 
 > 译者注：参见维基百科[Intrinsic function](https://en.wikipedia.org/wiki/Intrinsic_function)
 
@@ -89,7 +89,7 @@ BenchmarkAddAsm-8     606165915         1.93 ns/op
 
 要了解这有多么有效，我们可以比较三种不同的计数实现。 第一个是 Kernighan 在《The C Programming Language 2nd Ed, 1998》书中提到的算法。
 
-> 注2：Kernighan 《The C Programming Language 2nd Ed, 1998》，C语言Bible
+> 注 2：Kernighan 《The C Programming Language 2nd Ed, 1998》，C 语言 Bible
 
 ```go
 func kernighan(x uint64) int {
@@ -153,7 +153,7 @@ func BenchmarkMathBitsOnesCount64(b *testing.B) {
 
 为了保持公平，我们在为每个被测函数提供相同的输入：从零到 `b.N` 的整数序列。这对于 Kernighan 的方法更为公平，因为它的运行时间随着入参的位数而逐渐增加。
 
-> 注3：作为加分小作业，可以尝试将 `0xdeadbeefdeadbeef` 传递给每个被测试的函数，看看运行结果如何。
+> 注 3：作为加分小作业，可以尝试将 `0xdeadbeefdeadbeef` 传递给每个被测试的函数，看看运行结果如何。
 
 来看下测试结果：`go test -bench=. -run=none`
 
@@ -168,41 +168,44 @@ BenchmarkMathBitsOnesCount64-8  1000000000  0.565 ns/op
 ```plain
 % go test -c
 % go tool objdump -s MathBitsOnesCount popcnt-intrinsic.test
-TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB) /examples/popcnt-intrinsic/popcnt_test.go
-   popcnt_test.go:45     0x10f8610               65488b0c2530000000      MOVQ GS:0x30, CX
-   popcnt_test.go:45     0x10f8619               483b6110                CMPQ 0x10(CX), SP
-   popcnt_test.go:45     0x10f861d               7668                    JBE 0x10f8687
-   popcnt_test.go:45     0x10f861f               4883ec20                SUBQ $0x20, SP
-   popcnt_test.go:45     0x10f8623               48896c2418              MOVQ BP, 0x18(SP)
-   popcnt_test.go:45     0x10f8628               488d6c2418              LEAQ 0x18(SP), BP
-   popcnt_test.go:47     0x10f862d               488b442428              MOVQ 0x28(SP), AX
-   popcnt_test.go:47     0x10f8632               31c9                    XORL CX, CX
-   popcnt_test.go:47     0x10f8634               31d2                    XORL DX, DX
-   popcnt_test.go:47     0x10f8636               eb03                    JMP 0x10f863b
-   popcnt_test.go:47     0x10f8638               48ffc1                  INCQ CX
-   popcnt_test.go:47     0x10f863b               48398808010000          CMPQ CX, 0x108(AX)
-   popcnt_test.go:47     0x10f8642               7e32                    JLE 0x10f8676
-   popcnt_test.go:48     0x10f8644               803d29d5150000          CMPB $0x0, runtime.x86HasPOPCNT(SB)
-   popcnt_test.go:48     0x10f864b               740a                    JE 0x10f8657
-   popcnt_test.go:48     0x10f864d               4831d2                  XORQ DX, DX
-   popcnt_test.go:48     0x10f8650               f3480fb8d1              POPCNT CX, DX // math/bits.OnesCount64
-   popcnt_test.go:48     0x10f8655               ebe1                    JMP 0x10f8638
-   popcnt_test.go:47     0x10f8657               48894c2410              MOVQ CX, 0x10(SP)
-   popcnt_test.go:48     0x10f865c               48890c24                MOVQ CX, 0(SP)
-   popcnt_test.go:48     0x10f8660               e87b28f8ff              CALL math/bits.OnesCount64(SB)
-   popcnt_test.go:48     0x10f8665               488b542408              MOVQ 0x8(SP), DX
-   popcnt_test.go:47     0x10f866a               488b442428              MOVQ 0x28(SP), AX
-   popcnt_test.go:47     0x10f866f               488b4c2410              MOVQ 0x10(SP), CX
-   popcnt_test.go:48     0x10f8674               ebc2                    JMP 0x10f8638
-   popcnt_test.go:50     0x10f8676               48891563d51500          MOVQ DX, examples/popcnt-intrinsic.Result(SB)
-   popcnt_test.go:51     0x10f867d               488b6c2418              MOVQ 0x18(SP), BP
-   popcnt_test.go:51     0x10f8682               4883c420                ADDQ $0x20, SP
-   popcnt_test.go:51     0x10f8686               c3                      RET
-   popcnt_test.go:45     0x10f8687               e884eef5ff              CALL runtime.morestack_noctxt(SB)
-   popcnt_test.go:45     0x10f868c               eb82                    JMP examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
-   :-1                   0x10f868e               cc                      INT $0x3
-   :-1                   0x10f868f               cc                     INT $0x3 
-```
+TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB) 
+/examples/popcnt-intrinsic/popcnt_test.go
+   popcnt_test.go:45     0x10f8610    65488b0c2530000000  MOVQ GS:0x30, CX
+   popcnt_test.go:45     0x10f8619    483b6110            CMPQ 0x10(CX), SP
+   popcnt_test.go:45     0x10f861d    7668                JBE 0x10f8687
+   popcnt_test.go:45     0x10f861f    4883ec20            SUBQ $0x20, SP
+   popcnt_test.go:45     0x10f8623    48896c2418          MOVQ BP, 0x18(SP)
+   popcnt_test.go:45     0x10f8628    488d6c2418          LEAQ 0x18(SP), BP
+   popcnt_test.go:47     0x10f862d    488b442428          MOVQ 0x28(SP), AX
+   popcnt_test.go:47     0x10f8632    31c9                XORL CX, CX
+   popcnt_test.go:47     0x10f8634    31d2                XORL DX, DX
+   popcnt_test.go:47     0x10f8636    eb03                JMP 0x10f863b
+   popcnt_test.go:47     0x10f8638    48ffc1              INCQ CX
+   popcnt_test.go:47     0x10f863b    48398808010000      CMPQ CX, 0x108(AX)
+   popcnt_test.go:47     0x10f8642    7e32                JLE 0x10f8676
+   popcnt_test.go:48     0x10f8644    803d29d5150000      CMPB $0x0, runtime.x86HasPOPCNT(SB)
+   popcnt_test.go:48     0x10f864b    740a                JE 0x10f8657
+   popcnt_test.go:48     0x10f864d    4831d2              XORQ DX, DX
+   popcnt_test.go:48     0x10f8650    f3480fb8d1          POPCNT CX, DX // math/bits.OnesCount64
+   popcnt_test.go:48     0x10f8655    ebe1                JMP 0x10f8638
+   popcnt_test.go:47     0x10f8657    48894c2410          MOVQ CX, 0x10(SP)
+   popcnt_test.go:48     0x10f865c    48890c24            MOVQ CX, 0(SP)
+   popcnt_test.go:48     0x10f8660    e87b28f8ff          CALL math/bits.OnesCount64(SB)
+   popcnt_test.go:48     0x10f8665    488b542408          MOVQ 0x8(SP), DX
+   popcnt_test.go:47     0x10f866a    488b442428          MOVQ 0x28(SP), AX
+   popcnt_test.go:47     0x10f866f    488b4c2410          MOVQ 0x10(SP), CX
+   popcnt_test.go:48     0x10f8674    ebc2                JMP 0x10f8638
+   popcnt_test.go:50     0x10f8676    48891563d51500      MOVQ DX, examples/
+   popcnt-intrinsic.Result(SB)
+   popcnt_test.go:51     0x10f867d    488b6c2418          MOVQ 0x18(SP), BP
+   popcnt_test.go:51     0x10f8682    4883c420            ADDQ $0x20, SP
+   popcnt_test.go:51     0x10f8686    c3                  RET
+   popcnt_test.go:45     0x10f8687    e884eef5ff          CALL runtime.morestack_noctxt(SB)
+   popcnt_test.go:45     0x10f868c    eb82                JMP examples/
+   popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
+   :-1                   0x10f868e    cc                  INT $0x3
+   :-1                   0x10f868f    cc                  INT $0x3 
+ ```
 
 这里输出了很多内容，但关键的内容是第 48 行（取自 `_test.go` 文件的源代码），程序确实使用了我们期望的 x86 `POPCNT` 指令。事实证明这比操作位运算更快。
 
@@ -256,16 +259,16 @@ func f() uint64 {
 
 ```plain
 TEXT main.f(SB) examples/counter/counter.go
-   counter.go:23         0x10512e0               90                      NOPL
-   counter.go:29         0x10512e1               b801000000              MOVL $0x1, AX
-   counter.go:13         0x10512e6               488d0d0bca0800          LEAQ main.c(SB), CX
-   counter.go:13         0x10512ed               f0480fc101              LOCK XADDQ AX, 0(CX) // c.inc
-   counter.go:24         0x10512f2               90                      NOPL
-   counter.go:10         0x10512f3               488b05fec90800          MOVQ main.c(SB), AX // c.get
-   counter.go:25         0x10512fa               90                      NOPL
-   counter.go:16         0x10512fb               31c0                    XORL AX, AX
-   counter.go:16         0x10512fd               488701                  XCHGQ AX, 0(CX) // c.reset
-   counter.go:16         0x1051300               c3                      RET 
+   counter.go:23   0x10512e0   90                      NOPL
+   counter.go:29   0x10512e1   b801000000              MOVL $0x1, AX
+   counter.go:13   0x10512e6   488d0d0bca0800          LEAQ main.c(SB), CX
+   counter.go:13   0x10512ed   f0480fc101              LOCK XADDQ AX, 0(CX) // c.inc
+   counter.go:24   0x10512f2   90                      NOPL
+   counter.go:10   0x10512f3   488b05fec90800          MOVQ main.c(SB), AX // c.get
+   counter.go:25   0x10512fa   90                      NOPL
+   counter.go:16   0x10512fb   31c0                    XORL AX, AX
+   counter.go:16   0x10512fd   488701                  XCHGQ AX, 0(CX) // c.reset
+   counter.go:16   0x1051300               c3                      RET 
 ```
 
 下面我们逐一解释下。第一个操作，`counter.go:13` 是 `c.inc` 一个 `LOCK` 和 `XADDQ` 指令，这在 x86 上是一个原子性的增量。第二个，`counter.go:10` 是 `c.get` ，由于 x86 强大的内存一致性模型，它是内存级的常规操作。最后一个操作，`counter.go:16` ，`c.reset` 是 `CX` 中地址与 `AX` 的原子交换，而 `AX` 在前一行被归零(`XORL AX, AX`，按位异或，相当于清零)。这将 `AX` 中的值（零）放入存储在 `CX` 中的地址中，而先前存储在 `(CX)` 的值被丢弃。
