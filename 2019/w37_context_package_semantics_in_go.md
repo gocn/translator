@@ -147,7 +147,7 @@ This is an important rule since a Context is request or task based. You want the
 **Listing 5**  
 [https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/user.go#L24](https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/user.go#L24)
 
-```go
+```plain
 23 // List returns all the existing users in the system.
 24 func (u *User) List(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
 25     ctx, span := trace.StartSpan(ctx, "handlers.User.List")
@@ -169,7 +169,7 @@ A new Context value is not created since this function requires no changes to it
 **Listing 6**  
 [https://github.com/ardanlabs/service/blob/master/internal/user/user.go#L34](https://github.com/ardanlabs/service/blob/master/internal/user/user.go#L34)
 
-```go
+```plain
 33 // List retrieves a list of existing users from the database.
 34 func List(ctx context.Context, db *sqlx.DB) ([]User, error) {
 35     ctx, span := trace.StartSpan(ctx, "internal.user.List")
@@ -195,7 +195,7 @@ Because each function can add/modify the Context for their specific needs, and t
 **Listing 7**  
 [https://play.golang.org/p/8RdBXtfDv1w](https://play.golang.org/p/8RdBXtfDv1w)
 
-```go
+```plain
 18 func main() {
 19
 20     // Set a duration.
@@ -243,7 +243,7 @@ The use of value semantics for the Context API means each new Context value is g
 **Listing 8**  
 [https://play.golang.org/p/PmhTXiCZUP1](https://play.golang.org/p/PmhTXiCZUP1)
 
-```go
+```plain
 20 func main() {
 21
 22     // Create a Context that can be cancelled.
@@ -305,7 +305,7 @@ Request handlers are a classic example of the second rule. Since a handler funct
 **Listing 9**  
 [https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/user.go#L24](https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/user.go#L24)
 
-```go
+```plain
 23 // List returns all the existing users in the system.
 24 func (u *User) List(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
 25     ctx, span := trace.StartSpan(ctx, "handlers.User.List")
@@ -325,7 +325,7 @@ In listing 9, you see the `List` handler method from the service project. The si
 **Listing 10**  
 [https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/user.go#L15](https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/user.go#L15)
 
-```go
+```plain
 15 // User represents the User API method handler set.
 16 type User struct {
 17     db            *sqlx.DB
@@ -339,7 +339,7 @@ In listing 10, you see the declaration of the receiver type. Anything that a req
 **Listing 11**  
 [https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/routes.go#L14](https://github.com/ardanlabs/service/blob/master/cmd/sales-api/internal/handlers/routes.go#L14)
 
-```go
+```plain
 14 // API constructs an http.Handler with all application routes defined.
 15 func API(shutdown chan os.Signal, log *log.Logger, db *sqlx.DB, authenticator *auth.Authenticator) http.Handler {
 16
@@ -362,7 +362,7 @@ Data that can be stored and received from a Context value is debug and tracing i
 **Listing 12**  
 [https://github.com/ardanlabs/service/blob/master/internal/platform/web/web.go#L23](https://github.com/ardanlabs/service/blob/master/internal/platform/web/web.go#L23)
 
-```go
+```plain
 23 // Values represent state for each request.
 24 type Values struct {
 25     TraceID    string
@@ -376,7 +376,7 @@ In listing 12, you see the declaration of a type that is constructed and stored 
 **Listing 13**  
 [https://github.com/ardanlabs/service/blob/master/internal/platform/web/web.go#L75](https://github.com/ardanlabs/service/blob/master/internal/platform/web/web.go#L75)
 
-```go
+```plain
 75 // Handle is our mechanism for mounting Handlers for a given HTTP verb and path
 76 // pair, this makes for really easy, convenient routing.
 77 func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
@@ -399,7 +399,7 @@ In listing 13, you see how the `Values` type is constructed on line 86 and then 
 **Listing 14**  
 [https://github.com/ardanlabs/service/blob/master/internal/mid/logger.go#L20](https://github.com/ardanlabs/service/blob/master/internal/mid/logger.go#L20)
 
-```go
+```plain
 20 // Create the handler that will be attached in the middleware chain.
 21 h := func(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
     ...
