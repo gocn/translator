@@ -1,3 +1,12 @@
+# Context Package Semantics In Go
+
+- 原文地址：https://www.ardanlabs.com/blog/2019/09/context-package-semantics-in-go.html
+- 原文作者：[William Kennedy](https://www.ardanlabs.com)
+- 译文出处：https://www.ardanlabs.com
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w37_context_package_semantics_in_go.md
+- 译者：[咔叽咔叽](https://github.com/watermelo)
+- 校对者：
+
 ## Introduction
 
 The Go programming language has the built-in keyword `go` to create goroutines, but has no keywords or direct support for terminating goroutines. In a real world service, the ability to time-out and terminate goroutines is critical for maintaining the health and operation of a service. No request or task can be allowed to run forever so identifying and managing latency is a responsibility every programmer has.
