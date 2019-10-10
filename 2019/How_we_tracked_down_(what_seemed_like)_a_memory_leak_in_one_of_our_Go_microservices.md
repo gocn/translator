@@ -198,15 +198,10 @@ Don’t be out of the loop on how the runtime of your programming language opera
 **All the links we found along the way:**
 
 [Jonathan Levison on how he used pprof to debug a memory leak.](https://www.freecodecamp.org/news/how-i-investigated-memory-leaks-in-go-using-pprof-on-a-large-codebase-4bec4325e192/)  
-
 [[VIDEO] Memory leaks in Go and how they look like.](https://www.youtube.com/watch?v=ydWFpcoYraU)  
-
 [ Another memory leak debugging journey!](https://medium.com/dm03514-tech-blog/sre-debugging-simple-memory-leaks-in-go-e0a9e6d63d4d)  
-
 [How to optimize your code if it’s suffering from memory pressure, ](https://syslog.ravelin.com/lemony-scale-its-a-series-of-unfortunate-decisions-b16a59833146)and also general tips on how the Go memory model works.  
-
 [How the Go garbage collector works.](https://blog.golang.org/ismmkeynote)  
-
 [Go’s behavior on not releasing memory to the operating system.](https://utcc.utoronto.ca/~cks/space/blog/programming/GoNoMemoryFreeing)
 
 * * *
