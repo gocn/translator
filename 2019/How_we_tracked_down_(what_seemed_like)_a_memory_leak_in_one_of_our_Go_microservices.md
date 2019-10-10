@@ -55,7 +55,7 @@ The tool has several built in profiles, such as:
 You can find more details about them in the [pprof.go](https://golang.org/src/runtime/pprof/pprof.go) file.
 We’ll spend most of our time looking at the heap profile. If you can’t find anything useful in the heap profile, try checking the others. We also checked the goroutine profile a few times to make sure we didn’t have any go routines hanging and leaking memory.
 
-## What are we looking for? 
+## What are we looking for
 
 Before we dive in the debugging rabbit hole, it’s important to take a step back and try to have an idea what exactly we are looking for. In other words, in what ways can a memory leak (or other forms of memory pressure) appear in Go?
 Go is a garbage collected language, which takes away a lot of memory management responsibility from developers, but we still need to be cautious to not block allocated memory from being garbage collected.
@@ -110,7 +110,7 @@ Okay, but now getting back to the prompt, the most common command to run is `to
 
 Our first thoughts when we saw this was that something is off with either pprof or our monitoring systems, because we were seeing a 400MB memory consumption steadily, but pprof is reporting around 7MB. We logged in to our machines to check `docker stats` and they were reporting 400MB memory consumption as well.
 
-## What was going with pprof? 
+## What was going with pprof
 
 
 Here’s a brief explanation of what some of those terms mean:
