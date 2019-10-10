@@ -1,5 +1,5 @@
 
-# 给Go开发者准备的微服务开发工具
+# 给 Go 开发者准备的微服务开发工具
 
 - 原文地址：[microservice-developer-tools-for-gophers](https://www.bugsnag.com/blog/microservice-developer-tools-for-gophers)
 - 原文作者： [Roger Guldbrandsen](https://www.twitter.com/kinbiko)
@@ -24,7 +24,7 @@ Go 是由与开发者有共鸣的资深工程师构建的，最终体现在于 g
 
 有一个非常棒的工具 [panicparse](https://github.com/maruel/panicparse)。使用这个工具你可以把你的程序导入到这个工具里，如果检测到了 panic 他会自动清晰的打印出来结果，所以你可以快速鉴别出哪里出了问题。
 
-```
+```golang
 go get github.com/maruel/panicparse/cmd/pp
 # 取决于你的 $PATH 如何设置，`pp`会被解析
 # 作为 Perl 包管理器
@@ -41,7 +41,7 @@ alias pp="$GOPATH/bin/pp"
 
 在 Bugsnag ，我们都是处理 panic 的专家，必须[不时处理 panic](https://github.com/bugsnag/bugsnag-go)，这个小工具可以帮上忙。但是 panic 的出现通常是无法预料的。为了确保你能正确地调试 panic，在 `.bashrc`或者 `.zshrc` 文件里创建常用 go 命令的别名，将输出传递给 `pp`。
 
-```
+```sh
 alias gt="go test -timeout 3s ./... 2>&1 | pp"
 ```
 
@@ -55,7 +55,7 @@ REST APIs 因为他们的可实验性和测试性的特性，开发者生态中�
 
 在某个相关的仓库里我们有一个`GetFizzBuzzSequence` gRPC 终端节点，其 protobuf 文件位于 `fizzbuzz/fizzbuzz.proto` 中用于计算臭名昭著的 FizzBuzz 的面试问题的答案。你可以关注[指导文档](https://github.com/kinbiko/microsvcgotools#run-and-manually-test-grpc-server-with-grpcurl) 去运行一个试验 gRPC 服务器。我们可以使用 `gRPCurl` 命中此原型文件中定义的终端结点，其命令如下：
 
-```
+```sh
 grpcurl \
 -proto fizzbuzz/fizzbuzz.proto \ 
 -plaintext \
@@ -64,19 +64,23 @@ localhost:1234 \
 fizzbuzz.FizzBuzz/GetFizzBuzzSequence
 ```
 
-`-proto`参数定义了原型文件，这样 `grpcurl` 知道去请求什么，得到什么样的响应。`-plaintext`参数意思我们可以在本例中发送未加密的数据。-d 参数定义了请求体JSON表示形式将其映射到等效的 gRPC 请求。固定参数是 gRPC 服务器所运行的主机和端口。同时终端节点命名都满足`${包名}.${服务名}/${方法名}`格式。
+`-proto`参数定义了原型文件，这样 `grpcurl` 知道去请求什么，得到什么样的响应。`-plaintext`参数意思我们可以在本例中发送未加密的数据。-d 参数定义了请求体 JSON 表示形式将其映射到等效的 gRPC 请求。固定参数是 gRPC 服务器所运行的主机和端口。同时终端节点命名都满足`${包名}.${服务名}/${方法名}`格式。
 
 我发现很难记住并且编辑整个命令，所以相比记住命令，在使用的时候，我给特殊的 gRPC 服务器新建了一个临时的 `grpcall` 别名。因为 `grpcurl` 使用 `@` 来解析标准输入所以下面的别名可以正常运行：
 
-```
-alias grpcall="grpcurl -proto fizzbuzz/fizzbuzz.proto -plaintext -d @ localhost:1234 fizzbuzz.FizzBuzz/GetFizzBuzzSequence"
+```sh
+alias grpcall="grpcurl -proto fizzbuzz/fizzbuzz.proto \
+-plaintext \
+-d @ \
+localhost:1234 \
+fizzbuzz.FizzBuzz/GetFizzBuzzSequence"
 
 echo '{"start": 1， "end": 100}' | grpcall
 ```
 
 甚至是：
 
-```
+```sh
 cat my-file.json | grpcall
 ```
 
@@ -88,13 +92,13 @@ cat my-file.json | grpcall
 
 你可以像使用 `gRPCurl` 一样使用 `gRPCui` 但是可以更简单：
 
-```
+```sh
 grpcui -proto fizzbuzz/fizzbuzz.proto -plaintext localhost:1234
 ```
 
 或者你可以在创建 gRPC 服务器的时候启用[反射功能](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md)，比如：
 
-```
+```golang
 import (
  	//...
  	"google.golang.org/grpc/reflection"
@@ -105,7 +109,7 @@ reflection.Register(myGrpcServer)
 
 你甚至不需要指明原型文件：
 
-```
+```sh
 grpcui -plaintext localhost:1234
 ```
 
@@ -119,7 +123,7 @@ grpcui -plaintext localhost:1234
 
 比如：
 
-```
+```sh
 ghz \
 --insecure \ # Equivalent of -plaintext for grpcurl
 -d '{"start": 1， "end": 600}' \ # Data to send， just like grpcurl
@@ -177,7 +181,7 @@ Status code distribution:
 
 我们可以组合 ghz 和[标准库中的 pprof](https://blog.golang.org/profiling-go-programs) 剖析我们的代码，比如可以清晰定位出应用的性能瓶颈。咱们使用这个对比一下 fizzbuzz gRPC 服务器。
 
-```
+```sh
 # 这里的 'main' 是运行在 gRPC 服务器上的二进制程序
 go tool pprof -http=":" main http://localhost:4321/debug/pprof/profile
 ```
