@@ -136,7 +136,7 @@ localhost:1234 # host:port
 
 会给你清晰展现请求耗时是怎样：
 
-```
+```sh
 Summary:
    Count:        5000
    Total:        400.47 ms
@@ -146,7 +146,7 @@ Summary:
    Requests/sec: 12485.20
 ```
 
-```
+```sh
 Response time histogram:
    0.234 [1]     |
    1.826 [62]    |∎∎
@@ -161,7 +161,7 @@ Response time histogram:
    16.157 [6]    |
 ```
 
-```
+```sh
 Latency distribution:
    10% in 5.31 ms
    25% in 6.42 ms
@@ -172,7 +172,7 @@ Latency distribution:
    99% in 12.62 ms
 ```
 
-```
+```sh
 Status code distribution:
    [OK]   5000 responses
 ```
