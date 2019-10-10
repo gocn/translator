@@ -45,12 +45,12 @@ And after this you should be able to access different pprof profiles at the `/d
 
 
 The tool has several built in profiles, such as:
-– `heap`: A sampling of memory allocations of live objects in the heap.
-– `goroutine`: Stack traces of all current goroutines.
-– `allocs`: A sampling of all past memory allocations.
-– `threadcreate`: Stack traces that led to the creation of new OS threads.
-– `block`: Stack traces that led to blocking on synchronization primitives.
-– `mutex`: Stack traces of holders of contended mutexes.
+- `heap`: A sampling of memory allocations of live objects in the heap.
+- `goroutine`: Stack traces of all current goroutines.
+- `allocs`: A sampling of all past memory allocations.
+- `threadcreate`: Stack traces that led to the creation of new OS threads.
+- `block`: Stack traces that led to blocking on synchronization primitives.
+- `mutex`: Stack traces of holders of contended mutexes.
 
 You can find more details about them in the [pprof.go](https://golang.org/src/runtime/pprof/pprof.go) file.
 We’ll spend most of our time looking at the heap profile. If you can’t find anything useful in the heap profile, try checking the others. We also checked the goroutine profile a few times to make sure we didn’t have any go routines hanging and leaking memory.
@@ -61,11 +61,11 @@ Before we dive in the debugging rabbit hole, it’s important to take a step bac
 Go is a garbage collected language, which takes away a lot of memory management responsibility from developers, but we still need to be cautious to not block allocated memory from being garbage collected.
 In Go, there are a few ways to do that and cause a memory leak. Most of the time they are caused by:
 
-– Creating substrings and subslices.
-– Wrong use of the `defer` statement.
-– Unclosed HTTP response bodies (or unclosed resources in general).
-– Orphaned hanging go routines.
-– Global variables.
+- Creating substrings and subslices.
+- Wrong use of the `defer` statement.
+- Unclosed HTTP response bodies (or unclosed resources in general).
+- Orphaned hanging go routines.
+- Global variables.
 
 You can read more about these cases on [go101](https://go101.org/article/memory-leaking.html), [vividcortex](https://www.vividcortex.com/blog/2014/01/15/two-go-memory-leaks/) and [hackernoon](https://hackernoon.com/avoiding-memory-leak-in-golang-api-1843ef45fca8).
 
@@ -92,13 +92,13 @@ The prompt looks something like this:
 
 The part where it says `Type: inuse_space` indicates the profiling mode pprof
 is using, which can be:
-– `inuse_space`: Means `pprof` is showing the amount of memory allocated
+- `inuse_space`: Means `pprof` is showing the amount of memory allocated
 and not yet released.
-– `inuse_objects`: Means `pprof` is showing the amount of objects allocated
+- `inuse_objects`: Means `pprof` is showing the amount of objects allocated
 and not yet released.
-– `alloc_space`: Means `pprof` is showing the amount of memory allocated,
+- `alloc_space`: Means `pprof` is showing the amount of memory allocated,
 regardless if it was released or not.
-– `alloc_objects`: Means `pprof` is showing the amount of objects allocated,
+- `alloc_objects`: Means `pprof` is showing the amount of objects allocated,
 regardless if they were released or not.
 
 If you want to change the mode, you run:
@@ -115,9 +115,9 @@ Our first thoughts when we saw this was that something is off with either pprof 
 
 Here’s a brief explanation of what some of those terms mean:
 
-– `flat`: Represents the memory allocated by a function and still held by that
+- `flat`: Represents the memory allocated by a function and still held by that
 function.
-– `cum`: Represents the memory allocated by a function or any other function
+- `cum`: Represents the memory allocated by a function or any other function
 that is called down the stack.
 
 
