@@ -936,13 +936,13 @@ for i := 0; i < b.N; i++ {
 </tr>
 <tr><td>
 
-```
+```plain
 BenchmarkBad-4   50000000   22.2 ns/op
 ```
 
 </td><td>
 
-```
+```plain
 BenchmarkGood-4  500000000   3.25 ns/op
 ```
 
