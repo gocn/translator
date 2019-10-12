@@ -1,111 +1,90 @@
-# Uber Go Style Guide
+# Uber Go 语言代码风格指南
 
-- 原文地址：https://github.com/study-rustlang/guide/blob/master/style.md
-- 译文出处：https://github.com/uber-go/guide
-- 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w38_uber_go_style_guide.md
-- 译者：[咔叽咔叽](https://github.com/watermelo)
-- 校对者：
+## 目录
 
-## Table of Contents
+- [介绍](#introduction)
+- [指南](#guidelines)
+  - [接口的指针](#pointers-to-interfaces)
+  - [接收者和接口](#receivers-and-interfaces)
+  - [零值 Mutexes 是有效的](#zero-value-mutexes-are-valid)
+  - [复制 Slice 和 Map](#copy-slices-and-maps-at-boundaries)
+  - [Defer 的使用](#defer-to-clean-up)
+  - [channel 的大小是 1 或者 None](#channel-size-is-one-or-none)
+  - [枚举值](#start-enums-at-one)
+  - [Error 类型](#error-types)
+  - [Error 包装](#error-wrapping)
+  - [处理类型断言失败](#handle-type-assertion-failures)
+  - [避免 Panic](#dont-panic)
+  - [使用 go.uber.org/atomic](#use-gouberorgatomic)
+- [性能](#performance)
+  - [strconv 优于 fmt](#prefer-strconv-over-fmt)
+  - [避免 string 到 byte 的转换](#avoid-string-to-byte-conversion)
+- [代码样式](#style)
+  - [相关类型的分组声明](#group-similar-declarations)
+  - [包的分组导入的顺序](#import-group-ordering)
+  - [包命名](#package-names)
+  - [函数命名](#function-names)
+  - [别名导入](#import-aliasing)
+  - [函数分组和顺序](#function-grouping-and-ordering)
+  - [减少嵌套](#reduce-nesting)
+  - [不必要的 else](#unnecessary-else)
+  - [顶层变量的声明](#top-level-variable-declarations)
+  - [在不可导出的全局变量前面加上 _](#prefix-unexported-globals-with-_)
+  - [结构体的嵌入](#embedding-in-structs)
+  - [使用字段名去初始化结构体](#use-field-names-to-initialize-structs)
+  - [局部变量声明](#local-variable-declarations)
+  - [nil 是一个有效的 slice](#nil-is-a-valid-slice)
+  - [减少变量的作用域](#reduce-scope-of-variables)
+  - [避免裸参数](#avoid-naked-parameters)
+  - [使用原生字符串格式来避免转义](#use-raw-string-literals-to-avoid-escaping)
+  - [初始化结构体](#initializing-struct-references)
+  - [在 Printf 之外格式化字符串](#format-strings-outside-printf)
+  - [Printf-style 函数的命名](#naming-printf-style-functions)
+- [设计模式](#patterns)
+  - [表格驱动测试](#test-tables)
+  - [函数参数可选化](#functional-options)
 
-- [Introduction](#introduction)
-- [Guidelines](#guidelines)
-  - [Pointers to Interfaces](#pointers-to-interfaces)
-  - [Receivers and Interfaces](#receivers-and-interfaces)
-  - [Zero-value Mutexes are Valid](#zero-value-mutexes-are-valid)
-  - [Copy Slices and Maps at Boundaries](#copy-slices-and-maps-at-boundaries)
-  - [Defer to Clean Up](#defer-to-clean-up)
-  - [Channel Size is One or None](#channel-size-is-one-or-none)
-  - [Start Enums at One](#start-enums-at-one)
-  - [Error Types](#error-types)
-  - [Error Wrapping](#error-wrapping)
-  - [Handle Type Assertion Failures](#handle-type-assertion-failures)
-  - [Don't Panic](#dont-panic)
-  - [Use go.uber.org/atomic](#use-gouberorgatomic)
-- [Performance](#performance)
-  - [Prefer strconv over fmt](#prefer-strconv-over-fmt)
-  - [Avoid string-to-byte conversion](#avoid-string-to-byte-conversion)
-- [Style](#style)
-  - [Group Similar Declarations](#group-similar-declarations)
-  - [Import Group Ordering](#import-group-ordering)
-  - [Package Names](#package-names)
-  - [Function Names](#function-names)
-  - [Import Aliasing](#import-aliasing)
-  - [Function Grouping and Ordering](#function-grouping-and-ordering)
-  - [Reduce Nesting](#reduce-nesting)
-  - [Unnecessary Else](#unnecessary-else)
-  - [Top-level Variable Declarations](#top-level-variable-declarations)
-  - [Prefix Unexported Globals with _](#prefix-unexported-globals-with-_)
-  - [Embedding in Structs](#embedding-in-structs)
-  - [Use Field Names to initialize Structs](#use-field-names-to-initialize-structs)
-  - [Local Variable Declarations](#local-variable-declarations)
-  - [nil is a valid slice](#nil-is-a-valid-slice)
-  - [Reduce Scope of Variables](#reduce-scope-of-variables)
-  - [Avoid Naked Parameters](#avoid-naked-parameters)
-  - [Use Raw String Literals to Avoid Escaping](#use-raw-string-literals-to-avoid-escaping)
-  - [Initializing Struct References](#initializing-struct-references)
-  - [Format Strings outside Printf](#format-strings-outside-printf)
-  - [Naming Printf-style Functions](#naming-printf-style-functions)
-- [Patterns](#patterns)
-  - [Test Tables](#test-tables)
-  - [Functional Options](#functional-options)
+## 介绍
 
-## Introduction
+代码风格是代码的一种约定。用风格这个词可能有点不恰当，因为这些风格不仅仅包涵格式化工具 gofmt 为我们处理的问题。
 
-Styles are the conventions that govern our code. The term style is a bit of a
-misnomer, since these conventions cover far more than just source file
-formatting—gofmt handles that for us.
+本指南详细描述了 go 语言在 uber 实践的一些注意事项。这些规则是用来保证代码的基本可维护性，同时也允许工程师更高效地使用 go 语言。
 
-The goal of this guide is to manage this complexity by describing in detail the
-Dos and Don'ts of writing Go code at Uber. These rules exist to keep the code
-base manageable while still allowing engineers to use Go language features
-productively.
-
-This guide was originally created by [Prashant Varanasi] and [Simon Newton] as
-a way to bring some colleagues up to speed with using Go. Over the years it has
-been amended based on feedback from others.
+本指南最初由 [Prashant Varanasi] 和 [Simon Newton] 为了让同事们更便捷地使用 go 语言而编写。多年来根据其他人的反馈进行了一些修改。
 
   [Prashant Varanasi]: https://github.com/prashantv
   [Simon Newton]: https://github.com/nomis52
 
-This documents idiomatic conventions in Go code that we follow at Uber. A lot
-of these are general guidelines for Go, while others extend upon external
-resources:
+本文记录了 uber 在使用 go 代码中的一些习惯用法。许多都是 go 语言常见的指南，而其他的则延伸到了一些外部资料：
 
 1. [Effective Go](https://golang.org/doc/effective_go.html)
 2. [The Go common mistakes guide](https://github.com/golang/go/wiki/CodeReviewComments)
 
-All code should be error-free when run through `golint` and `go vet`. We
-recommend setting up your editor to:
+所用的代码在运行 `golint` 和 `go vet` 之后不会有报错。建议将编辑器设置为：
 
-- Run `goimports` on save
-- Run `golint` and `go vet` to check for errors
+- 运行 `goimports` 对代码进行语法检查
+- 运行 `golint` 和 `go vet` 来检查错误
 
-You can find information in editor support for Go tools here:
-<https://github.com/golang/go/wiki/IDEsAndTextEditorPlugins>
+你可以在下面的链接找到 Go tools 对一些编辑器的支持：<https://github.com/golang/go/wiki/IDEsAndTextEditorPlugins>
 
-## Guidelines
+## 指南
 
-### Pointers to Interfaces
+### 接口的指针
 
-You almost never need a pointer to an interface. You should be passing
-interfaces as values—the underlying data can still be a pointer.
+你几乎不需要指向接口的指针，应该把接口当作值传递，它的底层数据仍然可以当成一个指针。
 
-An interface is two fields:
+一个接口是两个字段：
 
-1. A pointer to some type-specific information. You can think of this as
-  "type."
-2. Data pointer. If the data stored is a pointer, it’s stored directly. If
-  the data stored is a value, then a pointer to the value is stored.
+1. 指向特定类型信息的指针。你可以认为这是 "type."。
+2. 数据指针。如果数据存储的是一个指针，直接存储。如果数据存储是一个值，则存储这个值的指针。
 
-If you want interface methods to modify the underlying data, you must use a
-pointer.
+如果你希望接口方法修改底层数据，则必须使用指针。
 
-### Receivers and Interfaces
+### 接收者和接口
 
-Methods with value receivers can be called on pointers as well as values.
+指针可以像值一样调用值接收者的方法。
 
-For example,
+例如,
 
 ```go
 type S struct {
@@ -122,21 +101,20 @@ func (s *S) Write(str string) {
 
 sVals := map[int]S{1: {"A"}}
 
-// You can only call Read using a value
+// 使用值只能调用 Read 方法
 sVals[1].Read()
 
-// This will not compile:
+// 会编译失败
 //  sVals[0].Write("test")
 
 sPtrs := map[int]*S{1: {"A"}}
 
-// You can call both Read and Write using a pointer
+// 使用指针可以调用 Read 和 Write 方法
 sPtrs[1].Read()
 sPtrs[1].Write("test")
 ```
 
-Similarly, an interface can be satisfied by a pointer, even if the method has a
-value receiver.
+类似的，接口能被指针满足，甚至如果这个方法有一个值接收者。
 
 ```go
 type F interface {
@@ -161,18 +139,17 @@ i = s1Val
 i = s1Ptr
 i = s2Ptr
 
-// The following doesn't compile, since s2Val is a value, and there is no value receiver for f.
+// 以下不能被编译，因为 s2Val 是一个值，并且 f 没有值接收者
 //   i = s2Val
 ```
 
-Effective Go has a good write up on [Pointers vs. Values].
+Effective Go 对 [Pointers vs. Values] 分析的不错.
 
   [Pointers vs. Values]: https://golang.org/doc/effective_go.html#pointers_vs_values
 
-### Zero-value Mutexes are Valid
+### 零值 Mutexes 是有效的
 
-The zero-value of `sync.Mutex` and `sync.RWMutex` is valid, so you almost
-never need a pointer to a mutex.
+零值的 `sync.Mutex` 和 `sync.RWMutex` 是有效的，所以你几乎不需要指向 mutex 的指针。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -201,8 +178,7 @@ mu.Lock()
 defer mu.Unlock()
 ```
 
-If you use a struct by pointer, then the mutex can be a non-pointer field or,
-preferably, embedded directly into the struct.
+如果你使用一个指针指向的结构体，mutex 可以作为一个非指针字段，或者，最好是直接嵌入这个结构体。
 
 <table>
 <tbody>
@@ -256,21 +232,20 @@ func (m *SMap) Get(k string) string {
 
 </tr>
 <tr>
-<td>Embed for private types or types that need to implement the Mutex interface.</td>
-<td>For exported types, use a private lock.</td>
+<td>为私有类型或需要实现 Mutex 接口的类型嵌入</td>
+
+<td>对于导出的类型，使用私有锁。</td>
 </tr>
 
 </tbody></table>
 
-### Copy Slices and Maps at Boundaries
+### 复制 Slice 和 Map 
 
-Slices and maps contain pointers to the underlying data so be wary of scenarios
-when they need to be copied.
+slice 和 map 包含指向底层数据的指针，因此复制的时候需要当心。
 
-#### Receiving Slices and Maps
+#### 接收 Slice 和 Map 作为入参
 
-Keep in mind that users can modify a map or slice you received as an argument
-if you store a reference to it.
+需要留意的是，如果你保存了作为参数接收的 map 或 slice 的引用，可以通过引用修改它。
 
 <table>
 <thead><tr><th>Bad</th> <th>Good</th></tr></thead>
@@ -312,10 +287,9 @@ trips[0] = ...
 </tbody>
 </table>
 
-#### Returning Slices and Maps
+#### 返回 Slice 和 Map
 
-Similarly, be wary of user modifications to maps or slices exposing internal
-state.
+类似的，当心 map 或者 slice 暴露内部的状态可以被修改。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -329,7 +303,7 @@ type Stats struct {
   counters map[string]int
 }
 
-// Snapshot returns the current stats.
+// Snapshot 方法返回当前的状态
 func (s *Stats) Snapshot() map[string]int {
   s.Lock()
   defer s.Unlock()
@@ -337,7 +311,7 @@ func (s *Stats) Snapshot() map[string]int {
   return s.counters
 }
 
-// snapshot is no longer protected by the lock!
+// snapshot 不再被锁保护
 snapshot := stats.Snapshot()
 ```
 
@@ -361,16 +335,16 @@ func (s *Stats) Snapshot() map[string]int {
   return result
 }
 
-// Snapshot is now a copy.
+// 现在 Snapshot 是一个副本
 snapshot := stats.Snapshot()
 ```
 
 </td></tr>
 </tbody></table>
 
-### Defer to Clean Up
+### Defer 的使用
 
-Use defer to clean up resources such as files and locks.
+使用 defer 去关闭文件句柄和释放锁等类似这些的资源。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -390,7 +364,7 @@ p.Unlock()
 
 return newCount
 
-// easy to miss unlocks due to multiple returns
+// 多个返回语句导致很容易忘记释放锁
 ```
 
 </td><td>
@@ -406,25 +380,17 @@ if p.count < 10 {
 p.count++
 return p.count
 
-// more readable
+// 更可读
 ```
 
 </td></tr>
 </tbody></table>
 
-Defer has an extremely small overhead and should be avoided only if you can
-prove that your function execution time is in the order of nanoseconds. The
-readability win of using defers is worth the miniscule cost of using them. This
-is especially true for larger methods that have more than simple memory
-accesses, where the other computations are more significant than the `defer`.
+defer 的开销非常小，只有在你觉得你的函数执行需要在纳秒级别的情况下才需要考虑避免使用。使用 defer 换取的可读性是值得的。这尤其适用于具有大量内存访问的方法，其他的计算比 `defer` 更重要`。
 
-### Channel Size is One or None
+### channel 的大小是 1 或者 None
 
-Channels should usually have a size of one or be unbuffered. By default, 
-channels are unbuffered and have a size of zero. Any other size
-must be subject to a high level of scrutiny. Consider how the size is
-determined, what prevents the channel from filling up under load and blocking
-writers, and what happens when this occurs.
+channel 的大小通常应该是 1 或者是无缓冲的。默认情况下，channel 是无缓冲的且大小为 0。任何其他的大小都必须经过仔细检查。考虑大小 是如何确定的，什么可以防止 channel 在负载和阻塞写入程序时被填满，以及这种情况会造成什么影响。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -439,20 +405,18 @@ c := make(chan int, 64)
 </td><td>
 
 ```go
-// Size of one
-c := make(chan int, 1) // or
-// Unbuffered channel, size of zero
+// size 为 1
+c := make(chan int, 1) // 或者
+// 非缓冲 channel，size 为 0
 c := make(chan int)
 ```
 
 </td></tr>
 </tbody></table>
 
-### Start Enums at One
+### 枚举值
 
-The standard way of introducing enumerations in Go is to declare a custom type
-and a `const` group with `iota`. Since variables have a 0 default value, you
-should usually start your enums on a non-zero value.
+在 Go 中引入枚举的标准方法是声明一个自定义类型和一个带 `iota` 的 `const` 组。由于变量的默认值为 0，因此通常应该以非零值开始枚举。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -488,8 +452,7 @@ const (
 </td></tr>
 </tbody></table>
 
-There are cases where using the zero value makes sense, for example when the
-zero value case is the desirable default behavior.
+在某些情况下，使用零值是有意义的，例如零值是想要的默认值。
 
 ```go
 type LogOutput int
@@ -505,31 +468,27 @@ const (
 
 <!-- TODO: section on String methods for enums -->
 
-### Error Types
+### Error 类型
 
-There are various options for declaring errors:
+声明 error 有多种选项:
 
-- [`errors.New`] for errors with simple static strings
-- [`fmt.Errorf`] for formatted error strings
-- Custom types that implement an `Error()` method
-- Wrapped errors using [`"pkg/errors".Wrap`]
+- [`errors.New`] 声明简单静态的字符串
+- [`fmt.Errorf`] 声明格式化的字符串
+- 实现了 `Error()` 方法的自定义类型
+- 使用 [`"pkg/errors".Wrap`] 包装 error
 
-When returning errors, consider the following to determine the best choice:
+返回 error 时，可以考虑以下因素以确定最佳选择：
 
-- Is this a simple error that needs no extra information? If so, [`errors.New`]
-  should suffice.
-- Do the clients need to detect and handle this error? If so, you should use a
-  custom type, and implement the `Error()` method.
-- Are you propagating an error returned by a downstream function? If so, check
-  the [section on error wrapping](#error-wrapping).
-- Otherwise, [`fmt.Errorf`] is okay.
+- 不需要额外信息的一个简单的 error? 那么 [`errors.New`] 就够了
+- 客户端需要检查并处理这个 error？那么应该使用实现了 `Error()` 方法的自定义类型
+- 是否需要传递下游函数返回的 error？那么请看 [section on error wrapping](#error-wrapping)
+- 否则, 可以使用 [`fmt.Errorf`] 
 
   [`errors.New`]: https://golang.org/pkg/errors/#New
   [`fmt.Errorf`]: https://golang.org/pkg/fmt/#Errorf
   [`"pkg/errors".Wrap`]: https://godoc.org/github.com/pkg/errors#Wrap
 
-If the client needs to detect the error, and you have created a simple error
-using [`errors.New`], use a var for the error.
+如果客户端需要检查这个 error，你需要使用 [`errors.New`] 和 var 来创建一个简单的 error。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -581,9 +540,7 @@ if err := foo.Open(); err != nil {
 </td></tr>
 </tbody></table>
 
-If you have an error that clients may need to detect, and you would like to add
-more information to it (e.g., it is not a static string), then you should use a
-custom type.
+如果你有一个 error 可能需要客户端去检查，并且你想增加更多的信息（例如，它不是一个简单的静态字符串），这时候你需要使用自定义类型。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -635,9 +592,7 @@ func use() {
 </td></tr>
 </tbody></table>
 
-Be careful with exporting custom error types directly since they become part of
-the public API of the package. It is preferable to expose matcher functions to
-check the error instead.
+在直接导出自定义 error 类型的时候需要小心，因为它已经是包的公共 API。最好暴露一个 matcher 函数（译者注：以下示例的 IsNotFoundError 函数）去检查 error。
 
 ```go
 // package foo
@@ -672,31 +627,25 @@ if err := foo.Open("foo"); err != nil {
 
 <!-- TODO: Exposing the information to callers with accessor functions. -->
 
-### Error Wrapping
+### Error 包装
 
-There are three main options for propagating errors if a call fails:
+如果调用失败，有三个主要选项用于 error 传递：
 
-- Return the original error if there is no additional context to add and you
-  want to maintain the original error type.
-- Add context using [`"pkg/errors".Wrap`] so that the error message provides
-  more context and [`"pkg/errors".Cause`] can be used to extract the original
-  error.
-- Use [`fmt.Errorf`] if the callers do not need to detect or handle that
-  specific error case.
+- 如果没有额外增加的上下文并且你想维持原始 error 类型，那么返回原始 error
+- 使用 [`"pkg/errors".Wrap`] 增加上下文，以至于 error 信息提供更多的上下文，并且 [`"pkg/errors".Cause`] 可以用来提取原始 error
+- 如果调用者不需要检查或者处理具体的 error 例子，那么使用  [`fmt.Errorf`]
 
-It is recommended to add context where possible so that instead of a vague
-error such as "connection refused", you get more useful errors such as "failed to
-call service foo: connection refused".
+推荐去增加上下文信息取代描述模糊的 error，例如 "connection refused"，应该返回例如 "failed to
+call service foo: connection refused" 这样更有用的 error。
 
-See also [Don't just check errors, handle them gracefully].
+请参考 [Don't just check errors, handle them gracefully].
 
   [`"pkg/errors".Cause`]: https://godoc.org/github.com/pkg/errors#Cause
   [Don't just check errors, handle them gracefully]: https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully
 
-### Handle Type Assertion Failures
+### 处理类型断言失败
 
-The single return value form of a [type assertion] will panic on an incorrect
-type. Therefore, always use the "comma ok" idiom.
+简单的返回值形式的[类型断言]在断言不正确的类型时将会 panic。因此，需要使用 ", ok" 的常用方式。 
 
   [type assertion]: https://golang.org/ref/spec#Type_assertions
 
@@ -724,13 +673,11 @@ if !ok {
 <!-- TODO: There are a few situations where the single assignment form is
 fine. -->
 
-### Don't Panic
+### 避免 Panic
 
-Code running in production must avoid panics. Panics are a major source of
-[cascading failures]. If an error occurs, the function must return an error and
-allow the caller to decide how to handle it.
+生产环境跑的代码必须避免 panic。它是导致 [级联故障] 的主要原因。如果一个 error 产生了，函数必须返回 error 并且允许调用者决定是否处理它。
 
-  [cascading failures]: https://en.wikipedia.org/wiki/Cascading_failure
+  [级联故障]: https://en.wikipedia.org/wiki/Cascading_failure
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -779,17 +726,13 @@ func main() {
 </td></tr>
 </tbody></table>
 
-Panic/recover is not an error handling strategy. A program must panic only when
-something irrecoverable happens such as a nil dereference. An exception to this is
-program initialization: bad things at program startup that should abort the
-program may cause panic.
+panic/recover 不是 error 处理策略。程序在发生不可恢复的时候会产生 panic，例如对 nil 进行解引用。一个例外是在程序初始化的时候：在程序启动时那些可能终止程序的问题会造成 panic。
 
 ```go
 var _statusTemplate = template.Must(template.New("name").Parse("_statusHTML"))
 ```
 
-Even in tests, prefer `t.Fatal` or `t.FailNow` over panics to ensure that the
-test is marked as failed.
+甚至在测试用例中，更偏向于使用 `t.Fatal` 或者 `t.FailNow` 解决 panic 确保这个测试被标记为失败。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -821,14 +764,11 @@ if err != nil {
 
 <!-- TODO: Explain how to use _test packages. -->
 
-### Use go.uber.org/atomic
+### 使用 go.uber.org/atomic
 
-Atomic operations with the [sync/atomic] package operate on the raw types
-(`int32`, `int64`, etc.) so it is easy to forget to use the atomic operation to
-read or modify the variables.
+使用 [sync/atomic] 对原生类型（例如，`int32`，`int64`）进行原子操作的时候，很容易在读取或者修改变量的时候忘记使用原子操作。
 
-[go.uber.org/atomic] adds type safety to these operations by hiding the
-underlying type. Additionally, it includes a convenient `atomic.Bool` type.
+[go.uber.org/atomic] 通过隐藏底层类型使得这些操作是类型安全的。此外，它还包含一个比较方便的 `atomic.Bool` 类型。
 
   [go.uber.org/atomic]: https://godoc.org/go.uber.org/atomic
   [sync/atomic]: https://golang.org/pkg/sync/atomic/
@@ -879,14 +819,14 @@ func (f *foo) isRunning() bool {
 </td></tr>
 </tbody></table>
 
-## Performance
+## 性能
 
-Performance-specific guidelines apply only to the hot path.
+指定的性能指南仅适用于 **hot path**（译者注：hot path 指代码块被多次迭代）
 
-### Prefer strconv over fmt
+### strconv 优于 fmt
 
-When converting primitives to/from strings, `strconv` is faster than
-`fmt`.
+对基本数据类型的字符串表示的转换，`strconv` 比
+`fmt` 速度快。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -908,10 +848,9 @@ s := strconv.Itoa(i)
 </td></tr>
 </tbody></table>
 
-### Avoid string-to-byte conversion
+### 避免 string 到 byte 的转换
 
-Do not create byte slices from a fixed string repeatedly. Instead, perform the
-conversion once and capture the result.
+不要重复用 string 创建 byte slice。相反，执行一次转换并保存结果。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -949,11 +888,11 @@ BenchmarkGood-4  500000000   3.25 ns/op
 </td></tr>
 </tbody></table>
 
-## Style
+## 代码风格
 
-### Group Similar Declarations
+### 相关类型的分组声明
 
-Go supports grouping similar declarations.
+Go 支持分组声明。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -977,7 +916,7 @@ import (
 </td></tr>
 </tbody></table>
 
-This also applies to constants, variables, and type declarations.
+也能应用于常量，变量和类型的声明。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1022,7 +961,7 @@ type (
 </td></tr>
 </tbody></table>
 
-Only group related declarations. Do not group declarations that are unrelated.
+只需要对相关类型进行分组声明。不相关的不需要进行分组声明。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1057,8 +996,7 @@ const ENV_VAR = "MY_ENV"
 </td></tr>
 </tbody></table>
 
-Groups are not limited in where they can be used. For example, you can use them
-inside of functions.
+分组不受限制。例如，我们可以在函数内部使用它们。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1092,14 +1030,14 @@ func f() string {
 </td></tr>
 </tbody></table>
 
-### Import Group Ordering
+### 包的分组导入的顺序
 
-There should be two import groups:
+有两个导入分组：
 
-- Standard library
-- Everything else
+- 标准库
+- 其他库
 
-This is the grouping applied by goimports by default.
+这是默认情况下 goimports 应用的分组。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1130,35 +1068,30 @@ import (
 </td></tr>
 </tbody></table>
 
-### Package Names
+### 包命名
 
-When naming packages, choose a name that is,
+当给包命名的时候，可以参考以下方法，
 
-- All lower-case. No capitals or underscores.
-- Does not need to be renamed using named imports at most call sites.
-- Short and succint. Remember that the name is identified in full at every call
-  site.
-- Not plural. For example, `net/url`, not `net/urls`.
-- Not "common", "util", "shared", or "lib". These are bad, uninformative names.
+- 都是小写字母。没有大写字母或者下划线
+- 在大多数场景下没必要重命名包
+- 简明扼要。记住，每次调用时都会通过名称来识别。
+- 不要复数。例如，要使用 `net/url`,  不要使用 `net/urls`
+- 不要使用 "common", "util", "shared", "lib" 诸如此类的命名。这种方式不太好，无法从名字中获取有效信息。
 
-See also [Package Names] and [Style guideline for Go packages].
+也可以参考 [Package Names] 和 [Style guideline for Go packages].
 
   [Package Names]: https://blog.golang.org/package-names
   [Style guideline for Go packages]: https://rakyll.org/style-packages/
 
-### Function Names
+### 函数命名
 
-We follow the Go community's convention of using [MixedCaps for function
-names]. An exception is made for test functions, which may contain underscores
-for the purpose of grouping related test cases, e.g.,
-`TestMyFunction_WhatIsBeingTested`.
+我们遵循 Go 社区的习惯方法，使用[驼峰法命名函数]。测试函数是个例外，包含下划线是为了分组相关的测试用例。例如，`TestMyFunction_WhatIsBeingTested`。
 
-  [MixedCaps for function names]: https://golang.org/doc/effective_go.html#mixed-caps
+  [驼峰法命名函数]: https://golang.org/doc/effective_go.html#mixed-caps
 
-### Import Aliasing
+### 别名导入
 
-Import aliasing must be used if the package name does not match the last
-element of the import path.
+如果包名和导入路径的最后一个元素不匹配，则要使用别名导入。
 
 ```go
 import (
@@ -1169,8 +1102,7 @@ import (
 )
 ```
 
-In all other scenarios, import aliases should be avoided unless there is a
-direct conflict between imports.
+在大部分场景下，除非导入的包有直接的冲突，应该避免使用别名导入。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1202,19 +1134,16 @@ import (
 </td></tr>
 </tbody></table>
 
-### Function Grouping and Ordering
+### 函数分组和顺序
 
-- Functions should be sorted in rough call order.
-- Functions in a file should be grouped by receiver.
+- 函数应该按大致的调用顺序排序
+- 同一个文件的函数应该按接收者分组
 
-Therefore, exported functions should appear first in a file, after
-`struct`, `const`, `var` definitions.
+因此，导出的函数应该在 `struct`，`const`，`var` 定义之后。
 
-A `newXYZ()`/`NewXYZ()` may appear after the type is defined, but before the
-rest of the methods on the receiver.
+`newXYZ()`/`NewXYZ()` 应该在类型定义之后，并且在接收者的其余的方法之前出现。 
 
-Since functions are grouped by receiver, plain utility functions should appear
-towards the end of the file.
+因为函数是按接收者分组的，所以普通的函数应该快到文件末尾了。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1258,11 +1187,9 @@ func calcCost(n int[]) int {...}
 </td></tr>
 </tbody></table>
 
-### Reduce Nesting
+### 减少嵌套
 
-Code should reduce nesting where possible by handling error cases/special
-conditions first and returning early or continuing the loop. Reduce the amount
-of code that is nested multiple levels.
+在可能的情况下，代码应该通过先处理 错误情况/特殊条件 并提前返回或继续循环来减少嵌套。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1304,10 +1231,9 @@ for _, v := range data {
 </td></tr>
 </tbody></table>
 
-### Unnecessary Else
+### 不必要的 else
 
-If a variable is set in both branches of an if, it can be replaced with a
-single if.
+如果在 if 的两个分支中都设置同样的变量，则可以用单个 if 替换它。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1335,10 +1261,9 @@ if b {
 </td></tr>
 </tbody></table>
 
-### Top-level Variable Declarations
+### 顶层变量的声明
 
-At the top level, use the standard `var` keyword. Do not specify the type,
-unless it is not the same type as the expression.
+在顶层，使用标准的 `var` 关键字。不要指定类型，除非它与表达式的类型不同。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1355,8 +1280,7 @@ func F() string { return "A" }
 
 ```go
 var _s = F()
-// Since F already states that it returns a string, we don't need to specify
-// the type again.
+// F 已经声明了返回一个 string，我们不需要再次指定类型
 
 func F() string { return "A" }
 ```
@@ -1364,8 +1288,7 @@ func F() string { return "A" }
 </td></tr>
 </tbody></table>
 
-Specify the type if the type of the expression does not match the desired type
-exactly.
+如果表达式的类型与请求的类型不完全匹配，请指定类型。
 
 ```go
 type myError struct{}
@@ -1375,19 +1298,16 @@ func (myError) Error() string { return "error" }
 func F() myError { return myError{} }
 
 var _e error = F()
-// F returns an object of type myError but we want error.
+// F 返回了一个 myError 类型的对象，但是我们想要 error
 ```
 
-### Prefix Unexported Globals with _
+### 在不可导出的全局变量前面加上 _
 
-Prefix unexported top-level `var`s and `const`s with `_` to make it clear when
-they are used that they are global symbols.
+在不可导出的顶层 `var` 和 `const` 的前面加上 `_`，以便明确它们是全局符号。
 
-Exception: Unexported error values, which should be prefixed with `err`.
+特例：不可导出的 error 值前面应该加上 `err` 前缀。
 
-Rationale: Top-level variables and constants have a package scope. Using a
-generic name makes it easy to accidentally use the wrong value in a different
-file.
+理论依据：顶层变量和常量有一个包作用域。使用通用的名称很容易在不同的文件中意外地使用错误的值
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1409,8 +1329,7 @@ func Bar() {
   ...
   fmt.Println("Default port", defaultPort)
 
-  // We will not see a compile error if the first line of
-  // Bar() is deleted.
+  // 我们将 Bar() 的第一行删除，将不会看到编译错误
 }
 ```
 
@@ -1428,11 +1347,9 @@ const (
 </td></tr>
 </tbody></table>
 
-### Embedding in Structs
+### 结构体的嵌入
 
-Embedded types (such as mutexes) should be at the top of the field list of a
-struct, and there must be an empty line separating embedded fields from regular
-fields.
+嵌入的类型（例如 mutex）应该在结构体字段的头部，并且在嵌入字段和常规字段间保留一个空行来隔离。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1459,10 +1376,9 @@ type Client struct {
 </td></tr>
 </tbody></table>
 
-### Use Field Names to initialize Structs
+### 使用字段名去初始化结构体
 
-You should almost always specify field names when initializing structs. This is
-now enforced by [`go vet`].
+当初始化结构体的时候应该指定字段名称，现在在使用 [`go vet`] 的情况下是强制性的。
 
   [`go vet`]: https://golang.org/cmd/vet/
 
@@ -1488,8 +1404,7 @@ k := User{
 </td></tr>
 </tbody></table>
 
-Exception: Field names *may* be omitted in test tables when there are 3 or
-fewer fields.
+特例：当有 3 个或更少的字段时，可以在测试表中省略字段名。
 
 ```go
 tests := []struct{
@@ -1502,10 +1417,9 @@ tests := []struct{
 }
 ```
 
-### Local Variable Declarations
+### 局部变量声明
 
-Short variable declarations (`:=`) should be used if a variable is being set to
-some value explicitly.
+短变量声明（`:=`）应该被使用在有明确值的情况下。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1525,10 +1439,9 @@ s := "foo"
 </td></tr>
 </tbody></table>
 
-However, there are cases where the default value is clearer when the `var`
-keyword is use. [Declaring Empty Slices], for example.
+然而，使用 `var` 关键字在某些情况下会让默认值更清晰，[声明空 Slice]，例如
 
-  [Declaring Empty Slices]: https://github.com/golang/go/wiki/CodeReviewComments#declaring-empty-slices
+  [声明空 Slice]: https://github.com/golang/go/wiki/CodeReviewComments#declaring-empty-slices
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1562,12 +1475,11 @@ func f(list []int) {
 </td></tr>
 </tbody></table>
 
-### nil is a valid slice
+### nil 是一个有效的 slice
 
-`nil` is a valid slice of length 0. This means that,
+`nil` 是一个长度为 0 的 slice。意思是，
 
-- You should not return a slice of length zero explicitly. Return `nil`
-  instead.
+- 使用 `nil` 来替代长度为 0 的 slice 返回
 
   <table>
   <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1591,8 +1503,7 @@ func f(list []int) {
   </td></tr>
   </tbody></table>
 
-- To check if a slice is empty, always use `len(s) == 0`. Do not check for
-  `nil`.
+- 检查一个空 slice，应该使用 `len(s) == 0`，而不是 `nil`。
 
   <table>
   <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1618,6 +1529,8 @@ func f(list []int) {
 
 - The zero value (a slice declared with `var`) is usable immediately without
   `make()`.
+
+- 零值（通过 `var` 声明的 slice）是立马可用的，在没有 `make()` ？？
 
   <table>
   <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1654,10 +1567,9 @@ func f(list []int) {
   </td></tr>
   </tbody></table>
 
-### Reduce Scope of Variables
+### 减少变量的作用域
 
-Where possible, reduce scope of variables. Do not reduce the scope if it
-conflicts with [Reduce Nesting](#reduce-nesting).
+在没有 [减少嵌套](#reduce-nesting) 相冲突的情况下，尽量减少变量的作用域。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1682,8 +1594,7 @@ if err := f.Close(); err != nil {
 </td></tr>
 </tbody></table>
 
-If you need a result of a function call outside of the if, then you should not
-try to reduce the scope.
+如果在 if 之外需要函数调用的结果，则不要缩小作用域。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1720,10 +1631,9 @@ return f.Close()
 </td></tr>
 </tbody></table>
 
-### Avoid Naked Parameters
+### 避免裸参数
 
-Naked parameters in function calls can hurt readability. Add C-style comments
-(`/* ... */`) for parameter names when their meaning is not obvious.
+函数调用中的裸参数不利于可读性。当参数名的含义不明显时，添加 C 语言风格的注释（`/*…*/`）。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1747,9 +1657,7 @@ printInfo("foo", true /* isLocal */, true /* done */)
 </td></tr>
 </tbody></table>
 
-Better yet, replace naked `bool` types with custom types for more readable and
-type-safe code. This allows more than just two states (true/false) for that
-parameter in the future.
+更好的方法是，用自定义类型替换裸 `bool` 类型，以获得更可读的和类型安全的代码。这使得该参数未来的状态是可以增加的，不仅仅是两种（true/false）。
 
 ```go
 type Region int
@@ -1764,17 +1672,15 @@ type Status int
 const (
   StatusReady = iota + 1
   StatusDone
-  // Maybe we will have a StatusInProgress in the future.
+  // 可能未来我们将有一个 StatusInProgress 的状态
 )
 
 func printInfo(name string, region Region, status Status)
 ```
 
-### Use Raw String Literals to Avoid Escaping
+### 使用原生字符串格式来避免转义
 
-Go supports [raw string literals](https://golang.org/ref/spec#raw_string_lit),
-which can span multiple lines and include quotes. Use these to avoid
-hand-escaped strings which are much harder to read.
+Go 支持 [原生字符串格式](https://golang.org/ref/spec#raw_string_lit) ，它可以跨越多行并包含引号。使用这些来避免手动转义的字符串，因为手动转义的可读性很差。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1794,10 +1700,9 @@ wantError := `unknown error:"test"`
 </td></tr>
 </tbody></table>
 
-### Initializing Struct References
+### 初始化结构体
 
-Use `&T{}` instead of `new(T)` when initializing struct references so that it
-is consistent with the struct initialization.
+在初始化结构体的时候使用 `&T{}` 替代 `new(T)`，以至于结构体初始化是一致的。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1807,7 +1712,7 @@ is consistent with the struct initialization.
 ```go
 sval := T{Name: "foo"}
 
-// inconsistent
+// 不一致
 sptr := new(T)
 sptr.Name = "bar"
 ```
@@ -1823,12 +1728,11 @@ sptr := &T{Name: "bar"}
 </td></tr>
 </tbody></table>
 
-### Format Strings outside Printf
+### 在 Printf 之外格式化字符串
 
-If you declare format strings for `Printf`-style functions outside a string
-literal, make them `const` values.
+如果你在 `Printf` 风格函数的外面声明一个格式化字符串，请使用 `const` 值。
 
-This helps `go vet` perform static analysis of the format string.
+这有助于 `go vet` 对格式化字符串执行静态分析。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -1850,35 +1754,29 @@ fmt.Printf(msg, 1, 2)
 </td></tr>
 </tbody></table>
 
-### Naming Printf-style Functions
+### Printf-style 函数的命名
 
-When you declare a `Printf`-style function, make sure that `go vet` can detect
-it and check the format string.
+当你声明一个 `Printf` 风格的函数，请确认 `go vet` 能够发现并检查这个格式化字符串。
 
-This means that you should use pre-defined `Printf`-style function
-names if possible. `go vet` will check these by default. See [Printf family]
-for more information.
+这意味着你应该尽可能为 `Printf` 风格的函数名进行预定义 。`go vet` 默认会检查它们。查看 [Printf family] 获取更多信息。 
 
   [Printf family]: https://golang.org/cmd/vet/#hdr-Printf_family
 
-If using the pre-defined names is not an option, end the name you choose with
-f: `Wrapf`, not `Wrap`. `go vet` can be asked to check specific `Printf`-style
-names but they must end with f.
+如果预定义函数名不可取，请用 f 作为名字的后缀即 `wrapf`，而不是 `wrap`。`go vet` 可以检查特定的 `printf` 风格的名称，但它们必须以 f 结尾。
 
 ```shell
 $ go vet -printfuncs=wrapf,statusf
 ```
 
-See also [go vet: Printf family check].
+请参考 [go vet: Printf family check]。
 
   [go vet: Printf family check]: https://kuzminva.wordpress.com/2017/11/07/go-vet-printf-family-check/
 
-## Patterns
+## 设计模式
 
-### Test Tables
+### 表格驱动测试
 
-Use table-driven tests with [subtests] to avoid duplicating code when the core
-test logic is repetitive.
+当核心测试逻辑重复的时候，用 [subtests] 做表格驱动测试（译者注：table-driven tests 即 TDT 表格驱动方法）可以避免重复的代码。
 
   [subtests]: https://blog.golang.org/subtests
 
@@ -1956,12 +1854,9 @@ for _, tt := range tests {
 </td></tr>
 </tbody></table>
 
-Test tables make it easier to add context to error messages, reduce duplicate
-logic, and add new test cases.
+表格驱动测试使向错误消息添加上下文、减少重复逻辑和添加新测试用例变得更容易。
 
-We follow the convention that the slice of structs is referred to as `tests`
-and each test case `tt`. Further, we encourage explicating the input and output
-values for each test case with `give` and `want` prefixes.
+我们遵循这样一种约定，即结构体 slice 被称为 `tests`，每个测试用例被称为 `tt`。此外，我们鼓励使用 `give` 和 `want` 前缀解释每个测试用例的输入和输出值。
 
 ```go
 tests := []struct{
@@ -1977,16 +1872,11 @@ for _, tt := range tests {
 }
 ```
 
-### Functional Options
+### 函数参数可选化
 
-Functional options is a pattern in which you declare an opaque `Option` type
-that records information in some internal struct. You accept a variadic number
-of these options and act upon the full information recorded by the options on
-the internal struct.
+函数参数可选化（functional options）是一种模式，在这种模式中，你可以声明一个不确定的 `Option` 类型，该类型在内部结构体中记录信息。函数接收可选化的参数，并根据在结构体上记录的参数信息进行操作
 
-Use this pattern for optional arguments in constructors and other public APIs
-that you foresee needing to expand, especially if you already have three or
-more arguments on those functions.
+将此模式用于构造函数和其他需要扩展的公共 API 中的可选参数，特别是在这些函数上已经有三个或更多参数的情况下。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -2004,8 +1894,7 @@ func Connect(
   // ...
 }
 
-// Timeout and caching must always be provided,
-// even if the user wants to use the default.
+// timeout 和 caching 必须要提供，哪怕用户想使用默认值
 
 db.Connect(addr, db.DefaultTimeout, db.DefaultCaching)
 db.Connect(addr, newTimeout, db.DefaultCaching)
@@ -2021,7 +1910,7 @@ type options struct {
   caching bool
 }
 
-// Option overrides behavior of Connect.
+// Option 重写 Connect.
 type Option interface {
   apply(*options)
 }
@@ -2044,7 +1933,7 @@ func WithCaching(cache bool) Option {
   })
 }
 
-// Connect creates a connection.
+// Connect 创建一个 connection
 func Connect(
   addr string,
   opts ...Option,
@@ -2061,7 +1950,7 @@ func Connect(
   // ...
 }
 
-// Options must be provided only if needed.
+// Options 只在需要的时候提供
 
 db.Connect(addr)
 db.Connect(addr, db.WithTimeout(newTimeout))
@@ -2076,7 +1965,7 @@ db.Connect(
 </td></tr>
 </tbody></table>
 
-See also,
+请参考,
 
 - [Self-referential functions and the design of options]
 - [Functional options for friendly APIs]
