@@ -1,6 +1,6 @@
 # Uber Go 语言代码风格指南
 
-- 原文地址：https://github.com/study-rustlang/guide/blob/master/style.md
+- 原文地址：https://github.com/uber-go/guide/blob/master/style.md
 - 译文出处：https://github.com/uber-go/guide
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w38_uber_go_style_guide.md
 - 译者：[咔叽咔叽](https://github.com/watermelo)
