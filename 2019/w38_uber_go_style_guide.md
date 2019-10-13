@@ -653,7 +653,7 @@ call service foo: connection refused" 这样更有用的 error。
 
 简单的返回值形式的[类型断言]在断言不正确的类型时将会 panic。因此，需要使用 ", ok" 的常用方式。 
 
-  [type assertion]: https://golang.org/ref/spec#Type_assertions
+  [类型断言]: https://golang.org/ref/spec#Type_assertions
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
