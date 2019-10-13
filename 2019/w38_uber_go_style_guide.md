@@ -4,7 +4,7 @@
 - 译文出处：https://github.com/uber-go/guide
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w38_uber_go_style_guide.md
 - 译者：[咔叽咔叽](https://github.com/watermelo)
-- 校对者：
+- 校对者：[fivezh](https://github.com/fivezh)，[cvley](https://github.com/cvley)
 
 ## 目录
 
@@ -16,7 +16,7 @@
   - [复制 Slice 和 Map](#copy-slices-and-maps-at-boundaries)
   - [Defer 的使用](#defer-to-clean-up)
   - [channel 的大小是 1 或者 None](#channel-size-is-one-or-none)
-  - [枚举值](#start-enums-at-one)
+  - [枚举值从 1 开始](#start-enums-at-one)
   - [Error 类型](#error-types)
   - [Error 包装](#error-wrapping)
   - [处理类型断言失败](#handle-type-assertion-failures)
@@ -26,7 +26,7 @@
   - [strconv 优于 fmt](#prefer-strconv-over-fmt)
   - [避免 string 到 byte 的转换](#avoid-string-to-byte-conversion)
 - [代码样式](#style)
-  - [相关类型的分组声明](#group-similar-declarations)
+  - [聚合相似的声明](#group-similar-declarations)
   - [包的分组导入的顺序](#import-group-ordering)
   - [包命名](#package-names)
   - [函数命名](#function-names)
@@ -52,9 +52,9 @@
 
 ## 介绍
 
-代码风格是代码的一种约定。用风格这个词可能有点不恰当，因为这些风格不仅仅包涵格式化工具 gofmt 为我们处理的问题。
+代码风格是代码的一种约定。用风格这个词可能有点不恰当，因为这些约定涉及到的远比源码文件格式工具 gofmt 所能处理的更多。
 
-本指南详细描述了 go 语言在 uber 实践的一些注意事项。这些规则是用来保证代码的基本可维护性，同时也允许工程师更高效地使用 go 语言。
+本指南的目标是通过详细描述 Uber 在编写 Go 代码时的取舍来管理代码的这种复杂性。这些规则的存在是为了保持代码库的可管理性，同时也允许工程师更高效地使用 go 语言特性。
 
 本指南最初由 [Prashant Varanasi] 和 [Simon Newton] 为了让同事们更便捷地使用 go 语言而编写。多年来根据其他人的反馈进行了一些修改。
 
@@ -68,7 +68,7 @@
 
 所用的代码在运行 `golint` 和 `go vet` 之后不会有报错。建议将编辑器设置为：
 
-- 运行 `goimports` 对代码进行语法检查
+- 保存时运行 goimports
 - 运行 `golint` 和 `go vet` 来检查错误
 
 你可以在下面的链接找到 Go tools 对一些编辑器的支持：<https://github.com/golang/go/wiki/IDEsAndTextEditorPlugins>
@@ -82,13 +82,13 @@
 一个接口是两个字段：
 
 1. 指向特定类型信息的指针。你可以认为这是 "type."。
-2. 数据指针。如果数据存储的是一个指针，直接存储。如果数据存储是一个值，则存储这个值的指针。
+2. 如果存储的数据是指针，则直接存储。如果数据存储的是值，则存储指向此值的指针。
 
 如果你希望接口方法修改底层数据，则必须使用指针。
 
 ### 接收者和接口
 
-指针可以像值一样调用值接收者的方法。
+具有值接收者的方法可以被指针和值调用。
 
 例如,
 
@@ -120,7 +120,7 @@ sPtrs[1].Read()
 sPtrs[1].Write("test")
 ```
 
-类似的，接口能被指针满足，甚至如果这个方法有一个值接收者。
+类似的，即使方法是一个值接收者，但接口仍可以被指针类型所满足。
 
 ```go
 type F interface {
@@ -295,7 +295,7 @@ trips[0] = ...
 
 #### 返回 Slice 和 Map
 
-类似的，当心 map 或者 slice 暴露内部的状态可以被修改。
+类似的，当心 map 或者 slice 暴露的内部状态是可以被修改的。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -350,7 +350,7 @@ snapshot := stats.Snapshot()
 
 ### Defer 的使用
 
-使用 defer 去关闭文件句柄和释放锁等类似这些的资源。
+使用 defer 去关闭文件句柄和释放锁等类似的这些资源。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -392,11 +392,11 @@ return p.count
 </td></tr>
 </tbody></table>
 
-defer 的开销非常小，只有在你觉得你的函数执行需要在纳秒级别的情况下才需要考虑避免使用。使用 defer 换取的可读性是值得的。这尤其适用于具有大量内存访问的方法，其他的计算比 `defer` 更重要`。
+defer 的开销非常小，只有在你觉得你的函数执行需要在纳秒级别的情况下才需要考虑避免使用。使用 defer 换取的可读性是值得的。这尤其适用于具有比简单内存访问更复杂的大型方法，这时其他的计算比 defer 更重要。
 
 ### channel 的大小是 1 或者 None
 
-channel 的大小通常应该是 1 或者是无缓冲的。默认情况下，channel 是无缓冲的且大小为 0。任何其他的大小都必须经过仔细检查。考虑大小 是如何确定的，什么可以防止 channel 在负载和阻塞写入程序时被填满，以及这种情况会造成什么影响。
+channel 的大小通常应该是 1 或者是无缓冲的。默认情况下，channel 是无缓冲的且大小为 0。任何其他的大小都必须经过仔细检查。应该考虑如何确定缓冲的大小，哪些因素可以防止 channel 在负载时填满和阻塞写入，以及当这种情况发生时会造成什么样的影响。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -420,7 +420,7 @@ c := make(chan int)
 </td></tr>
 </tbody></table>
 
-### 枚举值
+### 枚举值从 1 开始
 
 在 Go 中引入枚举的标准方法是声明一个自定义类型和一个带 `iota` 的 `const` 组。由于变量的默认值为 0，因此通常应该以非零值开始枚举。
 
@@ -827,7 +827,7 @@ func (f *foo) isRunning() bool {
 
 ## 性能
 
-指定的性能指南仅适用于 **hot path**（译者注：hot path 指代码块被多次迭代）
+指定的性能指南仅适用于 **hot path**（译者注：hot path 指频繁执行的代码路径）
 
 ### strconv 优于 fmt
 
@@ -856,7 +856,7 @@ s := strconv.Itoa(i)
 
 ### 避免 string 到 byte 的转换
 
-不要重复用 string 创建 byte slice。相反，执行一次转换并保存结果。
+不要重复用固定 string 创建 byte slice。相反，执行一次转换后保存结果，避免重复转换。
 
 <table>
 <thead><tr><th>Bad</th><th>Good</th></tr></thead>
@@ -896,7 +896,7 @@ BenchmarkGood-4  500000000   3.25 ns/op
 
 ## 代码风格
 
-### 相关类型的分组声明
+### 聚合相似的声明
 
 Go 支持分组声明。
 
@@ -1536,7 +1536,7 @@ func f(list []int) {
 - The zero value (a slice declared with `var`) is usable immediately without
   `make()`.
 
-- 零值（通过 `var` 声明的 slice）是立马可用的，在没有 `make()` ？？
+- 零值（通过 `var` 声明的 slice）是立马可用的，并不需要 `make()` 。
 
   <table>
   <thead><tr><th>Bad</th><th>Good</th></tr></thead>
