@@ -1950,7 +1950,7 @@ func Connect(
   }
 
   for _, o := range opts {
-    o(&options)
+    o.apply(&options)
   }
 
   // ...
