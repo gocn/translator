@@ -4,6 +4,9 @@
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w43_understanding_defer_in_go.md
 - 译者：[lsj1342](https://github.com/lsj1342)
 - 校对者：[cvley](https://github.com/cvley)
+---
+
+![](../static/images/w43_understanding_defer_in_go/Go_TutorialIllo_Social.png)  
 
 ### Introduction
 
