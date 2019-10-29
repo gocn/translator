@@ -7,7 +7,7 @@
 - 译者：[fivezh](https://github.com/fivezh)、[咔叽咔叽](https://github.com/watermelo)
 - 校对者：[咔叽咔叽](https://github.com/watermelo)
 
-如有需要，Go 允许使用者通过汇来编写函数。这被称作 *stub* 或 *forward* 声明.
+如有需要，Go 允许使用者通过汇编来写函数。这被称作 *stub* 或 *forward* 声明.
 
 ```go
 package asm
