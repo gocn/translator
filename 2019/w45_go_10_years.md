@@ -1,41 +1,41 @@
-# Go Turns 10
+# Go 十周年
 - 原文地址：https://blog.golang.org/10years
 - 原文作者：Russ Cox
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2019/w45_go_10_years.md
 - 译者：[fivezh](https://github.com/fivezh)
-- 校对者：
+- 校对者：[咔叽咔叽](https://github.com/watermelo)
 ---
 
-Happy birthday, Go!
+生日快乐, Go!
 
-This weekend we celebrate the 10th anniversary of the [Go release](https://opensource.googleblog.com/2009/11/hey-ho-lets-go.html), marking the 10th birthday of Go as an open-source programming language and ecosystem for building modern networked software.
+这个周末，我们庆祝 [Go 发布](https://opensource.googleblog.com/2009/11/hey-ho-lets-go.html) 10 周年，这也是 Go 作为开源编程语言和构建现代网络软件生态系统的 10 周年。
 
-To mark the occasion, [Renee French](https://twitter.com/reneefrench), the creator of the [Go gopher](https://blog.golang.org/gopher), painted this delightful scene:
+为了纪念这一时刻，[Go gopher](https://blog.golang.org/gopher) 的创造者 [Renee French](https://twitter.com/reneefrench) 绘制了一幅欢快的场景：
 
 ![gopher10th](../static/images/w45_go_10_years/gopher10th-large.jpg)
 
-Celebrating 10 years of Go makes me think back to early November 2009, when we were getting ready to share Go with the world. We didn’t know what kind of reaction to expect, whether anyone would care about this little language. I hoped that even if no one ended up using Go, we would at least have drawn attention to some good ideas, especially Go’s approach to concurrency and interfaces, that could influence follow-on languages.
+庆祝 Go 十周年让我回想起了 2009 年 11 月上旬，那时我们正在准备与世界分享 Go。我们不知道会发生什么样的反应，是否会有人关心这种小语言。我希望即使没有人最终使用 Go，至少也会引起人们对一些好想法的关注，尤其是 Go 在并发编程和接口上的想法，这些都可能对后续的编程语言产生影响。
 
-Once it became clear that people were excited about Go, I looked at the history of popular languages like C, C++, Perl, Python, and Ruby, examining how long each took to gain widespread adoption. For example, Perl seemed to me to have appeared fully-formed in the mid-to-late 1990s, with CGI scripts and the web, but it was first released in 1987. This pattern repeated for almost every language I looked at: it seems to take roughly a decade of quiet, steady improvement and dissemination before a new language really takes off.
+在人们开始对 Go 产生显著兴趣的时候，我便查看了 `C`， `C++`， `Perl，` `Python` 和 `Ruby` 等流行语言的发展历史，并研究了每种语言花了多长时间才被广泛采用。例如，`Perl` 在我看来是在 1990 年代中后期才形成的，并且具备 CGI 脚本和 Web 开发能力，但它其实早在 1987 年就首次发布了。这一模式在几乎所有我所研究的语言中都有重复：在一门新语言真正腾飞之前，大约需要十年的时间进行沉寂，稳定的改进和传播。
 
-I wondered: where would Go be after a decade?
+我想知道：十年后 Go 将何去何从？
 
-Today, we can answer that question: Go is everywhere, used by at least [a million developers worldwide](https://research.swtch.com/gophercount).
+今天，我们可以回答这个问题：Go 现在无处不在，[全世界至少有 100 万开发者](https://research.swtch.com/gophercount)在使用。
 
-Go’s original target was networked system infrastructure, what we now call cloud software. Every major cloud provider today uses core cloud infrastructure written in Go, such as Docker, Etcd, Istio, Kubernetes, Prometheus, and Terraform; the majority of the [Cloud Native Computing Foundation’s projects](https://www.cncf.io/projects/) are written in Go. Countless companies are using Go to move their own work to the cloud as well, from startups building from scratch to enterprises modernizing their software stack. Go has also found adoption well beyond its original cloud target, with uses ranging from controlling tiny embedded systems with [GoBot](https://gobot.io/) and [TinyGo](https://tinygo.org/) to detecting cancer with [massive big data analysis and machine learning at GRAIL](https://medium.com/grail-eng/bigslice-a-cluster-computing-system-for-go-7e03acd2419b), and everything in between.
+Go 最初的目标领域是网络系统基础架构，现在称为云软件。如今，每个主要的云服务提供商都使用 Go 语言编写的核心云基础架构，例如 `Docker`， `Etcd`， `Istio`， `Kubernetes`， `Prometheus`和 `Terraform`。 云原生计算基金会 [CNCF](https://www.cncf.io/projects/) 的大多数项目都使用 Go 编写。包括从头开始的初创公司和构建现代化软件系统的企业，无数公司正在使用 Go 将自己的工作迁移到云平台上。我们还发现 Go 的应用范围已远远超出了最初的云领域，其还包括使用 [GoBot](https://gobot.io/) 和 [TinyGo](https://tinygo.org/) 控制小型嵌入式系统，[在 GRAIL 上通过海量大数据分析和机器学习](https://medium.com/grail-eng/bigslice-a-cluster-computing-system-for-go-7e03acd2419b)来检测癌症，以及介于两者之间的所有内容。
 
-All this is to say that Go has succeeded beyond our wildest dreams. And Go’s success isn’t just about the language. It’s about the language, the ecosystem, and especially the community working together.
+所有的这一切都说明 Go 已经超越了我们最疯狂的梦想。Go 的成功不仅仅在于编程语言上，而是涵盖了编程语言、生态系统，尤其是共同努力的开源社区上，都取得了成功。
 
-In 2009, the language was a good idea with a working sketch of an implementation. The go command did not exist: we ran commands like 6g to compile and 6l to link binaries, automated with makefiles. We typed semicolons at the ends of statements. The entire program stopped during garbage collection, which then struggled to make good use of two cores. Go ran only on Linux and Mac, on 32- and 64-bit x86 and 32-bit ARM.
+在 2009 年，Go 语言还仅是一个带有实现工作草图的想法。而 Go 命令尚不存在：我们需要运行 `6g` 命令进行编译，运行 `6l` 命令来链接二进制文件，使用 `makefiles` 实现自动化执行。那时在语句的末尾还需要分号。整个程序甚至在垃圾回收期间会停止，继而我们努力争取用双核特性。那时 Go 还只能运行在 `Linux` 和 `Mac` 系统，运行在 32 位和 64 位 `x86` 以及 32 位的 ARM 平台上。
 
-Over the last decade, with the help of Go developers all over the world, we have evolved this idea and sketch into a productive language with fantastic tooling, a production-quality implementation, a [state-of-the-art garbage collector](https://blog.golang.org/ismmkeynote), and [ports to a 12 operating systems and 10 architectures](https://golang.org/doc/install/source#introduction).
+过去的十年里，在全球 Go 开发者的帮助下，我们已经将最初的想法和草图发展为生产型语言，具备出色的工具集、生产级实现、[先进的垃圾回收机制](https://blog.golang.org/ismmkeynote)和支持 [12 种操作系统和 10 种架构的迁移](https://golang.org/doc/install/source#introduction)。
 
-Any programming language needs the support of a thriving ecosystem. The open source release was the seed for that ecosystem, but since then, many people have contributed their time and talent to fill the Go ecosystem with great tutorials, books, courses, blog posts, podcasts, tools, integrations, and of course reusable Go packages importable with go get. Go could never have succeeded without the support of this ecosystem.
+任何编程语言都需要蓬勃发展的生态系统来支持。开源版本是生态系统的种子，但是从那时起，许多人贡献了自己的时间和才能来发展 Go 生态系统，这包括出色的教程，书籍，课程，博客文章，播客，工具，持续集成以及通过 `go get` 分发可重复使用的软件包。没有生态系统的支持，Go 永远不可能成功。
 
-Of course, the ecosystem needs the support of a thriving community. In 2019 there are dozens of Go conferences all over the world, along with [over 150 Go meetup groups with over 90,000 members](https://www.meetup.com/pro/go). [GoBridge](https://golangbridge.org/) and [Women Who Go](https://medium.com/@carolynvs/www-loves-gobridge-ccb26309f667) help bring new voices into the Go community, through mentoring, training, and conference scholarships. This year alone, they have taught hundreds of people from traditionally underrepresented groups at workshops where community members teach and mentor those new to Go.
+当然，生态系统也需要活跃社区的支持。在 2019 年，全球共数十个 Go 会议，以及拥有超过 9 万成员的 150+ Go 聚会活动。[GoBridge](https://golangbridge.org/) 和 [Women Who Go](https://medium.com/@carolynvs/www-loves-gobridge-ccb26309f667) 通过指导，培训和会议奖学金方式将新的声音带入 Go 社区。仅今年一年，他们在讨论会上向来自数百团体的人们进行了培训，指导刚接触 Go 语言的人。
 
-There are [over a million Go developers](https://research.swtch.com/gophercount) worldwide, and companies all over the globe are looking to hire more. In fact, people often tell us that learning Go helped them get their first jobs in the tech industry. In the end, what we’re most proud of about Go is not a well-designed feature or a clever bit of code but the positive impact Go has had in so many people’s lives. We aimed to create a language that would help us be better developers, and we are thrilled that Go has helped so many others.
+全球有[超过一百万的 Go 开发者](https://research.swtch.com/gophercount)，而全球各地的公司仍在寻求更多的 Go 开发者。实际上，人们经常告诉我们，学习 Go 帮助他们获得了技术行业的第一份工作。最后，我们对 Go 感到最自豪的，不是设计精良的特性或巧妙的代码，而是能对如此多人的生活中产生积极的影响。我们旨在创建一种可以帮助我们成为更好开发者的语言，很高兴 Go 帮助了许多其他人。
 
-As [#GoTurns10](https://twitter.com/search?q=%23GoTurns10), I hope everyone will take a moment to celebrate the Go community and all we have achieved. On behalf of the entire Go team at Google, thank you to everyone who has joined us over the past decade. Let’s make the next one even more incredible!
+值此 [#GoTurns10](https://twitter.com/search?q=%23GoTurns10) 十周年庆祝之际，我希望每个人都花一点时间来庆祝 Go 社区以及我们所取得的一切。代表 Google 的整个 Go 团队，感谢过去十年来加入我们的每个人。让我们一起在下一个十年更加精彩！
 
 ![gopher10th-pin](../static/images/w45_go_10_years/gopher10th-pin-large.jpg)
