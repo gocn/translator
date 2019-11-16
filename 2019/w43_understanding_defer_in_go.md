@@ -12,24 +12,24 @@
 ##  介绍  
 Go 中有许多通用的流程控制关键词例如`if`，`switch`，`for`等等，这些在其他的编程语言中也是可以找到的。但有一个关键词是绝大多数编程语言所不拥有的——`defer`，尽管它并不通用，但是接下来你将会明白它在你的程序中是多么的实用。
 
-`defer`语句最主要的用处之一就是清理资源，例如关闭打开的文件、网络连接和数据库句柄等。当你的程序用完这些资源后，请务必关闭它们，以免耗尽程序的资源限制，并允许其他程序访问这些资源。`defer`语句通常靠近打开文件/资源调用的位置，这样可以使我们的代码更整洁，并且能够更少出错。
+`defer`语句最主要的用处之一就是清理资源，例如关闭打开的文件、网络连接和[数据库句柄](https://en.wikipedia.org/wiki/Handle_(computing))等。当你的程序用完这些资源后，请务必关闭它们，以免耗尽程序的资源限制，并允许其他程序访问这些资源。`defer`语句通过靠近打开文件/资源调用的位置这样的方式，使我们的代码更整洁，并且能够更少出错。
 
 在这篇文章，我们将了解到如何恰当的使用`defer`语句来清理资源以及使用时会犯的一些常见错误。  
 
 ## 什么是`defer`语句  
-`defer`语句将其之后的函数调用添加到堆栈上，当该语句所在的函数返回时，将执行堆栈中所有的函数调用。由于这些调用位于堆栈上，因此将按照后进先出的顺序进行调用。  
+`defer`语句将其之后的[函数](https://www.digitalocean.com/community/tutorials/how-to-define-and-call-functions-in-go)调用添加到堆栈上，当该语句所在的函数返回时，将执行堆栈中所有的函数调用。由于这些调用位于堆栈上，因此将按照后进先出的顺序进行调用。  
 
 让我们通过`defer`打印一些文本来看看工作原理：
 
-```plain
+```go
 package main
 
 import "fmt"
 
 func main() {
     defer fmt.Println("Bye")
-    fmt.Println("Hi")如果运行程序，将看到以下输出：  
-}
+    fmt.Println("Hi")
+    }
 ```
 在 main 函数中，有两个语句。第一条语句以`defer`关键字开头，后跟一条 print 语句打印`Bye`。下一行语句会打印出`Hi`。  
 如果运行程序，将看到以下输出：  
@@ -42,7 +42,7 @@ Bye
 
 让我们再来看一下该程序，这次我们添加来一些注释以帮助我们理解发生了什么。
 
-```plain
+```go
 package main
 
 import "fmt"
@@ -63,7 +63,7 @@ func main() {
 ## 使用`defer`清理资源  
 在 Go 中使用`defer`来清理资源是非常普遍的。首先我们来看看一个将字符串写入文件但不使用`defer`清理资源的程序：
 
-```plain
+```go
 package main
 
 import (
@@ -97,7 +97,7 @@ func write(fileName string, text string) error {
 
 我们仍然可以不添加`defer`来修复这个问题，只需再添加一条`file.Close()`语句：
 
-```plain
+```go
 package main
 
 import (
@@ -132,7 +132,7 @@ func write(fileName string, text string) error {
 
 下面是使用`defer`的版本：
 
-```plain
+```go
 package main
 
 import (
@@ -170,7 +170,7 @@ func write(fileName string, text string) error {
 
 让我们看看如何既可以使用`defer`调用`Close()`，又可以在遇到错误时报告错误：
 
-```plain
+```go
 package main
 
 import (
@@ -208,7 +208,7 @@ func write(fileName string, text string) error {
 ## 多条`defer`语句  
 在一个函数中有多条`defer`语句也是很常见的。让我们创建一个仅含`defer`语句的程序，来看看会发生什么事情：
 
-```plain
+```go
 package main
 
 import "fmt"
@@ -226,13 +226,13 @@ three
 two
 one
 ```
-可以看到，输出顺序与我们调用`defer`语句的顺序是相反的。这是因为在堆栈中，每个被调用的`defer`语句都会堆叠在前一个语句之上，然后在函数退出时反向调用（后进先出）。
+可以看到，输出顺序与我们调用`defer`语句的顺序是相反的。这是因为在堆栈中，每个被调用的`defer`语句都会堆叠在前一个语句之上，然后在函数退出时反向调用（*后进先出*）。
 
 你可以根据需要在函数中进行任意数量的`defer`调用，但是要记住，所有调用都将以与执行相反的顺序进行调用。
 
 现在我们理解了多条`defer`语句执行的顺序，那么让我们看看如何使用多个`defer`来清理多个资源。我们将创建一个程序，该程序打开一个文件，对其进行写入，然后再次打开并将内容复制到另一个文件。
 
-```plain
+```go
 package main
 
 import (
