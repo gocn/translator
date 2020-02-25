@@ -1,4 +1,4 @@
-# Go 高级并发模式
+# Go 高级并发
 
 - 原文地址：https://encore.dev/blog/advanced-go-concurrency
 - 原文作者：[André Eriksson](https://encore.dev/blog)
