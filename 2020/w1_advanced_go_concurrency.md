@@ -15,7 +15,7 @@ If you’ve used Go for a while you’re probably aware of some of the basic Go 
 *   `context` 用于传播取消
 *   `sync` 和 `sync/atomic` 包用于低级别的原语, 例如互斥锁和内存的原子操作
 
-语言特性和包组合在一起，为构建高并发的应用程序提供了丰富的工具集。你可能还没有发现在扩展库 [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) 中，提供了一系列更高基本的并发原语。我们将在本文中来谈谈这些内容。
+语言特性和包组合在一起，为构建高并发的应用程序提供了丰富的工具集。你可能还没有发现在扩展库 [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) 中，提供了一系列更高级别的并发原语。我们将在本文中来谈谈这些内容。
 
 ## singleflight 包
 
