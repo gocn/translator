@@ -7,7 +7,6 @@
 - 译者：[咔叽咔叽](https://github.com/watermelo)
 - 校对者：[fivezh](https://github.com/fivezh)
 
-If you’ve used Go for a while you’re probably aware of some of the basic Go concurrency primitives:
 如果你曾经使用过 Go 一段时间，那么你可能了解一些 Go 中的并发原语：
 
 *   `go` 关键字用来生成 goroutines
@@ -15,13 +14,13 @@ If you’ve used Go for a while you’re probably aware of some of the basic Go 
 *   `context` 用于传播取消
 *   `sync` 和 `sync/atomic` 包用于低级别的原语，例如互斥锁和内存的原子操作
 
-语言特性和包组合在一起，为构建高并发的应用程序提供了丰富的工具集。你可能还没有发现在扩展库 [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) 中，提供了一系列更高级别的并发原语。我们将在本文中来谈谈这些内容。
+这些语言特性和包组合在一起，为构建高并发的应用程序提供了丰富的工具集。你可能还没有发现在扩展库 [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) 中，提供了一系列更高级别的并发原语。我们将在本文中来谈谈这些内容。
 
 ## singleflight 包
 
 正如[文档](https://pkg.go.dev/golang.org/x/sync/singleflight?tab=doc)中所描述，这个包提供了一个重复函数调用抑制的机制。
 
-对于你为了响应用户而开销比较大（例如网络延时）的情况时，这个包就很有用。例如，你的数据库中包含每个城市的天气信息，并且你想将这些数据以 API 的形式提供服务。在某些情况下，可能同时有多个用户想查询同一城市的天气。
+如果你正在处理计算量大（也可能仅仅是慢，比如网络访问）的用户请求时，这个包就很有用。例如，你的数据库中包含每个城市的天气信息，并且你想将这些数据以 API 的形式提供服务。在某些情况下，可能同时有多个用户想查询同一城市的天气。
 
 在这种场景下，如果你只查询一次数据库然后将结果共享给所有等待的请求，这样不是更好吗？这就是 `singleflight` 提供的功能。
 
@@ -94,7 +93,7 @@ func Cities(cities ...string) ([]*Info, error) {
 
 上面的代码将同时查找给定城市的天气信息。如果城市数量比较少，那还不错，但是如果城市数量很多，可能会导致性能问题。在这种情况下，就应该引入限制并发了。
 
-在 Go 中使用 [semaphores](https://www.guru99.com/semaphore-in-operating-system.html) 信号量让实现限制并发变得非常简单。信号量是你学习计算机科学中可能遇到的并发原语，如果没有遇到也不用担心。你可以在多种场景下使用信号量，但是我们使用它来追踪运行中的任务的数量，并阻塞直到有空间可以执行其他任务。
+在 Go 中使用 [semaphores](https://www.guru99.com/semaphore-in-operating-system.html) 信号量让实现限制并发变得非常简单。信号量是你学习计算机科学中可能已经遇到过的并发原语，如果没有遇到也不用担心。你可以出于多种目的来使用信号量，但是这里我们只使用它来追踪运行中的任务的数量，并阻塞直到有空间可以执行其他任务。
 
 在 Go 中，我们可以使用 `channel` 来实现信号量的功能。如果我们一次需要最多执行 10 个任务，则需要创建一个容量为 10 的 `channel`：`semaphore := make(chan struct{}, 10)`。你可以想象它为一个可以容纳 10 个球的管道。
 
@@ -131,13 +130,13 @@ func Cities(cities ...string) ([]*Info, error) {
 
 ### 加权限制并发
 
-最后，当你想要限制并发的时候，并不是所有任务优先级都一样。在这种情况下，我们消耗的资源将依据低优先级任务和高优先级任务的分布以及它们如何开始运行而变得不同。
+最后，当你想要限制并发的时候，并不是所有任务优先级都一样。在这种情况下，我们消耗的资源将依据高、低优先级任务的分布以及它们如何开始运行而发生变化。
 
 在这种场景下使用*加权限制并发*是一种不错的解决方式。它的工作原理很简单：我们不需要为同时运行的任务数量做预估，而是为每个任务提供一个 "cost"，并从信号量中获取和释放它。
 
 我们不再使用 `channel` 来做这件事，因为我们需要立即获取并释放 "cost"。幸运的是，"扩展库" [golang.org/x/sync/sempahore](https://pkg.go.dev/golang.org/x/sync@v0.0.0-20190911185100-cd5d95a43a6e/semaphore?tab=doc) 实现了加权信号量。
 
-`sem <- struct{}{}` 操作叫 "获取"，`<-sem` 操作叫 "释放。你可能会注意到 `semaphore.Acquire` 方法会返回错误，那是因为它可以和 `context` 包一起使用来控制提前结束。在这个例子中，我们将忽略它。
+`sem <- struct{}{}` 操作叫 "获取"，`<-sem` 操作叫 "释放"。你可能会注意到 `semaphore.Acquire` 方法会返回错误，那是因为它可以和 `context` 包一起使用来控制提前结束。在这个例子中，我们将忽略它。
 
 实际上，天气查询的例子比较简单，不适用加权信号量，但是为了简单起见，我们假设 `cost` 变量随城市名称长度而变化。然后，我们修改如下：
 
