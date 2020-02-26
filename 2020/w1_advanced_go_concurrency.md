@@ -1,32 +1,32 @@
-# Advanced Go Concurrency
+# Go 高级并发
 
 - 原文地址：https://encore.dev/blog/advanced-go-concurrency
 - 原文作者：[André Eriksson](https://encore.dev/blog)
 - 译文出处：https://encore.dev/blog
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2020/w1_advanced_go_concurrency.md
 - 译者：[咔叽咔叽](https://github.com/watermelo)
-- 校对者：
+- 校对者：[fivezh](https://github.com/fivezh)
 
-If you’ve used Go for a while you’re probably aware of some of the basic Go concurrency primitives:
+如果你曾经使用过 Go 一段时间，那么你可能了解一些 Go 中的并发原语：
 
-*   The `go` keyword for spawning goroutines
-*   Channels, for communicating between goroutines
-*   The `context` package for propagating cancellation
-*   The `sync` and `sync/atomic` packages for lower-level primitives such as mutexes and atomic memory access
+*   `go` 关键字用来生成 goroutines
+*   `channel` 用于 goroutines 之间通信
+*   `context` 用于传播取消
+*   `sync` 和 `sync/atomic` 包用于低级别的原语，例如互斥锁和内存的原子操作
 
-These language features and packages combine to provide a very rich set of tools for building concurrent applications. What you might not have discovered yet is a set of higher-level concurrency primitives available in the “extended standard library” available at [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync). We’ll be taking a look at these in this article.
+这些语言特性和包组合在一起，为构建高并发的应用程序提供了丰富的工具集。你可能还没有发现在扩展库 [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) 中，提供了一系列更高级别的并发原语。我们将在本文中来谈谈这些内容。
 
-## Package singleflight
+## singleflight 包
 
-As the [package documentation](https://pkg.go.dev/golang.org/x/sync/singleflight?tab=doc) states, this package provides a duplicate function call suppression mechanism.
+正如[文档](https://pkg.go.dev/golang.org/x/sync/singleflight?tab=doc)中所描述，这个包提供了一个重复函数调用抑制的机制。
 
-This package is extremely useful for cases where you are doing something computationally expensive (or just slow, like network access) in response to user activity. For example, let’s say you have a database with weather information per city and you want to expose this as an API. In some cases you might have multiple users ask for the weather for the same city at the same time.
+如果你正在处理计算量大（也可能仅仅是慢，比如网络访问）的用户请求时，这个包就很有用。例如，你的数据库中包含每个城市的天气信息，并且你想将这些数据以 API 的形式提供服务。在某些情况下，可能同时有多个用户想查询同一城市的天气。
 
-When that happens, wouldn’t it be great if you could just query the database, and then share the result to all the waiting requests? That’s exactly what the `singleflight` package does!
+在这种场景下，如果你只查询一次数据库然后将结果共享给所有等待的请求，这样不是更好吗？这就是 `singleflight` 提供的功能。
 
-To use it, create a `singleflight.Group` somewhere. It needs to be shared across all the requests to work correctly. Then wrap the slow or expensive operation in a call to `group.Do(key, fn)`. Multiple concurrent requests for the same `key` will only call `fn` once, and the result will be returned to all callers once `fn` returns.
+在使用的时候，我们需要要创建一个 `singleflight.Group`。它需要在所有请求中共享才能工作。然后将缓慢或者开销大的操作包装到 `group.Do(key, fn)` 的调用中。对同一个 `key` 的多个并发请求将仅调用 `fn` 一次，并且将 `fn` 的结果返回给所有调用者。  
 
-Here’s how it looks in practice:
+实际中的使用如下:
 
 ```go
 package weather
@@ -40,7 +40,7 @@ var group singleflight.Group
 
 func City(city string) (*Info, error) {
     results, err, _ := group.Do(city, func() (interface{}, error) {
-        info, err := fetchWeatherFromDB(city) // slow operation
+        info, err := fetchWeatherFromDB(city) // 慢操作
         return info, err
     })
     if err != nil {
@@ -50,22 +50,19 @@ func City(city string) (*Info, error) {
 }
 ```
 
-Note that the closure we pass to `group.Do` must return `(interface{}, error)` to work with the Go type system. The third return value from `group.Do`, which is ignored in the example above, indicates whether the result was shared between multiple callers or not. 
+需要注意的是，我们传递给 `group.Do` 的闭包必须返回 `(interface{}, error)` 才能和 Go 类型系统一起使用。上面的例子中忽略了 `group.Do` 的第三个返回值，该值是用来表示结果是否在多个调用方之间共享。
 
-To see a more complete example, check out the code in the [Encore Playground](https://play.encore.dev/663hvcGbpq-rtw).
+如果需要查看更多完整的例子，可以查看 [Encore Playground](https://play.encore.dev/663hvcGbpq-rtw) 中的代码。
 
-## Package errgroup
+## errgroup 包
 
-Another invaluable package is the [errgroup package](https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc). It is best described as a `sync.WaitGroup` but where the tasks return errors that are propagated back to the waiter.
+另一个有用的包是 [errgroup package](https://pkg.go.dev/golang.org/x/sync/errgroup?tab=doc)。它和 `sync.WaitGroup` 比较相似，但是会将任务返回的错误回传给阻塞的调用方。
 
-This package is useful when you have multiple operations that you want to wait for, but you also want to determine if they all completed successfully.
-For example, to build on the weather example from above, let’s say you want to lookup the weather for multiple cities at once, and fail if any of the lookups fails.
+当你有多个等待的操作，但又想知道它们是否都已经成功完成时，这个包就很有用。还是以上面的天气为例，假如你要一次查询多个城市的天气，并且要确保其中所有的查询都成功返回。
 
-Start by defining an `errgroup.Group`, and use the `group.Go(fn func() error)` method for each city.
-This method spawns a goroutine to run the task. When you’ve spawned all the tasks you want, use
-`group.Wait()` to wait for them to complete. Note that this method returns an `error`, unlike `sync.WaitGroup`’s equivalent. The error is `nil` if and only if all the tasks returned a `nil` error.
+首先定义一个 `errgroup.Group`，然后为每个城市都使用 `group.Go(fn func() error)` 方法。该方法会生成一个 goroutine 来执行这个任务。当生成你想执行的所有任务时，使用 `group.Wait()` 等待它们完成。需要注意和 `sync.WaitGroup` 有一点不同的是，该方法会返回错误。当且仅当所有任务都返回 `nil` 时，才会返回一个 `nil` 错误。
 
-In practice it looks like this:
+实际中的使用如下:
 
 ```go
 func Cities(cities ...string) ([]*Info, error) {
@@ -74,7 +71,7 @@ func Cities(cities ...string) ([]*Info, error) {
     res := make([]*Info, len(cities)) // res[i] corresponds to cities[i]
 
     for i, city := range cities {
-        i, city := i, city // create locals for closure below
+        i, city := i, city // 为下面的闭包创建局部变量
         g.Go(func() error {
             info, err := City(city)
             mu.Lock()
@@ -90,22 +87,21 @@ func Cities(cities ...string) ([]*Info, error) {
 }
 ```
 
-Here we are allocating an slice of results so that each goroutine can write to its own index. While the above code is safe even without the `mu` mutex, since each goroutine is writing to its own entry in the slice, we use one anyway in case the code is changed over time.
+这里我们使用一个 `res` 切片来存储每个 goroutine 执行的结果。尽管上面的代码没有使用 `mu` 互斥锁也是线程安全的，但是每个 goroutine 都是在切片中自己的位置写入结果，因此我们不得不使用一个切片，以防代码变化。
 
-## Bounded concurrency
+## 限制并发
 
-The code above will lookup weather information for all the given cities concurrently.
-That’s fine when the number of cities is small, but can cause performance issues if the number of cities is massive. In those cases it’s useful to introduce _bounded concurrency_.
+上面的代码将同时查找给定城市的天气信息。如果城市数量比较少，那还不错，但是如果城市数量很多，可能会导致性能问题。在这种情况下，就应该引入限制并发了。
 
-Go makes it really easy to create bounded concurrency with the use of [semaphores](https://www.guru99.com/semaphore-in-operating-system.html). A semaphore is a concurrency primitive that you might have come across if you studied Computer Science, but if not, don’t worry. You can use semaphores for several purposes, but we’re just going to use them to keep track of how many tasks are running, and to block until there is room for another task to start.
+在 Go 中使用 [semaphores](https://www.guru99.com/semaphore-in-operating-system.html) 信号量让实现限制并发变得非常简单。信号量是你学习计算机科学中可能已经遇到过的并发原语，如果没有遇到也不用担心。你可以出于多种目的来使用信号量，但是这里我们只使用它来追踪运行中的任务的数量，并阻塞直到有空间可以执行其他任务。
 
-In Go we can accomplish this through a clever use of channels! If we want to allow up to 10 tasks to run at once, we create a channel with space for 10 items: `semaphore := make(chan struct{}, 10)`. You can picture this as a pipe that can fit 10 balls.
+在 Go 中，我们可以使用 `channel` 来实现信号量的功能。如果我们一次需要最多执行 10 个任务，则需要创建一个容量为 10 的 `channel`：`semaphore := make(chan struct{}, 10)`。你可以想象它为一个可以容纳 10 个球的管道。
 
-To start a new task, blocking if too many tasks are already running, we simply attempt to send a value on the channel: `semaphore <- struct{}{}`. This is analogous to trying to push another ball into the pipe. If the pipe is full, it waits until there is room.
+如果想执行一个新的任务，我们只需要给 `channel` 发送一个值：`semaphore <- struct{}{}`，如果已经有很多任务在运行的话，将会阻塞。这类似于将一个球推入管道，如果管道已满，则需要等待直到有空间为止。
 
-When a task completes, mark it as such by taking a value out of the channel: `<-semaphore`. This is analogous to pulling a ball out at the other end of the pipe, which leaves room for another ball to be pushed in (another task started).
+当通过 `<-semaphore` 能从该 `channel` 中取出一个值时，这表示一个任务完成了。这类似于在管道另一端拿出一个球，这将为塞入下一个球提供了空间。
 
-And that’s it! Our modified `Cities` looks like this:
+如描述一样，我们修改后的 `Cities` 代码如下：
 
 ```go
 func Cities(cities ...string) ([]*Info, error) {
@@ -132,34 +128,27 @@ func Cities(cities ...string) ([]*Info, error) {
 }
 ```
 
-### Weighted bounded concurrency
+### 加权限制并发
 
-And finally, sometimes you want bounded concurrency, but not all tasks are equally expensive.
-In that case the amount of resources we’ll consume will vary drastically depending on the distribution
-of cheap and expensive tasks and how they happen to start.
+最后，当你想要限制并发的时候，并不是所有任务优先级都一样。在这种情况下，我们消耗的资源将依据高、低优先级任务的分布以及它们如何开始运行而发生变化。
 
-A better solution for this use case is to use _weighted bounded concurrency_. How this works is simple: instead of reasoning about the number of tasks we want to run concurrently, we come up with a “cost” for every task and acquire and release that cost from a semaphore.
+在这种场景下使用*加权限制并发*是一种不错的解决方式。它的工作原理很简单：我们不需要为同时运行的任务数量做预估，而是为每个任务提供一个 "cost"，并从信号量中获取和释放它。
 
-We can’t model this with channels any longer since we need the whole cost acquired and released at once.
-Fortunately the “extended standard library” comes to our rescue once more! The [golang.org/x/sync/sempahore](https://pkg.go.dev/golang.org/x/sync@v0.0.0-20190911185100-cd5d95a43a6e/semaphore?tab=doc) package provides a weighted semaphore implementation exactly for this purpose.
+我们不再使用 `channel` 来做这件事，因为我们需要立即获取并释放 "cost"。幸运的是，"扩展库" [golang.org/x/sync/sempahore](https://pkg.go.dev/golang.org/x/sync@v0.0.0-20190911185100-cd5d95a43a6e/semaphore?tab=doc) 实现了加权信号量。
 
-The `sem <- struct{}{}` operation is called “Acquire” and the `<-sem` operation is called “Release”.
-You will note that the `semaphore.Acquire` method returns an error; that is because it can be used
-with the `context` package to abort the operation early. For the purpose of this example we will ignore it.
+`sem <- struct{}{}` 操作叫 "获取"，`<-sem` 操作叫 "释放"。你可能会注意到 `semaphore.Acquire` 方法会返回错误，那是因为它可以和 `context` 包一起使用来控制提前结束。在这个例子中，我们将忽略它。
 
-The weather lookup example is realistically too simple to warrant a weighted semaphore,
-but for the sake of simplicity let’s pretend the cost varies with the length of the city name.
-Then we arrive at the following:
+实际上，天气查询的例子比较简单，不适用加权信号量，但是为了简单起见，我们假设 `cost` 变量随城市名称长度而变化。然后，我们修改如下：
 
 ```go
 func Cities(cities ...string) ([]*Info, error) {
-    ctx := context.TODO() // replace with a real context
+    ctx := context.TODO() // 需要的时候，可以用 context 替换 
     var g errgroup.Group
     var mu sync.Mutex
-    res := make([]*Info, len(cities)) // res[i] corresponds to cities[i]
-    sem := semaphore.NewWeighted(100) // 100 chars processed concurrently
+    res := make([]*Info, len(cities)) // res[i] 对应 cities[i]
+    sem := semaphore.NewWeighted(100) // 并发处理 100 个字符
     for i, city := range cities {
-        i, city := i, city // create locals for closure below
+        i, city := i, city // 为闭包创建局部变量
         cost := int64(len(city))
         if err := sem.Acquire(ctx, cost); err != nil {
             break
@@ -182,6 +171,6 @@ func Cities(cities ...string) ([]*Info, error) {
 }
 ```
 
-## Conclusion
+## 结论
 
-The above examples show how easy it is to add concurrency to a Go program, and then fine-tune it based on your needs.
+上面的例子展示了在 Go 中通过微调来实现需要的并发模式是多么简单。
