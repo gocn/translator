@@ -34,7 +34,7 @@ A project might be in one of three states when beginning the transition to Go mo
 
 To convert a project that already uses a dependency management tool, run the following commands:
 
-```
+```shell
 $ git clone https://github.com/my/project
 [...]
 $ cd project
@@ -72,7 +72,7 @@ $
 
 This is a good time to pause and run `go build ./...` and `go test ./...` before continuing. Later steps may modify your `go.mod` file, so if you prefer to take an iterative approach, this is the closest your `go.mod` file will be to your pre-modules dependency specification.
 
-```
+```shell
 $ go mod tidy
 go: downloading rsc.io/binaryregexp v0.2.1-0.20190524193500-545cabda89ca
 go: extracting rsc.io/binaryregexp v0.2.1-0.20190524193500-545cabda89ca
@@ -86,7 +86,7 @@ $
 
 Let's finish by making sure the code builds and tests pass:
 
-```
+```shell
 $ go build ./...
 $ go test ./...
 [...]
@@ -95,7 +95,7 @@ $
 
 Note that other dependency managers may specify dependencies at the level of individual packages or entire repositories (not modules), and generally do not recognize the requirements specified in the `go.mod` files of dependencies. Consequently, you may not get exactly the same version of every package as before, and there's some risk of upgrading past breaking changes. Therefore, it's important to follow the above commands with an audit of the resulting dependencies. To do so, run
 
-```
+```shell
 $ go list -m all
 go: finding rsc.io/binaryregexp v0.2.1-0.20190524193500-545cabda89ca
 github.com/my/project
@@ -105,7 +105,7 @@ $
 
 and compare the resulting versions with your old dependency management file to ensure that the selected versions are appropriate. If you find a version that wasn't what you wanted, you can find out why using `go mod why -m` and/or `go mod graph`, and upgrade or downgrade to the correct version using `go get`. (If the version you request is older than the version that was previously selected, `go get` will downgrade other dependencies as needed to maintain compatibility.) For example,
 
-```
+```shell
 $ go mod why -m rsc.io/binaryregexp
 [...]
 $ go mod graph | grep rsc.io/binaryregexp
@@ -118,7 +118,7 @@ $
 
 For a Go project without a dependency management system, start by creating a `go.mod` file:
 
-```
+```shell
 $ git clone https://go.googlesource.com/blog
 [...]
 $ cd blog
@@ -137,7 +137,7 @@ The `module` directive declares the module path, and the `go` directive declares
 
 Next, run `go mod tidy` to add the module's dependencies:
 
-```
+```shell
 $ go mod tidy
 go: finding golang.org/x/website latest
 go: finding gopkg.in/tomb.v2 latest
@@ -178,7 +178,7 @@ $
 
 `go mod tidy` added module requirements for all the packages transitively imported by packages in your module and built a `go.sum` with checksums for each library at a specific version. Let's finish by making sure the code still builds and tests still pass:
 
-```
+```shell
 $ go build ./...
 $ go test ./...
 ok      golang.org/x/blog    0.335s
@@ -207,7 +207,7 @@ If a test expects `go` commands within the test to run in GOPATH mode, it may fa
 
 Finally, you should tag and publish a release version for your new module. This is optional if you haven't released any versions yet, but without an official release, downstream users will depend on specific commits using [pseudo-versions](https://golang.org/cmd/go/#hdr-Pseudo_versions), which may be more difficult to support.
 
-```
+```shell
 $ git tag v1.2.0
 $ git push origin v1.2.0
 ```
