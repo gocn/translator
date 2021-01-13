@@ -1,35 +1,40 @@
-# A Proposal for Adding Generics to Go
+# Go 语言增加泛型的提案
+
+- 原文地址：https://blog.golang.org/generics-proposal
+- 原文作者：Ian Lance Taylor
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w3_a_proposal_for_adding_generics_to_go.md
+- 译者：cvley
 
 > Ian Lance Taylor
-> 12 January 2021
+> 2021年1月12日
 
-## Generics proposal
+## 泛型提议
 
-We’ve filed [a Go language change proposal](https://golang.org/issue/43651) to add support for type parameters for types and functions, permitting a form of generic programming.
+我们提出[一个Go语言变更提案](https://golang.org/issue/43651)，用于为类型和函数增加类型参数的支持，从而允许Go语言支持一种通用的编程模式。
 
-## Why generics?
+## 为什么支持泛型？
 
-Generics can give us powerful building blocks that let us share code and build programs more easily. Generic programming means writing functions and data structures where some types are left to be specified later. For example, you can write a function that operates on a slice of some arbitrary data type, where the actual data type is only specified when the function is called. Or, you can define a data structure that stores values of any type, where the actual type to be stored is specified when you create an instance of the data structure.
+泛型可以提供强大的构建代码块，让代码共享和程序构建更加简便。泛型编程意味着可以先编写函数和数据结构，而类型可以留在后面指定。比如，一个操作某些任意数据类型切片的函数，当函数被调用时才会指定实际的数据类型。或者，一个存储任意类型的数据结构，当创建这个数据结构实例时，才会指定实际存储的类型。
 
-Since Go was first released in 2009, support for generics has been one of the most commonly requested language features. You can read more about why generics are useful in [an earlier blog post](https://blog.golang.org/why-generics).
+自从Go在2009年首次发布后，泛型的支持一直都是最常见的语言特性需求之一。在[之前的博文](https://blog.golang.org/why-generics)中，你可以了解更多泛型有用的原因。
 
-Although generics have clear use cases, fitting them cleanly into a language like Go is a difficult task. One of the [first (flawed) attempts to add generics to Go](https://golang.org/design/15292/2010-06-type-functions) dates back all the way to 2010. There have been several others over the last decade.
+尽管泛型有明确的使用场景，但将它融入到像Go一样的语言中是非常困难的。[在Go中首次（有缺陷的）添加泛型的尝试](https://golang.org/design/15292/2010-06-type-functions)可以追溯到2010年。在过去的十年中也有多次其他的尝试。
 
-For the last couple of years we’ve been working on a series of design drafts that have culminated in [a design based on type parameters](https://golang.org/design/go2draft-type-parameters). This design draft has had a lot of input from the Go programming community, and many people have experimented with it using the [generics playground](https://go2goplay.golang.org/) described in [an earlier blog post](https://blog.golang.org/generics-next-step). Ian Lance Taylor gave [a talk at GopherCon 2019](https://www.youtube.com/watch?v=WzgLqE-3IhY) about why to add generics and the strategy we are now following. Robert Griesemer gave [a follow-up talk about changes in the design, and the implementation, at GopherCon 2020](https://www.youtube.com/watch?v=TborQFPY2IM). The language changes are fully backward compatible, so existing Go programs will continue to work exactly as they do today. We have reached the point where we think that the design draft is good enough, and simple enough, to propose adding it to Go.
+在过去的几年中，我们在设计草案上的一系列工作，最终形成了[一个基于类型参数的设计方案](https://golang.org/design/go2draft-type-parameters)。这份设计草案从Go编程社区博采众长，很多朋友在[之前博文](https://blog.golang.org/generics-next-step)中提到的[泛型游乐场](https://go2goplay.golang.org/)中进行了体验。Ian Lance Taylor 在[GopherCon 2019上的演讲](https://www.youtube.com/watch?v=WzgLqE-3IhY)中介绍了添加泛型的原因和我们现在遵循的策略。Robert Griesemer在[之后GopherCon 2020的演讲中分享了设计上的变更和实现细节](https://www.youtube.com/watch?v=TborQFPY2IM)。语言的变更是完全后向兼容的，因此现有的Go程序将继续如现在一般正常运行。我们认为设计草案已经足够好也足够简单，是时候提议将它加入到Go中了。
 
-## What happens now?
+## 现在的进度是什么？
 
-The [language change proposal process](https://golang.org/s/proposal) is how we make changes to the Go language. We have now [started this process](https://golang.org/issue/43651) to add generics to a future version of Go. We invite substantive criticisms and comments, but please try to avoid repeating earlier comments, and please try to [avoid simple plus-one and minus-one comments](https://golang.org/wiki/NoPlusOne). Instead, add thumbs-up/thumbs-down emoji reactions to comments with which you agree or disagree, or to the proposal as a whole.
+[语言变更提案流程](https://golang.org/s/proposal)是我们对Go语言进行变更的方法。现在我们已经[开始了将泛型添加到Go的未来一个版本的流程](https://golang.org/issue/43651)。我们欢迎实质性的批评和建议，但请避免重复之前的评论，也请[避免简单的加一和减一的评论](https://golang.org/wiki/NoPlusOne)。相反，你可以在赞同或反对的评论或者整个提案下添加`thumbs-up/thumbs-down emoji`表情。
 
-As with all language change proposals, our goal is to drive toward a consensus to either add generics to the language or let the proposal drop. We understand that for a change of this magnitude it will be impossible to make everybody in the Go community happy, but we intend to get to a decision that everybody is willing to accept.
+和所有的语言变更提案一样，我们的目标是对加入泛型或终止这个提案达成共识。我们明白，这个量级的变更肯定无法让Go社区的每个人都满意，但我们期望可以达成所有人都能接受的决定。
 
-If the proposal is accepted, our goal will be to have a complete, though perhaps not fully optimized, implementation for people to try by the end of the year, perhaps as part of the Go 1.18 betas.
+如果通过了这个提案，那么在今年底或者作为Go 1.18 beta版本的一部分，我们将提供一个完备但可能并未完全优化的泛型实现供大家尝鲜。
 
-## Related articles
+## 相关文章 
 
-- [The Next Step for Generics](https://blog.golang.org/generics-next-step)
-- [Proposals for Go 1.15](https://blog.golang.org/go1.15-proposals)
-- [Experiment, Simplify, Ship](https://blog.golang.org/experiment)
-- [Why Generics?](https://blog.golang.org/why-generics)
-- [Next steps toward Go 2](https://blog.golang.org/go2-next-steps)
-- [Go 2, here we come!](https://blog.golang.org/go2-here-we-come)
+- [泛型的下一步](https://blog.golang.org/generics-next-step)
+- [Go 1.15的提案](https://blog.golang.org/go1.15-proposals)
+- [试验性，简洁性，可移植](https://blog.golang.org/experiment)
+- [为什么支持泛型？](https://blog.golang.org/why-generics)
+- [Go 2的下一步规划](https://blog.golang.org/go2-next-steps)
+- [Go 2，我们来了！](https://blog.golang.org/go2-here-we-come)
