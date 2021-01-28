@@ -1,4 +1,4 @@
-# Command PATH security in Go
+# Go语言命令行执行路径的安全性
 
 > *Russ Cox*
 > *19 January 2021*
