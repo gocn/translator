@@ -4,7 +4,7 @@
 - 原文作者：Russ Cox
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w5_command_path_security_in_go.md
 - 译者：[zhuyaguang](https://github.com/zhuyaguang)
-- 校对：
+- 校对：[fivezh](https://github.com/fivezh)
 > Russ Cox
 > 2021年1月19日
 
