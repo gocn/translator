@@ -1,15 +1,13 @@
 # The state of Go
 
-The Go language is high up on the list of popular programming languages used today. We already know that its enthusiastic, fun, and welcoming community of users like it for its speed and effectiveness, but we wanted to find out a bit more. We have taken a deeper look into the information available on Go to uncover more facts. Our resident Go expert, Florin Pățan, Developer Advocate for GoLand, has been brought in to provide his take on the findings to discover the state of Go.
-
 在当今最流行的编程语言列表里，Go语言一直是名列前茅。我们已经知道了Go语言的火热、有趣、受社区用户的欢迎，正如它速度和效率那样，但是我们还想知道更多。我们为了发现更多的事实，在目前Go现有的信息的基础上，进行了深入研究。我们邀请了Go语言专家、Goland开发倡导者`Florin Pățan` 来发表他对Go语言状态的看法。
 
 ![](../static/images/w6_the_state_of_Go/Go_8001611039611515.gif)
 
-哪里的人在使用Go语言
+哪儿的人在使用Go语言
 -----
 
-### 约110万Go开发中
+### 约110万Go开发者
 
 总的来说，大约有**110万专业的 Go 开发者**使用 Go 作为**主要开发语言**。 如果我们把那些使用其他语言作为主力开发语言，但是把Go当作业余爱好的开发人员算在内的话，这一数字可能接近**270万**。
 
@@ -24,8 +22,6 @@ _专家分析_
 具体在哪里
 ------------------
 
-The graph below shows the distribution of developers in each country we surveyed in the [Developer Ecosystem survey 2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) who use Go as a primary language (respondents were able to choose up to 3 primary languages). **China** has the highest concentration, with 16% of Chinese developers writing in Go.
-
 下图显示了我们在 [2020开发者生态调查](https://www.jetbrains.com/lp/devecosystem-2020/go/) 中调查的每个国家使用Go作为主要语言的开发者的分布情况（受访者最多可以选择3种主要语言）。**中国** 的开发者集中度最高，有16%的中国开发者在使用Go。
 
 _专家分析_
@@ -34,126 +30,125 @@ _专家分析_
 
 中国之所以排在榜首，可能正是因为他们拥有的开发者数量最多。而且我认识的很多公司，比如PingCAP、腾讯和华为，都有很多开发者来支撑和构建他们的内部工具、基础设施和后端服务，这些服务都和微服务相结合。这可能才是关键。
 
-I know that in Russia the Go communities are really awesome, so it’s no wonder Go is a popular language there. I am curious about Japan and Ukraine as I didn’t expect that they would be quite so high up, and I’d expect Germany and India to be a bit higher. I remember back four or five years ago when I was in Berlin that Go was used in pretty much every startup that I knew.
-
-我知道俄罗斯的Go社区非常棒，所以难怪Go在那里很受欢迎。
+我知道俄罗斯的 Go 社区非常棒，所以难怪 Go 在那里很受欢迎。我对日本和乌克兰很好奇，因为我没想到他们会这么高，我以为德国和印度会更高些。记得四五年前我在柏林的时候，我认识的每一家创业公司都在使用 Go 。
 
 ![](../static/images/w6_the_state_of_Go/2-2x.png)
 
-Industry insights
+行业洞察
 -----------------
 
-Go remains the **10th primary language** used by professional developers, with a share of about 9% according to the [Developer Ecosystem survey 2020](https://www.jetbrains.com/lp/devecosystem-2020/go/).
+Go 依然保持着开发者主要使用的语言**前10名**，根据[2020开发者生态调查](https://www.jetbrains.com/lp/devecosystem-2020/go/)显示 Go 的份额约为9%。
 
-_Expert analysis_
+_专家分析_
 
-I think Go is always growing. People don’t tend to start off with Go as their first programming language but instead usually migrate to Go from other languages such as PHP and Ruby, but mainly from C++ and C#, from what I know.
+我认为 Go 会一直增长。人们通常不会把 Go 作为他们开始编程的入门语言，而是会从其他语言迁移过来，例如 `PHP` `Ruby`，但据我所知，主要从 `C++` `C#` 迁移过来。
 
-The advantages of Go over PHP would be the type safety, since Go is a statically typed language, whereas PHP is dynamic. It means that the compiler does most of the work for you in terms of making sure that the code you wrote will compile and work without having problems at runtime. The advantage Go has over C++ is simplicity. In Go, it’s all pretty straightforward.
+Go 相比 PHP 的优势是类型安全，因为 Go 是一门静态类型语言，而PHP是门动态类型语言。这就意味着编译器在运行时做了大量的工作来确保你写的代码能够编译并且正常运行。相比于 C++ ，Go 的优势是简单。在 Go 里面，一切都是那么简单。
 
-In general, the thing with Go is that it has a lot of speed built in, both when writing the code and at runtime. In general, with Go you’d get maybe 5-10 times the performance without having to do any special optimizations, and that’s an important productivity advantage for companies. It’s also a simple language, it’s easy to pick up, and it’s easy to replace microservices in existing projects.
+总的来说，Go 的特点就是与生俱来的速度快，无论是写代码还是运行时。一般来说，使用 Go 语言你在不做任何特殊优化的情况下就能提高5-10倍的性能，这对公司来说是一个很重要的生产优势。同时 Go 也是一门简单的语言，很容易上手，很容易替换现有项目中的微服务。
 
-A lot of the IT infrastructure tools like Kubernetes, Docker, and Vault – to name a few of the big ones – are built using Go. So, while there are a lot of companies that work with Java, they would also have a team that does Go, especially for maintenance and patching of such projects. That’s probably one of the other reasons the adoption keeps increasing; the more that technology is used in common infrastructure and deployments, the more Go will grow. So I think more and more people will start using Go in the next few years and we will see Go at maybe 15-20%, especially considering the question from the Developer Ecosystem survey “"Do you plan to adopt / migrate to other languages in the next 12 months? If so, to which ones?" where 13% of respondents answered Go.
+许多 IT 基础设施工具，如 `Kubernetes`、`Docker`和`Vault`（举几个大型的例子）都是用 Go 构建的。因此虽然很多公司是使用 Java ，但是还是会有一个团队去使用Go，特别是为了来维护这些项目维护和给这些项目打补丁。这可能是 Go  采用率保持增长的另外一个原因。 这种技术在公共技术设施和部署中使用的越多，Go 就增长的越快。我认为接下来几年会有越来越多的人采用Go，我们将会看到大约有15%-20%的开发者会使用 Go 。特别是考虑到开发者生态调查中问道，“你计划在未来的12个月内采用或者迁移到其他语言吗？”，13%的受访者回答是Go。
 
 ![](../static/images/w6_the_state_of_Go/3-2x.png)
 
-Type of software developed with Go
+Go开发的软件类型
 ----------------------------------
 
-**Web Services** are the most popular area where Go is used, with a share of 36% according to the results from the [Developer Ecosystem survey 2020](https://www.jetbrains.com/lp/devecosystem-2020/go/).
+**Web 服务** 是使用 Go  最受欢迎的领域，根据 [2020开发者生态调查](https://www.jetbrains.com/lp/devecosystem-2020/go/) 结果显示，其占有36%份额。
 
-_Expert analysis_
+_专家分析_
 
-For web services, I think the top task is creating API servers that are fairly fast. They don’t necessarily need a framework, so you can get up and running quickly with Go.
+为什么是 web 服务，我认为主要原因是构建一个 API 服务非常快。他们不需要框架，就可以用Go快速启动和运行一个。
 
-I don’t expect that this graph will change too much in the future. I do expect to see web services getting more share just because it’s simple to get started in it with Go.
+我不认为这张图在未来会有很大变化，我确实希望看到 web 服务得到更多的分享，因为用 Go 开始一个web 服务确实很简单。
 
-For "Utilities", I see a similar story as it’s fairly easy to write a quick app that lets you process a large volume of data and write small utility apps or one-off tasks that need a lot of power. It also makes sense to see the IT infrastructure there. The more people that adopt Docker and Kubernetes, the more people that will come to Go, just because they are both written in Go. Any kind of DevOps work can especially benefit from Go, as it offers type safety and speed. It’s quite easy to interact with the cloud side of the infrastructure – Google, Amazon, and Azure, among others – as they all have good SDKs. I think we can also expect a bit of a boost in “Libraries / Frameworks” in the next couple of years when generics arrive.
+对于实用小程序，我见过很多类似的，因为 Go 很容易快速写一个小应用来帮你处理大量的数据，写一个小的实用程序或需要消耗大量资源的一次性任务。越来越多的人采用`Docker` 和`Kubernetes`，就会有越来越多的人使用 Go,仅仅是因为他们都是用 Go 写的。任何类型的 DevOps 的工作都可以从 Go 中获益，因为它提供了类型安全和速度。与基础设施的云端交互很容易（Google、Amazon、Azure等），因为他们都有很好的SDK。我认为未来几年，当泛型到来时，我们还可以期待下 “Libraries / Frameworks” 的一些提升。
 
-System software – I think this will begin to decline as more people start using something like Rust for system software. And the same for databases. So it’s probably going to be a niche domain in the future somewhere around the 6% mark. Programming tools – I am surprised this is so high on the list, I would be interested to learn what programming tools are being made in Go.
+系统软件—我认为随着越来越多的人开始使用像 Rust 这样的语言编写系统软件，这一数字将会下降。数据库也是如此。所以这大约6%市场，在未来这可能会变成一个商机。编程工具—我很惊讶它在列表中份额这么高，我非常感兴趣去了解一下 Go 有哪些编程工具。
 
 ![](../static/images/w6_the_state_of_Go/5-2x.png)
 
 
 
-Top industries where Go is used
+使用Go的顶级行业
 -------------------------------
 
-According to the [_Developer Ecosystem Survey 2020_](https://www.jetbrains.com/lp/devecosystem-2020/go/), Go programmers work mainly in **IT Services**, followed by **Finance and FinTech**, **Cloud Computing / Platform,** and other industries.
+根据 [2020开发者生态调查](https://www.jetbrains.com/lp/devecosystem-2020/go/) ，Go 程序员主要从事**IT 服务**，其次是**金融和金融科技**、**云技术/平台**和其他行业。
 
-_Expert analysis_
+_专家分析_
 
-Financing and FinTech. That’s something that I expect to see just because I know there are quite a few banks that have been launched with Go or are using Go extensively for their infrastructure. For example, [Monzo, from the UK, built their whole bank using Go](https://monzo.com/blog/2016/09/19/building-a-modern-bank-backend). Cloud computing and platforms also makes sense, as it is natural with the kinds of applications that are being written in Go.
+金融和金融科技。这是我希望看到的，因为据我所知有相当多的银行已经开始采用 Go 或者正在广泛使用 Go 作为他们的基础设施。例如，[来自英国的Monzo使用 Go 构建了他们整个银行](https://monzo.com/blog/2016/09/19/building-a-modern-bank-backend)。云计算和平台也很有意义，因为对于使用 Go 编写的应用来说是很自然。
 
-Mobile development, that’s unexpected to see. Go doesn’t really have a good mobile development history. If anything, I would expect people to probably do their web services or backends for mobile apps with Go, but that is about it.
+移动开发，这是意料之外的。Go 并没有好的移动开发历史。如果有什么不同的话，我希望大家使用 Go 来为移动程序提供网络服务或者后端服务，但仅此而已。
 
-There are a few industries I would not expect to see Go usage increasing in anytime soon. For example, anything based on machine learning, because that’s still quite a Python stronghold. There are efforts to make machine learning popular in Go and make it better, however I think that any results are at least a couple of years away.
+有几个行业，我不认为 Go 的使用率会很快增加。比如，任何基于机器学习的东西，因为这仍然是Python的要塞。人们正在努力让机器学习在 Go 中变得受欢迎和变得更好，但是我认为至少要几年之后才会有一些结果。
 
 ![](../static/images/w6_the_state_of_Go/4-2x.png)
 
-Go tools
+Go 工具
 --------
 
-### Package Managers
+### 包管理
 
-**Go Modules** is the most popular package manager among Go developers. Its adoption rose from 41% in [2019](https://www.jetbrains.com/lp/devecosystem-2019/go/) to 82% in [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/), according to the _Developer Ecosystem Survey 2020_.
+**Go Modules** 是 Go 开发者中最受欢迎的包管理工具。根据 _2020 开发者生态调查_ 其使用率从 [2019](https://www.jetbrains.com/lp/devecosystem-2019/go/) 到41%上升到到[2020](https://www.jetbrains.com/lp/devecosystem-2020/go/)的82%。
 
-_Expert analysis_
+_专家分析_
 
-I think at some point we’ll probably have to stop asking this question, just because Go Modules is set to become the standard default model and the Go team also wants to deprecate GOPATH. Everything else will probably just be obsolete then.
+我认为在某种程度上我们可能不得不停止问这个问题，因为 Go Modules已经被设置为标准默认模型，而且Go团队也想要弃用 `GOPATH`。到那时，其他的一切都将会被淘汰。
 
 ![](../static/images/w6_the_state_of_Go/6-2x.png)
 
-### Go routers
+### Go 路由
 
-**Gorilla / Mux** and **Standard library** have remained the most used Go routers since 2018 according to the Developer Ecosystem surveys carried out in [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) and [2018](https://www.jetbrains.com/research/devecosystem-2018/go/).
+根据 [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) 和 [2018](https://www.jetbrains.com/research/devecosystem-2018/go/) 的开发者生态调查显示，**Gorilla / Mux** 和**标准库**自2018年以来一直是使用最多的 Go 路由。
 
-_Expert analysis_
+_专家分析_
 
-The standard library is probably so popular because whenever you go to Reddit, Slack, or any other place, people will usually recommend sticking with the standard library and only using something else if you really want. I use gorilla/mux, just because there is a bit more abstraction on top of the standard library without sacrificing too much performance. It’s also probably because this is one of the closest to the standard library and it makes writing servers easier. Overall this distribution is probably what I would expect to see.
+标准库之所以如此受欢迎，可能是因为每当你去Reddit、Slack或其他地方，人们通常都会建议你坚持使用标准库，只有在你真正需要的时候才使用其他东西。我使用`gorilla/mux`，是因为它在标准库的基础上有更多的抽象，又不会牺牲太多的性能。也可能是因为它是最接近标准库的，而且它使得编写服务端更容易。总的来说，这种分布可能是我希望看到的。
 
 ![](../static/images/w6_the_state_of_Go/7-2x.png)
 
-### Top 5 web frameworks
+### 5大web框架
 
-The usage of **Gin** has nearly doubled since 2018, while the rest of the web frameworks have largely remained stable, according to the [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) and [2018](https://www.jetbrains.com/research/devecosystem-2018/go/) Developer Ecosystem surveys.
+根据 [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) 和 [2018](https://www.jetbrains.com/research/devecosystem-2018/go/) 的开发者生态调查显示，**Gin** 的使用量自2018年以来几乎翻了一倍，而其他 web 框架基本保持稳定。
 
-_Expert analysis_
+_专家分析_
 
-Gin is likely so popular for web because it’s one of the faster frameworks and also gets good recommendations. It’s also one of the oldest ones. So there’s a lot of material out there, and a lot of users are already using and recommending it.
+Gin 在 web 上如此受欢迎，因为它是一个速度快的框架，而且也得到了很好的推荐。它也是最古老的框架之一。因为会有很多文档摆在那儿，很多用户已经在使用它和推荐它。
 
 ![](../static/images/w6_the_state_of_Go/8-2x.png)
 
-### Testing frameworks
+### 测试框架
 
-The proportion of devs using **built-in testing** fell from 64% in [2018](https://www.jetbrains.com/research/devecosystem-2018/go/) to 44% in [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) while the usage of other testing frameworks grew slightly.
+使用**内置测试框架**的比例从 [2018](https://www.jetbrains.com/research/devecosystem-2018/go/) 64%下降到 [2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) 的44%，而使用其他测试框架的比例略有增长。
 
-_Expert analysis_
+_专家分析_
 
-The built-in testing is high because the Go standard library has a really good testing library out of the box.
+内置的测试框架比例很高是因为Go标准库有一个非常好的开箱即用的测试库。
 
-Built-in testing has probably dropped because more people are coming to the language from other languages, like PHP for instance, and they are seeking to replicate the testing habits they already have.
+内置测试可能会下降主要是因为越来越多的人从其他语言(比如PHP)转向这门语言，他们试图复制自己已有的测试习惯。
 
 ![](../static/images/w6_the_state_of_Go/9-2x.png)
 
-Most discussed Go tools and other languages
+讨论最多的Go工具和其他语言
 -------------------------------------------
 
-Go is often discussed in IT communities, one of which is Stack Overflow. We took data from the Q&A section to find out which tags co-occur with “Go” the most. Among them, there are 23 tools and 2 languages – “MySQL” and “PostgreSQL”. Apart from the tools, there are co-occurrences with other top languages. The vertical axis indicates the total number of occurrences of the tags while the horizontal axis shows mentions of the tags with “Go”.
+Go 经常在 IT 社区中被讨论，Stack Overflow就是其中之一。我们从 Q&A 单元获取数据来找出哪些标签与“Go”同时出现次数最多。其中有23种工具和两种语言（“MySQL” 和 “PostgreSQL”）。除了这些工具，还有与其他顶级语言的共存。纵轴表示标签出现的总次数，而横轴显示带有“Go”的标签的提及次数。
 
-_Expert analysis_
+_专家分析_
 
-I expect JSON to be a problem. It’s not easy to marshal and unmarshal JSON into Go data structures and this is probably why it’s so visible. Structs come up as people coming from other languages usually have a hard time wrapping their head around this, apart from maybe if they come from C++ or C.
+我预计 JSON确实是个问题，将 Go 的数据结构序列化和反序列化成 JSON是很不容易的，这可能是为什么它如此可见的原因。来自其他语言的人通常很难理解struct，除非它们来自C++或C。
 
-Amazon Web Services is where I would expect a lot of questions based on the popularity of AWS itself. It’s more straightforward to develop Go apps for Google App Engine now, which was not always the case, hence why there are so many questions.
+基于AWS本身的受欢迎程度，我认为亚马逊网络服务(Amazon Web Services)会有很多问题。现在为谷歌App Engine开发Go应用程序更简单了，但以前并不是这样，所以才会有这么多问题。
 
-All in all, the Go community is a pretty fun and inclusive community to be a part of. Newbies are never pushed away and they are encouraged to ask questions and discover the language. In terms of topics in general, generics and maybe some language improvements, compiler improvements, and so on are discussed most regularly.
+总而言之，Go社区是一个非常有趣且具有包容性的社区，可以成为其中的一员。从不排斥新人，鼓励他们提出问题，探索语言。在一般的主题方面，泛型以及某些语言改进、编译器改进等都是经常讨论的话题。
 
-Generics particularly as it is one of the most requested features for the language and there are plenty of workloads that would benefit from having this feature.
+尤其是泛型，因为它是该语言最需要的特性之一，并且有大量的工作负载将受益于该特性。
 
 ![](../static/images/w6_the_state_of_Go/11-2x.png)
 --------------------------------------------------------------------
 
-Is your team curious to try GoLand? Get an extended trial for an unlimited number of users.
+你的团队有兴趣尝试GoLand吗? 获得一个无限数量的用户的扩展试用。
 
-[Request now!](https://www.jetbrains.com/shop/eform/extended-trial/go/)
+[现在申请!](https://www.jetbrains.com/shop/eform/extended-trial/go/)
+
