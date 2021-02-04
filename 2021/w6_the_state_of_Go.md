@@ -2,7 +2,7 @@
 
 The Go language is high up on the list of popular programming languages used today. We already know that its enthusiastic, fun, and welcoming community of users like it for its speed and effectiveness, but we wanted to find out a bit more. We have taken a deeper look into the information available on Go to uncover more facts. Our resident Go expert, Florin Pățan, Developer Advocate for GoLand, has been brought in to provide his take on the findings to discover the state of Go.
 
-![](G:\translator\static\images\w6_the_state_of_Go\Go_8001611039611515.gif)
+![](../static/images/w6_the_state_of_Go/Go_8001611039611515.gif)
 
 Where
 -----
@@ -17,7 +17,7 @@ _Expert analysis_
 
 This is what I’d expect for the regions that develop Go. Asia is high up there in terms of the numbers of Go users as I think a large number of the developers there are from huge companies such as Tencent, Alibaba, and Huawei. These companies have lots of developers in general.
 
-![](G:\translator\static\images\w6_the_state_of_Go\1-2x.png)
+![](../static/images/w6_the_state_of_Go/1-2x.png)
 
 Where specifically
 ------------------
@@ -32,7 +32,7 @@ China’s place at the top of the list is probably just due the sheer number of 
 
 I know that in Russia the Go communities are really awesome, so it’s no wonder Go is a popular language there. I am curious about Japan and Ukraine as I didn’t expect that they would be quite so high up, and I’d expect Germany and India to be a bit higher. I remember back four or five years ago when I was in Berlin that Go was used in pretty much every startup that I knew.
 
-![](G:\translator\static\images\w6_the_state_of_Go\2-2x.png)
+![](../static/images/w6_the_state_of_Go/2-2x.png)
 
 Industry insights
 -----------------
@@ -49,7 +49,7 @@ In general, the thing with Go is that it has a lot of speed built in, both when 
 
 A lot of the IT infrastructure tools like Kubernetes, Docker, and Vault – to name a few of the big ones – are built using Go. So, while there are a lot of companies that work with Java, they would also have a team that does Go, especially for maintenance and patching of such projects. That’s probably one of the other reasons the adoption keeps increasing; the more that technology is used in common infrastructure and deployments, the more Go will grow. So I think more and more people will start using Go in the next few years and we will see Go at maybe 15-20%, especially considering the question from the Developer Ecosystem survey “"Do you plan to adopt / migrate to other languages in the next 12 months? If so, to which ones?" where 13% of respondents answered Go.
 
-![](G:\translator\static\images\w6_the_state_of_Go\3-2x.png)
+![](../static/images/w6_the_state_of_Go/3-2x.png)
 
 Type of software developed with Go
 ----------------------------------
@@ -66,7 +66,7 @@ For "Utilities", I see a similar story as it’s fairly easy to write a quick ap
 
 System software – I think this will begin to decline as more people start using something like Rust for system software. And the same for databases. So it’s probably going to be a niche domain in the future somewhere around the 6% mark. Programming tools – I am surprised this is so high on the list, I would be interested to learn what programming tools are being made in Go.
 
-![](G:\translator\static\images\w6_the_state_of_Go\5-2x.png)
+![](../static/images/w6_the_state_of_Go/5-2x.png)
 
 
 
@@ -83,7 +83,7 @@ Mobile development, that’s unexpected to see. Go doesn’t really have a good 
 
 There are a few industries I would not expect to see Go usage increasing in anytime soon. For example, anything based on machine learning, because that’s still quite a Python stronghold. There are efforts to make machine learning popular in Go and make it better, however I think that any results are at least a couple of years away.
 
-![](G:\translator\static\images\w6_the_state_of_Go\4-2x.png)
+![](../static/images/w6_the_state_of_Go/4-2x.png)
 
 Go tools
 --------
@@ -96,7 +96,7 @@ _Expert analysis_
 
 I think at some point we’ll probably have to stop asking this question, just because Go Modules is set to become the standard default model and the Go team also wants to deprecate GOPATH. Everything else will probably just be obsolete then.
 
-![](G:\translator\static\images\w6_the_state_of_Go\6-2x.png)
+![](../static/images/w6_the_state_of_Go/6-2x.png)
 
 ### Go routers
 
@@ -106,7 +106,7 @@ _Expert analysis_
 
 The standard library is probably so popular because whenever you go to Reddit, Slack, or any other place, people will usually recommend sticking with the standard library and only using something else if you really want. I use gorilla/mux, just because there is a bit more abstraction on top of the standard library without sacrificing too much performance. It’s also probably because this is one of the closest to the standard library and it makes writing servers easier. Overall this distribution is probably what I would expect to see.
 
-![](G:\translator\static\images\w6_the_state_of_Go\7-2x.png)
+![](../static/images/w6_the_state_of_Go/7-2x.png)
 
 ### Top 5 web frameworks
 
@@ -116,7 +116,7 @@ _Expert analysis_
 
 Gin is likely so popular for web because it’s one of the faster frameworks and also gets good recommendations. It’s also one of the oldest ones. So there’s a lot of material out there, and a lot of users are already using and recommending it.
 
-![](G:\translator\static\images\w6_the_state_of_Go\8-2x.png)
+![](../static/images/w6_the_state_of_Go/8-2x.png)
 
 ### Testing frameworks
 
@@ -128,7 +128,7 @@ The built-in testing is high because the Go standard library has a really good t
 
 Built-in testing has probably dropped because more people are coming to the language from other languages, like PHP for instance, and they are seeking to replicate the testing habits they already have.
 
-![](G:\translator\static\images\w6_the_state_of_Go\9-2x.png)
+![](../static/images/w6_the_state_of_Go/9-2x.png)
 
 Most discussed Go tools and other languages
 -------------------------------------------
@@ -145,7 +145,7 @@ All in all, the Go community is a pretty fun and inclusive community to be a par
 
 Generics particularly as it is one of the most requested features for the language and there are plenty of workloads that would benefit from having this feature.
 
-![](G:\translator\static\images\w6_the_state_of_Go\11-2x.png)
+![](../static/images/w6_the_state_of_Go/11-2x.png)
 --------------------------------------------------------------------
 
 Is your team curious to try GoLand? Get an extended trial for an unlimited number of users.
