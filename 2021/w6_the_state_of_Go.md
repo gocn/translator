@@ -2,35 +2,41 @@
 
 The Go language is high up on the list of popular programming languages used today. We already know that its enthusiastic, fun, and welcoming community of users like it for its speed and effectiveness, but we wanted to find out a bit more. We have taken a deeper look into the information available on Go to uncover more facts. Our resident Go expert, Florin Pățan, Developer Advocate for GoLand, has been brought in to provide his take on the findings to discover the state of Go.
 
+在当今最流行的编程语言列表里，Go语言一直是名列前茅。我们已经知道了Go语言的火热、有趣、受社区用户的欢迎，正如它速度和效率那样，但是我们还想知道更多。我们为了发现更多的事实，在目前Go现有的信息的基础上，进行了深入研究。我们邀请了Go语言专家、Goland开发倡导者`Florin Pățan` 来发表他对Go语言状态的看法。
+
 ![](../static/images/w6_the_state_of_Go/Go_8001611039611515.gif)
 
-Where
+哪里的人在使用Go语言
 -----
 
-### ~1.1 million Go devs
+### 约110万Go开发中
 
-Overall, there are about **1,1 million professional Go developers** who use Go as a **primary language**. But that number is possibly closer to **~2.7 million** if we include professional developers who mainly use other programming languages but also do a bit of Go on the side.
+总的来说，大约有**110万专业的 Go 开发者**使用 Go 作为**主要开发语言**。 如果我们把那些使用其他语言作为主力开发语言，但是把Go当作业余爱好的开发人员算在内的话，这一数字可能接近**270万**。
 
-In terms of global distribution, the largest number of Go developers live in **Asia** and compose about 570 thousand developers using Go as a primary language.
+就全球分布而言，居住在**亚洲**的Go开发者最多，大约有57万开发者使用 Go 作为主要开发语言。
 
-_Expert analysis_
+_专家分析_
 
-This is what I’d expect for the regions that develop Go. Asia is high up there in terms of the numbers of Go users as I think a large number of the developers there are from huge companies such as Tencent, Alibaba, and Huawei. These companies have lots of developers in general.
+这也正是我最期待的使用Go开发的地方。就Go用户数量而言，亚洲高居榜首，我认为主要原因是有大量的来自像腾讯、阿里巴巴、华为这些大公司的开发者。这些公司一般都有很多开发人员。
 
 ![](../static/images/w6_the_state_of_Go/1-2x.png)
 
-Where specifically
+具体在哪里
 ------------------
 
 The graph below shows the distribution of developers in each country we surveyed in the [Developer Ecosystem survey 2020](https://www.jetbrains.com/lp/devecosystem-2020/go/) who use Go as a primary language (respondents were able to choose up to 3 primary languages). **China** has the highest concentration, with 16% of Chinese developers writing in Go.
 
-_Expert analysis_
+下图显示了我们在 [2020开发者生态调查](https://www.jetbrains.com/lp/devecosystem-2020/go/) 中调查的每个国家使用Go作为主要语言的开发者的分布情况（受访者最多可以选择3种主要语言）。**中国** 的开发者集中度最高，有16%的中国开发者在使用Go。
 
-I am not surprised to see China at the top of the list. I would have expected to see Russia second and the United States a bit higher, perhaps in the top 5.
+_专家分析_
 
-China’s place at the top of the list is probably just due the sheer number of developers they have. And a lot of the companies that I know, for example, PingCAP, Tencent, and Huawei all have a lot of developers to support them and build internal tools, infrastructure, and backend services, which are combined with microservices. That seems to be key.
+看到中国排在榜首，我一点也不惊讶。我本以为俄罗斯会排在第二，美国会高一点，大概在前五位。
+
+中国之所以排在榜首，可能正是因为他们拥有的开发者数量最多。而且我认识的很多公司，比如PingCAP、腾讯和华为，都有很多开发者来支撑和构建他们的内部工具、基础设施和后端服务，这些服务都和微服务相结合。这可能才是关键。
 
 I know that in Russia the Go communities are really awesome, so it’s no wonder Go is a popular language there. I am curious about Japan and Ukraine as I didn’t expect that they would be quite so high up, and I’d expect Germany and India to be a bit higher. I remember back four or five years ago when I was in Berlin that Go was used in pretty much every startup that I knew.
+
+我知道俄罗斯的Go社区非常棒，所以难怪Go在那里很受欢迎。
 
 ![](../static/images/w6_the_state_of_Go/2-2x.png)
 
