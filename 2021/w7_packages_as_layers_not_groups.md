@@ -4,7 +4,7 @@
 - 原文作者：Ben Johnson
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w7_packages_as_layers_not_groups.md
 - 译者：[cvley](https:/github.com/cvley)
-- 校对：[](https:/github.com/)
+- 校对：[guzzsek](https:/github.com/guzzsek)
 
 
 Four years ago, I wrote an article called [_Standard Package Layout_](https:/www.gobeyond.dev/standard-package-layout/) that tried to address one of the most difficult topics for even advanced Go developers: package layout. However, most developers still struggle with organizing their code into a directory structure that will grow gracefully with their application.
