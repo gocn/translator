@@ -11,14 +11,6 @@ One of the cool feature of Go 1.16 is retracting Go Module versions.
 
 ## What is retracting?
 
-So what is retracting?
-
-If you search in Google we will get meanings like `draw back` or `withdraw`.
-
-The word retract taken from academic literature
-
-> A retracted research paper is still available, but it has problems and should not be the basis of future work
-
 We will publish our Go modules to Github using versioning mechanism.
 
 In one of the module version you did a mistake and released it to the produciton with the new version number(v0.1.0).
