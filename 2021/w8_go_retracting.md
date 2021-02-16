@@ -1,31 +1,31 @@
-# Retract Go Module Versions in Go 1.16
+# Go 1.16 新功能：Go Module 支持版本撤回
 
 - 原文地址：https://golangtutorial.dev/tips/retract-go-module-versions/
 - 原文作者：Arunkumar Gudelli
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w8_go_retracting.md
 - 译者：[咔叽咔叽](https:/github.com/watermelo)
-- 校对：[]()
+- 校对：[fivezh](https://github.com/fivezh)
 
 
-One of the cool feature of Go 1.16 is retracting Go Module versions.
+Go 1.16 的一个很酷的功能是支持 Go Module 版本撤回。
 
-## What is retracting?
+## 什么是撤回?
 
-We will publish our Go modules to Github using versioning mechanism.
+我们使用版本机制将 Go Module 发布到 Github。
 
-In one of the module version you did a mistake and released it to the produciton with the new version number(v0.1.0).
+假设其中一个模块带着错误并以新的版本号(v0.1.0)被发布到了产品中。
 
-In the meanwhile you realised the mistake and published a new version with the fix(v0.2.0).
+与此同时，我们发现了这个错误，并发布了一个新的修复版本(v0.2.0)。
 
-We cannot modify the code in v0.1.0 and few people might be using them.
+我们不能修改v0.1.0中的代码，可能有些人已经在使用它们了。
 
-And there is no way to tell the users that **Don’t use this version**.
+在此之前我们没有好办法去通知用户**不要使用这个版本**。
 
-> **Go 1.16 retract feature** solve this problem by tagging the version as **retract**.
+> **Go 1.16 撤回功能**通过将版本标记为**retract**来解决这个问题。
 
-Let’s go through an example to understand it further.
+我们通过一个例子来进一步理解。
 
-First check your Go version, I am using Go 1.16 RC1 version.
+首先检查你的 Go 版本，我使用的是 Go 1.16 RC1 版本。
 
 ```
     go1.16rc1 version
@@ -33,15 +33,15 @@ First check your Go version, I am using Go 1.16 RC1 version.
     go version go1.16rc1 windows/amd64
 ```
 
-Install Go 1.16RC1 as mentioned in the [Go-1.16 RC1 released](/news/g-1.16rc1-released/) article.
+按照 [Go-1.16 RC1 released](https://golangtutorial.dev/news/g-1.16rc1-released/) 文章中提到的方法安装 Go 1.16 RC1。
 
-I have created a github repository for this demo.
+我为这个示例创建了一个 github 仓库。
 
 ```
     git clone https://github.com/arungudelli/Retract-Go-Module-Versions.git
 ```
 
-And created a module called `hello` using Go 1.16 version
+并且使用 Go 1.16 版本创建了一个名为 `hello` 的模块。
 
 ```
     go1.16rc1 mod init github.com/arungudelli/Retract-Go-Module-Versions
@@ -51,7 +51,7 @@ And created a module called `hello` using Go 1.16 version
             go mod tidy
 ```
 
-And it will generate `go.mod` file
+它将生成 `go.mod` 文件。
 
 ```
     module github.com/arungudelli/Retract-Go-Module-Versions
@@ -59,7 +59,7 @@ And it will generate `go.mod` file
     go 1.16
 ```
 
-And created a file name `hello.go` with the following contents.
+并创建了一个名为 `hello.go` 的文件，内容如下。
 
 ```golang
     package hello
@@ -70,24 +70,24 @@ And created a file name `hello.go` with the following contents.
     }
 ```
 
-My intial version is ready. So all I have to do is adding the tag to the module.
+我的初始版本已经准备就绪。所以，我需要为模块添加标签并发布。
 
 ```
     >git tag v0.1.0
     >git push -q origin v0.1.0
 ```
 
-Now in github we can see the versions.
+现在我们能在 github 上看到这个版本了。
 
 ![Github version](../static/images/w8_go_retracting/github.png)
 
-Now To use this module, I have created a small `go` program, which will use the Welcome function in `hello.go` module.
+为了使用这个模块，我创建了一个 `go` 程序，它将使用 `hello.go` 模块中的功能。
 
 ```
     go1.16rc1 mod init gopher116
 ```
 
-`go.mod` file
+`go.mod` 文件。
 
 ```
     module gopher116
@@ -95,7 +95,7 @@ Now To use this module, I have created a small `go` program, which will use the 
     go 1.16
 ```
 
-And in the `gopher116.go`
+`gopher116.go` 的内容如下。
 
 ```golang
     package main
@@ -111,12 +111,12 @@ And in the `gopher116.go`
     }
 ```
 
-In the above code we are telling to
+上述的代码包含以下功能，
 
-1.  Import the `github.com/arungudelliRetract-Go-Module-Versions` package,so we have a dependency on this package
-2.  Use the fmt.Println to print the message return by the `hello.Welcome()`.
+1.  导入 `github.com/arungudelliRetract-Go-Module-Versions` 包，这样我们就有了对这个包的依赖。
+2.  使用 fmt.Println 打印 `hello.Welcome()` 返回的消息。
 
-To add the dependency on the `github.com/arungudelliRetract-Go-Module-Versions` use the below command.
+要添加对 `github.com/arungudelliRetract-Go-Module-Versions` 的依赖，需要使用以下命令。
 
 ```
     >go1.16rc1 get github.com/arungudelli/Retract-Go-Module-Versions@v0.1.0
@@ -125,7 +125,7 @@ To add the dependency on the `github.com/arungudelliRetract-Go-Module-Versions` 
     go get: added github.com/arungudelli/Retract-Go-Module-Versions v0.1.0
 ```
 
-Now run the program using `go run` command
+现在我们使用 `go run` 命令来运行这段程序。
 
 ```
     >go1.16rc1 run .
@@ -133,9 +133,9 @@ Now run the program using `go run` command
     //Hello, gophers From Go 1.16
 ```
 
-## Releasing second better version
+## 发布一个新的版本
 
-To send a better message to the gophers, `hello` module has been modified with the following code.
+假设我们需要修改 `gopher116.go` 的消息内容，修改后的代码如下。
 
 ```
     package hello
@@ -146,20 +146,22 @@ To send a better message to the gophers, `hello` module has been modified with t
     }
 ```
 
-And published the package with the tag version 2 (v0.2.0).
+并发布了标签版本为 2（v0.2.0）的包。
 
 ```
     >git tag v0.2.0
     >git push -q origin v0.2.0
+```
 
-And our `gopher116` found out there is a new version released, upgraded the package
+我们的程序发现依赖的模块有新版本发布，然后更新了包。
 
+```
     > go1.16rc1 get github.com/arungudelli/Retract-Go-Module-Versions@v0.2.0
     go: downloading github.com/arungudelli/Retract-Go-Module-Versions v0.2.0
     go get: upgraded github.com/arungudelli/Retract-Go-Module-Versions v0.1.0 => v0.2.0
 ```
 
-After running the application
+随后重新运行程序。
 
 ```
     >go1.16rc1 run .
@@ -167,23 +169,24 @@ After running the application
     //Hello, gophers From Go 1.15
 ```
 
-A terrible mistake happened, `Go` version supposed to be `1.16` but changed to `1.15` in version 2.
+我们发现了一个错误，即程序中的 `Go 1.16` 被错误的修改为 `Go 1.15`。
 
-## Retracting Go Module version
 
-Go 1.16 comes with the rescue feature `retract`.
+## 撤回 Go Module 版本
 
-As a publisher We have to fix our code and inform the user about mistake happened in the version.
+GO 1.16 版自带撤回功能。
 
-> **To mark a Go module version as retract use the ‘-retract’ flag**.
+作为一个发布者，我们必须修复代码，并通知用户版本中所发生的错误。
 
-Modify the package `go.mod` file with `go mod edit` command following by -retract flag.
+> **要将 Go module 的版本标记为撤回，需要使用 ‘-retract’ 标志。**
+
+使用 `go mod edit` 命令修改 `go.mod` 文件，然后在后面加上 `-retract` 标志。
 
 ```
     go1.16rc1 mod edit -retract=v0.2.0
 ```
 
-This will add retract version information in `go.mod` file.
+这会使 `go.mod` 文件中添加上撤回的版本信息。
 
 ```
     module github.com/arungudelli/Retract-Go-Module-Versions
@@ -193,7 +196,7 @@ This will add retract version information in `go.mod` file.
     retract v0.2.0
 ```
 
-As a better practice add the comment above `retract` directive, why retracting necessary for this version.
+更好的做法是在上面的 `retract` 指令中添加注释，为什么这个版本需要撤回。
 
 ```
     module github.com/arungudelli/Retract-Go-Module-Versions
@@ -204,18 +207,18 @@ As a better practice add the comment above `retract` directive, why retracting n
     retract v0.2.0
 ```
 
-Now publish the changes with the new version
+现在发布新版本的变更。
 
 ```
     >git tag v0.3.0
     >git push -q origin v0.3.0
 ```
 
-## Knowing retracted module versions in Go project
+## 在 Go 中查询撤回的 Module 版本
 
-And our `gopher116` still using the version `v0.2.0`.
+我们的 `gopher116.go` 仍然使用 `v0.2.0` 版本。
 
-So to know the retratced module versions in Go, use `go list -m -u all` command.
+因此，要想知道 Go 中已撤回的模块版本，可以使用 `go list -m -u all` 命令。
 
 ```
     >go1.16rc1 list -m -u all
@@ -223,9 +226,9 @@ So to know the retratced module versions in Go, use `go list -m -u all` command.
     github.com/arungudelli/Retract-Go-Module-Versions v0.2.0 (retracted) [v0.3.0]
 ```
 
-Now the version 2.0 marked as `(retracted)`.
+现在版本 2.0 被标记为 `(retracted)`。
 
-So we need to upgrade our module the version 3(v0.3.0).
+所以我们需要升级到版本 3(v0.3.0)。
 
 ```
     >go1.16rc1 get github.com/arungudelli/Retract-Go-Module-Versions@v0.3.0
@@ -234,7 +237,7 @@ So we need to upgrade our module the version 3(v0.3.0).
     go get: upgraded github.com/arungudelli/Retract-Go-Module-Versions v0.2.0 => v0.3.0
 ```
 
-And ran the program
+然后重新运行程序。
 
 ```
     >go1.16rc1 run .
@@ -242,21 +245,21 @@ And ran the program
     //Hello, gophers From Go 1.15
 ```
 
-And still it’s displayed the same old message.
+还是显示的老信息。
 
-Because in the version 3, I marked the version 2 as retracted but the code is not changed.
+因为在第 3 版中，我把第 2 版标记为撤回，但代码没有改变。
 
-So again we need to mark the version 3 as retract.
+所以我们需要把第 3 版也标记为撤回。
 
-## Retracting Multiple Go Module versions
+## 撤回多个 Go Module 版本
 
-Now edit the `go.mod` file and mark the version 3 as retracted using the below command.
+编辑 `go.mod` 文件，并使用下面的命令将版本 3 标记为撤回。
 
 ```
     go1.16rc1 mod edit -retract=v0.3.0
 ```
 
-Our new `go.mod` file.
+新的 `go.mod` 文件内容如下。
 
 ```
     module github.com/arungudelli/Retract-Go-Module-Versions
@@ -271,11 +274,11 @@ Our new `go.mod` file.
     )
 ```
 
-Added the reason above version 3.
+增加了版本 3 的变更原因。
 
-So to retract multiple versions add the module versions line by line inside `retract` directive.
+如果需要撤回多个版本，就在 `retract` 指令中逐行添加模块版本。
 
-And this time changed the message in `hello.go` file.
+这次修改的是 `hello.go` 文件中的信息。
 
 ```golang
     package hello
@@ -286,7 +289,7 @@ And this time changed the message in `hello.go` file.
     }
 ```
 
-And published the version with the new tag.
+使用以下命令发布新的版本。
 
 ```
     >git tag v0.3.1
@@ -294,7 +297,7 @@ And published the version with the new tag.
     >git push -q origin v0.3.1
 ```
 
-And our `gopher116` ran the `go list` command again to know the retracted packages.
+我们的 `gopher116.go` 通过再次运行 `go list` 命令，就可以查询到撤回的包。
 
 ```
     >go1.16rc1 list -m -u all
@@ -303,7 +306,7 @@ And our `gopher116` ran the `go list` command again to know the retracted packag
     github.com/arungudelli/Retract-Go-Module-Versions v0.3.0 (retracted) [v0.3.1]
 ```
 
-And updated the package with the new version using `go get` command
+随后使用 `go get` 命令将包更新为新版本。
 
 ```
     >go1.16rc1 get github.com/arungudelli/Retract-Go-Module-Versions@v0.3.1
@@ -311,7 +314,7 @@ And updated the package with the new version using `go get` command
     //go get: upgraded github.com/arungudelli/Retract-Go-Module-Versions v0.3.0 => v0.3.1
 ```
 
-Now finally the message has been fixed
+现在终于解决了这个问题。
 
 ```
     >go1.16rc1 run .
@@ -319,11 +322,11 @@ Now finally the message has been fixed
     //Hello, gophers From Go 1.16 version
 ```
 
-## Install latest unretracted Go Module version
+## 安装最新的且非撤回的 Go Module 版本
 
-It’s difficult to keep track of all versions of a Go Module.
+要跟踪一个 Go 模块的所有版本是很困难的。
 
-So to install latest unretracted Go Module version use the `@latest` tag instead of version.
+所以要安装最新的且非撤回的 Go 模块版本，请使用 `@latest` 标签来代替版本。
 
 ```
     >go1.16rc1 get github.com/arungudelli/Retract-Go-Module-Versions@latest
@@ -331,9 +334,9 @@ So to install latest unretracted Go Module version use the `@latest` tag instead
     go get: upgraded github.com/arungudelli/Retract-Go-Module-Versions v0.3.0 => v0.3.1
 ```
 
-## Listing all versions of Go Modules
+## 列出所有 Go Module 的版本
 
-To list the all versions of a Go module or package use `go list` command.
+如果需要列出一个 Go 模块或包的所有版本，请使用 `go list` 命令。
 
 ```
     >go1.16rc1 list -m -versions github.com/arungudelli/Retract-Go-Module-Versions
@@ -342,11 +345,12 @@ To list the all versions of a Go module or package use `go list` command.
     github.com/arungudelli/Retract-Go-Module-Versions v0.1.0 v0.3.1
 ```
 
-`go list -m -versions` command excludes retracted versions. (v0.2.0 and v0.3.0 are not visible)
+`go list -m -versions` 命令不包括撤回的版本。(v0.2.0 和 v0.3.0不可见)
 
-## Listing all retracted versions of Go Modules
+## 列出所有已撤回的 Go Module 版本
 
-To list the all retracted versions of a Go Module, use the flag `-retracted` along with `go list` command.
+如果需要列出一个 Go 模块的所有撤回版本，请使用标志 `-retracted` 和 `go list` 命令。
+
 
 ```
     >go1.16rc1 list -m -versions -retracted github.com/arungudelli/Retract-Go-Module-Versions
@@ -355,15 +359,15 @@ To list the all retracted versions of a Go Module, use the flag `-retracted` alo
     github.com/arungudelli/Retract-Go-Module-Versions v0.1.0 v0.2.0 v0.3.0 v0.3.1
 ```
 
-Retracted versions are included in the output.
+输出中包含了已撤回的版本。
 
 ![List all versions of GO Modules](../static/images/w8_go_retracting/Listing-go-module-versions.png)
 
-## Installing Retracted Go Module versions
+## 安装撤回的 Go Module 版本
 
-Even though we marked the versions as retracted, we can still download and use the packages.
+虽然我们将版本标记为撤回，但我们仍然可以下载和使用这些软件包。
 
-For example if we try to install the retracted module version using `go get` command, It will show the warning messsage.
+例如，如果我们尝试使用 `go get` 命令安装已撤回的模块版本，它将显示警告信息。
 
 ```
     go1.16rc1 get github.com/arungudelli/Retract-Go-Module-Versions@v0.2.0
@@ -374,16 +378,16 @@ For example if we try to install the retracted module version using `go get` com
 
 ![List all versions of GO Modules](../static/images/w8_go_retracting/Retracted-version-message.png)
 
-The message displayed will be the comment added above the retract version in `go.mod` file.
+显示的提示是在 `go.mod` 文件对应的撤回版本上的注释。
 
-So while adding retracted versions give a meaningful message to the user.
+所以在添加撤回版本的同时，需要给用户一个有意义的信息。
 
-You can download or clone the [repository of this demo](https://github.com/arungudelli/Retract-Go-Module-Versions).
+你可以下载或者克隆 [示例代码](https://github.com/arungudelli/Retract-Go-Module-Versions).
 
 ```
     git clone https://github.com/arungudelli/Retract-Go-Module-Versions.git
 ```
 
-I hope you enjoyed the article if so please share it with others.
+希望你喜欢这篇文章，如果喜欢请与他人分享。
 
-Follow me on [twitter](https://twitter.com/arunGudelli) or [facebook](https://www.facebook.com/gudelliArun) or [github](https://github.com/arungudelli/) to get in touch with me.
+如果有疑问可以在 [twitter](https://twitter.com/arunGudelli), [facebook](https://www.facebook.com/gudelliArun), [github](https://github.com/arungudelli/) 上关注我，与我取得联系。
