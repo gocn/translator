@@ -4,7 +4,7 @@
 - 原文作者：Arunkumar Gudelli
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w8_go_retracting.md
 - 译者：[咔叽咔叽](https:/github.com/watermelo)
-- 校对：[]()
+- 校对：[fivezh](https://github.com/fivezh)
 
 
 Go 1.16 的一个很酷的功能是支持 Go Module 版本撤回。
@@ -33,7 +33,7 @@ Go 1.16 的一个很酷的功能是支持 Go Module 版本撤回。
     go version go1.16rc1 windows/amd64
 ```
 
-按照[Go-1.16 RC1 released](/news/g-1.16rc1-released/)文章中提到的方法安装 Go 1.16 RC1。
+按照 [Go-1.16 RC1 released](https://golangtutorial.dev/news/g-1.16rc1-released/) 文章中提到的方法安装 Go 1.16 RC1。
 
 我为这个示例创建了一个 github 仓库。
 
@@ -133,7 +133,7 @@ Go 1.16 的一个很酷的功能是支持 Go Module 版本撤回。
     //Hello, gophers From Go 1.16
 ```
 
-## 发布一个新的版本版本
+## 发布一个新的版本
 
 假设我们需要修改 `gopher116.go` 的消息内容，修改后的代码如下。
 
@@ -218,7 +218,7 @@ GO 1.16 版自带撤回功能。
 
 我们的 `gopher116.go` 仍然使用 `v0.2.0` 版本。
 
-因此，要想知道 Go 中的模块版本，可以使用 `go list -m -u all` 命令。
+因此，要想知道 Go 中已撤回的模块版本，可以使用 `go list -m -u all` 命令。
 
 ```
     >go1.16rc1 list -m -u all
@@ -249,7 +249,7 @@ GO 1.16 版自带撤回功能。
 
 因为在第 3 版中，我把第 2 版标记为撤回，但代码没有改变。
 
-所以我们需要把第 3 版标记为撤回。
+所以我们需要把第 3 版也标记为撤回。
 
 ## 撤回多个 Go Module 版本
 
