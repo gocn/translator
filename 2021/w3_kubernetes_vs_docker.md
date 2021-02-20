@@ -1,5 +1,5 @@
 # Kubernetes vs Docker:了解2021年的容器
-几个星期前，库贝内茨开发团队宣布，他们正在弃用docker。这则新闻通过科技界和社交网络广为流传。Kubernetes 群集是否会中断，如果是，我们将如何运行我们的应用程序？我们现在该怎么办？今天，我们将审查所有这些问题和更多。
+几个星期前，Kubernetes开发团队宣布，他们正在弃用docker。这则新闻通过科技界和社交网络广为流传。Kubernetes 群集是否会中断，如果是，我们将如何运行我们的应用程序？我们现在该怎么办？今天，我们将审查所有这些问题和更多。
 
 让我们从头开始。如果你已经熟悉docker和kubernetes，并希望直接了解关键信息，[跳到docker弃用对你有什么影响？](https://semaphoreci.com/blog/kubernetes-vs-docker#h-how-does-kubernetes-deprecating-docker-impact-you)
 
