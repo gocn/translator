@@ -1,52 +1,40 @@
 # Go security cheatsheet: 8 security best practices for Go developers
-# Go 安全性备忘单：Go 开发人员的 8 个安全性最佳实践
+# Go 安全性备忘单：Go 开发者的 8 个安全性最佳实践
 - 原文地址：https://snyk.io/blog/go-security-cheatsheet-for-go-developers/
 - 原文作者：Eric Smalling, Gerred Dillon
-
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w10_Go_Security_cheatsheet.md
 - 译者：[guzzsek](https:/github.com/guzzsek)
-- 校对[](https:/github.com/)
+- 校对: [lsj1342](github.com/lsj1342)
+- 校对: [](github.com/)
+
+
 
 In this installment of our cheatsheet series, we’re going to cover eight Go security best practices for Go developers. The Go language incorporates many built-in features that promote safer development practices—compared to older and lower-level languages like C—such as memory garbage collection and strongly-typed pointers. 
 
-在我们的备忘单系列的这一部分中，我们将介绍 Go 开发人员的八项 Go 安全最佳实践。 Go 语言集成了许多内置功能，这些功能可以促进更安全的开发实践（与 C 等较早和较低级别的语言相比），例如内存垃圾回收和强类型指针。
+在我们的备忘单系列中，我们将为 Go 开发者介绍八项有关于 Go 安全的最佳实践。 Go 语言集成了许多内置功能，这些功能（与 C 等较早和较低级别的语言相比）比如 -- 内存垃圾回收和强类型指针，可以促进更安全的开发实践。
 
 These features help developers avoid bugs that can lead to exploits by removing the responsibility to self-manage memory. However, there are still security best practices that programmers should be aware of. This cheatsheet, authored by Eric Smalling, Gerred Dillon and with help from Dan Enman (Sr. Software Engineer at Snyk), addresses some of the more common topics.
 
-这些功能通过消除自行管理内存的责任，帮助开发人员避免了可能导致利用的漏洞。 但是，仍然存在程序员应注意的安全最佳实践。 这份备忘单，由 Eric Smalling，Gerred Dillon 撰写，并在 Dan Enman（Snyk的高级软件工程师）的帮助下，解决了一些较常见的主题。
+这些功能通过移除开发者自我管理内存的责任，帮助开发者避免了可能被利用的漏洞。 但是，依然存在开发者应注意的安全最佳实践。 而这份在 Dan Enman（Snyk的高级软件工程师）的帮助下，由 Eric Smalling 和 Gerred Dillon 共同撰写的清单忘单，正解决了一些较常见的安全问题。
 
 1. Use Go Modules
-
-1. 使用 Go Modules
-
-2. Scan dependencies for CVEs
-
-2. 扫描 CVE 的依赖关系
-
-3. Use Go standard crypto packages
-
-3. 使用 Go 标准加密软件包
-
+2. 使用 Go Modules
+3. Scan dependencies for CVEs
+4. 扫描 CVE 之间的依赖关系
+5. Use Go standard crypto packages
+6. 使用 Go 标准加密软件包
 4. Use html/template to help avoid XSS attacks
 
-4. 使用 html/template 来避免 XSS 攻击
-   
-5. Subshelling
+8. 使用 html/template 来避免 XSS 攻击
+9. Subshelling
+10. shell 子进程
+11. Avoid unsafe and cgo
+12. 避免使用 unsafe 和 cgo 特性
+13. Use reflection sparingly
+14. 谨慎使用反射
+15. Minimizing container attack surface
+16. 最小化容器攻击面
 
-5. 子壳化
-   
-6. Avoid unsafe and cgo
-
-6. 避免使用 unsafe 和 cgo 特性
-   
-7. Use reflection sparingly
-
-7. 谨慎使用反射
-   
-8. Minimizing container attack surface
-
-8. 最小化容器攻击面
-   
 
 
 
@@ -56,11 +44,11 @@ These features help developers avoid bugs that can lead to exploits by removing 
 
 The [Go Modules](https://golang.org/ref/mod) system is the official dependency management system as of v1.11 with the older [Vendor](https://github.com/kardianos/govendor) and [Dep](https://github.com/golang/dep) systems having been deprecated. Go Modules allow for dependency version pinning, including transitive modules, and also provides assurance against unexpected module mutation via the `go.sum` checksum database.
 
-从1.1.1版开始， [Go Modules](https://golang.org/ref/mod) 系统是正式的依赖项管理系统，而旧的 [Vendor](https://github.com/kardianos/govendor) 和 [Dep](https://github.com/golang/dep) 系统已被弃用。Go Modules 允许依赖项版本固定，包括可传递模块，还可以通过 `go.sum` 校验和数据库提供针对意外模块突变的保证。
+从 go 1.1.1 版本开始， [Go Modules](https://golang.org/ref/mod) 正式成为 go 版本依赖的管理工具，而旧的 [Vendor](https://github.com/kardianos/govendor) 和 [Dep](https://github.com/golang/dep) 工具已被弃用。Go Modules 允许指定依赖版本，包括可传递模块，还可以通过 `go.sum` 文件提供的校验和数据库，校验发生变化的依赖模块。
 
 First, you should initialize your project by running `go mod init [namespace/project-name]` in the top-most level directory.
 
-首先，您应该通过在最顶层目录中运行 `go mod init [namespace/project-name]` 来初始化项目。
+首先，您应该在当前目录的中运行 `go mod init [namespace/project-name]` 命令来初始化项目。
 
 **$ go mod init mycorp.com/myapp**
 
@@ -69,7 +57,7 @@ First, you should initialize your project by running `go mod init [namespace/pro
 
 This will create a file in the current directory named `go.mod` which contains your project name and the version of Go that you are currently using. Assuming your source code has package imports in them, simply running `go build` (or `test`, `install`, etc) will update the `go.mod` file with modules used including their versions. You can also use `go get` to update your dependencies, which allows for updating dependencies to specific versions, and this will also update `go.mod`. 
 
-这将在当前目录 `go.mod` 中创建一个文件，其中包含您的项目名称和当前使用的 Go 版本。假设您的源代码中包含程序包导入，则只需运行 `go build`（或 `test`，`install` 等），即可使用所使用的模块（包括其版本）更新`go.mod` 文件。 您还可以使用 `go get` 更新依赖关系，从而可以将依赖关系更新为特定版本，这也将更新`go.mod`。
+这将在当前目录中创建一个 `go.mod` 文件，其中包含您的项目名称和当前使用的 Go 版本。假如您的源代码需要引入第三方库，则只需运行 `go build`（或 `test`，`install` 等）命令，即可使用所依赖的第三方库（包括所指定的版本）并且更新 `go.mod` 文件。 您还可以使用 `go get` 更新您的依赖第三方库，这会将依赖的第三方库更新为指定版本，这也将更新 `go.mod` 文件。
 
 Example `go.mod` file:
 
@@ -86,20 +74,20 @@ require (
 
 Notice that a file named `go.sum` was created as well.  This file contains a list of hashes for each module used which is leveraged by Go to validate that the same binaries are used for every build. Both the `go.mod` and `go.sum` files should be checked into source control with your application code.
 
-请注意，还创建了一个名为 `go.sum` 的文件。 该文件包含每个所用模块的哈希列表，Go 可以利用该列表来验证每个构建都使用相同的二进制文件。 应该使用您的应用程序代码将 `go.mod` 和 `go.sum` 文件都检查到源代码控制中。
+请注意，**go mod init mycorp.com/myapp** 还创建了一个名为 `go.sum` 的文件。 这个文件包含每个第三方库的哈希列表，Go 可以利用该列表来验证每次构建是否都使用相同的依赖。 您应该将 `go.mod` 和 `go.sum` 文件都加入到版本管理中。
 
 The tutorial [Using Go Modules](https://blog.golang.org/using-go-modules), found on the the official Go Blog, is an excellent resource for learning more about Go Modules including how to pin transitive dependency versions, clean up unused dependencies, and more. 
 
-可在官方 Go Blog 上找到的  [Using Go Modules](https://blog.golang.org/using-go-modules) 教程，是学习有关 Go Modules 的更多信息的极好资源，包括如何固定传递依赖版本，清理未使用的依赖等等。
+可以在 Go 的官方博客上找到关于  [Using Go Modules](https://blog.golang.org/using-go-modules) 的教程，这是学习更多有关于 Go Modules 的极好资源，包括学习如何指定依赖版本，清理未使用的依赖等等。
 
 ## 2\. Scan dependencies for CVEs
 
-## 2\. 扫描 CVE 的依赖关系
+## 2\. 扫描 CVE 之间的依赖关系
 
 
 As with most projects, the amount of code in the modules that your application depends on often outweighs that of your application itself, and these external dependencies are a common vector for security vulnerabilities to be introduced. Tools like Snyk—powered by our extensive [Vulnerability Database](https://snyk.io/product/vulnerability-database/)—can be used to test these graphs of dependencies for known vulnerabilities, suggest upgrades to fix issues found, and even continuously monitor your projects for any new vulnerabilities that are discovered in the future. 
 
-与大多数项目一样，您的应用程序所依赖的模块中的代码量通常会超过应用程序本身的代码量，而这些外部依赖关系是引入安全漏洞的常见媒介。 借助由我们广泛的[漏洞数据库](https://snyk.io/product/vulnerability-database/)提供支持的 Snyk 之类的工具，可以测试这些依赖关系图中的已知漏洞，建议进行升级以修复所发现的问题，甚至可以持续监视您的项目中是否存在将来发现的任何新漏洞。
+与大多数项目一样，您的应用程序所依赖的模块中的代码量通常会超过应用程序本身的代码量，而依赖的这些第三方库通常是引入安全漏洞的一个途径。 借助 Snyk 这类的工具， 一款由我们提供的通用[漏洞数据库](https://snyk.io/product/vulnerability-database/)，可以测试这些依赖关系图中的已知漏洞，建议进行升级以修复所发现的问题，甚至以持续监视您的项目中是否存在将来发现的任何新漏洞。
 
 For example, simply running `synk test` on a Go application will parse your modules and report back any known [CVEs](https://snyk.io/learn/what-is-cve-vulnerablity/), as well as info about any fixed versions of them that you can upgrade to.  Additionally, the Snyk web-based tools can monitor your GitHub repositories directly and continually, alerting you to vulnerabilities that are found in the future even if you haven’t changed your code or run a CI build on it. 
 
@@ -107,16 +95,16 @@ For example, simply running `synk test` on a Go application will parse your modu
 
 
 ## 3\. Use Go standard crypto packages as opposed to third-party
-## 3\. 使用 Go 标准加密软件包而不是第三方
+## 3\. 使用 Go 标准加密软件包而不是第三方所提供的
 
 
 The Go standard library [crypto packages](https://golang.org/pkg/crypto/) are well audited by security researchers but, because they aren’t all-inclusive, you may be tempted to use third-party ones.
 
-Go 标准库[加密程序包](https://golang.org/pkg/crypto/)已经过安全研究人员的严格审核，但由于它们并不全面，因此您可能会想使用第三方程序包。
+Go 标准库[加密程序包](https://golang.org/pkg/crypto/)已经过安全研究人员的严格审核，但由于它们提供的功能并不全面，因此您可能会想使用第三方程序包。
 
 Much like not rolling your own cryptographic algorithms, you should be very wary of third-party cryptographic libraries as they may or may not be audited with the same level of scrutiny. Know your source.
 
-就像不使用自己的加密算法一样，您应该非常警惕第三方加密库，因为它们可能会或可能不会受到相同级别的审核。 您应该需要清除地知道您的应用程序所依赖包的来源。
+就像不使用自己的加密算法一样，您应该非常警惕第三方加密库，因为它们可能会或可能不会受到相同级别的审核。 您应该需要清楚地知道您的应用程序所依赖包的来源。
 
 ## 4\. Use html/template to help avoid XSS attacks
 
@@ -125,23 +113,23 @@ Much like not rolling your own cryptographic algorithms, you should be very wary
 
 Unfiltered strings passed back to a web client using either `io.WriteString()` or the `text/template` package can expose your users to cross-site scripting [(XSS) attacks](https://snyk.io/learn/cross-site-scripting/). This is because any HTML tags in the strings returned will be rendered to the output stream without encoding and may also be sent with an incorrectly defined `Content-Type: plain/text` response header if it’s not explicitly set. 
 
-使用 `io.WriteString()` 或 `text/template` 包传递回 Web 客户端的未经过滤的字符串可能会使您的用户遭受跨站点脚本 [(XSS) 攻击](https://snyk.io/learn/cross-site-scripting/)。 这是因为返回的字符串中的所有 HTML 标签都将不进行编码而呈现到输出流中，并且如果未明确设置，则可能会发送带有错误定义的 `Content-Type: plain/text` 响应标头。
+使用 `io.WriteString()` 或 `text/template` 包传递回 Web 客户端的未经过滤的字符串， 这可能会使您的用户遭受跨站点脚本 [(XSS) 攻击](https://snyk.io/learn/cross-site-scripting/)。 这是因为返回的字符串中的所有 HTML 标签都将不进行编码而呈现到输出流中，并且如果未明确设置，则可能会发送带有错误定义的 `Content-Type: plain/text` 响应标头。
 
 Using the `html/template` package is a simple way to automatically web encode content returned rather than trying to make sure you’ve manually done it in your application logic. The [OWASP/GO-SCP](https://github.com/OWASP/Go-SCP) documentation has an excellent chapter and example detailing this topic.
 
-使用 `html/template` 包是一种简单的自动对返回的内容进行网络编码的方法，而不是尝试确保已在应用程序逻辑中手动完成了此操作。 [OWASP/GO-SCP](https://github.com/OWASP/Go-SCP) 文档有出色的章节和示例，详细介绍了此主题。
+使用 `html/template` 包是一种简单的自动对返回的内容进行网络编码的方法，而不是尝试确保已在应用程序逻辑中手动完成了此操作。 [OWASP/GO-SCP](https://github.com/OWASP/Go-SCP) 文档有出色的章节和示例，详细介绍了有关这方面的内容。
 
 ## 5\. Subshelling
 
-## 5\.子壳化
+## 5\. shell 子进程
 
 In Go, a `subshell` basically gives direct shell access to your system and its use is typically restricted to command-line tool type applications. Where possible, always prefer solutions implemented natively in Go code using appropriate modules.   
 
-在 Go 中，子外壳程序基本上可以直接对您的系统进行外壳程序访问，并且其使用通常仅限于命令行工具类型的应用程序。 在可能的情况下，始终希望使用适当的模块在 Go 代码中本地实现的解决方案。
+在 Go 中，shell 子进程基本上可以直接对您的系统进行访问，并且这种方式通常仅限于命令行工具类型的应用程序。 在可能的情况下，始终希望使用适当的模块在 Go 代码中本地实现（译者注：大概意思就是：尽量使用 go 代码实现， 而不依赖于系统调用）。
 
 If you do find yourself needing to use a subshell, take care to sanitize any external sourced data that might get passed into it, as well as the data returned, to ensure your application isn’t exposing unnecessary details about the underlying system. This care is similar to the attention you would give to attacks on rendered templates (see #4 above) or [SQL command injections](https://snyk.io/learn/sql-injection/). Also consider that putting a call to run an external process as part of an application request thread could have other side effects that you cannot control from your Go code, such as changes to the file system, calls to external dependencies or changes to the security landscape that might block such calls—for example, limits imposed by running in a container or by tools like AppArmor, SELinux, etc
 
-如果您确实需要使用子外壳，请务必清理可能传递给该外壳的任何外部来源数据以及返回的数据，以确保您的应用程序不会暴露有关基础系统的不必要的详细信息。 这种关心类似于您对呈现模板的攻击（请参阅上面的＃4）或 [SQL 命令注入](https://snyk.io/learn/sql-injection/)所给予的关注。 还应考虑将调用运行外部流程作为应用程序请求线程的一部分进行操作可能会产生其他副作用，这些副作用是您无法从 Go 代码中控制的，例如对文件系统的更改，对外部依赖项的调用或对安全格局的更改 可能会阻止此类调用-例如，由在容器中运行或由 AppArmor，SELinux 等工具施加的限制
+如果您确实需要使用 shell 子进程，请务必清理可能传递给 shell 的任何外部来源数据以及返回的数据，以确保您的应用程序不会暴露有关基础系统的不必要的详细信息（译者注： 就是不要对外暴露操作系统的基本信息）。 这种关心类似于您对呈现模板的攻击（请参阅上面的＃4）或 [SQL 命令注入](https://snyk.io/learn/sql-injection/)所给予的关注。 还应考虑将调用运行外部流程作为应用程序请求线程的一部分进行操作可能会产生其他副作用，这些副作用是您无法从 Go 代码中控制的，例如对文件系统的更改，对外部依赖项的调用或对安全格局的更改 可能会阻止此类调用-例如，由在容器中运行或由 AppArmor，SELinux 等工具施加的限制
 
 ## 6\. Use caution with unsafe and cgo
 
@@ -149,7 +137,7 @@ If you do find yourself needing to use a subshell, take care to sanitize any ext
 
 Much like the C language, Go supports the use of pointer type variables—however, it does so with strict type safety to protect developers from unintended or even malicious side-effects. In C you can always define the `void*` pointer which has no typing assigned; to do the same kind of thing in Go you use the aptly-named `unsafe` standard package to break type-safety restrictions. Using `unsafe` is generally discouraged in the Go documentation as it allows for direct memory access, which combined with user data can potentially enable attackers to break Go’s memory safety.  
 
-与 C 语言非常相似，Go 支持使用指针类型变量-但是，它具有严格的类型安全性，以保护开发人员免受意外甚至恶意的副作用。 在C语言中，您始终可以定义未分配任何类型的 `void *` 指针； 要在 Go 中执行相同的操作，请使用恰当命名的 `unsafe` 标准包来打破类型安全性限制。 Go文档中通常不建议使用 `unsafe`，因为它可以直接访问内存，再加上用户数据，攻击者有可能破坏Go的内存安全性。
+与 C 语言非常相似，Go 支持使用指针类型变量, 但是，go 语言中的指针具有严格的类型安全性，以保护开发者免受意外或者恶意的副作用。 在C语言中，您始终可以定义未分配任何类型的 `void *` 指针； 要在 Go 中执行相同的操作，请使用恰当命名的 `unsafe` 标准包来打破类型安全性限制。 Go文档中通常不建议使用 `unsafe`，因为它可以直接访问内存，再加上用户数据，攻击者有可能破坏 Go 的内存安全性。
 
 Of similar concern is the use of `cgo`, a powerful command that allows you to integrate arbitrary C libraries into your Go application. Like any power tool, `cgo` must be used with extreme caution because you are trusting a completely external dependency written in an unsafe language to have done everything correctly; the Go memory safety net is not there to save you if there are bugs or malicious routines lurking in that external code. `cgo` can be disabled by simply setting `CGO_ENABLED=0` in your build and this is usually a safe option to use if you don’t explicitly need it as most modern Go libraries are written in pure Go code.
 
@@ -165,7 +153,7 @@ Go 是一种强类型语言，这意味着变量类型很重要。 有时，您�
 
 While reflection can be useful, it also increases the risk of runtime typing errors in your Go code. If you attempt to modify a reflected variable in a way that is not allowed (e.g. setting a value that isn’t settable on a struct) your code will panic. It can also be difficult to get a good grasp on the code flow, and the various type kinds and value kinds that are being reflected. Lastly, when working with reflected types or values, you may need to assert typings which can be confusing in code, and lead to runtime errors.
 
-尽管反射很有用，但也增加了在 Go 代码中运行时键入错误的风险。 如果您尝试以不允许的方式修改反映的变量（例如，设置无法在结构上设置的值），则代码会出现恐慌。 很难很好地掌握代码流以及所反映的各种类型和值类型。 最后，在使用反射类型或值时，您可能需要断言可能会使代码混淆的类型，并导致运行时错误。
+尽管反射很有用，但也增加了在 Go 代码中运行时引入错误的风险。 如果您尝试以错误的方式修改被反射的变量（例如，设置无法在结构上设置的值），则代码会出现恐慌。 很难很好地掌握代码流以及所反映的各种类型和值类型。 最后，在使用反射类型或值时，您可能需要断言可能会使代码混淆的类型，并导致运行时错误。
 
 Reflection can be a powerful tool, but with Go’s typing and interface system, it should be rarely used as it can easily cause unexpected problems.
 
