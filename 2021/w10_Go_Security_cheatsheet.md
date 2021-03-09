@@ -10,10 +10,10 @@
 
 
 
-在我们的备忘单系列中，我们将为 Go 开发者介绍八项有关于 Go 安全的最佳实践。 Go 语言集成了许多内置功能，这些功能（与 C 等较早和较低级别的语言相比）比如 -- 内存垃圾回收和强类型指针，可以促进更安全的开发实践。
+在我们的备忘单系列中，我们将为 Go 开发者介绍八项有关于 Go 安全的最佳实践。 Go 语言集成了许多内置特性，这些功能（与 C 等较早和较低级别的语言相比）比如 -- 内存垃圾回收和强类型指针，可以促进更安全的开发实践。
 
 
-这些功能通过移除开发者自我管理内存的责任，帮助开发者避免了可能被利用的漏洞。 但是，依然存在开发者应注意的安全最佳实践。 而这份在 Dan Enman（Snyk的高级软件工程师）的帮助下，由 Eric Smalling 和 Gerred Dillon 共同撰写的清单忘单，正解决了一些较常见的安全问题。
+这些功能通过移除开发者自我管理内存的责任，帮助开发者避免了可能被利用的漏洞。 但是，依然存在开发者应注意的安全最佳实践。 在 Dan Enman（Snyk的高级软件工程师）的帮助下，由 Eric Smalling 和 Gerred Dillon 撰写的这份备忘单，涉及到其中的一些更常见的主题。
 
 1. 使用 Go Modules
 2. 扫描 CVE 之间的依赖关系
@@ -43,7 +43,6 @@
 
 这将在当前目录中创建一个 `go.mod` 文件，其中包含您的项目名称和当前使用的 Go 版本。假如您的源代码需要引入第三方库，则只需运行 `go build`（或 `test`，`install` 等）命令，即可使用所依赖的第三方库（包括所指定的版本）并且更新 `go.mod` 文件。 您还可以使用 `go get` 更新您的依赖第三方库，这会将依赖的第三方库更新为指定版本，这也将更新 `go.mod` 文件。
 
-Example `go.mod` file:
 
 示例 `go.mod` 文件：
 
@@ -70,7 +69,7 @@ require (
 与大多数项目一样，您的应用程序所依赖的模块中的代码量通常会超过应用程序本身的代码量，而依赖的这些第三方库通常是引入安全漏洞的一个途径。 借助 Snyk 这类的工具， 一款由我们提供的通用[漏洞数据库](https://snyk.io/product/vulnerability-database/)，可以测试这些依赖关系图中的已知漏洞，建议进行升级以修复所发现的问题，甚至以持续监视您的项目中是否存在将来发现的任何新漏洞。
 
 
-例如，仅在 Go 应用程序上运行 `synk test` 将解析您的模块并报告任何已知的  [CVEs](https://snyk.io/learn/what-is-cve-vulnerablity/)，以及有关您可以升级到的任何修复版本的信息。 此外，基于 Web 的 Snyk 工具可以直接并连续监视 GitHub 存储库，即使在您未更改代码或在其上运行 CI 构建的情况下，也可以提醒您将来发现的漏洞。
+例如，仅在 Go 应用程序上运行 `synk test` 将解析您的模块并报告任何已知的  [CVEs](https://snyk.io/learn/what-is-cve-vulnerablity/)，以及有关您可以升级到的任何修复版本的信息。 此外，基于 Web 的 Snyk 工具可以直接并连续监视 GitHub 仓库，即使在您未更改代码或在其上运行 CI 构建的情况下，也可以提醒您将来发现的漏洞。
 
 
 ## 3\. 使用 Go 标准加密软件包而不是第三方所提供的
@@ -96,7 +95,7 @@ Go 标准库[加密程序包](https://golang.org/pkg/crypto/)已经过安全研�
 ## 5\. shell 子进程
 
 
-在 Go 中，shell 子进程基本上可以直接对您的系统进行访问，并且这种方式通常仅限于命令行工具类型的应用程序。 在可能的情况下，始终希望使用适当的模块在 Go 代码中本地实现（译者注：大概意思就是：尽量使用 go 代码实现， 而不是依赖于调用系统外部命令）。
+在 Go 中，shell 子进程基本上可以直接对您的系统进行访问，并且这种方式通常仅限于命令行工具类型的应用程序。 在可能的情况下，始终希望使用适当的模块在 Go 代码中本地实现（译者注：尽量使用 go 代码实现， 而不是依赖于调用系统外部命令）。
 
 
 如果您确实需要使用 shell 子进程，请务必清理可能传递给 shell 的任何外部来源数据以及返回的数据，以确保您的应用程序不会暴露有关基础系统的不必要的详细信息（译者注： 就是不要对外暴露操作系统的基本信息）。这种考虑类似于要注意模板渲染攻击（请参阅上面的＃4）或者 [SQL 命令注入](https://snyk.io/learn/sql-injection/)。 还应考虑将调用运行外部流程作为应用程序请求线程的一部分进行操作可能会产生其他副作用，这些副作用是您无法从 Go 代码中控制的，例如对文件系统的更改，对外部依赖项的调用或对安全格局的更改 可能会阻止此类调用-例如，由在容器中运行或由 AppArmor，SELinux 等工具施加的限制
@@ -107,7 +106,6 @@ Go 标准库[加密程序包](https://golang.org/pkg/crypto/)已经过安全研�
 
 与 C 语言非常相似，Go 支持使用指针类型变量, 但是，go 语言中的指针具有严格的类型安全性，以保护开发者免受意外或者恶意的副作用。 在C语言中，您始终可以定义未分配任何类型的 `void *` 指针； 要在 Go 中执行相同的操作，请使用恰当命名的 `unsafe` 标准包来打破类型安全性限制。 Go文档中通常不建议使用 `unsafe`，因为它可以直接访问内存，再加上用户数据，攻击者有可能破坏 Go 的内存安全性。
 
-Of similar concern is the use of `cgo`, a powerful command that allows you to integrate arbitrary C libraries into your Go application. Like any power tool, `cgo` must be used with extreme caution because you are trusting a completely external dependency written in an unsafe language to have done everything correctly; the Go memory safety net is not there to save you if there are bugs or malicious routines lurking in that external code. `cgo` can be disabled by simply setting `CGO_ENABLED=0` in your build and this is usually a safe option to use if you don’t explicitly need it as most modern Go libraries are written in pure Go code.
 
 同样令人关注的是使用 `cgo`，这是一个功能强大的命令，可让您将任意 C 库集成到 Go 应用程序中。 像任何强大的工具一样，必须非常谨慎地使用 `cgo`，因为您正相信以不安全的语言编写的完全外部的依赖关系可以正确地完成所有操作。 如果该外部代码中潜伏着错误或恶意例程，那么Go内存安全网将无法为您提供保护。 可以通过在构建中简单地设置 `CGO_ENABLED = 0` 来禁用 `cgo`，如果您不需要显式使用 `cgo`，这通常是一个安全的选择，因为大多数现代的 Go 库都是用纯 Go 代码编写的。
 
@@ -168,31 +166,14 @@ Go 是一种强类型语言，这意味着变量类型很重要。 有时，您�
 
 您可能想知道我们传递到构建中的所有环境 var 和参数是什么：
 
--   `GOPATH=””`: Clearing out this var (which was set in the `golang:1.15` base image) as it’s not needed when using Go Modules.
-
--   `GOPATH=””`：清除此变量（在 `golang：1.15`基本镜像中设置），因为在使用Go模块时不需要此变量。
-  
+-   `GOPATH=””`：清除此变量（在 `golang：1.15` 基础镜像中设置），因为在使用Go模块时不需要此变量。
 -   `CGO_ENABLED=0`: Disables `cgo` (see section 6 above).
-
 -   `CGO_ENABLED=0`：禁用 `cgo`（请参阅上面的第6节）。
-
 -   `GOOS=linux`: Explicitly tells go to build for the linux operating system.
-
 -   `GOOS=linux`：明确告诉go用于linux操作系统的构建。
-
--   `GOARCH=amd66`: Explicitly tells go to build for `amd64` (Intel) architecture.
-
 -   `GOARCH=amd66`：明确告知 go 构建 `amd64`（Intel）体系结构的镜像。
-
--   `-trimpath`: Remove filesystem path information from the binary.
-
 -   `-trimpath`：从二进制文件中删除文件系统路径信息。
-
--   `ldflag -s`: Omit the symbol table and debug information.
-
 -   `ldflag -s`：省略符号表和调试信息。
--   `ldflag -w`: Omit the DWARF symbol table。
-
 -   `ldflag -w`：省略DWARF符号表。
 
 
