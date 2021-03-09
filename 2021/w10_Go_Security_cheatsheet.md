@@ -2,7 +2,7 @@
 # Go 安全性备忘单：Go 开发者的 8 个安全性最佳实践
 - 原文地址：https://snyk.io/blog/go-security-cheatsheet-for-go-developers/
 - 原文作者：Eric Smalling, Gerred Dillon
-- 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w10_Go_Security_cheatsheet.md
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w10_Go_Security_cheatsheet.md
 - 译者：[guzzsek](https://github.com/guzzsek)
 - 校对: [lsj1342](https://github.com/lsj1342)
 - 校对: [fivezh](https://github.com/fivezh)
