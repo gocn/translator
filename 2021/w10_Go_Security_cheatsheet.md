@@ -32,7 +32,7 @@
 ## 1\.使用 Go Modules
 
 
-从 go 1.11 版本开始， [Go Modules](https://golang.org/ref/mod) 正式成为 go 版本依赖的管理工具，而旧的 [Vendor](https://github.com/kardianos/govendor) 和 [Dep](https://github.com/golang/dep) 工具已被弃用。Go Modules 允许指定依赖项版本，包括可传递模块，还可以通过 go.sum 校验和数据库防止产生非预期的模块变化。
+从 go 1.11 版本开始， [Go Modules](https://golang.org/ref/mod) 正式成为 go 版本依赖的管理工具，而旧的 [Vendor](https://github.com/kardianos/govendor) 和 [Dep](https://github.com/golang/dep) 工具已被弃用。Go Modules 允许指定依赖项版本，包括可传递模块，还可以通过 `go.sum` 文件的校验和数据库防止产生非预期的模块变化。
 
 
 首先，您应该在当前目录的中运行 `go mod init [namespace/project-name]` 命令来初始化项目。
