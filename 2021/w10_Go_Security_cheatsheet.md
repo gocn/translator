@@ -3,8 +3,8 @@
 - 原文地址：https://snyk.io/blog/go-security-cheatsheet-for-go-developers/
 - 原文作者：Eric Smalling, Gerred Dillon
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w10_Go_Security_cheatsheet.md
-- 译者：[guzzsek](https:/github.com/guzzsek)
-- 校对: [lsj1342](github.com/lsj1342)
+- 译者：[guzzsek](https://github.com/guzzsek)
+- 校对: [lsj1342](https://github.com/lsj1342)
 - 校对: [fivezh](https://github.com/fivezh)
 - 校对: [](github.com/)
 
@@ -14,7 +14,7 @@
 在我们的备忘单系列中，我们将为 Go 开发者介绍八项有关于 Go 安全的最佳实践。 Go 语言集成了许多内置特性，这些功能（与 C 等较早和较低级别的语言相比）比如 -- 内存垃圾回收和强类型指针，可以促进更安全的开发实践。
 
 
-这些功能通过移除开发者自我管理内存的责任，帮助开发者避免了可能被利用的漏洞。 但是，依然存在开发者应注意的安全最佳实践。 在 Dan Enman（Snyk的高级软件工程师）的帮助下，由 Eric Smalling 和 Gerred Dillon 撰写的这份备忘单，涉及到其中的一些更常见的主题。
+这些功能使得开发人员不需要自行管理内存，从而避免了一些可能被利用的漏洞。然而，开发人员仍需了解一些安全最佳实践。在 Dan Enman（Snyk的高级软件工程师）的帮助下，由 Eric Smalling 和 Gerred Dillon 撰写的这份备忘单，涉及到其中的一些更常见的主题。
 
 1. 使用 Go Modules
 2. 扫描 CVE 之间的依赖关系
@@ -32,7 +32,7 @@
 ## 1\.使用 Go Modules
 
 
-从 go 1.11 版本开始， [Go Modules](https://golang.org/ref/mod) 正式成为 go 版本依赖的管理工具，而旧的 [Vendor](https://github.com/kardianos/govendor) 和 [Dep](https://github.com/golang/dep) 工具已被弃用。Go Modules 允许指定依赖版本，包括可传递模块，还可以通过 `go.sum` 文件提供的校验和数据库，校验发生变化的依赖模块。
+从 go 1.11 版本开始， [Go Modules](https://golang.org/ref/mod) 正式成为 go 版本依赖的管理工具，而旧的 [Vendor](https://github.com/kardianos/govendor) 和 [Dep](https://github.com/golang/dep) 工具已被弃用。Go Modules 允许指定依赖项版本，包括可传递模块，还可以通过 go.sum 校验和数据库保证非预期的模块变化。。
 
 
 首先，您应该在当前目录的中运行 `go mod init [namespace/project-name]` 命令来初始化项目。
@@ -42,7 +42,8 @@
 
 
 
-这将在当前目录中创建一个 `go.mod` 文件，其中包含您的项目名称和当前使用的 Go 版本。假如您的源代码需要引入第三方库，则只需运行 `go build`（或 `test`，`install` 等）命令，即可使用所依赖的第三方库（包括所指定的版本）并且更新 `go.mod` 文件。 您还可以使用 `go get` 更新您的依赖第三方库，这会将依赖的第三方库更新为指定版本，这也将更新 `go.mod` 文件。
+这将在当前目录中创建一个 `go.mod` 文件，其中包含您的项目名称和当前使用的 Go 版本。假如您的源代码需要引入第三方库，则只需运行 `go build`（或 `test`，`install` 等）命令，即可通过所用模块及其版本来更新 go.mod 文件。还可以使用 go get 将依赖更新至特定版本，并将其更新至 go.mod。
+                                                                                                         
 
 
 示例 `go.mod` 文件：
@@ -114,7 +115,7 @@ Go 标准库[加密程序包](https://golang.org/pkg/crypto/)已经过安全研�
 ## 7\. 反射
 
 
-Go 是一种强类型语言，这意味着变量类型很重要。 有时，您需要有关在运行时代码中反映的变量的类型或值信息。 Go 提供了一个 `reflect` 包，它允许您查找和操纵任意类型的变量的类型和值，例如，确定变量是否属于某种类型，或者包含某些属性或函数。
+Go 是一种强类型语言，这意味着变量类型很重要。 有时，您需要在运行时代码中反映的变量类型或值的相关信息。 Go 提供了一个 `reflect` 包，它允许您查找和操纵任意类型的变量的类型和值，例如，确定变量是否属于某种类型，或者包含某些属性或函数。
 
 
 尽管反射很有用，但也增加了在 Go 代码中运行时引入错误的风险。 如果您尝试以错误的方式修改被反射的变量（例如，设置无法在结构上设置的值），则代码会引发 panic。 很难很好地掌握代码流以及所反映的各种类型和值类型。 最后，在使用反射类型或值时，您可能需要断言这可能会使代码混淆的类型，并导致运行时错误。
