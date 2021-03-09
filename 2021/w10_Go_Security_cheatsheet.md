@@ -5,6 +5,7 @@
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2021/w10_Go_Security_cheatsheet.md
 - 译者：[guzzsek](https:/github.com/guzzsek)
 - 校对: [lsj1342](github.com/lsj1342)
+- 校对: [fivezh](https://github.com/fivezh)
 - 校对: [](github.com/)
 
 
