@@ -6,19 +6,19 @@
 - 译者：[Fivezh](https://github.com/fivezh)
 - 校对：[]()
 
-2018年，我写过一篇[关于Clickhouse的文章](https://pixeljets.com/blog/clickhouse-as-a-replacement-for-elk-big-query-and-timescaledb/)，这段内容在互联网上仍然很流行，甚至被多次翻译。现在已经过去两年多，同时Clickhouse的开发节奏[仍然活跃](https://github.com/ClickHouse/ClickHouse/pulse/monthly): 上个月有800个合并的PR! 这难道没让你大吃一惊吗？或许需要一小时才能查看完这些变更日志和新功能描述，例如2020年：https://clickhouse.tech/docs/en/whats-new/changelog/2020/
+2018年，我写过一篇[关于Clickhouse的文章](https://pixeljets.com/blog/clickhouse-as-a-replacement-for-elk-big-query-and-timescaledb/)，这段内容在互联网上仍然很流行，甚至被多次翻译。现在已经过去两年多，同时 Clickhouse 的开发节奏[仍然活跃](https://github.com/ClickHouse/ClickHouse/pulse/monthly): 上个月有 800 个合并的 PR ! 这难道没让你大吃一惊吗？或许需要一小时才能查看完这些变更日志和新功能描述，例如 2020 年：https://clickhouse.tech/docs/en/whats-new/changelog/2020/
 
 > 为了公平对比，[ElasticSearch仓库在同一个月有惊人的1076个合并PR](https://github.com/elastic/elasticsearch/pulse/monthly)，同时在功能性方面，它的节奏也*非常*让人印象深刻！
 
-我们正在将 Clickhouse 用于 [ApiRoad.net](https://apiroad.net/) 项目（这是一个 API 市场，开发人员出售其 API ，目前活跃开发中）的日志存储和分析，到目前为止，我们对效果感到满意。作为一名 API 开发人员，HTTP 请求/响应周期的可观测性和分析对于评估服务质量、快速发现错误非常重要，对于纯API服务而言尤其如此。
+我们正在将 Clickhouse 用于 [ApiRoad.net](https://apiroad.net/) 项目（这是一个 API 市场，开发人员出售其 API ，目前活跃开发中）的日志存储和分析，到目前为止，我们对效果感到满意。作为一名 API 开发人员， HTTP 请求/响应周期的可观察性和可分析性对于维护服务质量和快速发现 bug 非常重要，这一点对于纯 API 服务尤其如此。
 
 ![img](../static/images/w10_Clickhouse_for_log_storage_and_analysis_in_2021/demo2--1-.gif)
 
-我们也在其他项目上使用ELK（ ElasticSearch，Logstash，filebeat，Kibana）技术栈用于同样目的：获取 HTTP 和邮件日志，使用 Kibana 进行事后的分析与搜索。
+我们也在其他项目上使用 ELK（ ElasticSearch，Logstash，filebeat，Kibana）技术栈用于同样目的：获取 HTTP 和邮件日志，使用 Kibana 进行事后的分析与搜索。
 
 当然，我们也无处不在的使用 MySQL ！
 
-这篇文章主要介绍我们选择 `Clickhouse` 而不是 `ElasticSearch`（或`MySQL`）作为基础数据（服务请求日志）存储解决方案的主要原因（说明：出于`OLTP`的目的，我们仍会处使用`MySQL`）。
+这篇文章主要介绍我们选择 `Clickhouse` 而不是 `ElasticSearch`（或 `MySQL` ）作为基础数据（服务请求日志）存储解决方案的主要原因（说明：出于 `OLTP` 的目的，我们仍会处使用 `MySQL` ）。
 
 ## 1. SQL 支持, JSON 和 数组作为一等公民
 
@@ -30,7 +30,7 @@
 
 继续回到 `JSON` ，就 `JSON` 数据的查询、语法而言，传统的关系型数据库仍在追赶 `NoSQL` 数据库，我们必须承认 `JSON` 对动态结构化数据（如日志存储）而言，是非常方便的格式。
 
-`Clickhouse` 是一种在JSON已发展存在后（不同于MySQL和Postgres）设计和构建的现代引擎。由于 `Clickhouse` 不必背负这些流行的RDBMS向后兼容性和严格SQL标准，`Clickhouse` 团队可以在功能和改进方面更快速发展，实际上也的确是。 `Clickhouse` 的开发人员有更多机会在严格 `schema` 与 `JSON` 的灵活性之间达到最佳平衡，我认为他们在这方面做得很好。 `Clickhouse` 试图在分析领域与`Google Big Query`及其他主要对手竞争，因此它对“标准” `SQL` 进行了许多改进，这使其语法成为了杀手锏，在许多用于分析和计算目的情形下相比传统 `RDBMS` 更多优势。
+`Clickhouse` 是一种在 JSON 已发展存在后（不同于 MySQL 和 Postgres ）设计和构建的现代引擎。由于 `Clickhouse` 不必背负这些流行的 RDBMS 向后兼容性和严格 SQL 标准，`Clickhouse` 团队可以在功能和改进方面更快速发展，实际上也的确是。 `Clickhouse` 的开发人员有更多机会在严格 `schema` 与 `JSON` 的灵活性之间达到最佳平衡，我认为他们在这方面做得很好。 `Clickhouse` 试图在分析领域与 `Google Big Query` 及其他主要对手竞争，因此它对“标准” `SQL` 进行了许多改进，这使其语法成为了杀手锏，在许多用于分析和计算目的情形下相比传统 `RDBMS` 更多优势。
 
 一些基本的例子：
 
@@ -43,9 +43,9 @@
 - [arrayMap](https://clickhouse.tech/docs/en/sql-reference/functions/array-functions/#array-map)
 - [arrayFilter](https://clickhouse.tech/docs/en/sql-reference/functions/array-functions/#array-filter)
 
-在很多情况下，PostgreSQL 的`generate_series()`功能很有用。来自 ApiRoad 的一个具体示例：我们需要在chart.js 时间轴上映射请求数量。每天进行常规的`SELECT .. group by day`，但如果某些天没有任何查询时，就会出现间隙。但我们并不想要间隙，因此需要补零，对吧？ 这正是 PostgreSQL 中 `generate_series()` 函数有用的地方。在 MySQL 中，[推荐按日期创建表并进行连接](https://ubiq.co/database-blog/fill-missing-dates-in-mysql/)，不太优雅了吧？
+在很多情况下，PostgreSQL 的 `generate_series()` 功能很有用。来自 ApiRoad 的一个具体示例：我们需要在chart.js 时间轴上映射请求数量。每天进行常规的`SELECT .. group by day`，但如果某些天没有任何查询时，就会出现间隙。但我们并不想要间隙，因此需要补零，对吧？ 这正是 PostgreSQL 中 `generate_series()` 函数有用的地方。在 MySQL 中，[推荐按日期创建表并进行连接](https://ubiq.co/database-blog/fill-missing-dates-in-mysql/)，不太优雅了吧？
 
-如下是`ElasticSearch`中如何解决：https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html#_missing_value_2
+如下是 `ElasticSearch` 中如何解决：https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html#_missing_value_2
 
 关于查询语言：我对 ElasticSearch 的 Lucene 语法、HTTP API 以及为检索数据而编写 json 等几个方面仍然不满意。而 SQL 将是我的首选。
 
@@ -71,7 +71,7 @@ LEFT JOIN
 
 ## 2. 灵活的schema - 但需要时也可以严格
 
-对于日志存储任务来说，数据schema通常会在项目生命周期中变化，`ElasticSearch` 允许将巨大的JSON块放入索引中，然后找出字段类型和索引部分。`Clickhouse` 也同样支持这种方法。可以将数据放入JSON字段并相对快速地进行过滤，尽管在TB级上并不会很快。然后，当你经常有在特定字段查询需要时，便可以在日志表中添加物化列（materialized columns），这些列能够即时的从JSON中提取值。对TB级数据查询时会更加快速。
+对于日志存储任务来说，数据schema通常会在项目生命周期中变化，`ElasticSearch` 允许将巨大的 JSON 块放入索引中，然后找出字段类型和索引部分。`Clickhouse` 也同样支持这种方法。可以将数据放入 JSON 字段并相对快速地进行过滤，尽管在TB级上并不会很快。然后，当你经常有在特定字段查询需要时，便可以在日志表中添加物化列（materialized columns），这些列能够即时的从 JSON 中提取值。对TB级数据查询时会更加快速。
 
 我推荐 Altinity 关于日志存储中 JSON 与 表格式对比的专题视频：
 
@@ -108,7 +108,7 @@ SELECT count(*) as cnt,
 
 https://clickhouse.tech/docs/en/sql-reference/aggregate-functions/reference/
 
-而这些大多数在使用 MySQL 中是有问题的。
+这些大部分在 MySQL 中都是有问题的。
 
 ElasticSearch 在这方面比 MySQL 好得多，它既具有分位数又具有加权中位数，但是它还没有线性回归。
 
@@ -120,20 +120,20 @@ MySQL 和 Clickhouse 有多种级别的相互集成，这使它们最小化数�
 - [通过binlog将 MySQL 数据镜像至 Clickhouse](https://clickhouse.tech/docs/en/engines/database-engines/materialize-mysql/#materialize-mysql)
 - [MySQL 数据库引擎](https://clickhouse.tech/docs/en/engines/database-engines/mysql/) - 和之前方法相似但更灵活，无需 binlog
 - [MySQL 表函数](https://clickhouse.tech/docs/en/sql-reference/table-functions/mysql/) 通过特定查询链接 MySQL 表
-- [MySQL 表引擎](https://clickhouse.tech/docs/en/engines/table-engines/integrations/mysql/) 在CREATE TABLE语句中静态描述特定表
+- [MySQL 表引擎](https://clickhouse.tech/docs/en/engines/table-engines/integrations/mysql/) 在 CREATE TABLE 语句中静态描述特定表
 - [Clickhouse 使用 MySQL 协议](https://clickhouse.tech/docs/en/interfaces/mysql/)
 
 我不能肯定地说动态数据库和表引擎在 `JOIN` 上有多么快速和稳定，这肯定是需要基准测试的。但这个概念非常吸引人-你已经可以在 Clickhouse 数据库上完整地复制 MySQL 表 ，而不必处理缓存失效和重新设置索引。
 
-关于将 MySQL 与 Elasticsearch 结合使用，我的有限经验表明，这两种技术有太多不同。我的印象是他们彼此各说各话，并不会组合出现。所以我通常只需要把 ElasticSearch 需要索引的数据 JSON 化，然后发送到 ElasticSearch 。之后，MySQL 数据一些迁移或任何变更操作（`UPDATE / REPLACE`）之后，在 Elasticseach 端找出需要重新索引的部分。关于 MySQL 和 ElasticSearch 的数据同步，这是一篇[基于 Logstash 实现的文章](https://www.elastic.co/blog/how-to-keep-elasticsearch-synchronized-with-a-relational-database-using-logstash)。我不太喜欢 Logstash ，因为它的性能一般，对内存要求也很高，同时它也会成为系统中不稳定因素。对于使用 MySQL 的简单项目中，数据同步和索引往往是阻止我们使用 Elasticsearch 的因素。
+关于将 MySQL 与 Elasticsearch 结合使用，我的有限经验表明，这两种技术有太多不同。我的印象是他们彼此各说各话，并不会组合出现。所以我通常只需要把 ElasticSearch 需要索引的数据 JSON 化，然后发送到 ElasticSearch 。之后，MySQL 数据一些迁移或任何变更操作（ `UPDATE/REPLACE` ）之后，在 Elasticseach 端找出需要重新索引的部分。关于 MySQL 和 ElasticSearch 的数据同步，这是一篇[基于 Logstash 实现的文章](https://www.elastic.co/blog/how-to-keep-elasticsearch-synchronized-with-a-relational-database-using-logstash)。我不太喜欢 Logstash ，因为它的性能一般，对内存要求也很高，同时它也会成为系统中不稳定因素。对于使用 MySQL 的简单项目中，数据同步和索引往往是阻止我们使用 Elasticsearch 的因素。
 
 ## 6. 新特性
 
-是否要附加 S3 存储 `CSV` 文件并将其视为 Clickhouse 中的表？ [这非常简单](https://clickhouse.tech/docs/en/engines/table-engines/integrations/s3/)。
+是否想要附加 S3 存储的 `CSV`，并将其作为 Clickhouse 中的表？[这非常简单](https://clickhouse.tech/docs/en/engines/table-engines/integrations/s3/)。
 
 是否要更新或删除日志行以符合数据保护规范？ 现在，这很容易！
 
-在我 2018 年写第一篇文章时，Clickhouse 还没有简单的方法来删除或更新数据，这是一个真正的弊端。现在，这不再是问题。 Clickhouse 利用自定义 SQL 语法删除数据行：
+在我 2018 年写第一篇文章时，Clickhouse 还没有简单的方法来删除或更新数据，这是一个真正的弊端。现在，这不再是问题。Clickhouse 利用自定义 SQL 语法删除数据行：
 
 ```
 ALTER TABLE [db.]table [ON CLUSTER cluster] DELETE WHERE filter_expr
