@@ -4,7 +4,7 @@
 - 原文作者：Anton Sidashin
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w10_Clickhouse_for_log_storage_and_analysis_in_2021.md
 - 译者：[Fivezh](https://github.com/fivezh)
-- 校对：[]()
+- 校对：[咔叽咔叽](https://github.com/watermelo)
 
 2018年，我写过一篇[关于Clickhouse的文章](https://pixeljets.com/blog/clickhouse-as-a-replacement-for-elk-big-query-and-timescaledb/)，这段内容在互联网上仍然很流行，甚至被多次翻译。现在已经过去两年多，同时 Clickhouse 的开发节奏[仍然活跃](https://github.com/ClickHouse/ClickHouse/pulse/monthly): 上个月有 800 个合并的 PR ! 这难道没让你大吃一惊吗？或许需要一小时才能查看完这些变更日志和新功能描述，例如 2020 年：https://clickhouse.tech/docs/en/whats-new/changelog/2020/
 
