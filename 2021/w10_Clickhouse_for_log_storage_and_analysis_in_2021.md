@@ -6,17 +6,17 @@
 - 译者：[Fivezh](https://github.com/fivezh)
 - 校对：[]()
 
-2018年，我写过一篇[关于Clickhouse的文章](https://pixeljets.com/blog/clickhouse-as-a-replacement-for-elk-big-query-and-timescaledb/)，这段内容在互联网上仍然很流行，甚至被多次翻译。 现在已经过去两年多，同时Clickhouse的开发节奏[并未降低](https://github.com/ClickHouse/ClickHouse/pulse/monthly): 上个月有800个合并的PR! 这难道不让你大吃一惊吗？查看完整变更日志以及新功能描述都可能需要一小时才能完成，例如2020年：https://clickhouse.tech/docs/en/whats-new/changelog/2020/
+2018年，我写过一篇[关于Clickhouse的文章](https://pixeljets.com/blog/clickhouse-as-a-replacement-for-elk-big-query-and-timescaledb/)，这段内容在互联网上仍然很流行，甚至被多次翻译。 现在已经过去两年多，同时Clickhouse的开发节奏[仍然活跃](https://github.com/ClickHouse/ClickHouse/pulse/monthly): 上个月有800个合并的PR! 这难道没让你大吃一惊吗？查看这些完整变更日志以及新功能的描述或许都需要一小时才能完成，例如2020年：https://clickhouse.tech/docs/en/whats-new/changelog/2020/
 
-> 为了公平对比，[ElasticSearch仓库在同一个月有惊人的1076个合并PR](https://github.com/elastic/elasticsearch/pulse/monthly)，同时在功能方面，它的节奏也*非常*让人印象深刻！
+> 为了公平对比，[ElasticSearch仓库在同一个月有惊人的1076个合并PR](https://github.com/elastic/elasticsearch/pulse/monthly)，同时在功能性方面，它的节奏也*非常*让人印象深刻！
 
 我们正在将 Clickhouse 用于 ApiRoad.net 项目（这是一个API市场，开发人员出售其API，目前活跃开发中）的日志存储和分析，到目前为止，我们对效果感到满意。 作为一名API开发人员，HTTP 请求/响应周期的可观测性和分析对于评估服务质量、快速发现错误非常重要，对于纯API服务而言尤其如此。
 
 ![img](../static/images/w10_Clickhouse_for_log_storage_and_analysis_in_2021/demo2--1-.gif)
 
-我们也在其他项目上使用ELK（ElasticSearch，Logstash，filebeat，Kibana）技术栈用于相同的目的：获取HTTP和邮件日志，使用Kibana进行事后的分析与搜索。
+我们也在其他项目上使用ELK（ElasticSearch，Logstash，filebeat，Kibana）技术栈用于同样目的：获取HTTP和邮件日志，使用Kibana进行事后的分析与搜索。
 
-当然，我们使用MySQL。 无处不在的使用！
+当然，我们也无处不在的使用MySQL！
 
 这篇文章主要介绍我们选择 `Clickhouse` 而不是 `ElasticSearch`（或`MySQL`）作为基础数据（服务请求日志）存储解决方案的主要原因（说明：出于`OLTP`的目的，我们仍会处使用`MySQL`）。
 
@@ -151,10 +151,10 @@ ALTER TABLE [db.]table [ON CLUSTER cluster] DELETE WHERE filter_expr
 
 另一个与生态系统有关的问题是：消费、处理、发送数据到Clickhouse的工具是有限制。 对于Elasticsearch，有Logstash和filebeat，它们是Elastic生态系统固有的工具，旨在完美地协同工作。 幸运的是，Logstash也可以用于将数据放入Clickhouse，从而缓解了该问题。 在ApiRoad中，我们使用了自己定制的Node.js日志传送程序，该程序将日志汇总，然后分批发送给Clickhouse（因为Clickhouse喜欢大批处理，而不是小的多次插入）。
 
-我在Clickhouse中不喜欢的还有一些函数的奇怪命名，这是因为Clickhouse是由Yandex.Metrika（Google 分析的竞争对手）创建的。 比如，`visitParamHas()`是用于检查JSON中是否存在特定键。 通用目的，但并不是非通用名称。 有一堆名字不错的JSON函数名，例如 `JSONHas()`，其中有一个有趣的细节：据我所知，它们使用不同的[JSON解析引擎](https://github.com/simdjson/simdjson)，更符合标准，但速度稍慢。
+我在Clickhouse中不喜欢的还有一些函数的奇怪命名，这是因为Clickhouse是由Yandex.Metrika（Google 分析的竞争对手）创建的。 比如，`visitParamHas()`是用于检查JSON中是否存在特定键。 通用目的，但并不是通用名称。 有一堆名字不错的JSON函数名，例如 `JSONHas()`。还有一个有趣的细节：据我所知，它们使用不同的[JSON解析引擎](https://github.com/simdjson/simdjson)，虽然更符合标准，但速度稍慢。
 
 ## 总结
 
-ElasticSearch是一个非常强大的解决方案，但我认为它最强的方面仍然是具有超过10个节点的支持，用于大型全文检索和facets，复杂的索引和分值计算-这是ElasticSearch的亮点。当我们谈论时间序列和日志存储时，我的感觉是有更好的解决方案，而Clickhouse就是其中之一。 ElasticSearch API的功能非常强大，在很多情况下，如果不从文档中复制粘贴具体HTTP请求，就很难记住如何做一件事，它有更多的“企业化”和“Java风格”。 Clickhouse和ElasticSearch都是占用内存很大的程序，Clickhouse内存要求为4GB，而ElasticSearch的内存要求为16GB。我还认为Elastic团队关注的重点是他们新的[机器学习功能](https://www.elastic.co/what-is/elasticsearch-machine-learning)，我的愚见是，尽管这些功能听起来非常新潮，但不论你拥有多少开发人员和金钱，这些庞大的功能集很难持续支持和改进，因此ElasticSearch对我来说都越来越多地进入“万事通，无人能敌”的范畴。或许，是我错了。
+ElasticSearch是一个非常强大的解决方案，但我认为它最强的方面仍然是超过10+节点的支持，用于大型全文检索和facets，复杂的索引和分值计算-这是ElasticSearch的亮点。当我们提及时间序列和日志存储时，似乎有更好的解决方案，而Clickhouse就是其中之一。 ElasticSearch API的功能非常强大，但在很多情况下，如果不从文档中复制具体HTTP请求，就很难记住如何做一件事，它有更多的“企业化”和“Java风格”。 Clickhouse和ElasticSearch都是占用内存很大的程序，Clickhouse内存要求为4GB，而ElasticSearch的内存要求为16GB。我还认为Elastic团队关注的重点是他们新的[机器学习功能](https://www.elastic.co/what-is/elasticsearch-machine-learning)，我的愚见是，尽管这些功能听起来非常新潮，但不论你拥有多少开发人员和金钱，这些庞大的功能集很难持续支持和改进。对我来说，ElasticSearch在不断的进入“博而不精”的状态。或许，是我错了。
 
 Clickhouse则与众不同。设置简单、SQL也简单、控制台客户端也很棒。通过少量配置，就可以让一切简单有效的工作起来，但是当有需要时，也可以在TB级数据上使用丰富的特性、副本和分片能力。
