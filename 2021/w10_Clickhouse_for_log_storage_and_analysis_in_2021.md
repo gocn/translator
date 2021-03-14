@@ -34,7 +34,7 @@
 
 一些基本的例子：
 
-在`MySQL`中，您可以提取JSON字段，但是复杂的JSON处理仅在最新版本（[具有JSON_TABLE函数的版本8](https://mysqlserverteam.com/json_table-the-best-of-both-worlds/)）中可用。 在PosgreSQL中，情况甚至更糟-在PostgreSQL 12之前还没有直接的JSON_TABLE替代方案！
+在`MySQL`中，你可以提取JSON字段，但是复杂的JSON处理仅在最新版本（[具有JSON_TABLE函数的版本8](https://mysqlserverteam.com/json_table-the-best-of-both-worlds/)）中可用。 在PosgreSQL中，情况甚至更糟-在PostgreSQL 12之前还没有直接的JSON_TABLE替代方案！
 
 而这与`Clickhouse`的JSON及相关数组功能相比，也仅仅领先一小步。数组功能相关链接：
 
@@ -43,7 +43,7 @@
 - [arrayMap](https://clickhouse.tech/docs/en/sql-reference/functions/array-functions/#array-map)
 - [arrayFilter](https://clickhouse.tech/docs/en/sql-reference/functions/array-functions/#array-filter)
 
-在很多情况下，PostgreSQL中`generate_series()`功能很有用。来自ApiRoad的一个具体示例：我们需要在chart.js时间轴上映射请求数量。 每天进行常规的`SELECT .. group by day`，但如果某些天没有任何查询时，就会出现间隙。但我们并不想要间隙，因此需要补零，对吧？ 这正是PostgreSQL中`generate_series()`函数有用的地方。 在MySQL中，[推荐按日期创建表并进行连接](https://ubiq.co/database-blog/fill-missing-dates-in-mysql/)，不太优雅了吧？
+在很多情况下，PostgreSQL的`generate_series()`功能很有用。来自ApiRoad的一个具体示例：我们需要在chart.js时间轴上映射请求数量。 每天进行常规的`SELECT .. group by day`，但如果某些天没有任何查询时，就会出现间隙。但我们并不想要间隙，因此需要补零，对吧？ 这正是PostgreSQL中`generate_series()`函数有用的地方。 在MySQL中，[推荐按日期创建表并进行连接](https://ubiq.co/database-blog/fill-missing-dates-in-mysql/)，不太优雅了吧？
 
 如下是`ElasticSearch`中如何解决：https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html#_missing_value_2
 
@@ -65,9 +65,9 @@ LEFT JOIN
 		GROUP BY toStartOfDay(started_at)) b on a.timePeriod=b.timePeriod
 ```
 
-在这里，我们通过`lambda`函数和循环生成一个虚拟表，然后将其按天分组的日志表进行左连接。
+在这里，我们通过`lambda`函数和循环生成一个虚拟表，然后再与按天分组的日志表进行左连接。
 
-我认为 `arrayJoin` + `arrayMap` + `range` 函数相比 `generate_series()` 有更多灵活性。通过 `WITH FILL` 关键词可用于更简洁的语法。
+我认为 `arrayJoin` + `arrayMap` + `range` 函数方式相比 `generate_series()` 有更多灵活性。通过 `WITH FILL` 关键词可用于更简洁的语法。
 
 ## 2. 灵活的schema - 但需要时也可以严格
 
