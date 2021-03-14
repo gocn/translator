@@ -1,4 +1,4 @@
-# 2021年，Clickhouse在日志存储与分析方面可作为ElasticSearch和MySQL的备选方案
+# 2021年，Clickhouse在日志存储与分析方面作为ElasticSearch和MySQL的替代方案
 
 - 原文地址：https://pixeljets.com/blog/clickhouse-vs-elasticsearch/
 - 原文作者：Anton Sidashin
