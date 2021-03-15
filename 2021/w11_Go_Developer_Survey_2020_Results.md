@@ -1,15 +1,15 @@
-#### 感谢您的惊人回应！
+#### 感谢您带来令人兴奋的回应！
 
-2020年，我们的参与人数达到了9,648人，大约和[2019年](https://blog.golang.org/survey2020-results)时一样多。感谢您抽出宝贵的时间为社区提供了有关于您在使用Go时的一些见解！
+2020年，我们的参与人数达到了9,648人，这个数据大约和[2019年](https://blog.golang.org/survey2020-results)时一样多。感谢您抽出宝贵的时间为社区提供了有关于您在使用Go时的一些见解！
 
-#### 新的模块化调查设计
+#### 新的模块化设计调查
 
 您可能注意到一些问题的样本量("n=")是比其他样本小的。这是因为某些问题是向所有人公开的，而另一些问题仅向随机的一部分受访者展示。
 
 #### 重点
 
--   Go的使用面在工作场所和企业中正在不断扩大，其中76%的受访者表示[在工作中使用Go](https://blog.golang.org/survey2020-results#TOC_4.1)，并且66%的受访者表示[Go语言对他们公司的成功有至关重要的作用](https://blog.golang.org/survey2020-results#TOC_6.1)。
--   [总体满意度](https://blog.golang.org/survey2020-results#TOC_6.)很高，92%的受访者在使用Go时感到满意。
+-   Go 的使用场景和在企业中的应用正在不断地扩大，其中76%的受访者表示[在工作中使用Go](https://blog.golang.org/survey2020-results#TOC_4.1)，并且66%的受访者表示[Go语言对他们公司的成功有至关重要的作用](https://blog.golang.org/survey2020-results#TOC_6.1)。
+-   [总体满意度](https://blog.golang.org/survey2020-results#TOC_6.)很高，其中92%的受访者在使用Go时感到满意。。
 -   大多数的受访者在不到三个月的时间里[察觉到了Go的生产力](https://blog.golang.org/survey2020-results#TOC_6.2)，81%的受访者觉得Go的生产力非常高或极其高。
 -   受访者报告称约76%的人在前5个月就已[迅速升级到了Go的最新版本](https://blog.golang.org/survey2020-results#TOC_7.)。
 -   [使用pkg.go.dev的受访者(91%)](https://blog.golang.org/survey2020-results#TOC_12.)比非使用者(82%)更能成功的找到Go软件包。
@@ -51,7 +51,7 @@
 
 ![Editor preferences from 2017 to 2020](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/editor_pref_yoy.svg)
 
-今年，我们要求受访者在假设他们拥有100个“GopherCoins”（一种虚拟货币）的情况下，会花多少钱来优先改善他们的编辑器。代码完成取得了每位受访者最高的GopherCoins的平均数量。一半的受访者给了前4个功能（代码完成、代码导航、编辑器性能和重构）10个或更多的投币。
+今年，我们要求受访者在假设他们拥有100个“GopherCoins”（一种虚拟货币）的情况下，会花多少钱来优先改善他们的编辑器。代码自动补全功能获得的GopherCions的平均数量最高。 一半的受访者表示愿意花费10个或者更多的GopherCoins来改善这四个功能（代码补全、代码导航、编辑器性能和重构）。
 
 ![Bar char of average number of GopherCoins spent per respondent](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/editor_improvements_means.svg)
 
@@ -59,7 +59,7 @@
 
 ![Bar chart of time spent refactoring](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/refactor_time.svg)
 
-去年我们询问了特定的开发技术，发现几乎90%的受访者正在使用文本日志进行调试，因此今年我们增加了一个后续问题以找出原因。结果表明，有43%的人是因为跨语言时可以使用相同的调试策略，还有42%的人更喜欢文本记录而不是其他的调试技术。但是，有27%的人是不知道如何开始使用Go的调试工具，还有24%的人从未尝试过使用Go的调试工具，因此就有机会在发现性、可用性和文档方面来改进调试工具。此外，由于四分之一的受访者从未尝试使用调试工具，因此该痛点可能被低估。
+去年，我们询问了一些特定的开发技能，其中接近 90% 的受访者正在使用文本日志的方式进行调试，为了找出这个问题的原因，我们今年增加了一个后续的问题。结果表明，有43%的人是因为跨语言时可以使用相同的调试策略，还有42%的人更喜欢文本记录而不是其他的调试技术。但是，有27%的人是不知道如何开始使用Go的调试工具，还有24%的人从未尝试过使用Go的调试工具，因此就有机会在发现性、可用性和文档方面来改进调试工具。此外，由于四分之一的受访者从未尝试使用调试工具，因此该痛点可能被低估。
 
 ![](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/why_printf.svg)
 
