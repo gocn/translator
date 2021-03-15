@@ -63,7 +63,7 @@
 
 ![](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/why_printf.svg)
 
-#### 对Go的情绪
+#### 对Go的态度
 
 今年，我们是第一次询问人们对Go的整体满意度。92%的受访者表示，在过去的一年里，他们在使用Go时感到非常满意。
 
