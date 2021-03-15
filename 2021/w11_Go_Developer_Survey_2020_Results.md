@@ -205,7 +205,7 @@ Go在设计时就考虑了现代的分布式计算，我们希望继续改善开
 
 我们今年在辅助技术的使用上又增加了一个问题，发现8％的受访者正在使用某种形式的辅助技术。最常用的辅助技术是对比度或颜色设置（2％）。这大大提醒我们，我们的用户具有访问性需求，这也有助于在Go团队管理的网站上推动我们的某些设计决策。
 
-![Bar chart of assistive technology usage](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/survey2020/at.svg)
+![Bar chart of assistive technology usage](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/at.svg)
 
 Go团队重视多样性和包容性，这不仅是做对的事情，还因为多样化的声音可以照亮我们的盲点，并最终使所有用户受益。根据数据隐私法规，我们询问敏感信息（包括性别和传统上代表性不足的群体）的方式已经改变，并且我们希望在未来使这些问题（尤其是有关性别多样性的问题）更具包容性。
 
