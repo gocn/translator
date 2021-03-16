@@ -1,3 +1,11 @@
+# 2020年Go开发者调查结果
+
+- 原文地址：https://blog.golang.org/survey2020-results
+- 原文作者：Alice Merrick
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w11_Go_Developer_Survey_2020_Results.md
+- 译者：[lsj1342](https://github.com/lsj1342)
+- 校对：[guzzsek](https://github.com/guzzsek)
+
 #### 感谢您带来令人兴奋的回应！
 
 2020年，我们的参与人数达到了9,648人，这个数据大约和[2019年](https://blog.golang.org/survey2020-results)时一样多。感谢您抽出宝贵的时间为社区提供了有关于您在使用Go时的一些见解！
@@ -138,7 +146,7 @@
 
 ![Bar chart of methods used for Go package management](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/modules_adoption_yoy.svg)
 
-对模块的满意度也比去年有所提高。77％的受访者表示，他们对模块感到非常，中度或略微满意，而2019年这一比例为68％。
+受访者对模块的满意度相比去年也有所提高。其中77％的受访者表示，他们对模块感到非常，中度或略微满意，而这一比例在2019年为68％。
 
 ![Stacked bar chart of satisfaction with using modules on a 7 point scale from very dissatisfied to very satisfied](https://github.com/gocn/translator/blob/master/static/images/w11_Go_Developer_Survey_2020_Results/modules_sat_yoy.svg)
 
