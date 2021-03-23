@@ -1,7 +1,9 @@
 - 原文地址：https://medium.com/codex/when-to-use-rust-and-when-to-use-go-590bcbb49bec
+- 原文作者: [Joel](https://twitter.com/studyWithJee)
+- 本文永久链接: [Github](https://github.com/gocn/translator/blob/master/2021/w12_When_to_use_Rust_and_when_to_use_Go.md)  
 - 译者：[tt](https://github.com/1-st)
 
-首先, Go 和 Rust 之间有明显的区别。 Go 更加注重构建可扩展的 Web API 和微服务，尤其是有 goroutine 的助力。 虽然 Rust 作为后者也可以做这些事情，但是开发体验要差许多。
+直截了当的说, Go 和 Rust 之间有明显的区别。 Go 更加注重构建可扩展的 Web API 和微服务，尤其是有 goroutine 的助力。 虽然 Rust 作为后者也可以做这些事情，但是开发体验要差许多。
 
 
 ![](../static/images/w12_When_To_Use_Rust_And_When_To_Use_Go/go_vs_rust.jpg)
