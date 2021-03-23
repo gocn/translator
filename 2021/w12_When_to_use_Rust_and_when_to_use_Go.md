@@ -1,7 +1,7 @@
 - 原文地址：https://medium.com/codex/when-to-use-rust-and-when-to-use-go-590bcbb49bec
 - 译者：[tt](https://github.com/1-st)
 
-首先, Go 和 Rust 之间有明显的区别。 Go 更加注重构建可扩展的 Web API 和微服务，尤其是有 goroutine 的助力。 虽然 Rust 作为后者也可以做这些事情，但是据开发人员的经验来看，要困难得多。
+首先, Go 和 Rust 之间有明显的区别。 Go 更加注重构建可扩展的 Web API 和微服务，尤其是有 goroutine 的助力。 虽然 Rust 作为后者也可以做这些事情，但是开发体验要差许多。
 
 
 ![](../static/images/w12_When_To_Use_Rust_And_When_To_Use_Go/go_vs_rust.jpg)
@@ -114,7 +114,7 @@ Go 在各种场景中都能很好地工作，使其成为创建 Web API 的 Node
 ## Go vs. Rust: 我的肺腑之言
 让我们首先强调相似之处。 Go 和 Rust 都是开源的，旨在支持微服务架构和并行计算环境。两者都通过并发优化了可用 CPU 内核的利用率。
 
-但总而言之，哪种语言是最好的？
+说到底，哪种语言是最好的？
 
 有很多方法可以解决这个问题。我建议您考虑要构建的应用程序种类。 Go 可以很好地利用内置的并发特性来创建微服务架构下的 Web 应用程序和 API。
 
