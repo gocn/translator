@@ -40,7 +40,8 @@ func main() {
 ```
 
 尽管有多核 CPU 支持，Rust 仍然可以跑赢 Go。 Rust 在执行算法和资源密集型操作方面效率更高。基准测试通过各种算法将 Rust 和 Go 做比较，例如二叉树。对于所有测试算法，Rust 至少快 30％；在二叉树计算的情况下，最高可达 1,000％。
-Bitbucket的一项研究表明，Rust与C ++的性能相似。
+Bitbucket的一项研究表明，Rust与C++的性能相似。
+
 ![](../static/images/w12_When_To_Use_Rust_And_When_To_Use_Go/benchmark.png)
 
 *(来源: 基准测试)*
