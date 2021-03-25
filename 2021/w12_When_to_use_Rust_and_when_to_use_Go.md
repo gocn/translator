@@ -1,4 +1,4 @@
-# 何时使用Rust,何时使用Go
+# 何时使用 Rust, 何时使用 Go
 - 原文地址：https://medium.com/codex/when-to-use-rust-and-when-to-use-go-590bcbb49bec
 - 原文作者: [Joel](https://twitter.com/studyWithJee)
 - 本文永久链接: [Github](https://github.com/gocn/translator/blob/master/2021/w12_When_to_use_Rust_and_when_to_use_Go.md)  
