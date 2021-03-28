@@ -5,7 +5,7 @@
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w13_My_Go_mistakes.md
 * 译者：[朱亚光](https://github.com/zhuyaguang)
 
-在这篇文章里，我主要分享六年来使用Go这门语言写代码过程中所犯过的一些错误。
+在这篇文章里，我主要分享六年来用Go编程过程中所犯过的一些错误。
 
 ## `init` 函数
 
