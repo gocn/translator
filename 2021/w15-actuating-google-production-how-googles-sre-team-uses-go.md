@@ -2,7 +2,7 @@
 谷歌线上跑着一些巨型服务，这些服务由全球基础设施提供支持，涵盖了开发者所需的所有组件：存储系统、负载均衡器、网络、日志记录、监控等等。然而，它并不是一个静态系统，它也不可能是。随着架构的演化，新产品和新想法的不断产生，新版本的发布，配置的推送，数据库模式的更新等等，最终需要我们会以每秒数十次的速度将这些更改部署到系统中。
 
 由于规模过于庞大，以及对可靠性的迫切需求，谷歌开创了网站可靠性工程（SRE）的先河，此后许多其他公司都开始采用了这一角色。
-> “SRE是当你把操作当作软件问题来对待时得到的结果。我们的使命是保护、提供和改进谷歌所有公共服务背后的软件和系统，时刻关注它们的可用性、延迟、性能和容量。”-[站点可靠性工程（SRE）](https://sre.google/)。
+> “SRE是当你把操作当作软件问题来对待时得到的结果。我们的使命是保护、提供和改进谷歌所有公共服务背后的软件和系统，时刻关注它们的可用性、延迟、性能和容量。”-[网站可靠性工程（SRE）](https://sre.google/)。
 
 ![Credit to Renee French for the Go Gopher](../static/images/w15-actuating-google-production-how-googles-sre-team-uses-go/gosreheader.png
 )
@@ -29,7 +29,7 @@ Credit to Renee French for the Go Gopher
 
 
 ## References
-1. 站点可靠性工程（SRE）https://sre.google/
+1. 网站可靠性工程（SRE）https://sre.google/
 2. Core Data Solutions https://go.dev/solutions/google/coredata/
 3. Firebase Hosting https://go.dev/solutions/google/firebase/
 4. Chrome https://go.dev/solutions/google/chrome/
