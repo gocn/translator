@@ -1,5 +1,5 @@
 - 原文地址：http://www.agardner.me/golang/garbage/collection/gc/escape/analysis/2015/10/18/go-escape-analysis.html
-- 原文作者：
+- 原文作者： 
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w15_golang_escape_analysis.md
 - 译者：[cuua](https://github.com/cuua)
 - 校对：[](https://github.com/)
