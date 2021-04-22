@@ -3,6 +3,7 @@
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w15_golang_escape_analysis.md
 - 译者：[cuua](https://github.com/cuua)
 - 校对：[gocn](https://github.com/gocn/translator)
+
 ##golang逃逸分析
 
 垃圾回收是 Go - 自动内存管理的一个便利功能， 使代码更整洁，内存泄漏的可能性更小。但是，GC 还会增加间接性能消耗，因为程序需要定期停止并收集未使用的对象。Go 编译器足够智能，可以自动决定是否应在堆上分配变量，之后需要在堆上收集垃圾，或者是否可以将其分配为该变量的函数的栈的一部分。栈与堆分配变量不同，栈分配变量不会产生任何 GC 开销，因为它们在栈的其余部分（当功能返回时）被销毁。
