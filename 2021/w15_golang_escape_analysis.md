@@ -1,23 +1,21 @@
 - 原文地址：http://www.agardner.me/golang/garbage/collection/gc/escape/analysis/2015/10/18/go-escape-analysis.html
-- 原文作者：  
+- 原文作者：
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w15_golang_escape_analysis.md
 - 译者：[cuua](https://github.com/cuua)
-- 校对：[](https://github.com/)
+- 校对：[gocn](https://github.com/gocn/translator)
 
-# Golang escape analysis
+##golang逃逸分析
 
-Oct 18, 2015
+垃圾回收是 Go - 自动内存管理的一个便利功能， 使代码更整洁，内存泄漏的可能性更小。但是，GC 还会增加间接性能消耗，因为程序需要定期停止并收集未使用的对象。Go 编译器足够智能，可以自动决定是否应在堆上分配变量，之后需要在堆上收集垃圾，或者是否可以将其分配为该变量的函数的栈的一部分。栈与堆分配变量不同，栈分配变量不会产生任何 GC 开销，因为它们在栈的其余部分（当功能返回时）被销毁。
 
-Garbage collection is a convenient feature of Go - automatic memory management makes code cleaner and memory leaks less likely. However, GC also adds overhead as the program periodically needs to stop and collect unused objects. The Go compiler is smart enough to automatically decide whether a variable should be allocated on the heap, where it will later need to be garbage collected, or whether it can be allocated as part of the stack frame of the function which declared it. Stack-allocated variables, unlike heap-allocated variables, don’t incur any GC overhead because they’re destroyed when the rest of the stack frame is destroyed - when the function returns.
+例如，Go 的逃生分析比HotSpot JVM 更基本。基本规则是，如果从申报的函数返回对变量的引用，则会"逃逸" - 函数返回后可以引用该变量，因此必须将其堆分配。这是比较复杂的，因为：
 
-Go’s escape analysis is more basic than the HotSpot JVM, for example. The basic rule is that if a reference to a variable is returned from the function where it is declared, it “escapes” - it can be referenced after the function returns, so it must be heap-allocated. This is complicated by:
+- 调用其他功能的函数
+- 分配给结构体成员的引用
+- 切片和maps
+- cgo将指针指向变量
 
-* functions calling other functions
-* references being assigned to struct members
-* slices and maps
-* cgo taking pointers to variables
-
-To perform escape analysis, Go builds a graph of function calls at compile time, and traces the flow of input arguments and return values. A function may take a reference to one of it’s arguments, but if that reference is not returned, the variable does not escape. A function may also return a reference, but that reference may be dereferenced or not returned by another function in the stack before the function which declared the variable returns. To illustrate a few simple cases, we can run the compiler with `-gcflags '-m'`, which will print verbose escape analysis information:
+为了执行逃生分析，Go 在编译时构建一个函数调用图，并跟踪输入参数和返回值的流。函数可能引用其中一个参数，但如果该引用未返回，变量不会逃逸。函数也可以返回引用，但在申明变量返回的函数之前，该引用可能由栈中的另一个函数取消引用或未返回。为了说明一些简单的案例，我们可以运行编译器，这将打印详细的逃生分析信息：-gcflags '-m'
 
 ```
 package main
@@ -33,9 +31,7 @@ func identity(x S) S {
   return x
 }
 ```
-
-You’ll have to build this with `go run -gcflags '-m -l'` - the `-l` flag prevents the function `identity` from being inlined (that’s a topic for another time). The output is: nothing! Go uses pass-by-value semantics, so the `x` variable from `main` will always be copied into the stack of `identity`. In general code without references always uses stack allocation, trivially. There’s no escape analysis to do. Let’s try something harder:
-
+你必须用 go run -gcflags '-m -l'  '-l'标签阻止功能被内联 （这是另一个时间的主题） 来构建这个功能。输出是：什么都没有！Go 使用值传递，因此始终将变量复制到栈中。在没有引用的一般代码中，总是很少使用栈分配。没有逃生分析可做。再看下面一个例子：
 ```
 package main
 
@@ -51,18 +47,15 @@ func identity(z *S) *S {
   return z
 }
 ```
-
-And the output:
+输出：
+```
+$ go run -gcflags '-m -l' main.go
+# command-line-arguments
+.\main.go:11:15: leaking param: z to result ~r1 level=0
 
 ```
-./escape.go:11: leaking param: z to result ~r1
-./escape.go:7: main &x does not escape
-```
-
-The first line shows that the variable “flows through”: the input variable is returned as an output. But `identity` doesn’t take a reference to `z`, so the variable doesn’t escape. No references to `x` survive past `main` returning, so `x` can be allocated as part of the stack frame of `main`.
-
-A third experiment:
-
+第一行显示变量"流过"：输入变量返回为输出。但不采取参考，所以变量不会逃逸。不在main返回之后没有对x的引用存在，因此x分配在main的堆上。
+第三个实验：
 ```
 package main
 
@@ -77,17 +70,16 @@ func ref(z S) *S {
   return &z
 }
 ```
-
-And the output:
+输出：
+```
+$ go run -gcflags '-m -l' main.go
+# command-line-arguments
+.\main.go:10:10: moved to heap: z
 
 ```
-./escape.go:10: moved to heap: z
-./escape.go:11: &z escapes to heap
-```
+现在有一些逃避正在发生。请记住，go是值传递，所以z是main中x变量的副本。 返回z的引用，所以z不能是栈的一部分-返回时的参考点在哪里？取而代之的是它逃到堆。尽管 Go 在不取消计算参考值的情况下会立即扔掉引用，但 Go 的逃逸分析不够精密，无法找出这一点 - 它只查看输入和返回变量的流。值得注意的是，在这种情况下，如果我们不阻止它，编译器就会强调这一点。
 
-Now there’s some escaping going on. Remember that Go has pass-by-value semantics, so `z` is a copy of the variable `x` from `main`. `ref` return a reference to `z`, so `z` can’t be part of the stack frame for `ref` - where would the reference point when `ref` returns? Instead it escapes to the heap. Even though `main` immediately throws away the reference without dereferencing it, Go’s escape analysis is not sophisticated enough to figure this out - it only looks at the flow of input and return variables. It’s worth noting that in this case `ref` would be inlined by the compiler if we weren’t stopping it.
-
-What if a reference is assigned to a struct member?
+如果将引用分配给结构成员，该怎么办？
 
 ```
 package main
@@ -106,16 +98,13 @@ func refStruct(y int) (z S) {
   return z
 }
 ```
-
-Output:
-
+输出：
 ```
-./escape.go:12: moved to heap: y
-./escape.go:13: &y escapes to heap
+$ go run -gcflags '-m -l' main.go
+# command-line-arguments
+.\main.go:13:16: moved to heap: y
 ```
-
-In this case Go can still trace the flow of references, even though the reference is a member of a struct. Since `refStruct` takes a reference and returns it, `y` must escape. Compare with this case:
-
+在这种情况下，Go 仍然可以跟踪引用流，即使引用是结构体的成员。既然refStruct 做了引用并返回它，y就必须逃逸。与本案例相比：
 ```
 package main
 
@@ -133,18 +122,16 @@ func refStruct(y *int) (z S) {
   return z
 }
 ```
-
-Output:
+输出：
+```
+$ go run -gcflags '-m -l' main.go
+# command-line-arguments
+.\main.go:13:16: leaking param: y to result z level=0
 
 ```
-./escape.go:12: leaking param: y to result z
-./escape.go:9: main &i does not escape
-```
+由于main做了引用并传递refStruct，引用永远不会超过申报引用变量的栈。这和前面的程序有稍微不同的语义，但如果第二个程序足够的话，它会更有效率：在第一个例子i必须分配在main的栈上，然后在堆上重新分配并将其复制为refStruct的参数。在第二个示例中i只分配一次，并传递引用。
 
-Since `main` takes the reference and passes it to `refStruct`, the reference never outlives the stack frame where the referenced variable was declared. This and the preceding program have slightly different semantics, but if the second program is sufficient it would be more efficient: in the first example `i` must be allocated on the stack of `main`, then re-allocated on the heap and copied as an argument to `refStruct`. In the second example `i` is only allocated once, and a reference is passed around.
-
-A slightly more insidious example:
-
+一个更深入的例子：
 ```
 package main
 
@@ -162,19 +149,17 @@ func ref(y *int, z *S) {
   z.M = y
 }
 ```
-
-Output:
+输出：
+```
+$ go run -gcflags '-m -l' main.go
+# command-line-arguments
+.\main.go:14:10: leaking param: y
+.\main.go:14:18: z does not escape
+.\main.go:10:6: moved to heap: i
 
 ```
-./escape.go:13: leaking param: y
-./escape.go:13: ref z does not escape
-./escape.go:9: moved to heap: i
-./escape.go:10: &i escapes to heap
-./escape.go:10: main &x does not escape
-```
+这里的问题是y是分配给输入结构体的成员。Go 无法跟踪该关系 - 输入仅允许流到输出 - 因此逃逸分析失败，必须对变量进行堆分配。有许多有据可查的案例（as of Go 1.5），由于go逃逸分析的限制，必须堆分配变量 -[请参阅此链接](https://docs.google.com/document/d/1CxgUBPlx9iJzkz9JWkb6tIpTe5q32QDmz8l0BouG0Cw/preview) 。
 
-The problem here is that `y` is assigned to a member of an input struct. Go can’t trace that relationship - inputs are only allowed to flow to outputs - so the escape analysis fails and the variable must be heap allocated. There are many documented, pathological cases (as of Go 1.5) where variables must be heap allocated due to limitations of Go’s escape analysis - [see this link](https://docs.google.com/document/d/1CxgUBPlx9iJzkz9JWkb6tIpTe5q32QDmz8l0BouG0Cw/preview).
+最后，maps和切片呢？请记住，maps和切片实际上只是使用指针构建到堆分配的内存：切片结构暴露在包中（[SliceHeader](https://golang.org/pkg/reflect/#SliceHeader) ）中。map结构是更难找到的，但它存在：[hmap](https://golang.org/pkg/reflect/#SliceHeader) 。如果这些结构无法逃逸，它们将被栈分配，但备份数组或哈希存储桶中的数据本身将每次都堆分配。避免这种情况的唯一方法是分配一个固定大小的数组（如[10000]int）。
 
-Finally, what about maps and slices? Remember that slices and maps are actually just Go structs with pointers to heap-allocated memory: the slice struct is exposed in the `reflect` package ([SliceHeader](https://golang.org/pkg/reflect/#SliceHeader)). The map struct is harder to find, but it exists: [hmap](https://golang.org/src/runtime/hashmap.go#L102). If these structures don’t escape they’ll be stack-allocated, but the data itself in the backing array or hash buckets will be heap-allocated every time. The only way to avoid this would be to allocate a fixed-size array (like `[10000]int`).
-
-If you’ve (profiled your program’s heap usage)[http://blog.golang.org/profiling-go-programs] and need to reduce GC time, there may be some wins from moving frequently allocated variables off the heap. It’s also just a fascinating topic: for further reading about how the HotSpot JVM handles escape analysis, check out [this paper](http://www.cc.gatech.edu/~harrold/6340/cs6340_fall2009/Readings/choi99escape.pdf) which talks about stack allocation, and also about detecting when synchronization can be elided.
+如果您已经看过[分析程序的堆使用情况](http://blog.golang.org/profiling) ，并且需要减少 GC 时间，则可能会从堆中移动频繁分配的变量而获得一些收获。这也只是一个引人入胜的话题：要进一步阅读 HotSpot JVM 如何处理逃逸分析，请查看[这篇文章](http://www.cc.gatech.edu/~harrold/6340/cs6340_fall2009/Readings/choi99escape.pdf) ，其中涉及堆栈分配，以及检测何时可以消除同步。
