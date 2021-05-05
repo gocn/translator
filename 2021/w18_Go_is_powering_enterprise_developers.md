@@ -1,4 +1,4 @@
-# **Go is powering enterprise developers: Developer survey results**
+# **Go语言助力企业开发者：开发者调查报告**
 
 * 原文地址：https://cloud.google.com/blog/topics/developers-practitioners/go-powering-enterprise-developers-developer-survey-results
 * 原文作者：`Matt Pearring, Alice Merrick`
@@ -8,40 +8,40 @@
 
 ![](../static/images/w18_Go_is_powering_enterprise_developers/GCP_AppDev.max-2200x2200.jpg)
 
-Each year the Go team at Google conducts a developer survey, to capture feedback from the Go community, and identify trends that shape our work. Go is one of the most popular languages used on Google Cloud, and this year, we expanded the survey to include more specific questions around Cloud development. We’re sharing some of our results here (with the full report available in our [separate post](https://blog.golang.org/survey2020-results)), to provide some insight into feedback that informs our commitment to ensuring the experience of building with Go on Google Cloud is best-in-class.
+每年 `Google` 的 `Go` 团队都会进行一次开发人员调查，获取来自 `Go` 社区的反馈，以此来明确我们的未来工作趋势。 `Go` 是 `Google Cloud` 上最受欢迎的语言之一，今年，我们扩大了调查范围，包括了关于云开发的更多具体问题。 我们将在这里分享其中一些结果（完整报告可在单独的 [帖子](https://blog.golang.org/survey2020-results) 中找到），深入了解这些反馈，来帮助我们在构建 `Go on Google Cloud` 中的一流体验。
 
-### Go has become a critical tool in the enterprise
+### `Go` 已成为企业中的关键工具
 
-Go is cementing its role as a critical tool in the enterprise, boosting developer productivity and serving as a key component to business success. When it comes to workloads, Go is heavily used in deployment on the Cloud. Among our survey respondents, the most common use case of Go was to build API/RPC services (74%), followed closely by command-line applications (65%), both of which are tools used commonly by cloud developers. 
+ `Go` 正在不断巩固其在企业中关键工具的角色，提高了开发人员的生产力，并成为企业成功的关键要素。 在工作量方面， `Go` 在云中开发中大量使用。 在我们的调查受访者中， `Go` 的最常见用例是构建 `API/RPC` 服务（74％），紧随其后的是命令行应用程序（65％），二者都是云开发人员常用的工具。
 
-When working on their projects, Go users continue to feel incredibly satisfied and productive, especially in the enterprise, showcasing Go’s suitability in that environment. With 92% of enterprise users feeling “somewhat” or “very” satisfied, and satisfaction for “using cloud services” with Go up 14%, we’re happy to hear that Go remains pleasant to work with. Go’s effect on productivity is also quite positive, with 81% of enterprise users feeling “very” or “extremely” productive. 
+在他们的项目中， `Go` 用户不断感到难以置信的满足感和生产力，尤其是在企业中，这表明 `Go` 在该环境中的适用性。 92％的企业用户对 `Go` 感到“有点”或“非常”满意，而对 `Go` 使用“使用云服务”的满意度提高了14％，我们很高兴看到 `Go` 依然让人愉快。 `Go` 对生产力的影响也非常正向的，81％的企业用户认为它“非常”或“极度”具有生产力。
 
-We also heard that two-thirds (66%) of Go developers feel that Go is critical to their company’s success. It’s amazing to hear how users and teams continue to lean on Go for it’s reliability, simplicity, and speed.
+我们还看到，66％的 `Go` 开发人员认为 `Go` 对他们公司的成功至关重要。 我们很惊讶的看到，用户和团队是如此依赖 `Go` 的可靠性、简洁性以及速度，。
 
-### Adoption of Go is getting easier 
+### 采用 `Go` 变得越来越容易
 
-Go’s adoption in the workplace is growing, and it’s becoming easier for teams to become productive with Go. On the adoption front, working on an “existing project written in another language” and IT leadership “[preferring] another language” both continued to decrease as reasons why teams don’t use Go more often. And following up on the productivity results discussed earlier, three quarters of enterprise users become productive with Go in less than 3 months, with 93% reaching productivity within a year. 
+ `Go` 在工作场所中的采用率在不断上升，团队使用 `Go` 进行生产力工作也在变的更加容易。 在语言选型方面，从事“用另一种语言编写现有项目”和IT领导层“ [优先] 另一种语言”的情形都在不断减少，这也是团队不经常使用 `Go` 的原因。 根据前面讨论的生产力数据，四分之三的企业用户在不到3个月的时间内就可以使用 `Go` ，其中93％的用户在一年内达到很好的生产效率。
 
-Results like these show that getting started with Go remains quick and easy, though getting larger teams to move to Go or use it when faced with existing language preferences, while declining as challenges, is still a point of friction. We’ll continue to address these issues by improving our documentation, and additional work on tooling and support. 
+像这样的结果表明，开始使用 `Go` 是快速且容易的。虽然面临的挑战在减少，但要让更大的团队迁移到 `Go` 或在已有语言偏好时使用它，仍然存在摩擦点。 我们将通过改进文档、工具和支持方面的其他工作来持续解决这些问题。
 
-Part of the work we’ve already done includes taking over maintenance of the VS Code Go Plugin and releasing [several improvements](https://blog.golang.org/gopls-vscode-go), in addition to constant improvements to our package discovery site, [pkg.go.dev](http://pkg.go.dev/). For example, this year's survey showed that 91% of pkg.go.dev users are able to quickly find Go packages and libraries, compared to 82% for those who don’t use the site. We’re committed to further improving the process of adopting Go, and we believe these results underscore that. 
+ 我们已经完成的部分工作包括接管 `VS Code Go` 插件的维护并发布 [多项改进](https://blog.golang.org/gopls-vscode-go) ，以及持续改进的包发现站点 [pkg.go.dev](http://pkg.go.dev/) 。 例如，今年的调查显示，`pkg.go.dev`用户中有 91％ 能够快速找到 `Go` 软件包和库，相比之下，不使用该网站的用户只有 82％ 能够找到 `Go` 软件包和库。 我们致力于进一步改善采用 `Go` 语言过程中的体验，我们相信上述这些结果也突显了这一点。
 
-### Bringing continuous improvements to Go
+### 为 `Go` 带来持续改进
 
-The Go team at Google is committed to continually improving the experience of developing with Go. In this year’s survey we heard that a large portion (~17%) of Go users feel that Go is missing critical features, and among that set 88% feel that not having generics in Go prevents them from using it more. 
+ `Google` 的 `Go` 团队致力于持续改善使用 `Go` 进行开发的体验。 在今年的调查中，我们听到很大一部分（约17％）的 `Go` 用户认为 `Go` 缺少关键功能，而其中88％的人认为 `Go` 中没有泛型会阻止人们更多地采用它。
 
-The good news is that generics is coming to Go! Earlier this year we shared our [proposal for adding generics to Go](https://blog.golang.org/generics-proposal) and just recently the proposal was [accepted](https://github.com/golang/go/issues/43651), marking a huge step towards bringing generics to the language. Adding a feature like generics is only possible with constant feedback and collaboration from the community (which is part of what makes being a Go developer so great).
+好消息是泛型即将问世！ 今年早些时候，我们分享了 [向Go中添加泛型的建议](https://blog.golang.org/generics-proposal)，而最近，该建议已 [被接受](ttps://github.com/golang/go/issues/43651)，这标志着将泛型引入该语言方面迈出了一大步。 只有在社区不断反馈和协作的情况下（这是使 `Go` 开发人员变得如此出色的部分原因），才能添加泛型之类的特性。
 
-Bringing continuous improvements to Go, like feature specific work, or more generally with our bi-annual releases, requires trust from the Go community, and that trust is something we continue to build. The Go community is growing, with developers using Go for more types of projects, and teams of larger scope using Go to tackle their biggest challenges. 
+对 `Go` 进行持续的改进（例如特性相关工作，或每半年一次的版本发布），需要 `Go` 社区的信任，而这种信任是我们在不断建立的。 `Go` 社区正在成长，开发人员可以使用 `Go` 进行更多类型的项目，而更大范围的团队使用 `Go` 来应对他们最大的挑战。
 
-With an increasingly diverse community it’s important to ensure we’re helping all users succeed. Fortunately, the trust our users put in us is strong, with user confidence in Go leadership and feeling welcome in the Go community remaining stable over the last few years. This year in particular, we saw a significant increase (up 6%) in users agreeing that Go “leadership understands [their] needs” showcasing that the work we put in is helping to address more users across the ecosystem. We take this trust seriously and will continue to engage with our users to improve the experience of using Go.
+随着社区的多样化，帮助所有用户取得成功就非常重要。 幸运的是，用户对我们的很信任，过去几年中，用户对 `Go` 的领导能力充满信心，并在 `Go` 社区中保持了欢迎。 尤其是今年，我们看到用户在“领导层了解他们的需求”满意率有“大幅增长（增长6％）”，这表明我们所做的工作正在帮助整个生态中的更多用户。 我们重视这份信任，并将继续与我们的用户互动，以改善使用 `Go` 的体验。
 
-### There’s more to the story, and more ways to get involved
+### 故事还有更多，也有更多方式参与其中
 
-We discussed a few of the key results from this year’s Go Developer Survey, particularly as it relates to cloud development, and our commitment to improving Go. There are many more details that you can view in [the complete report](https://blog.golang.org/survey2020-results). 
+我们讨论了今年 `Go` 开发者调查的一些关键结果，特别是与云开发有关的结果，以及我们对改进 `Go` 的承诺。 可以在 [完整报告](https://blog.golang.org/survey2020-results) 中查看更多详细信息。
 
-Additionally, we’ll continue to collect feedback from the Go community, through an increased cadence of surveys, and smaller group discussions, particularly as it relates to enterprise development. Stay tuned by following [Go on twitter](https://twitter.com/golang), and by visiting [Go.dev](https://go.dev/), to learn how you can get involved.
+此外，我们将通过提高调查节奏和小组讨论的方式来继续收集社区反馈（尤其是与企业开发有关）。 请关注 [关注Twitter](https://twitter.com/golang)，并访问 [Go.dev](https://go.dev/) 以了解如何参与其中。
 
-### RELATED ARTICLE
+### 相关文章
 
-[Get Go-ing with Cloud Functions: Go 1.11 is now a supported language](https://cloud.google.com/blog/products/application-development/cloud-functions-go-1-11-is-now-a-supported-language)
+[使用Go的云功能：现在Go 1.11已是受支持的语言](https://cloud.google.com/blog/products/application-development/cloud-functions-go-1-11-is-now-a-supported-language)
