@@ -1,49 +1,48 @@
-# Preemption in Go
+# Go 的抢占式调度
 - 原文地址：https://dtyler.io/articles/2021/03/29/goroutine_preemption_en/
 - 原文作者：Hidetatsu
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w19_Preemption_in_Go.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[guzzsek](https://github.com/guzzsek)、[fivezh](https://github.com/fivezh)
 * * *
 
-I was looking into the preemption of goroutine in Go. It would be appreciatee if you could point out any mistakes and tell me it.
+我正在研究 Go 中 goroutine 的抢占。如果您能指出文中任何错误并告知我，将感激不尽。
 
-The behavior of preemption in Go changed at Go1.14 release. On Go1.14, goroutine is “asynchronously preemptible” as described in [Release Notes](https://golang.org/doc/go1.14#runtime). What does this mean?
+Go1.14 版本中的抢占行为已经发生了变化。在 Go1.14 中，goroutine 是“异步抢占”的，如[发行版本所述](https://golang.org/doc/go1.14#runtime)。这意味着什么呢？
 
-First, let’s look at a simple example. Consider the following Go program.
+首先，让我们看一个简单的例子。思考下面的 Go 程序。
 
 ```
 package main
 
 import (
-"fmt"
+    "fmt"
 )
 
 func main() {
-go fmt.Println("hi")
-for {
-}
+    go fmt.Println("hi")
+    for {
+    }
 }
 
 ```
 
-In the main function, it starts one goroutine that just outputs “hi”. In addition, it loops infinitely with `for {}`.
+在主函数中，启动了一个只输出 “hi” 的 goroutine。此外，存在一个无限循环 `for {}`。
 
-What will happen if we run this program with `GOMAXPROCS=1`? It seems to output “hi” and then nothing happens because of the infinite loop. In fact, when I run this program on Go1.14 or later (I ran it on Go1.16 (on Ubuntu on WSL2)), it works as it should.
+如果我们携带参数 `GOMAXPROCS=1` 运行程序时，将发生什么呢？程序似乎在输出 “hi” 后，由于无限循环而没有任何反应。实际上，我使用 Go1.14 或更高版本运行该程序时（我使用 Go1.16 上运行了该程序（在 WSL2 上的 Ubuntu ）），它能按照预期工作。
 
-There are two ways to prevent this program from running as it should. One is to run it with a version of Go earlier than 1.14. The other is to run it with `GODEBUG=asyncpreemptoff=1`.
+有两种方法可以阻止此程序运行。一种是使用 1.14 之前的 Go 版本运行它。另一种是运行它时携带参数 `GODEBUG=asyncpreemptoff=1`。
 
-When I tried it in local machine, it worked as follows.
+当我在本地计算机上尝试时，它的工作方式如下。
 
 ```
 $ GOMAXPROCS=1 GODEBUG=asyncpreemptoff=1 go run main.go
 # it blocks here
 ```
 
-No “hi” is output. Before describing why this happens, let me explain a couple of ways to make this program behave as expected.
+程序没有输出 “hi” 。在描述为什么会发生这种情况之前，让我先说明几种使该程序按预期方式运行的方法。
 
-One way is to add the following process in the loop.
-
+一种方法是在循环中添加以下代码。
 ```
 
 
@@ -52,69 +51,69 @@ One way is to add the following process in the loop.
 --- 2,13 ----
   
   import (
-  "fmt"
-+ "runtime"
+      "fmt"
++     "runtime"
   )
   
   func main() {
-  go fmt.Println("hi")
-  for {
-+ runtime.Gosched()
-  }
+      go fmt.Println("hi")
+      for {
++         runtime.Gosched()
+      }
   }
 
 ```
 
-`runtime.Gosched()` is something like POSIX’s [`sched_yield`](https://man7.org/linux/man-pages/man2/sched_yield.2.html), where `sched_yield` forces the thread to give up CPU so that other threads can run. It is named `Gosched` because Go is a goroutine, not a thread (this is a guess). In other words, explicitly calling `runtime.Gosched()` will force the goroutines to be rescheduled, and we can expect the current-running-goroutine is switched to another one.
+`runtime.Gosched()` 类似于 POSIX 的 [`sched_yield`](https://man7.org/linux/man-pages/man2/sched_yield.2.html)。`sched_yield` 强制当前线程放弃 CPU，以便其他线程可以运行。之所以命名为 `Gosched`，因为 Go 中是 goroutine，而不是线程（这是一个猜测）。换句话说，显式调用 runtime.Gosched() 将强制对 goroutines 进行重新安排，并且我们期望将当前运行的 goroutine 切换到另一个。
 
-Another way is using [GOEXPERIMENT=preemptibleloops](https://github.com/golang/go/blob/87a3ac5f5328ea0a6169cfc44bdb081014fcd3ec/src/cmd/internal/objabi/util.go#L257). It forces the Go runtime to do the preemption on the “loop”. The way doesn’t require the code change.
+另一种方法是使用 [GOEXPERIMENT=preemptibleloops](https://github.com/golang/go/blob/87a3ac5f5328ea0a6169cfc44bdb081014fcd3ec/src/cmd/internal/objabi/util.go#L257)。它强制 Go 运行时在“循环”上进行抢占。这种方式不需要更改代码。
 
-## Cooperative vs. Preemptive scheduling in Go
+## 协作式调度 vs 抢占式调度
 
-To begin with, there are two main methods for scheduling multitasking; “Cooperative” and “Preemptive”. Cooperative multitasking is also called “non-preemptive”. In cooperative multitasking, how the program switches depends on the program itself. It seems that the term “cooperative” is intended to refer to the fact that the programs should be designed to be interoperable and they must “cooperate” each other. In preemptive multitasking, the switch of the program is left to the OS. The scheduling method is based on some algorithm, such as priority-based, FCSV, round-robin, etc.
+首先，有两种主要的多任务调度方法：“协作”和“抢占”。协作式多任务处理也称为“非抢占”。在协作式多任务处理中，程序的切换方式取决于程序本身。“协作”一词是指这样一个事实：程序应设计为可互操作的，并且它们必须彼此“协作”。在抢占式多任务处理中，程序的切换交给操作系统。调度是基于某种算法的，例如基于优先级，FCSV，轮询等。
 
-So now, is the scheduling of goroutine cooperative or preemptive? At least up to Go1.13, it was cooperative.
+那么现在，goroutine 的调度是协作式还是抢占式的？至少在 Go1.13 之前，它是协作式的。
 
-I couldn’t find any official documentation, but I found out that goroutine switches happen in the following cases (this is not exhaustive.) ;
+我没有找到任何官方文档，但是我发现在以下情况会进行 goroutine 切换（并不详尽）。
 
--   Waiting to read or write to an unbuffered channel
--   Waiting due to system call invocation
--   Waiting because of time.Sleep()
--   Waiting for mutex to be released
+-   等待读取或写入未缓冲的通道
+-   由于系统调用而等待
+-   由于 time.Sleep() 而等待
+-   等待互斥量释放
 
-In addition, Go has a component that keeps executing a function called “sysmon”, which does preemption (and other things like making the waiting state of network processing non-blocking). The sysmon component is M (Machine, it is actually an OS thread), but it runs without P (Processor). The term M, P and G is explained in various articles like [this](https://developpaper.com/gmp-principle-and-scheduling-analysis-of-golang-scheduler/). I recommend that you refer to such articles if needed.
+此外，Go 会启动一个线程，一直运行着“sysmon”函数，该函数实现了抢占式调度（以及其他诸如使网络处理的等待状态变为非阻塞状态）的功能。sysmon 运行在 M（Machine，实际上是一个系统线程），且不需要 P（Processor）。术语 M，P 和 G 在类似[这样](https://developpaper.com/gmp-principle-and-scheduling-analysis-of-golang-scheduler/)的各种文章中都有解释。我建议您在需要时参考此类文章。
 
-When sysmon finds that M has been running the same G (Goroutine) for more than 10ms, it sets the `preempt` flag, an internal parameter of that G, to true. Then, in the function prologue when the G makes a function call, the G checks its own `preempt` flag, and if it is true, it detaches itself from M and pushes itself to a queue called “global queue”. Now, the preemption is done successfully. By the way, the global queue is a different queue from the “local queue”, a queue to store G that P has. There are several purposes of a global queue.
+当 sysmon 发现 M 已运行同一个 G（Goroutine）10ms 以上时，它会将该 G 的内部参数 `preempt` 设置为 true。然后，在函数序言中，当 G 进行函数调用时，G 会检查自己的 `preempt` 标志，如果它为 true，则它将自己与 M 分离并推入“全局队列”。现在，抢占就成功完成。顺便说一下，全局队列是与“本地队列”不同的队列，本地队列是存储 P 具有的 G。全局队列有以下几个作用。
 
--   To store Gs that exceed the capacity (256) of local queue.
--   To store Gs that are waiting for various reasons.
--   To store Gs that are detached by the preempt flag.
+-   存储那些超过本地队列容量（256）的 G
+-   存储由于各种原因而等待的 G
+-   存储由抢占标志分离的 G
 
-This is the implementation up to Go1.13. Now, you’ll understand why the infinite looping code above did not work as expected. The `for {}` is just a busy loop, so it does not trigger the goroutine switch as described earlier. You may think, “Isn’t the preempt flag set by sysmon because it has been running for more than 10ms?” However, **if there is no function call, even if the preempt flag is set, the check of the flag does not occur**. As I mentioned earlier, the check of the preempt flag occurs in function prologue, so a busy loop with doing nothing could not reach the execution of preemption.
+这是 Go1.13 及其之前版本的实现。现在，您将了解为什么上面的无限循环代码无法按预期工作。`for{}` 仅仅是一个死循环，所以如前所述它不会触发 goroutine 切换。您可能会想，“sysmon 是否设置了抢占标志，因为它已经运行了 10ms 以上？” **然而，如果没有函数调用，即使设置了抢占标志，也不会进行该标志的检查**。如前所述，抢占标志的检查发生在函数序言中，因此不执行任何操作的死循环不会发生抢占。
 
-And yes, this behavior has changed with the introduction of “non-cooperative preemption” (asynchronous preemption) in Go1.14.
+是的，随着 Go1.14 中引入“非协作式抢占”（异步抢占），这种行为已经改变。
 
-## What does “asynchronously preemptible” mean?
+## “异步抢占”是什么意思？
 
-Let’s summarize the points so far; Go has a mechanism, called “sysmon”, to monitor goroutines running for more than 10ms and force preemption when necessary. However, due to the way it worked, preemption did not occur in cases like `for {}`.
+让我们总结到目前为止的要点；Go 具有一种称为“sysmon”的机制，可以监视运行 10ms 以上的 goroutine 并在必要时强制抢占。但是，由于它的工作方式，在 `for{}` 的情况下并不会发生抢占。
 
-With the non-cooperative preemption introduced in Go1.14, the scheduler in Goroutine can now be called preemptive. It is a simple but effective algorithm that uses signals.
+Go1.14 引入非协作式抢占，即抢占式调度，是一种使用信号的简单有效的算法。
 
-First, sysmon still detects a G (goroutine) that has been moving for more than 10ms. Then, sysmon sends a signal ( `SIGURG` ) to the thread (P) that is running that G. Go’s signal handler invokes another goroutine called `gsignal` on P to handle the signal, maps it to M instead of G, and makes it check the signal. The gsignal sees that preemption has been ordered and stops the G that was running until then.
+首先，sysmon 仍然会检测到运行了 10ms 以上的 G（goroutine）。然后，sysmon 向运行 G 的 P 发送信号（`SIGURG`）。Go 的信号处理程序会调用P上的一个叫作 `gsignal` 的 goroutine 来处理该信号，将其映射到 M 而不是 G，并使其检查该信号。gsignal 看到抢占信号，停止正在运行的 G。
 
-Because this mechanism explicitly emits a signal, don’t need to call a function in other words, just a goroutine which is running busy loop can be switched to another goroutine.
+由于此机制会显式发出信号，因此无需调用函数，就能将正在运行死循环的 goroutine 切换到另一个 goroutine。
 
-With this asynchronous preemption mechanism using signals, the above code now works as expected. `GODEBUG=asyncpreemptoff=1` can be used to disable the asynchronous preemption.
+通过使用信号的异步抢占机制，上面的代码现在就可以按预期工作。`GODEBUG=asyncpreemptoff=1` 可用于禁用异步抢占。
 
-Incidentally, they chose to use SIGURG because SIGURG does not interfere with the use of existing debuggers and other signals, and because it is not used in libc. ([Reference](https://github.com/golang/proposal/blob/master/design/24543-non-cooperative-preemption.md#other-considerations))
+顺便说一句，他们选择使用 SIGURG，是因为 SIGURG 不会干扰现有调试器和其他信号的使用，并且因为它不在 libc 中使用。([参考](https://github.com/golang/proposal/blob/master/design/24543-non-cooperative-preemption.md#other-considerations))
 
-## Summary
+## 总结
 
-Just because an infinite loop that doesn’t do anything doesn’t pass holding CPU to other goroutines, it doesn’t mean that the mechanism up to Go1.13 is bad. As [@davecheney](https://github.com/golang/go/issues/11462#issuecomment-116616022) has said, this is usually not considered a particular problem. In the first place, asynchronous preemption was not introduced to solve this infinite loop problem.
+不执行任何操作的无限循环不会将 CPU 传递给其他 goroutine，并不意味着 Go1.13 之前的机制是不好的。正如 [@davecheney](https://github.com/golang/go/issues/11462#issuecomment-116616022) 所说，通常不认为这是一个特殊问题。起初，异步抢占不是为了解决无限循环问题引出的。
 
-Although the introduction of asynchronous preemption made scheduling more preemptive, it also made it necessary to be more careful in handling “unsafe points” during GC. The implementation considerations in this area are also very interesting. Readers who are interested can read it themselves [Proposition: Non-cooperative goroutine preemption](https://github.com/golang/proposal/blob/master/design/24543-non-%20cooperative-preemption.md).
+尽管异步抢占的引入使调度更具抢占性，但也有必要在 GC 期间更加谨慎地处理“不安全点”。在这方面对实现上的考虑也非常有趣。有兴趣的读者可以自己阅读[议题：非协作式 goroutine 抢占](https://github.com/golang/proposal/blob/master/design/24543-non-%20cooperative-preemption.md)。
 
-## References
+## 参考
 
 -   [Proposal: Non-cooperative goroutine preemption](https://github.com/golang/proposal/blob/master/design/24543-non-cooperative-preemption.md)
 -   [runtime: non-cooperative goroutine preemption](https://github.com/golang/go/issues/24543)
@@ -125,7 +124,8 @@ Although the introduction of asynchronous preemption made scheduling more preemp
 -   [Go: Goroutine and Preemption](https://medium.com/a-journey-with-go/go-goroutine-and-preemption-d6bc2aa2f4b7)
 -   [At which point a goroutine can yield?](https://stackoverflow.com/questions/64113394/at-which-point-a-goroutine-can-yield)
 -   [Go: Asynchronous Preemption](https://medium.com/a-journey-with-go/go-asynchronous-preemption-b5194227371c)
--   [go routine blocking the others one \[duplicate\]](https://stackoverflow.com/questions/17953269/go-routine-blocking-the-others-one)
+-   [go routine blocking the others one [duplicate]](https://stackoverflow.com/questions/17953269/go-routine-blocking-the-others-one)
 -   [(Ja) Golangのスケジューラあたりの話](https://qiita.com/takc923/items/de68671ea889d8df6904)
 -   [(Ja) goroutineがスイッチされるタイミング](https://qiita.com/umisama/items/93333ffe4d9fc7e4ba1f)
+
 
