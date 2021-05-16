@@ -1,4 +1,4 @@
-# **Go语言助力企业开发者：开发者调查报告**
+# **Thoughts on how to structure Go code**
 
 * 原文地址：https://changelog.com/posts/on-go-application-structure
 * 原文作者：`Jon Calhoun`
