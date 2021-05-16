@@ -1,4 +1,4 @@
-# **Thoughts on how to structure Go code**
+# **浅谈如何组织Go代码结构**
 
 * 原文地址：https://changelog.com/posts/on-go-application-structure
 * 原文作者：`Jon Calhoun`
