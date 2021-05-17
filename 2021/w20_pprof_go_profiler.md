@@ -4,7 +4,7 @@
 * 原文作者：[Milind Chabbi](https://eng.uber.com/author/milind-chabbi/)
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w20_pprof_go_profiler.md
 - 译者：[tt](https:/github.com/1-st)
-- 校对：[]()
+- 校对：[Fivezh](https:/github.com/fivezh)
 
 ![preview](../static/images/w20_pprof_go_profiler/cacheMissFlameGraphSSA-768x389.png)
 
@@ -62,7 +62,7 @@ Golang 是数百万 CPU 核心上运行的成千上万Uber后端服务的命脉�
 
 准确度和精度是一个好的测量工具的基本属性。
 
-如果概要分析数据与事实相近，则称其为准确的。例如，如果API_A（）消耗了总执行时间的25％，而分析器将其测量为总执行时间的24％，则测量的准确度为96％
+如果概要分析数据与事实相近，则称其为准确的。例如，如果API_A()消耗了总执行时间的25％，而分析器将其测量为总执行时间的24％，则测量的准确度为96％
 
 如果多次测量之间的差异性很低，则分析数据被认为是精确的。一组相同变量的测量精度通常表示为样本平均值的最小值和最大值，或者表示为样本的标准误差或差异系数。
 
@@ -158,7 +158,7 @@ pprof++的输出是相同的，熟悉的pprof协议缓冲区profile文件，可�
     ```shell
     $ curl -o cachemiss.prof <host>:<port>/debug/pprof/profile?event=cacheMisses\&period=10000
     ```
-    d. 收集 profile 以检测由于2个不同 NUMA 套接字上的2个内核之间的正确或错误共享而导致的高速缓存行争用。这可以通过 [MEM_LOAD_L3_MISS_RETIRED.REMOTE_HITM](https://github.com/torvalds/linux/blob/master/tools/perf/pmu-events/arch/x86/skylakex/cache.json) 事件轻松完成，该事件在 skylake 体系结构上具有掩码 0x4 和事件代码 0xD3。因此，我们设置 event= r04d3。让我们以每10K个此类事件中的呼叫堆栈样本作为示例。
+    d. 收集 profile 以检测由于2个不同 NUMA 套接字上的2个内核之间的正确或错误共享而导致的高速缓存行争用。这可以通过 [MEM_LOAD_L3_MISS_RETIRED.REMOTE_HITM](https://github.com/torvalds/linux/blob/master/tools/perf/pmu-events/arch/x86/skylakex/cache.json) 事件轻松完成，该事件在 skylake 体系结构上具有掩码 0x4 和事件代码 0xD3。因此，我们设置 event= r04d3。让我们以每10K个此类事件中的调用堆栈样本作为示例。
     ```shell
     $ curl -o remote_hitm.prof <host>:<port>/debug/pprof/profile?event=r04d3\&period=10000
     ```
@@ -239,9 +239,9 @@ pprof++的输出是相同的，熟悉的pprof协议缓冲区profile文件，可�
 
 任何编程语言都必须具有准确而精确的profile，这些profile可以提供对程序执行的更深层次的可见性和可操作性。Uber 将 Go 广泛用于其微服务，这导致我们将这些功能引入 Golang 的 Pprof 分析器中。尽管存在许多其他具有类似功能的第三方profile，但 Go 运行时中PMU profile的集成提供了与众多执行环境和下游后处理工具的无缝集成。 
 
-我们已经在[GitHub](https://github.com/uber-research/go/tree/pmu_pprof_feb_12_2021_fe028e)上发布了一个当前实现的pprof++原型. 我们已经让它在[Go 1.15.8](https://github.com/uber-research/go/commits/release-branch.go1.15_pmu_pprof) 和 [Go 1.16](https://github.com/uber-research/go/commits/release-branch.go1.16_pmu_pprof) 发布分支的顶部变得可行。
+我们已经在[GitHub](https://github.com/uber-research/go/tree/pmu_pprof_feb_12_2021_fe028e)上发布了一个当前实现的pprof++原型. 我们已经让它在[Go 1.15.8](https://github.com/uber-research/go/commits/release-branch.go1.15_pmu_pprof) 和 [Go 1.16](https://github.com/uber-research/go/commits/release-branch.go1.16_pmu_pprof) 的发布列表内。
 
-pprof ++当前仅在Linux OS上可用。为了快速下载，我们提供了Go二进制文件的x86_64（aka AMD64）版本：
+pprof ++当前仅在Linux OS上可用。为了快速下载，我们提供了Go二进制文件的x86_64（即AMD64）版本：
 
 1. [go1.15.8.linux-amd64.tar.gz](https://github.com/uber-research/go/releases/download/v1.15.8/go1.15.8.linux-amd64.tar.gz)
 2. [go1.16.linux-amd64.tar.gz](https://github.com/uber-research/go/releases/download/v1.16/go1.16.linux-amd64.tar.gz) 
