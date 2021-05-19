@@ -4,7 +4,6 @@
 * 原文作者：`Jon Calhoun`
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w20_Thoughts_on_how_to_structure_Go_code.md
 - 译者：[Fivezh](https:/github.com/fivezh)
-- 校对：[]()
 
 应用程序的结构很是困扰开发者。
 
