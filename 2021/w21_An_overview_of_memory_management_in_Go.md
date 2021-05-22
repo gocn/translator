@@ -1,43 +1,43 @@
-# An overview of memory management in Go
+# Go 内存管理概述
 - 原文地址：https://medium.com/safetycultureengineering/an-overview-of-memory-management-in-go-9a72ec7c76a8
 - 原文作者： `Scott Gangemi`
 - 本文永久链接： https://github.com/gocn/translator/blob/master/2021/w21_An_overview_of_memory_management_in_Go.md
 - 译者：[haoheipi](https:/github.com/haoheipi)
 - 校对：[]()
 
-As programs run they write objects to memory. At some point these objects should be removed when they’re not needed anymore. This process is called **memory management**. This article aims to give an overview of memory management, and then dive deeper into how this is implemented in Go by using a garbage collector. Go has seen many changes to its memory management over the years, and will most likely see more in the future. If you’re reading this and you’re using a version of Go later than 1.16, some of this information may be outdated.
+随着程序的运行，对象被写入内存。在一些特定时刻当它们不再被需要时，它们应该被移除。这个过程被称为 **内存管理** 。本文旨在给出内存管理的概述，然后深入研究在 Go 中如何使用垃圾收集器实现内存管理。Go 的内存管理近些年已经发生了很大变化，未来很可能还会发生更多变化。如果您正在阅读这篇文章，并且您使用的是比 1.16 更高的 Go 版本，那么这里的一些信息可能已经过时了。
 
-## Manual Memory Management
+## 手动内存管理
 
-In a language like C the programmer will call a function such as `malloc` or `calloc` to write an object to memory. These functions return a pointer to the location of that object in heap memory. When this object is not needed anymore, the programmer calls the `free` function to use this chunk of memory again. This method of memory management is called **explicit deallocation** and is quite powerful. It gives the programmer greater control over the memory in use, which allows for some types of easier optimisation, particularly in low memory environments. However, it leads to two types of programming errors.
+在像 C 这样的编程语言中，程序员会调用 `malloc` 或 `calloc` 之类的函数来将对象写入内存。这些函数返回一个指针，指向该对象在堆内存中的位置。当这个对象不再被需要时，程序员调用 `free` 函数来再释放以便再次使用这块内存。这种内存管理的方法被称为 **显式释放** 。它非常的强大，使程序员能够更好地控制正在使用的内存，从而允许某些类型优化变得更加容易，特别是在小内存环境下。但是，它也会导致两种类型的编程错误。
 
-One, calling `free` prematurely which creates a **dangling pointer**. Dangling pointers are pointers that no longer point to valid objects in memory. This is bad because the program expects a defined value to live at a pointer. When this pointer is later accessed there’s no guarantee of what value exists at that location in memory. There may be nothing there, or some other value entirely. Two, failing to free memory at all. If the programmer forgets to free an object they may face a **memory leak** as memory fills up with more and more objects. This can lead to the program slowing down or crashing if it runs out of memory. Unpredictable bugs can be introduced into a program when memory has to be explicitly managed.
+第一种是提前调用 `free` ，这会创建一个 **悬空指针** 。悬空指针是指不再指向内存中有效对象的指针。那么这会非常糟糕，因为程序期望一个指针指向的是已定义的值，而当这个悬空指针稍后被访问时，并不能保证在内存中该位置存在什么值。可能什么都没有，或者完全是其他值。第二种错误，内存根本无法释放。如果程序员忘记释放一个对象，他们可能会面临 **内存泄漏** 风险，因为内存会被越来越多的对象填满。如果内存不足，这可能导致程序变慢或崩溃。所以当不得不显式地管理内存时，可能会在程序中引入不可预测的错误。
 
-## Automatic Memory Management
+## 自动内存管理 
 
-This is why languages like Go offer **automatic dynamic memory management**, or more simply, **garbage collection**. Languages with garbage collection offer benefits like:
+为什么像 Go 这样的语言提供了 **自动的动态内存管理** ，或者更简单地说，**垃圾收集**。具有垃圾收集功能的语言提供了如下好处:
 
-- increased security
-- better portability across operating systems
-- less code to write
-- runtime verification of code
-- bounds checking of arrays
+- 安全性的提高
+- 更好的跨操作系统移植性
+- 需要编写的代码更少
+- 代码的运行时校验
+- 数组的边界检查
 
-Garbage collection has a performance overhead, but it isn’t as much as is often assumed. The tradeoff is that a programmer can focus on the business logic of their program and ensure it is fit for purpose, instead of worrying about managing memory.
+确实垃圾收集会带来性能开销，但并不像通常认为的那样多。所以折衷的方案是，程序员专注于他们程序的业务逻辑，并确保它符合目标，而不用担心管理内存。
 
-A running program will store objects in two memory locations, the _heap_ and the _stack_. Garbage collection operates on the heap, not the stack. The stack is a LIFO data structure that stores function values. Calling another function from within a function pushes a new _frame_ onto the stack, which will contain the values of that function and so on. When the called function returns, its stack frame is popped off the stack. You might be familiar with the stack from when you’re debugging a crashed program. Most language compilers will return a stack trace to aid in debugging, which displays the functions that have been called leading up to that point.
+一个正在运行的程序将对象存储在内存中的两个位置， _堆_ 和 _栈_ 。垃圾收集作用于堆上，而不是栈。栈是一个存储函数值的后进先出数据结构。从函数内部调用另一个函数，会将一个新的 _栈帧_ 放到栈上，它包含被调用函数的值等。当函数调用返回时，它的栈桢将会从栈上弹出。当在调试一个崩溃的程序时，您可能会熟悉栈这一结构。大多数语言的编译器会返回一个调用栈来帮助跟踪调试，它会显示在这一点之前被调用的函数。
 
 > ![](../static/images/w21_An_overview_of_memory_management_in_Go/figure1.png)
-Stacks can have values “pushed” onto the top, or “popped” from the top in a LIFO (last in, first out) fashion. [Image from Wikipedia.](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))
+栈可以以一种后进先出的方式将值 “推” 到顶部，或者从顶部 “弹出” 。[图片来源 Wikipedia.](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))
 
-In contrast, the heap contains values that are referenced outside of a function. For example, statically defined constants at the start of a program, or more complex objects, like Go structs. When the programmer defines an object that gets placed on the heap, the needed amount of memory is allocated and a pointer to it is returned. The heap is a graph where objects are represented as nodes which are referred to in code or by other objects in the heap. As a program runs, the heap will continue to grow as objects are added unless the heap is cleaned up.
+与栈相反，堆中包含的是在函数外部被引用的值。例如，在程序开始时定义的静态常量，或更复杂的对象，如 Go 结构体。当程序员定义一个放置在堆上的对象时，将分配所需的内存大小，并返回指向该对象的指针。堆是一种图结构，对象代表着节点，这些节点被代码或者其他对象所引用。随着程序的运行，堆将随着对象的添加而继续增长，除非对堆做清理。
 
 >![](../static/images/w21_An_overview_of_memory_management_in_Go/figure2.png)
-The heap starts from the roots and grows as more object are added.
+堆从根节点开始，随着更多的对象被添加而增长。
 
-## Garbage Collection in Go
+## Go 中的垃圾收集
 
-Go [prefers to allocate memory on the stack](https://groups.google.com/g/golang-nuts/c/KJiyv2mV2pU/m/wdBUH1mHCAAJ?pli=1), so most memory allocations will end up there. This means that Go has a stack per goroutine and when possible Go will allocate variables to this stack. The Go compiler attempts to prove that a variable is not needed outside of the function by performing **escape analysis** to see if an object “escapes” the function. If the compiler can determine a variables [lifetime](https://www.memorymanagement.org/glossary/l.html#term-lifetime), it will be allocated to a stack. However, if the variable’s lifetime is unclear it will be allocated on the heap. Generally if a Go program has a pointer to an object then that object is stored on the heap. Take a look at this sample code:
+Go [更喜欢在栈上分配内存](https://groups.google.com/g/golang-nuts/c/KJiyv2mV2pU/m/wdBUH1mHCAAJ?pli=1)，所以大部分内存分配都会在这里结束。这也意味着 Go 中每个 goroutine 都有一个栈，如果可能的话，Go 将分配变量在这个栈上。Go 编译器通过执行 **逃逸分析** 来检查一个对象是否 ”逃逸” 出函数内部，从而尝试证明一个变量在函数之外不被需要。如果编译器可以确定一个变量的 [生命周期](https://www.memorymanagement.org/glossary/l.html#term-lifetime)，它将被分配在栈上。但是，如果变量的生存期不确定，它将会被分配到堆上。通常，如果一个 Go 程序有一个指向对象的指针，那么该对象就被存储在堆上。看看下面的示例代码：
 
 ```go
 type myStruct struct {
@@ -59,51 +59,51 @@ func someOtherFunction() {
 }
 ```
 
-For the purposes of this example, let’s imagine this is part of a running program because if this was the whole program the Go compiler would optimise this by allocating the variables into stacks. When the program runs:
+出于本例的目的，让我们假设这是一个正在运行的程序的一部分，因为如果这是整个程序，那么 Go 编译器会通过将变量分配到栈来优化它。当程序运行时：
 
-1. `testStruct` is defined and placed on the heap in an available block of memory.
-2. `myFunction` is executed and allocated a stack while the function is being executed. `testVar1` and `testVar2` are both stored on this stack.
-3. When `addTwoNumbers` is called a new stack frame is pushed onto the stack with the two function arguments.
-4. When `addTwoNumbers` finishes execution, it’s result is returned to myFunction and the stack frame for `addTwoNumbers` is popped off the stack as it’s no longer needed.
-5. The pointer to `testStruct` is followed to the location on the heap containing it and the `value` field is updated.
-6. `myFunction` exits and the stack created for it is cleaned up. The value for testStruct stays on the heap until garbage collection occurs.
+1. `testStruct` 是被定义和放置在堆中的一个可用内存块
+2. `myFunction` 函数被调用执行时将会分配一个栈。`testVar1` 和 `testVar2` 都被存储在这个栈上。
+3. 当调用 `addTwoNumbers` 时，一个新的栈帧被推到栈上，并带有函数的两个参数。
+4. 当 `addTwoNumbers` 完成执行，它的结果返回给 `myFunction` 并且 `addTwoNumbers` 的栈帧从栈中弹出，因为它不再被需要。
+5. 指向 `testStruct` 的指针被跟随到它堆上的位置，并且 `value` 字段被更新。
+6. `myFunction` 退出，并清除为它创建的栈。`testStruct` 的值继续保持在堆上，直到垃圾收集发生。
 
-`testStruct` is now on the heap and without analysis, the Go runtime doesn’t know if it’s still needed. To do this, Go relies on a garbage collector. Garbage collectors have two key parts, a **mutator** and a **collector**. The collector executes garbage collection logic and finds objects that should have their memory freed. The mutator executes application code and allocates new objects to the heap. It also updates existing objects on the heap as the program runs, which includes making some objects unreachable when they’re no longer needed.
+`testStruct` 现在在堆上，也没有使用，Go 运行时也不知道是否仍然需要它。为此，Go 依赖于一个垃圾收集器。垃圾收集器有两个关键部分，一个 **更改器** 和一个 **收集器**。收集器执行垃圾收集逻辑并找到应该释放其内存的对象。更改器执行应用程序代码并将新对象分配给堆。它还在程序运行时更新堆上的现有对象，包括使不再需要的某些对象变为不可达。
 
 >![](../static/images/w21_An_overview_of_memory_management_in_Go/figure3.png)
-The object at the bottom has become unreachable due to changes made by the mutator. It should be cleaned up by the garbage collector.
+由于更改器所做的更改，底部的对象已变为不可访问。它应该由垃圾收集器清理。
 
-## The implementation of Go’s garbage collector
+## Go 垃圾收集器的实现
 
-Go’s garbage collector is a **non-generational concurrent**, **tri-color mark and sweep garbage collector**. Let’s break these terms down.
+Go 的垃圾收集器是一个 **非分代**，**并发**，**三色标记清除的垃圾收集器**。让我们把这几项分解。
 
-The [generational hypothesis](https://www.memorymanagement.org/glossary/g.html#term-generational-hypothesis) assumes that short lived objects, like temporary variables, are reclaimed most often. Thus, a generational garbage collector focuses on recently allocated objects. However, as mentioned before, compiler optimisations allow the Go compiler to allocate objects with a known lifetime to the stack. [This means fewer objects will be on the heap, so fewer objects will be garbage collected](https://groups.google.com/g/golang-nuts/c/KJiyv2mV2pU/m/wdBUH1mHCAAJ). This means that a generational garbage collector is not necessary in Go. So, Go uses a non-generational garbage collector. [Concurrent means that the collector runs at the same time as mutator threads](https://github.com/golang/go/blob/master/src/runtime/mgc.go#L7). Therefore, Go uses a non-generational concurrent garbage collector. Mark and sweep is the type of garbage collector and tri-color is the algorithm used to implement this
+[分代前提](https://www.memorymanagement.org/glossary/g.html#term-generational-hypothesis) 是假设寿命短的对象（如临时变量）最常被回收。因此，分代垃圾收集器主要关注最近分配的对象。然而如前所述，编译器优化允许 Go 编译器将具有已知生命周期的对象分配在栈上。[这意味着堆上的对象更少，因此垃圾收集的对象更少](https://groups.google.com/g/golang-nuts/c/KJiyv2mV2pU/m/wdBUH1mHCAAJ)。这也意味着在 Go 中不需要分代垃圾收集器。因此，Go 使用了一个非分代的垃圾收集器。[并发意味着收集器与更改器线程同时运行](https://github.com/golang/go/blob/master/src/runtime/mgc.go#L7)。因此，Go 使用的是一个非代、并发的垃圾收集器。标记清除是垃圾收集器的工作类型，三色是用于实现这一功能的算法。
 
-A mark and sweep garbage collector has two phases, unsurprisingly named **mark** and **sweep**. In the mark phase the collector traverses the heap and marks objects that are no longer needed. The follow-up sweep phase removes these objects. Mark and sweep is an indirect algorithm, as it marks live objects, and removes everything else.
+一个标记清除垃圾收集器有两个阶段，不出所料地命名为 **标记** 和 **清除** 。在标记阶段，收集器遍历堆并标记不再需要的对象。后续扫描阶段将删除这些对象。标记和清除是一种间接算法，因为它标记活动对象，并移除其他所有东西。
 
 >![](../static/images/w21_An_overview_of_memory_management_in_Go/figure4.gif)
-A visualisation of a mark and sweep collector, [borrowed from here](https://spin.atomicobject.com/2014/09/03/visualizing-garbage-collection-algorithms/). There’s visualisations of other kinds of garbage collectors too if you’re interested.
+可视化的标记清除收集器过程，[来源于这里](https://spin.atomicobject.com/2014/09/03/visualizing-garbage-collection-algorithms/)。如果你感兴趣的话，还可以看到其他类型的垃圾收集器。
 
-[Go implements this in a few steps](https://github.com/golang/go/blob/master/src/runtime/mgc.go#L24):
+[Go 用几个步骤实现了这一点](https://github.com/golang/go/blob/master/src/runtime/mgc.go#L24)：
 
-Go has all goroutines reach a garbage collection safe point with a process called **stop the world**. This temporarily stops the program from running and turns a **write barrier** on to maintain data integrity on the heap. This allows for concurrency by allowing goroutines and the collector to run simultaneously.
+Go 让所有的 goroutines 到达一个垃圾收集安全点，并使用一个名为 **stop the world** 的过程。这将暂时停止程序的运行，并打开一个 **写屏障** 以维护堆上的数据完整性。通过允许 goroutine 和收集器同时运行，从而实现了并发性。
 
-Once all goroutines have the write barrier turned on, the Go runtime **starts the world** and has workers perform the garbage collection work.
+一旦所有的 goroutine 都打开了写障碍，Go 运行 **starts the world** 并让工作线程开始执行垃圾收集工作。
 
-Marking is implemented by using a **tri-color algorithm**. When marking begins, all objects are white except for the root objects which are grey. Roots are an object that all other heap objects come from, and are instantiated as part of running the program. The garbage collector begins marking by scanning stacks, globals and heap pointers to understand what is in use. When scanning a stack, the worker stops the goroutine and marks all found objects grey by traversing downwards from the roots. It then resumes the goroutine.
+标记是通过使用一个 **三色算法** 实现的。当标记开始时，除了根对象是灰色的，所有对象都是白色的。根是所有其他堆对象的来源，并作为运行程序的一部分实例化。垃圾收集器首先扫描栈、全局变量和堆指针，以了解什么对象正在使用。当扫描一个栈时，工作线程将停止 goroutine ，并通过从根向下遍历将所有发现的对象标记为灰色。然后继续执行 goroutine 。
 
-The grey objects are then enqueued to be turned black, which indicates that they’re still in use. Once all grey objects have been turned black, the collector will stop the world again and clean up all the white nodes that are no longer needed. The program can now continue running until it needs to clean up more memory again.
+然后，灰色的对象将入队变成黑色，这表明它们仍在使用中。一旦所有的灰色对象被标为黑色，收集器将会再一次 **stop the world** 并且清理所有不再被需要的白色节点对象。程序现在可以继续运行，直到它需要再次清理更多内存。
 
 >![](../static/images/w21_An_overview_of_memory_management_in_Go/figure5.gif)
-[This diagram from Wikipedia makes it a bit easier to understand](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Tri-color_marking). The colours are a bit confusing, but white objects are light-grey, grey objects are yellow, and black objects are blue.
+[这张来自维基百科的图表让上述更容易理解](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Tri-color_marking)。颜色有点混乱，但白色物体是浅灰色，灰色物体是黄色，黑色物体是蓝色。
 
-This process is initiated again once the program has allocated extra memory proportional to the memory in use. The `GOGC` environment variable determines this, and is set to 100 by default. [The Go source code describes this as:](https://github.com/golang/go/blob/master/src/runtime/mgc.go#L112)
+一旦程序按照使用的内存比例分配了额外的内存，这个进程将再次启动。 `GOGC` 环境变量决定了这一比例，默认值为 100 。[Go 的源代码描述如下:](https://github.com/golang/go/blob/master/src/runtime/mgc.go#L112)
 
-> *If GOGC=100 and we’re using 4M, we’ll GC again when we get to 8M (this mark is tracked in next_gc variable). This keeps the GC cost in linear proportion to the allocation cost. Adjusting GOGC just changes the linear constant (and also the amount of extra memory used).*
+> *如果 GOGC=100 并且我们正在使用 4M 内存，我们将在到达 8M 时再次进行 GC（这个标记在 next_gc 变量中被跟踪)。这使 GC 成本与分配成本成线性比例。调整 GOGC 只是改变线性常数（还有额外内存的使用量）。*
 
-Go’s garbage collector improves your efficiency by abstracting memory management into the runtime and is one part of what enables Go to be so performant. Go has built in tooling to allow you to optimise how garbage collection occurs in your program that you can investigate if you’re interested. For now, I hope you learnt a bit more about how garbage collection works and how it’s implemented in Go.
+Go 的垃圾收集器通过将内存管理抽象到 Go 运行时来提高效率，这也是使 Go 具有如此优秀性能的原因之一。Go 内置的工具允许您优化程序中垃圾收集的触发行为，如果您感兴趣，可以对此进行研究。至此，我希望您了解到了更多关于垃圾收集的工作原理和在 Go 中如何实现垃圾收集的知识。
 
-## References
+## 参考
 
 - [Garbage Collection in Go: Part 1](https://www.ardanlabs.com/blog/2018/12/garbage-collection-in-go-part1-semantics.html)
 
@@ -126,5 +126,3 @@ Go’s garbage collector improves your efficiency by abstracting memory manageme
 - [The Garbage Collection Handbook](https://gchandbook.org/)
 
 - [Tracing garbage collection: Tri-color marking](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Tri-color_marking)
-
-
