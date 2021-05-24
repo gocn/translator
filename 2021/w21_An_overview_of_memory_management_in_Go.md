@@ -3,7 +3,7 @@
 - 原文作者： `Scott Gangemi`
 - 本文永久链接： https://github.com/gocn/translator/blob/master/2021/w21_An_overview_of_memory_management_in_Go.md
 - 译者：[haoheipi](https:/github.com/haoheipi)
-- 校对：[cvley](https://github.com/cvley)
+- 校对：[cvley](https://github.com/cvley)、[fivezh](https://github.com/fivezh)
 
 随着程序的运行，对象被写入内存。在一些特定时刻当它们不再被需要时，它们应该被移除。这个过程被称为 **内存管理** 。本文旨在给出内存管理的概述，然后深入研究在 Go 中如何使用垃圾收集器实现内存管理。Go 的内存管理近些年已经发生了很大变化，未来很可能还会发生更多变化。如果您正在阅读这篇文章，并且您使用的是比 1.16 更高的 Go 版本，那么这里的一些信息可能已经过时了。
 
