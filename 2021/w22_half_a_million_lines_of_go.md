@@ -50,5 +50,3 @@ To summarize:
 -   But we like it! It’s fast, the tooling is solid, and it runs well in production
 
 Our engineers come from a variety of programming backgrounds, so we certainly do have a diversity of opinion on Go vs. other languages. That said, Go is doing the job we “hired” it to do when we started Goliath, and we’re thankful for the team driving its continued evolution and the community that has built up around it!
-
-c
