@@ -5,6 +5,7 @@
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w22_uber_architecture_api_gateway.md
 
 - 译者：[咔叽咔叽](https:/github.com/watermeloooo)
+- 校对：[Fivezh](https:/github.com/fivezh)
 
 ![The Architecture of Uber’s API gateway](../static/images/2021_w22_uber_api_gateway_arch/1.png "The Architecture of Uber’s API gateway")
 
