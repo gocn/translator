@@ -1,18 +1,25 @@
-# Go Performance Tools Cheat Sheet
+# Go性能工具小抄
 
-Go has a lot of tools available for you to understand where your application might be spending CPU time or allocating memory. I don’t use these tools daily, so I always end up searching for the same thing every time. This post aims to be a reference document for everything that Go has to provide.
 
-We’ll be using [https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet) as a demo project and there are 3 implementations of the same thing, one more performant than the other.
+* 原文地址：https://steveazz.xyz/blog/go-performance-tools-cheat-sheet
+* 原文作者：`Steve Azzopardi`
+* 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w23_go_performance_tools_cheat_sheet.md
 
+- 译者：[Cluas](https:/github.com/Cluas)
+- 校对：
+
+Go有很多工具可以让你了解你的应用程序可能在哪里花费CPU时间或分配内存。我不是每天都使用这些工具，所以我每次都是在寻找同样的东西。这篇文章的目的是为这些Go所提供的工具提供一个参考文献。
+
+我们将使用 [https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet) 作为一个演示项目，同样的事情有3种实现方式，一种比另一种更有性能。
 *   [default](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/main)
 *   [better](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/better)
 *   [best](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best)
 
 ## Benchmarks
 
-One of the most popular ways to see if you improved something is to use [Benchmarks](https://pkg.go.dev/testing#hdr-Benchmarks) which is built into Go.
+最流行的方法之一是使用Go中内置的 [Benchmarks](https://pkg.go.dev/testing#hdr-Benchmarks) 来看看你是否改进了什么。
 
-In our demo project, there is already [benchmarks available](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/main/rand/counter_test.go) and we can run them with a single command.
+在我们的演示项目中，已经有了 [benchmarks available](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/main/rand/counter_test.go) 我们可以用一个命令运行它们。
 
     go test -bench=. -test.benchmem  ./rand/
 
@@ -27,20 +34,20 @@ In our demo project, there is already [benchmarks available](https://gitlab.com/
     PASS
     ok      gitlab.com/steveazz/blog/go-performance-tools-cheat-sheet/rand 8.828s
 
-_Note: `-test.benchmem` is an optional flag to show memory allocations_
+_注意: `-test.benchmem` 是一个可选的标志，用于显示内存分配。_
 
-Taking a closer look at what each column means:
+仔细看一下每一栏的含义:
 
     BenchmarkHitCount100-8              3020            367016 ns/op             269861 B/op               3600 allocs/op
     ^------------------^ ^                ^                   ^                      ^                          ^
              |           |                |                   |                      |                          |
-           Name   Number of CPUs     Total runs    Nanoseconds per operation   Bytes per operation   Allocations per operations
+            名称       CPU数量          总运行次数          每操作的纳秒数            每操作的字节数               每操作的分配数
 
-### Comparing Benchmarks
+### 比较 Benchmarks
 
-Go created [perf](https://github.com/golang/perf) which provides [benchstat](https://github.com/golang/perf/tree/master/cmd/benchstat) so that you can compare to benchmark outputs together, and it will give you the delta between them.
+Go 创建了 [perf](https://github.com/golang/perf) 它提供了 [benchstat](https://github.com/golang/perf/tree/master/cmd/benchstat) 这样你就可以一起比较benchmark输出，它将给你展示出它们之间的差异。
 
-For example, let’s compare the [`main`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/main) and [`best`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best) branches.
+例如，让我们比较一下 [`main`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/main) 和 [`best`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best) 分支.
 
     # Run benchmarks on `main`
     git checkout main
@@ -70,17 +77,17 @@ For example, let’s compare the [`main`](https://gitlab.com/steveazz-blog/go-pe
     HitCount100000-8      3.60M ± 0%     1.50M ± 0%  -58.34%  (p=0.008 n=5+5)
     HitCount1000000-8     36.0M ± 0%     15.0M ± 0%  -58.34%  (p=0.008 n=5+5)
 
-Notice that we pass the `-count` flag to run the benchmarks multiple times, so it can get the mean of the runs.
+注意，我们传递了 `-count` 标志来多次运行基准测试，这样它就可以得到运行的平均值。
 
 ## pprof
 
-Go comes with its own profiler where it will give you a better understanding of where the CPU time is being spent on or where the application is allocating the memory. Go samples these over some time for example it will look at the CPU/Memory usage every X nanoseconds for X amount of seconds.
+Go有自己的剖析器，它可以让你更好地了解CPU时间花在哪里，或者应用程序在哪里分配内存。Go在一段时间内对这些进行采样，例如，它将在X秒内每隔X纳秒查看CPU/内存的使用情况。
 
-### Generating Profiles
+### 生成剖析文件(Profiles)
 
 #### Benchmarks
 
-You can generate profiles using benchmarks that we have in the demo project.
+你可以使用我们在演示项目中的基准来生成剖析文件。
 
 CPU:
 
@@ -92,9 +99,9 @@ Memory:
 
 #### net/http/pprof package
 
-If you are writing a webserver you can import the [`net/http/pprof`](https://pkg.go.dev/net/http/pprof) and it will expose the `/debug/pprof` HTTP endpoints on the DefaultServeMux as we are doing in the [demo application](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7).
+如果你正在编写一个webserver，你可以导入 [`net/http/pprof`](https://pkg.go.dev/net/http/pprof) 它将在DefaultServeMux上公开`/debug/pprof` HTTP端点，就像我们在 [示例应用](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7) 中做的那样。
 
-Make sure that your application is not sitting idle and doing work or receiving requests so that the profiler can sample calls, or you might end up with an empty profile since the application is idle.
+确保你的应用程序不是空闲着它需要正在运行或接收请求，以便剖析器能够对调用进行采样，否则你可能会因为应用程序是空闲的而最终得到一个空的剖析文件。
 
     # CPU profile
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/cpu.prof
@@ -103,70 +110,70 @@ Make sure that your application is not sitting idle and doing work or receiving 
     # Allocations profile
     curl http://127.0.0.1:8080/debug/pprof/allocs > /tmp/allocs.prof
 
-If you visit `/debug/pprof` it will give a list of all the available endpoints and what they mean.
+如果你访问`/debug/pprof`，它将给出所有可用的端点的列表和它们的含义。
 
-#### runtime/pprof package
+#### runtime/pprof 包
 
-This is similar to the `net/http/pprof` where add it to your application, but instead of adding for all the project, you can specify a specific code path where you want to generate the profile. This can be useful when you are only interested in a certain part of your application and you want to sample only that part of the application. To read how to use it check the [go reference](https://pkg.go.dev/runtime/pprof).
+这与 `net/http/pprof` 类似，将它添加到你的应用程序中，但不是为所有的项目添加，你可以指定一个特定的代码路径，在那个路径生成剖析文件。当你只对你的应用程序的某一部分感兴趣，并且你只想对应用程序的那一部分进行采样时，这就很有用。要阅读如何使用它，请查看 [去参考](https://pkg.go.dev/runtime/pprof) 。
 
-You might also use this to [label your application](https://rakyll.org/profiler-labels/) which can help you understand the profile better.
+你也可以用这个来 [给应用加上标签](https://rakyll.org/profiler-labels/) 这可以帮助你更好地了解概况。
 
-### Reading profiles
+### 阅读剖析文件(Profiles)
 
-Now that we know how to generate profiles, let’s see how we can read them to know what our application is doing.
+现在我们知道了如何生成剖析文件，让我们看看如何读取它们以了解我们的应用程序正在做什么。
 
-The command that we will be using is `go tool pprof`.
+我们将使用的命令是 `go tool pprof`。
 
-#### Callgraph
+#### 调用图
 
-For example to use the `/debug/pprof` endpoints that we have [registered](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7) in our demo application, we can pass in the HTTP endpoint directly.
+例如，为了使用我们在演示程序中 [registered](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7) 的`/debug/pprof`端点，我们可以直接传入HTTP端点。
 
     # Open new browser window with call graph after 30s profiling.
     go tool pprof -http :9402 http://127.0.0.1:8080/debug/pprof/profile
 
-Another option is to use `curl` to download the profile and then use `go tool` which might be useful to get profiles from production endpoints that aren't exposed to the public internet.
+另一个选择是使用 `curl` 下载剖析文件，然后使用 `go tool`命令，这对于从没有暴露在公共互联网上的生产端点获取剖析文件可能很有用。
 
     # Server.
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/cpu.prof
     # Locally after you get it from the server.
     go tool pprof -http :9402 /tmp/cpu.prof
 
-Notice that in all the commands we are passing the `-http` flag, this is optional because by default this opens the CLI interface.
+注意，在所有的命令中，我们都传递了`-http`标志，这是可选的，因为在默认情况下，这将打开CLI界面。
 
-Below you can see our demo application call graph. To better understand what it means you should read [Interpreting the Callgraph](https://github.com/google/pprof/blob/master/doc/README.md#interpreting-the-callgraph)
+下面你可以看到我们的演示应用程序调用图。为了更好地理解它的含义，你应该阅读 [解释调用图](https://github.com/google/pprof/blob/master/doc/README.md#interpreting-the-callgraph) 。
 
-![Example of a call graph of our demo application](https://d33wubrfki0l68.cloudfront.net/226f6b80801719624680b334a6ef6012fa6f9176/0bbeb/go-performance-tools-cheat-sheet/callgraph.png)
+![我们的演示应用程序的调用图的示例](../static/images/2021_w23_go_performance_tools_cheat_sheet/callgraph.png)
 
-#### Flame graphs
+#### 火焰图
 
-The callgraph is useful to see what the program is calling and can also help you understand where the application is spending time. An alternative way of understanding where the CPU time or memory allocation is going is to use a Flame Graph.
+调用图对于查看程序正在调用的内容很有用，也可以帮助你了解应用程序正在花费的时间。了解CPU时间或内存分配去向的另一种方法是使用火焰图。
 
-Using the same demo application let’s run `go tool pprof` once more:
+使用同一个演示程序，让我们再次运行 `go tool pprof`:
 
     # From endpoint
     go tool pprof -http :9402 http://127.0.0.1:8080/debug/pprof/profile
     # From the local profile
     go tool pprof -http :9402 /tmp/cpu.prof
 
-However, this time we will use the top navigation bar go to `View` > `Flame Graph`
+然而，这一次我们将使用顶部导航栏，前往 `View` > `Flame Graph`
 
-![navigating to the flame graph](https://d33wubrfki0l68.cloudfront.net/21cde34a764174f663721287f1d109a41a12ce2a/19c4d/go-performance-tools-cheat-sheet/flamegraph-navigation.png)
+![navigating to the flame graph](../static/images/2021_w23_go_performance_tools_cheat_sheet/flamegraph-navigation.png)
 
-Then you should see something like below:
+然后你应该看到类似下面的东西:
 
-![flame graph example](https://d33wubrfki0l68.cloudfront.net/1c11490fcd903a427fe1ba59151ee46fc113b00f/75267/go-performance-tools-cheat-sheet/flamegraph.png)
+![flame graph example](../static/images/2021_w23_go_performance_tools_cheat_sheet/flamegraph.png)
 
-For you to better understand how to read flame graphs you can check out [What Are Flame Graphs and How to Read Them, RubyConfBY 2017](https://youtu.be/6uKZXIwd6M0)
+为了让你更好地了解如何阅读火焰图，你可以查看一下 [What Are Flame Graphs and How to Read Them, RubyConfBY 2017](https://youtu.be/6uKZXIwd6M0)
 
-You can also use [speedscope](https://www.speedscope.app/) which is a language-agnostic application to generate flame graphs from profiles, and it’s a bit more interactive than the one provided from Go.
+你也可以使用 [speedscope](https://www.speedscope.app/) 这是一个与语言无关的应用程序，可以从剖析文件中生成火焰图，它比Go提供的互动性更强一些。
 
-![demo of speedscope](https://d33wubrfki0l68.cloudfront.net/bdc072eb7f50aa59275ed17b11335b8724e22d19/26d9b/go-performance-tools-cheat-sheet/speedscope.png)
+![demo of speedscope](../static/images/2021_w23_go_performance_tools_cheat_sheet/speedscope.png)
 
-#### Comparing profiles
+#### 比较剖析文件(Profiles)
 
-The `go tool pprof` also allows you to use to [compare profiles](https://github.com/google/pprof/blob/master/doc/README.md#comparing-profiles) to show you the difference between 1 profile and another.
+`go tool pprof` 也允许你使用 [比较剖析文件](https://github.com/google/pprof/blob/master/doc/README.md#comparing-profiles) 来显示1个剖析文件和另一个剖析文件之间的差异。
 
-Using our demo project once again we can generate profiles for the `main` and `best` branches.
+再次使用我们的演示项目，我们可以为 "main "和 "best "分支生成剖析文件。
 
     # Run on `main`
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/main.prof
@@ -177,23 +184,23 @@ Using our demo project once again we can generate profiles for the `main` and `b
     # Compare profiles
     go tool pprof -http :9402 --diff_base=/tmp/main.prof /tmp/best.prof
 
-![demo of profile diff](https://d33wubrfki0l68.cloudfront.net/f59396b1e2386d40370dfcaaaa51c1543c5da2e8/5077d/go-performance-tools-cheat-sheet/profile-diff.png)
+![示例剖析文件对比](../static/images/2021_w23_go_performance_tools_cheat_sheet/profile-diff.png)
 
 ## Traces
 
-One last tool that we need to go through is the CPU tracer. This gives you an accurate representation of what was happening during the program execution. It can show you which cores are sitting idle and which ones are busy. This is great if you are debugging some concurrent code that isn’t performing as expected.
+我们需要经历的最后一个工具是CPU追踪器。这可以让你准确地了解在程序执行过程中发生了什么。它可以告诉你哪些核心是闲置的，哪些核心是忙碌的。如果你正在调试一些没有达到预期性能的并发代码，这就非常好用。
 
-Using our demo application again let’s get the CPU trace using the `/debug/pprof/trace` endpoint that is added using the `net/http/pprof`.
+再次使用我们的演示程序，让我们使用`net/http/pprof`添加的`debug/pprof/trace`端点来获得CPU跟踪。
 
     curl http://127.0.0.1:8080/debug/pprof/trace > /tmp/best.trace
 
     go tool trace /tmp/best.trace
 
-A more detailed explanation of the tracer can be found over at [Gopher Academy Blog](https://blog.gopheracademy.com/advent-2017/go-execution-tracer/)
+关于追踪器的更详细的解释可以在 [Gopher Academy Blog](https://blog.gopheracademy.com/advent-2017/go-execution-tracer/) 上找到。
 
-![demo of trace](https://d33wubrfki0l68.cloudfront.net/60319bbfa13c99442dd94b1e12f1d4e99b73b511/32a29/go-performance-tools-cheat-sheet/trace.png)
+![demo of trace](../static/images/2021_w23_go_performance_tools_cheat_sheet/trace.png)
 
-## Resources
+## 资源
 
 *   [High Performance Go Workshop](https://dave.cheney.net/high-performance-go-workshop/dotgo-paris.html)
 *   [go-perf book](https://github.com/dgryski/go-perfbook)
