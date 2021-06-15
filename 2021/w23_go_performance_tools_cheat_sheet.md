@@ -1,6 +1,6 @@
 # Go Performance Tools Cheat Sheet
 
-Go has a lot of tools available for you to understand where your application might be spending CPU time or allocating memory. I don’t use these tools daily so I always end up searching for the same thing every time. This post aims to be a reference document for everything that Go has to provide.
+Go has a lot of tools available for you to understand where your application might be spending CPU time or allocating memory. I don’t use these tools daily, so I always end up searching for the same thing every time. This post aims to be a reference document for everything that Go has to provide.
 
 We’ll be using [https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet) as a demo project and there are 3 implementations of the same thing, one more performant than the other.
 
@@ -12,7 +12,7 @@ We’ll be using [https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sh
 
 One of the most popular ways to see if you improved something is to use [Benchmarks](https://pkg.go.dev/testing#hdr-Benchmarks) which is built into Go.
 
-In our demo project, there is already [benchmarks avaiable](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/main/rand/counter_test.go) and we can run them with a single command.
+In our demo project, there is already [benchmarks available](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/main/rand/counter_test.go) and we can run them with a single command.
 
     go test -bench=. -test.benchmem  ./rand/
 
@@ -38,7 +38,7 @@ Taking a closer look at what each column means:
 
 ### Comparing Benchmarks
 
-Go created [perf](https://github.com/golang/perf) which provides [benchstat](https://github.com/golang/perf/tree/master/cmd/benchstat) so that you can compare to benchmark outputs together and it will give you the delta between them.
+Go created [perf](https://github.com/golang/perf) which provides [benchstat](https://github.com/golang/perf/tree/master/cmd/benchstat) so that you can compare to benchmark outputs together, and it will give you the delta between them.
 
 For example, let’s compare the [`main`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/main) and [`best`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best) branches.
 
@@ -70,11 +70,11 @@ For example, let’s compare the [`main`](https://gitlab.com/steveazz-blog/go-pe
     HitCount100000-8      3.60M ± 0%     1.50M ± 0%  -58.34%  (p=0.008 n=5+5)
     HitCount1000000-8     36.0M ± 0%     15.0M ± 0%  -58.34%  (p=0.008 n=5+5)
 
-Notice that we pass the `-count` flag to run the benchmarks multiple times so it can get the mean of the runs.
+Notice that we pass the `-count` flag to run the benchmarks multiple times, so it can get the mean of the runs.
 
 ## pprof
 
-Go comes with its own profiler where it will give you a better understanding of where the CPU time is being spent on or where the application is allocatingthe memory. Go samples these over some time for example it will look at the CPU/Memory usage every X nanoseconds for X amount of seconds.
+Go comes with its own profiler where it will give you a better understanding of where the CPU time is being spent on or where the application is allocating the memory. Go samples these over some time for example it will look at the CPU/Memory usage every X nanoseconds for X amount of seconds.
 
 ### Generating Profiles
 
@@ -107,7 +107,7 @@ If you visit `/debug/pprof` it will give a list of all the available endpoints a
 
 #### runtime/pprof package
 
-This is similar to the `net/http/pprof` where add it to your application, but instead of adding for all of the project, you can specify a specific code path where you want to generate the profile. This can be useful when you are only interested in a certain part of your application and you want to sample only that part of the application. To read how to use it check the [go reference](https://pkg.go.dev/runtime/pprof).
+This is similar to the `net/http/pprof` where add it to your application, but instead of adding for all the project, you can specify a specific code path where you want to generate the profile. This can be useful when you are only interested in a certain part of your application and you want to sample only that part of the application. To read how to use it check the [go reference](https://pkg.go.dev/runtime/pprof).
 
 You might also use this to [label your application](https://rakyll.org/profiler-labels/) which can help you understand the profile better.
 
@@ -124,7 +124,7 @@ For example to use the `/debug/pprof` endpoints that we have [registered](https:
     # Open new browser window with call graph after 30s profiling.
     go tool pprof -http :9402 http://127.0.0.1:8080/debug/pprof/profile
 
-Another option is to use `curl` to download the profile and then use `go tool` which might be useful to get profiles from production endpoints that aren’t exposed to the public internet.
+Another option is to use `curl` to download the profile and then use `go tool` which might be useful to get profiles from production endpoints that aren't exposed to the public internet.
 
     # Server.
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/cpu.prof
@@ -148,7 +148,7 @@ Using the same demo application let’s run `go tool pprof` once more:
     # From the local profile
     go tool pprof -http :9402 /tmp/cpu.prof
 
-However this time we will use the top navigation bar go to `View` > `Flame Graph`
+However, this time we will use the top navigation bar go to `View` > `Flame Graph`
 
 ![navigating to the flame graph](https://d33wubrfki0l68.cloudfront.net/21cde34a764174f663721287f1d109a41a12ce2a/19c4d/go-performance-tools-cheat-sheet/flamegraph-navigation.png)
 
@@ -158,7 +158,7 @@ Then you should see something like below:
 
 For you to better understand how to read flame graphs you can check out [What Are Flame Graphs and How to Read Them, RubyConfBY 2017](https://youtu.be/6uKZXIwd6M0)
 
-You can also use [speedscope](https://www.speedscope.app/) which is a language-agnostic application to generate flame graphs from profiles and it’s a bit more interactive than the one provided from Go.
+You can also use [speedscope](https://www.speedscope.app/) which is a language-agnostic application to generate flame graphs from profiles, and it’s a bit more interactive than the one provided from Go.
 
 ![demo of speedscope](https://d33wubrfki0l68.cloudfront.net/bdc072eb7f50aa59275ed17b11335b8724e22d19/26d9b/go-performance-tools-cheat-sheet/speedscope.png)
 
@@ -199,5 +199,5 @@ A more detailed explanation of the tracer can be found over at [Gopher Academy B
 *   [go-perf book](https://github.com/dgryski/go-perfbook)
 *   [Go Tooling in Action](https://youtu.be/uBjoTxosSys)
 *   [pprof++](https://eng.uber.com/pprof-go-profiler/)
-*   [Trace deisgn docs](https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub)
+*   [Trace design docs](https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub)
 *   [How to write benchmarks in Go](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)
