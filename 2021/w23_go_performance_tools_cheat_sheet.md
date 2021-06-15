@@ -10,7 +10,7 @@
 
 Go有很多工具可以让你了解你的应用程序可能在哪里花费CPU时间或分配内存。我不是每天都使用这些工具，所以我每次都是在寻找同样的东西。这篇文章的目的是为这些Go所提供的工具提供一个参考文献。
 
-我们将使用 [https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet) 作为一个演示项目，同样的事情有3种实现方式，一种比另一种更有性能。
+我们将使用 [https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet) 作为一个演示项目，同样的事情有3种实现方式，每一种都比前一种性能更好。
 *   [default](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/main)
 *   [better](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/better)
 *   [best](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best)
