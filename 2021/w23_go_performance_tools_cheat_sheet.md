@@ -6,7 +6,7 @@
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w23_go_performance_tools_cheat_sheet.md
 
 - 译者：[Cluas](https:/github.com/Cluas)
-- 校对：
+- 校对：[Martinho0330](https://github.com/Martinho0330)
 
 Go有很多工具可以让你了解你的应用程序可能在哪里花费CPU时间或分配内存。我不是每天都使用这些工具，所以我每次都是在寻找同样的东西。这篇文章的目的是为这些Go所提供的工具提供一个参考文献。
 
@@ -15,11 +15,11 @@ Go有很多工具可以让你了解你的应用程序可能在哪里花费CPU时
 *   [better](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/better)
 *   [best](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best)
 
-## Benchmarks
+## 基准测试(Benchmarks)
 
-最流行的方法之一是使用Go中内置的 [Benchmarks](https://pkg.go.dev/testing#hdr-Benchmarks) 来看看你是否改进了什么。
+最流行的方法之一是使用Go中内置的 [基准测试](https://pkg.go.dev/testing#hdr-Benchmarks) 来看看你是否改进了什么。
 
-在我们的演示项目中，已经有了 [benchmarks available](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/main/rand/counter_test.go) 我们可以用一个命令运行它们。
+在我们的演示项目中，已经有了 [可用的基准测试](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/main/rand/counter_test.go) 我们可以用一个命令运行它们。
 
     go test -bench=. -test.benchmem  ./rand/
 
@@ -41,23 +41,23 @@ _注意: `-test.benchmem` 是一个可选的标志，用于显示内存分配。
     BenchmarkHitCount100-8              3020            367016 ns/op             269861 B/op               3600 allocs/op
     ^------------------^ ^                ^                   ^                      ^                          ^
              |           |                |                   |                      |                          |
-            名称       CPU数量          总运行次数          每操作的纳秒数            每操作的字节数               每操作的分配数
+            名称       CPU数量          总运行次数          每次操作的纳秒数          每次操作的字节数             每次操作的内存分配数
 
-### 比较 Benchmarks
+### 比较基准测试(Benchmarks)
 
 Go 创建了 [perf](https://github.com/golang/perf) 它提供了 [benchstat](https://github.com/golang/perf/tree/master/cmd/benchstat) 这样你就可以一起比较benchmark输出，它将给你展示出它们之间的差异。
 
 例如，让我们比较一下 [`main`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/main) 和 [`best`](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/tree/best) 分支.
 
-    # Run benchmarks on `main`
+    # 运行 `main` 分支的基准测试
     git checkout main
     go test -bench=. -test.benchmem -count=5 ./rand/ > old.txt
 
-    # Run benchmarks on `best
+    # 运行 `best` 分支的基准测试
     git checkout best
     go test -bench=. -test.benchmem -count=5 ./rand/ > new.txt
 
-    # Compare the two benchmark results
+    # 比较两个基准测试结果
     benchstat old.txt new.txt
     name               old time/op    new time/op    delta
     HitCount100-8         366µs ± 0%     103µs ± 0%  -71.89%  (p=0.008 n=5+5)
@@ -99,22 +99,22 @@ Memory:
 
 #### net/http/pprof package
 
-如果你正在编写一个webserver，你可以导入 [`net/http/pprof`](https://pkg.go.dev/net/http/pprof) 它将在DefaultServeMux上公开`/debug/pprof` HTTP端点，就像我们在 [示例应用](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7) 中做的那样。
+如果你正在编写一个webserver，你可以导入 [`net/http/pprof`](https://pkg.go.dev/net/http/pprof) 它将在DefaultServeMux上暴露`/debug/pprof` HTTP端点，就像我们在 [示例应用](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7) 中做的那样。
 
 确保你的应用程序不是空闲着它需要正在运行或接收请求，以便剖析器能够对调用进行采样，否则你可能会因为应用程序是空闲的而最终得到一个空的剖析文件。
 
-    # CPU profile
+    # CPU剖析文件
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/cpu.prof
-    # Heap profile
+    # 堆剖析文件
     curl http://127.0.0.1:8080/debug/pprof/heap > /tmp/heap.prof
-    # Allocations profile
+    # 内存分配剖析文件
     curl http://127.0.0.1:8080/debug/pprof/allocs > /tmp/allocs.prof
 
 如果你访问`/debug/pprof`，它将给出所有可用的端点的列表和它们的含义。
 
 #### runtime/pprof 包
 
-这与 `net/http/pprof` 类似，将它添加到你的应用程序中，但不是为所有的项目添加，你可以指定一个特定的代码路径，在那个路径生成剖析文件。当你只对你的应用程序的某一部分感兴趣，并且你只想对应用程序的那一部分进行采样时，这就很有用。要阅读如何使用它，请查看 [去参考](https://pkg.go.dev/runtime/pprof) 。
+这与 `net/http/pprof` 类似，将它添加到你的应用程序中，但不是为所有的项目添加，你可以指定一个特定的代码路径，在那个路径生成剖析文件。当你只对你的应用程序的某一部分感兴趣，并且你只想对应用程序的那一部分进行采样时，这就很有用。要阅读如何使用它，请查看 [go的参考文档](https://pkg.go.dev/runtime/pprof) 。
 
 你也可以用这个来 [给应用加上标签](https://rakyll.org/profiler-labels/) 这可以帮助你更好地了解概况。
 
@@ -128,14 +128,14 @@ Memory:
 
 例如，为了使用我们在演示程序中 [registered](https://gitlab.com/steveazz-blog/go-performance-tools-cheat-sheet/-/blob/e7736e21bf1c3be7bb25e4c64b8730bb3b631b73/main.go#L7) 的`/debug/pprof`端点，我们可以直接传入HTTP端点。
 
-    # Open new browser window with call graph after 30s profiling.
+    # 打开新的浏览器窗口，查看30秒后的调用图。
     go tool pprof -http :9402 http://127.0.0.1:8080/debug/pprof/profile
 
 另一个选择是使用 `curl` 下载剖析文件，然后使用 `go tool`命令，这对于从没有暴露在公共互联网上的生产端点获取剖析文件可能很有用。
 
-    # Server.
+    # 在服务器上查看。
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/cpu.prof
-    # Locally after you get it from the server.
+    # 在你从服务器上得到它之后，在本地查看。
     go tool pprof -http :9402 /tmp/cpu.prof
 
 注意，在所有的命令中，我们都传递了`-http`标志，这是可选的，因为在默认情况下，这将打开CLI界面。
@@ -150,43 +150,43 @@ Memory:
 
 使用同一个演示程序，让我们再次运行 `go tool pprof`:
 
-    # From endpoint
+    # 来自HTTP端点
     go tool pprof -http :9402 http://127.0.0.1:8080/debug/pprof/profile
-    # From the local profile
+    # 来自本地的剖析文件
     go tool pprof -http :9402 /tmp/cpu.prof
 
 然而，这一次我们将使用顶部导航栏，前往 `View` > `Flame Graph`
 
-![navigating to the flame graph](../static/images/2021_w23_go_performance_tools_cheat_sheet/flamegraph-navigation.png)
+![导航到火焰图](../static/images/2021_w23_go_performance_tools_cheat_sheet/flamegraph-navigation.png)
 
 然后你应该看到类似下面的东西:
 
-![flame graph example](../static/images/2021_w23_go_performance_tools_cheat_sheet/flamegraph.png)
+![火焰图示例](../static/images/2021_w23_go_performance_tools_cheat_sheet/flamegraph.png)
 
-为了让你更好地了解如何阅读火焰图，你可以查看一下 [What Are Flame Graphs and How to Read Them, RubyConfBY 2017](https://youtu.be/6uKZXIwd6M0)
+为了让你更好地了解如何阅读火焰图，你可以查看一下 [什么是火焰图，怎么去读火焰图(RubyConf2017上的议题)](https://youtu.be/6uKZXIwd6M0)
 
 你也可以使用 [speedscope](https://www.speedscope.app/) 这是一个与语言无关的应用程序，可以从剖析文件中生成火焰图，它比Go提供的互动性更强一些。
 
-![demo of speedscope](../static/images/2021_w23_go_performance_tools_cheat_sheet/speedscope.png)
+![speedscope示例](../static/images/2021_w23_go_performance_tools_cheat_sheet/speedscope.png)
 
 #### 比较剖析文件(Profiles)
 
 `go tool pprof` 也允许你使用 [比较剖析文件](https://github.com/google/pprof/blob/master/doc/README.md#comparing-profiles) 来显示1个剖析文件和另一个剖析文件之间的差异。
 
-再次使用我们的演示项目，我们可以为 "main "和 "best "分支生成剖析文件。
+再次使用我们的演示项目，我们可以为 "main" 和 "best" 分支生成剖析文件。
 
-    # Run on `main`
+    # 运行 `main` 分支，生成剖析文件。
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/main.prof
 
-    # Run on `best`
+    # 运行 `best` 分支，生成剖析文件。
     curl http://127.0.0.1:8080/debug/pprof/profile > /tmp/best.prof
 
-    # Compare profiles
+    # 比较剖析文件。
     go tool pprof -http :9402 --diff_base=/tmp/main.prof /tmp/best.prof
 
 ![示例剖析文件对比](../static/images/2021_w23_go_performance_tools_cheat_sheet/profile-diff.png)
 
-## Traces
+## 追踪(Traces)
 
 我们需要经历的最后一个工具是CPU追踪器。这可以让你准确地了解在程序执行过程中发生了什么。它可以告诉你哪些核心是闲置的，哪些核心是忙碌的。如果你正在调试一些没有达到预期性能的并发代码，这就非常好用。
 
@@ -196,15 +196,15 @@ Memory:
 
     go tool trace /tmp/best.trace
 
-关于追踪器的更详细的解释可以在 [Gopher Academy Blog](https://blog.gopheracademy.com/advent-2017/go-execution-tracer/) 上找到。
+关于追踪器的更详细的解释可以在 [go程序员学院博客](https://blog.gopheracademy.com/advent-2017/go-execution-tracer/) 上找到。
 
-![demo of trace](../static/images/2021_w23_go_performance_tools_cheat_sheet/trace.png)
+![追踪(trace)示例](../static/images/2021_w23_go_performance_tools_cheat_sheet/trace.png)
 
 ## 资源
 
-*   [High Performance Go Workshop](https://dave.cheney.net/high-performance-go-workshop/dotgo-paris.html)
-*   [go-perf book](https://github.com/dgryski/go-perfbook)
-*   [Go Tooling in Action](https://youtu.be/uBjoTxosSys)
+*   [Go高性能研究](https://dave.cheney.net/high-performance-go-workshop/dotgo-paris.html)
+*   [go-perf百科](https://github.com/dgryski/go-perfbook)
+*   [Go工具实战](https://youtu.be/uBjoTxosSys)
 *   [pprof++](https://eng.uber.com/pprof-go-profiler/)
-*   [Trace design docs](https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub)
-*   [How to write benchmarks in Go](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)
+*   [追踪(trace)设计文档](https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub)
+*   [如何用Go编写基准测试](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)
