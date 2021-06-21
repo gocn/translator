@@ -1,95 +1,103 @@
-# Functional programming in Go with generics
+# 使用 Go 泛型的函数式编程
 
-Date: [May 25, 2021  19:00:00](#)
+* 原文地址：https://ani.dev/2021/05/25/functional-programming-in-go-with-generics/
+* 原文作者：`Ani Channarasappa`
+* 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w24_functional_programming_in_go_with_generics.md
 
-Functional programming is an increasing popular programming paradigm with many languages building or already supporting it. Go already supports some of these features such as first-class and higher order functions and enabling functional programming.
+- 译者：[cvley](https:/github.com/cvley)
+- 校对：[]()
 
-One key feature that’s been missing from Go is generics. Without this feature, functional Go libraries and applications are forced down one of two paths: type safe + use-case specific or type-unsafe + use-case agnostic. With the upcoming release of Go 1.18 in early 2022, [generics are expected to be added to the language](https://blog.golang.org/generics-proposal) which will enable new sorts of functional programming solutions in Go.
 
-In this article, I’ll cover some [background on functional programming](#Background), survey functional programming landscape today in Go, and discuss features planned for Go 1.18 and how they could enable functional programming.
+时间：[2021 年 5 月 25 日](#)
 
-## Background
+函数式编程是很多语言正在支持或已经支持的日渐流行的编程范式。Go 已经支持了其中一部分的特性，比如头等函数和更高阶功能的支持，使函数式编程成为可能。
 
-### What is functional programming?
+Go 缺失的一个关键特性是泛型。缺少这个特性，Go 的函数库和应用不得不从下面的两种方法中选择一种：类型安全 + 特定使用场景或类型不安全 + 未知使用场景。在 2022 年初即将发布的 Go 1.18 版本，[泛型将被加进来](https://blog.golang.org/generics-proposal)，从而使 Go 支持新型的函数式编程形式。
 
-Functional programming as defined by [Wikipedia](https://en.wikipedia.org/wiki/Functional_programming) is:
+在本篇文章中，我将介绍一些[函数式编程的背景](#Background)，Go 函数式编程的现状调查，并讨论 Go 1.18 计划的特性以及如何将它们用于函数式编程。
 
-> programming paradigm where programs are constructed by applying and composing functions.
+## 背景
 
-In more concrete terms, there’s a few key characteristics to functional programming:
+### 什么是函数式编程？
 
-*   **pure functions** - a function that when called with the same input always returns the same output with no shared state, mutable data, or side effects
-*   **immutable data** - data is never reassigned or changed after creation
-*   **function composition** - combining multiple functions together to apply logic to data
-*   **declarative over imperative** - express _what_ the function must do without defining _how_ to achieve it
+[维基百科](https://en.wikipedia.org/wiki/Functional_programming)中定义的函数式编程是：
 
-For more detailed information on Functional Programming, have a look at these two great articles that describe it at length with examples: [What is Functional Programming?](https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0) and [Functional Go](https://medium.com/@geisonfgfg/functional-go-bc116f4c96a4)
+> 通过应用组合函数的编程范式。
 
-### What are the benefits of functional programming?
+更具体的说，函数式编程有以下几个关键特征：
 
-Functional programming imposes some patterns on developers that improve code quality. These quality improvements are not exclusive to functional programming but are “free” benefits.
+*   **纯函数** - 使用相同的输入总是返回无共享状态、可变数据或副作用的相同输出的函数
+*   **不可变数据** - 数据创建后不会再被分配或修改
+*   **函数组合** - 组合多个函数对数据进行处理逻辑
+*   **声明式而非指令式** - 表示的是函数的_处理方式_而无需定义 _如何_完成
 
-*   **testability** - testing pure functions is simpler because the function will never produce effects outside of it’s scope (e.g. console output, database writes) and will always produce predictable output
-*   **expressiveness** - functional language/library primitives being declarative can be more effective at expressing the original intent of code albeit with the overhead cost of learning those primitives
-*   **understandability** - reading and understanding a pure function with no side effects, global state, or mutation is subjectively easier
+对于函数式编程更详细的信息，可以参考这两篇有详细描述例子的文章：[函数式编程是什么？](https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0)和[函数式的 Go](https://medium.com/@geisonfgfg/functional-go-bc116f4c96a4)
 
-As many developers know from experience and as Robert C. Martin stated in [_Clean Code_](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882):
+### 函数式编程的优势是什么？
 
-> Indeed, the ratio of time spent reading versus writing is well over 10 to 1. We are constantly reading old code as part of the effort to write new code. …\[Therefore,\] making it easy to read makes it easier to write.
+函数式编程是让开发者提升代码质量的一些模式。这些质量提升的模式并非函数式编程独有，而是一些“免费”的优势。
 
-These benefits can be highly impactful depending on the team’s experience with or willingness to learn functional programming. On the opposite end, functional programming can be a drag on inexperienced teams without enough time to invest in learning or large legacy codebases where it could introduce context switching or significant rework without delivering proportional value.
+*   **可测性** - 测试纯函数更加简单，因为函数永远不会产生超出作用范围的影响（比如，终端输出、数据库的读取），并总会得到可预测的结果
+*   **可表达性** - 函数式编程/库使用声明式的基础可以更高效地表达函数的原始意图，尽管需要额外学习这些基础
+*   **可理解性** - 阅读和理解没有副作用、全局或可变的纯函数主观来看更简单
 
-## Functional Programming in Go today
+正如多数开发者从经验中学到的，如 Robert C. Martin 在[_代码整洁之道_](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)中所说：
 
-Go is not a functional language but it does offer a set of features which allow for functional programming. There’s a sizeable number of open source Go libraries available that provide functional feature sets. As we will discuss, the omission of generics has guided these libraries to make one of two tradeoffs.
+> 确实，相对于写代码，花费在读代码上的时间超过 10 倍。为了写出新代码，我们一直在读旧代码。…\[因此，\]让代码更易读，可以让代码更易写。
 
-### Language Features
+根据团队的经验或学习函数式编程的意愿，这些优势会产生很大的影响。相反，对于缺乏经验和足够时间投入学习的团队，或维护大型的代码仓库时，函数式编程将会产生相反的作用，上下文切换的引入或显著的重构工作将无法产生相应的价值。
 
-Language support for functional programming lies on a spectrum ranging from functional paradigm only (e.g. Haskell) to multi-paradigm + first-class support (e.g. Scala, Elixir) to multi-paradigm + partial support (e.g. Javascript, Go). In the latter category of languages, functional programming is typically supported through the use of community created libraries that replicate some or all of the features in the standard libraries of the former two.
+## Go 函数式编程的现状
 
-Go being in the last category does offer these features which enable functional programming:
+Go 不是一门函数语言，但确实提供了一些允许函数式编程的特性。有大量的 Go 开源库提供函数特性。我们将会讨论泛型的缺失导致这些库只能折衷选择。
 
-| Language Feature                                             | Support |
+### 语言特性
+
+函数式编程的语言支持包括一系列从仅支持函数范式（比如 Haskell）到多范式和头等函数的支持（比如 Scale、Elixir），还包括多范式和部分支持（如 Javascript、Go）。在后面的语言中，函数式编程的支持一般是通过使用社区创建的库，它们复制了前面两个语言的部分或全部的标准库的特性。
+
+属于后一种类别的 Go 要使用函数式编程需要下面这些特性：
+
+| 语言特性     | 支持情况 |
 | ------------------------------------------------------------ | ------- |
-| [first-class functions + higher order functions](https://golangbot.com/first-class-functions/) | ✓       |
-| [closures](https://tour.golang.org/moretypes/25)             | ✓       |
-| [generics](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md) | ✓†      |
-| [tail call optimization](https://github.com/golang/go/issues/22624) | ✗       |
-| [variadic functions](https://gobyexample.com/variadic-functions) + [variadic type parameters](https://en.wikipedia.org/wiki/Variadic_template) | ✗       |
-| [currying](https://blog.bitsrc.io/understanding-currying-in-javascript-ceb2188c339) | ✗       |
+| [头等函数和高阶函数](https://golangbot.com/first-class-functions/) | ✓       |
+| [闭包](https://tour.golang.org/moretypes/25)             | ✓       |
+| [泛型](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md) | ✓†      |
+| [尾部调用优化](https://github.com/golang/go/issues/22624) | ✗       |
+| [可变参数函数](https://gobyexample.com/variadic-functions) + [可变类型参数](https://en.wikipedia.org/wiki/Variadic_template) | ✗       |
+| [柯里化](https://blog.bitsrc.io/understanding-currying-in-javascript-ceb2188c339) | ✗       |
 
-† available in Go 1.18 (early 2022)
+† 将在 Go 1.18 中可用（2022年初）
 
-### Existing Libraries
+### 现有的库
 
-In the Go ecosystem, there’s already exist many functional programming libraries that vary in popularity, features, and ergonomics. Due to the omission of generics, they’ve all had to make one of two design choices:
+在 Go 生态中，有大量函数式编程的库，区别在于流行度、特性和工效。由于缺少泛型，它们全部只能从下面两种选择中取一个：
 
-1.  **type safe + use-case specific** - libraries that chose this approach implemented a design that is type safe but only capable of handling certain pre-defined types. Without being able to use custom types or structs, the variety of problems these libraries can be applied to is limited.
-    *   For example, `func UniqString(data []string) []string` and `func UniqInt(data []int) []int` are both type safe but only work on the pre-defined types
-2.  **type unsafe + use-case agnostic** - libraries that chose this approach implemented a design that is not type safe but can be applied to any use case. These libraries work with custom types and structs but with the tradeoff that [type assertions](https://tour.golang.org/methods/15) must be used which exposes the application to the risk of a runtime panic if improperly implemented.
-    *   For example, a generic unique function might have this signature: `func Uniq(data interface{}) interface{}`
+1.  **类型安全和特定使用场景** - 选择这个方法的库实现的设计是类型安全，但只能处理特定的预定义类型。因为无法应用于自适应的类型或结构体，这些库的应用范围将受限制。
+    *   比如，`func UniqString(data []string) []string` 和 `func UniqInt(data []int) []int` 都是类型安全的，但只能应用在预定义的类型
+2.  **类型不安全和未知的应用场景** - 选择这个方法的库实现的是类型不安全但可以应用在任意使用场景的方法。这些库可以处理自定义类型和结构体，但折衷点在于必须使用[类型断言](https://tour.golang.org/methods/15)，这让应用在不合理的实现时有运行时崩溃的风险。
+    *   比如，一个通用的函数可能有这样的命名：`func Uniq(data interface{}) interface{}`
 
-These two design choices present two similarly unappealing options: limited utility or runtime panic risk. The easiest and perhaps most common option is to not use a functional programming library with Go and stick with an imperative style.
+这两种设计选择显示了两种相似的不吸引人的选项：有限的使用或运行时崩溃的风险。最简单也许最常见的选择是不使用 Go 的函数式编程库，坚持指令式的风格。
 
-## Functional Go with Generics
+## 使用泛型的函数式 Go
 
-On March 19th 2021, the [design proposal](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md) for generics was accepted and slated for release as part of Go 1.18. With the addition of generics, functional programming libraries no longer need to make tradeoff between usefulness and type safety.
+在 2021 年 3 月 19 日，泛型的[设计提案](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md)通过并定为 Go 1.18 发行版的一部分。有了泛型之后，函数式编程库就不再需要在可用性和类型安全之间进行折衷。
 
-### Experimenting with Go 1.18
+### Go 1.18 实验
 
-The go development team released a [go 1.18 playground](https://go2goplay.golang.org/) where anyone can try running go with generics. There’s also an experimental compiler that implements a minimal set of features available [on a branch](https://github.com/golang/go/tree/dev.go2go) of the go repository. Both of these options are great for playing around with generics in Go 1.18.
+Go 开发组发布了一个 [go 1.18 游乐场](https://go2goplay.golang.org/)，便于大家尝鲜泛型。同时也有一个实验性的编译器，在 go 代码仓库的[一个分支](https://github.com/golang/go/tree/dev.go2go)上实现了泛型特性的最小集合。这两个都是在 Go 1.18 上尝鲜泛型的不错选择。
 
-### Exploring a use-case
+### 一个使用场景的探索
 
-Earlier, the unique function was described with the two possible design approaches. With generics, this could be revised to `func Uniq[T](data []T) []T` and called with any type such as `Uniq[string any](data []string) []string` or `Uniq[MyStruct any](data []MyStruct) []MyStruct`. Taking this concept further, below is a concrete example that demonstrate how functional primitives can be used to solve real problems with Go 1.18 generics.
+在前面说到的那个 unique 函数使用了两种可能的设计方法。有了泛型，它可以重写为 `func Uniq[T](data []T) []T`，并可以使用任意类型来调用，比如 `Uniq[string any](data []string) []string` 或 `Uniq[MyStruct any](data []MyStruct) []MyStruct`。为了进一步阐述这个概念，下面是一个具体的例子，展示了在 Go 1.18 中如何使用函数式单元来解决实际问题。
 
-#### Background
+#### 背景
 
-A common use case in the web world is HTTP request-response where JSON data is returned from an API and it commonly will need to be transformed into something usable by the consuming application.
+一个在网络世界常见的案例是 HTTP 的请求响应，其中 API 接口返回的 JSON 数据一般会被消费应用转换为一些有用的结构。
 
-#### Problem & Input Data
+#### 问题 & 输入数据
 
-Consider this response from an API that returns users, their points, and fiends:
+考虑下这个从 API 返回用户、得分和朋友信息的响应：
 
 ```
 [
@@ -124,11 +132,11 @@ Consider this response from an API that returns users, their points, and fiends:
 ]
 ```
 
-Let’s say the goal was to get the top users by points in each level. We’ll examine what the solution could look like with both functional and imperative styles next.
+假设目标是获取各个等级的高分用户。我们将看下函数式和指令式风格的样子。
 
-#### Imperative
+#### 指令式
 
-```
+```golang
 // imperative
 func getTopUsers(posts []Post) []UserLevelPoints {
 
@@ -171,11 +179,11 @@ fmt.Printf("%+v\n", topUsers)
 // [{FirstName:Ferguson LastName:Bryant Level:gold Points:9294 FriendCount:3} {FirstName:Ava LastName:Becker Level:silver Points:9797 FriendCount:2} {FirstName:Hahn LastName:Olsen Level:bronze Points:9534 FriendCount:2}]
 ```
 
-[Full source for example](https://github.com/achannarasappa/pneumatic/blob/main/examples/imperative-transformation/main.go2)
+[样例的完整代码](https://github.com/achannarasappa/pneumatic/blob/main/examples/imperative-transformation/main.go2)
 
-#### Functional
+#### 函数式
 
-```
+```golang
 // functional
 var getTopUser = Compose3[[]Post, []Post, Post, UserLevelPoints](
 	// Sort users by points
@@ -212,30 +220,30 @@ fmt.Printf("%+v\n", topUsers)
 // [{FirstName:Ferguson LastName:Bryant Level:gold Points:9294 FriendCount:3} {FirstName:Ava LastName:Becker Level:silver Points:9797 FriendCount:2} {FirstName:Hahn LastName:Olsen Level:bronze Points:9534 FriendCount:2}]
 ```
 
-[Full source for example](https://github.com/achannarasappa/pneumatic/blob/main/examples/functional-pipeline/main.go2)
+[样例的完整代码](https://github.com/achannarasappa/pneumatic/blob/main/examples/functional-pipeline/main.go2)
 
-Some features to call outs in the above examples:
+从上面的样例中可以看出一些特性：
 
-1.  The imperative implementation is valid Go 1.16 (latest version at time of writing) syntax while the functional implementation is only valid when compiled with Go 1.18 (go2go)
-2.  Generic functions with type parameters in the functional example (e.g. `Compose3`, `Head`, etc) are only supported with Go 1.18
-3.  Both implementations use differing logic to solve the same problem that best suit each respective style
-4.  The imperative implementation is likely computationally more efficient than a functional one that uses eager evaluation (i.e. [pneumatic](https://github.com/achannarasappa/pneumatic) in this example)
+1.  指令式的实现在 Go 1.16 下是有效的（本文编写时的最新版本），而函数式的实现只在使用 Go 1.18（go2go）编译才有效
+2.  函数式例子中的类型参数的泛型函数（如，`Compose3`、`Head` 等）仅 Go 1.18 支持
+3.  两个实现在各自对应的风格下，使用了不同的逻辑来解决同样的问题
+4.  指令式的实现相比使用及早求值（即本例中的[pneumatic](https://github.com/achannarasappa/pneumatic)）的函数来说，计算更加高效
 
-### Experimenting with a Go 1.18 functional library
+### 使用 Go 1.18 函数式库的实验
 
-In the above examples, the two use cases use the go2go compiler and a Go 1.18 library called [pneumatic](https://github.com/achannarasappa/pneumatic) which provides common functional primitives similar to those found in [Ramda](https://ramdajs.com/) (JavaScript), [Elixir’s standard library](https://hexdocs.pm/elixir/api-reference.html#content), and others. Given the go2go compiler’s limited feature set, pneumatic should only be used for experimental purposes as of the writing of this article but the long term vision is evolve it into general purpose functional Go library as the Go 1.18 compiler matures. Have a look at the [pneumatic readme](https://github.com/achannarasappa/pneumatic/blob/main/README.md) for instructions on how to set it up and start playing with functional programming in Go 1.18.
+在上面的例子中，两个使用场景使用了 go2go 编译器和一个叫做 [pneumatic](https://github.com/achannarasappa/pneumatic) 的 Go 1.18 库，它提供了与[Ramda](https://ramdajs.com/) (JavaScript), [Elixir 标准库](https://hexdocs.pm/elixir/api-reference.html#content)以及其他相似的常见函数式单元。鉴于 go2go 编译器有限的特性集，在本文发布时 pneumatic 只能用于实验目的，但从长期看，随着 Go 1.18 编译器的逐渐成熟，它会包含常见的函数式 Go 库。设置 pneumatic 和使用 Go 1.18 进行函数式编程的指导参见 [pneumatic readme](https://github.com/achannarasappa/pneumatic/blob/main/README.md)。
 
-## Conclusion
+## 结论
 
-The addition of generics to Go will open up new sorts of solutions, approaches, and paradigms with better functional programming support being one of them. With the growing popularity of functional programming, better functional programming support and the resulting possibilities have the potential to bring in developers that may have not otherwise considered learning Go and expand the community - a net positive in my view. It will be exciting to see how the Go community and ecosystem evolves over time with the addition of generics and the new solutions it enables.
+Go 增加泛型将会支持新型的方案、方法和范式，从而成为众多支持函数式编程的语言之一。随着函数式编程的逐渐流行，函数式编程的支持也会越来越好，从而有机会吸引那些现在还没考虑学习 Go 的开发者并让社区持续发展——这是在我看来比较积极的一面。非常期待看到在后续支持泛型之后和它带来新的解决方法后，Go 社区和生态将会发展成什么样。
 
-## References
+## 参考资料
 
-*   Go functional library survey
+*   Go 函数库调研
     *   [go-funk](https://github.com/thoas/go-funk) \[2.5k stars, type-safe or generic, active\]
     *   [go-underscore](https://github.com/tobyhede/go-underscore) \[1.2k stars, generic, abandoned\]
     *   [gubrak](https://github.com/novalagung/gubrak) \[336 stars, generic, active\]
     *   [fpGo](https://github.com/TeaEntityLab/fpGo) \[167 stars, generic, active\]
     *   [functional-go](https://github.com/logic-building/functional-go) \[92 stars, type-safe, active\]
-*   Articles
-    *   [The past, present, and future of Go generics](https://blog.logrocket.com/past-present-future-go-generics/)
+*   文章
+    *   [Go 泛型的过去、现在和将来](https://blog.logrocket.com/past-present-future-go-generics/)
