@@ -2,25 +2,33 @@
 
 *原文地址：https://medium.com/a-journey-with-go/go-how-does-the-garbage-collector-mark-the-memory-72cfc12c6976
 *原文作者：Vincent Blanchon
-*本文永久链接：
+*本文永久链接：https://github.com/gocn/translator/blob/master/2021/w25_go_garbage_collector_mark_the_memory.md
 
 - 译者：[cuua](https:/github.com/cuua)
 - 校对：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_F1iSZOqbbHKM29IvZi0sNQ.png)
 
-This article is based on Go 1.13. The notions about memory management discussed here are explained in my article “Go: Memory Management and Allocation.”
-The Go garbage collector is responsible for collecting the memory that is not in use anymore. The implemented algorithm is a concurrent tri-color mark and sweep collector. In this article, we will see in detail the marking phase, along with the usage of the different colors.
-You can find more information about the different types of garbage collector in “Visualizing Garbage Collection Algorithms” by Ken Fox.
-## Marking phase
-This phase performs a scan of the memory to know which blocks are still in use by our code and which ones should be collected.
-However, since the garbage collector can run concurrently with our Go program, it needs a way to detect potential changes in the memory while scanning. To tackle that potential issue, an algorithm of write barrier is implemented and will allow Go to track any pointer changes. The only condition to enable write barriers is to stop the program for a short time, also called “Stop the World”:
+本文基于Go 1.13。这里讨论的关于内存管理的概念在我的文章[Go:内存管理和分配](https://medium.com/a-journey-with-go/go-memory-management-and-allocation-a7396d430f44) 中有解释
+
+Go垃圾收集器负责收集不再使用的内存。实现的算法是一个并行的三色标记扫描采集器。在本文中，我们将详细了解标记阶段，以及不同颜色的用法。
+
+您可以在kenfox的[可视化垃圾收集算法](https://spin.atomicobject.com/2014/09/03/visualizing-garbage-collection-algorithms/) 中找到关于不同类型垃圾收集器的更多信息。
+
+##标记阶段
+
+此阶段执行内存扫描，以了解代码仍在使用哪些块，以及应该收集哪些块。
+
+但是，由于垃圾收集器可以与我们的Go程序同时运行，因此它需要一种在扫描时检测内存中潜在变化的方法。为了解决这个潜在的问题，实现了一个写屏障算法，允许Go跟踪任何指针的变化。启用写屏障的唯一条件是短时间停止程序，也称为“STW”：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_T16GKkEkxfswmCiHTNpwhQ.png)
 
-Go also starts, at the beginning of the process, a marking worker per processor that help with marking the memory.
-Then, once the roots have been enqueued for processing, the marking phase can start traversing and coloring the memory.
-Let’s now take an example with a simple program that will allow us to follow the steps done during the marking phase
+在进程开始时，Go还会为每个处理器启动一个标记辅助进程，以帮助标记内存。
+
+然后，一旦根节点被排队等待处理，标记阶段就可以开始遍历内存并为其着色。
+
+现在让我们以一个简单的程序为例，该程序允许我们遵循标记阶段所做的步骤
+
 ```
 Type struct1 struct {
 	a, b int64
@@ -59,56 +67,68 @@ func allocStruct2() *struct2 {
 }
 ```
 
-Since the struct subStruct does not contain any pointer, it is stored in a span dedicated to objects with no reference to other objects:
+由于struct subStruct不包含任何指针，因此它存储在一个专用于对象的范围中，而不引用其他对象：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_YDuAROmG-ELCTT0YbjPd0A.png)
 
-This makes the job of the garbage collector easier since it does not have to scan this span when marking the memory.
-Once the allocations are done, our program forces the garbage collector to run for a cycle. Here is the workflow:
+这使得垃圾收集器的工作更容易，因为它在标记内存时不必扫描这个范围。
+
+一旦分配完成，我们的程序就会强制垃圾收集器运行一个周期。以下是工作流程：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_3cUkXTZzicm3CU_MWHRYSA.png)
 
-The garbage collector starts from the stack and follows pointers recursively to go through the memory. Spans that are marked as no scan stop the scanning. However, this process is not done by the same goroutine; each pointer is enqueued in a work pool. Then, the background mark workers seen previously dequeue works from this pool, scan the objects and then enqueue the pointers found in it:
+垃圾收集器从堆栈开始，递归地跟随指针遍历内存。标记为“无扫描”的范围将停止扫描。然而，这个过程不是由同一个goroutine
+完成的；每个指针都在工作池中排队。然后 ，后台的标记线程发现之前的出列队列是来自该工作池，扫描对象，然后将在其中找到的指针加入队列：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_wN1PKsSi9ZVBV-F19yPbMQ.png)
 
-## Coloring
-The workers now need a way to track which memory has been scanned or not. The garbage collector uses a tri-color algorithm that works as follows:
-all objects are considered white at the beginning
-the root objects (stacks, heap, global variables) will be colored in grey
-Once this primary step is done, the garbage collector will:
-pic a grey object, color it as black
-follow all the pointers from this object and color all referenced objects in grey
-Then, it will repeat those two steps until there are no more objects to color. From this point, the objects are either black or white. The white set represents objects that are not referenced by any other object and ready to be collected.
-Here is a representation of it using the previous example:
+## 着色
+后台线程现在需要一种方法来跟踪哪些内存有没有被扫描。垃圾收集器使用三色算法，其工作原理如下：
+ 
+ * 所有物体一开始都被认为是白色的
+ 
+ * 根对象（堆栈、堆、全局变量）将以灰色显示
+ 
+ 完成此主要步骤后，垃圾收集器将：
+ 
+ * 选择一个灰色的物体，把它涂成黑色
+ 
+ * 遵循此对象的所有指针并将所有引用的对象涂成灰色
+ 
+ 然后，它将重复这两个步骤，直到没有更多的对象要着色。从这一点来看，对象不是黑色就是白色。白色集合表示未被任何其他对象引用且准备好回收的对象。
+ 
+ 下面是使用上一个示例对其进行的表示：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_lOrCSzoJgzRxoFCpi6cdvQ.png)
 
-As a first state, all objects are considered white. Then, the objects are traversed and the ones reachable will turn grey. If an object is in a span marked as no scan, it can be painted in black since it does not need to be scanned:
+作为第一种状态，所有对象都被视为白色。然后，对象被遍历，可到达的对象将变为灰色。如果对象位于标记为“无扫描”的范围内，则可以将其绘制为黑色，因为不需要对其进行扫描：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_O-Nf5YGG-7WpHY9toZlJ5g.png)
 
-Grey objects are now enqueued to be scanned and turn black:
+灰色对象现在入队等待扫描并变黑：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_RYHFCxiIkfoOvEi9x7zgQQ.png)
 
-The same thing happens for the objects enqueue until there are no more objects to process:
+在没有更多的对象要处理之前，入队的对象也会发生同样的情况：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_V_xSuGZ892V7NT5aG3KiZQ.png)
 
-At the end of the process, black objects are the ones in-use in memory when white objects are the ones to be collected. As we can see, since the instance of struct2 has been created in an anonymous function and is not reachable from the stack, it stays white and can be cleaned.
-The colors are internally implemented thanks to a bitmap attribute in each span called gcmarkBits that traces the scan with setting to 1 the corresponding bit:
+在进程结束时，黑色对象是内存中正在使用的对象，而白色对象是要收集的对象。如我们所见，由于struct2的实例是在匿名函数中创建的，并且无法从堆栈访问，因此它保持为白色，可以清除。
+
+由于每个跨度中有一个名为gcmarkBits的位图属性，颜色在内部实现，该属性跟踪扫描，并将相应的位设置为1：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_dMVV5LIt3QpczR7ULsp5CQ.png)
 
-As we can see, the black and the grey color works the same way. The difference in the process is that the grey color enqueues an object to be scanned when black objects end the chain.
-The garbage finally stops the world, flushes the changes made on each write barrier to the work pool and performs the remaining marking.
-You can find more details about the concurrent processes and the marking phase in the garbage collector in my article “Go: How Does the Garbage Collector Watch Your Application.”
-## Runtime profiler
-The tools provided by Go allow us to visualize all those steps and see the impact of the garbage collector in our programs. Running our code with the tracing enabled provides a big picture of the previous steps. Here are the traces:
+正如我们所见，黑色和灰色的工作原理是一样的。这一过程的不同之处在于，当黑色物体结束扫描链时，灰色物体排队等待扫描。
+
+垃圾回收器最终会stops the world，将每个写屏障上所做的更改刷新到工作池，并执行剩余的标记。
+
+您可以在我的文章[Go:垃圾收集器如何监视您的应用程序](https://medium.com/a-journey-with-go/go-how-does-the-garbage-collector-watch-your-application-dbef99be2c35) 中找到有关并发进程和垃圾收集器中标记阶段的更多详细信息
+## 运行时分析器
+Go提供的工具允许我们可视化所有这些步骤，并在程序中查看垃圾收集器的影响。在启用跟踪的情况下运行我们的代码提供了前面步骤的一个大图。以下是traces：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_es-yln-MfQUwW1_F2zSWFw.png)
 
-The cycle of life of the marking worker can also be visualized in the tracer at the goroutine level. Here an example with the goroutine #33, which is waiting in background first before starting to mark the memory.
+标记线程的生命周期也可以在goroutine级别的tracer中可视化。下面是goroutine#33的示例，它在开始标记内存之前先在后台等待。
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_iBWfZ3HZP_R6PAtQMt4wVA.png)
