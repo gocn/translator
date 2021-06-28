@@ -77,7 +77,7 @@ func allocStruct2() *struct2 {
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_3cUkXTZzicm3CU_MWHRYSA.png)
 
-垃圾回收器从堆栈开始，递归地跟随指针遍历内存。标记为“无扫描”的范围将停止扫描。然而，这个过程不是由同一个goroutine
+垃圾回收器从堆栈开始标记，然后跟着指针递归遍历内存。直到对象都被标记时停止扫描。然而，这个过程不是在同一个 goroutine 中完成的
 完成的；每个指针都在工作池中排队。然后 ，后台的标记线程发现之前的出列队列是来自该工作池，扫描对象，然后将在其中找到的指针加入队列：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_wN1PKsSi9ZVBV-F19yPbMQ.png)
@@ -85,13 +85,13 @@ func allocStruct2() *struct2 {
 ## 着色
 后台线程现在需要一种方法来跟踪哪些内存有没有被扫描。垃圾回收器使用三色算法，其工作原理如下：
  
- * 所有物体一开始都被认为是白色的
+ * 所有对象一开始都被认为是白色的
  
  * 根对象（堆栈、堆、全局变量）将以灰色显示
  
  完成此主要步骤后，垃圾回收器将：
  
- * 选择一个灰色的物体，把它涂成黑色
+ * 选择一个灰色的对象，把它涂成黑色
  
  * 遵循此对象的所有指针并将所有引用的对象涂成灰色
  
@@ -119,7 +119,7 @@ func allocStruct2() *struct2 {
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_dMVV5LIt3QpczR7ULsp5CQ.png)
 
-正如我们所见，黑色和灰色的工作原理是一样的。这一过程的不同之处在于，当黑色物体结束扫描链时，灰色物体排队等待扫描。
+正如我们所见，黑色和灰色的工作原理是一样的。这一过程的不同之处在于，当黑色对象结束扫描链时，灰色对象排队等待扫描。
 
 垃圾回收器最终会stops the world，将每个写屏障上所做的更改刷新到工作池，并执行剩余的标记。
 
