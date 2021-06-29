@@ -1,11 +1,13 @@
-# Go: How Does the Garbage Collector Mark the Memory?
+# golang垃圾回收器如何标记内存？
 
 *原文地址：https://medium.com/a-journey-with-go/go-how-does-the-garbage-collector-mark-the-memory-72cfc12c6976
+
 *原文作者：Vincent Blanchon
+
 *本文永久链接：https://github.com/gocn/translator/blob/master/2021/w25_go_garbage_collector_mark_the_memory.md
 
 - 译者：[cuua](https:/github.com/cuua)
-- 校对：
+- 校对：[laxiaohong](https:/github.com/laxiaohong)
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_F1iSZOqbbHKM29IvZi0sNQ.png)
 
