@@ -5,6 +5,7 @@
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w27_scaling_k8s_with_assurance_at_pinterest_introduction.md
 
 - 译者：[咔叽咔叽](https:/github.com/watermeloooo)
+- 校对：[cvley](https:/github.com/cvley), [Fivezh](https:/github.com/fivezh)
 
 ## 介绍
 
