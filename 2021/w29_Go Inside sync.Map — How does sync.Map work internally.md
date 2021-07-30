@@ -234,7 +234,7 @@ func (m *Map) Store(key, value interface{})
 新添加的键可能会留在可写的 map 中，而最常访问的键可能会留在可读的 map 中。当添加、读取和删除一组有限的键时，假定每个操作都以相同的频率发生时，`sync.Map` 将执行最少的操作。当你不让写 map 中的键被提升时，就会发生这种情况经常添加和删除它们。在这种情况下，我们最好将 `map` 与 `sync.RWMutex` 或 `sync.Mutex` 一起使用（并发散列映射的确切选择通常通过基准测试决定）。
 
 
-每当一个键在 `sync.Map` 中被删除，它只将其关联的值字段标记为 `[nil](https://github.com/golang/go/blob/21a04e33353316635b5f3351e807916f3bb1e844/src/sync/map.go#L297)`，但直到第一次写入后，key 才真正删除 writable-map 作为可读 map。这会导致内存开销。但是这种开销只是暂时的，随着下一个促销周期，开销会下降。
+每当一个键在 `sync.Map` 中被删除，它只将其关联的值字段标记为 `[nil](https://github.com/golang/go/blob/21a04e33353316635b5f3351e807916f3bb1e844/src/sync/map.go#L297)`，但直到第一次写入后，key 才真正删除 writable-map 作为可读 map。这会导致内存开销。但是这种开销只是暂时的，等到下一个提升周期，开销就会下降。
 
 ## sync.Map 实现细节
 
