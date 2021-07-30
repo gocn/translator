@@ -639,7 +639,7 @@ func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
 3. 如果成功，返回结果。此时，没有使用锁。
 4. 如果失败，并且`read.amended` 为真（表示`dirty` 字段不是`nil`），则从可写的 map（即`dirty` 映射）中读取该值。
 5. 第 4 步在一个由 `mu` 保护的锁定区域内运行。源代码 10 中的第 5、6 和 7 行在第 12、13 和 14 行中再次重复；但这是在锁定区域内完成的。这样做是因为，在此期间，与该键关联的不同 goroutine 可能添加了一个新的 `entry` 对象。但是所有的写操作都与锁同步。因此，这里不会有任何竞争条件。
-6、如果通过可读的 map 检索失败，则从可写的 map 中检索。
+6. 如果通过可读的 map 检索失败，则从可写的 map 中检索。
 
 ## LoadOrStore(key, value interface{}) (actual interface{}, loaded bool)
 
