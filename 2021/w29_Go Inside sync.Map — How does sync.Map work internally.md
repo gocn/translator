@@ -40,7 +40,7 @@
 [sync.Map 文档](https://golang.org/pkg/sync/#Map)
 >  snyc.Map 类型针对两个常见案例进行优化
 > 
-> (1) 当给定键的条目只写入一次但读取多次时，就像只会增长的缓存中一样
+> (1) 当给定键的 entry 只写入一次但读取多次时，就像只会增长的缓存中一样
 > 
 > (2) 当多个 goroutine 读取、写入和重写不相交的 keys 集合时。在这两种情况下，与使用单独的 Mutex 或 RWMutex 配对的 map 相比，使用 sync.Map 可以显着减少锁争用。
 
@@ -380,7 +380,7 @@ type readOnly struct {
 2.修改 `dirty[key]` 返回的 `entry` 实例，如果检索成功。修改是通过替换 `entry` 对象（存储在 `atomic.Value` 类型的 `read` 对象内）中的值来完成的。如果第一步失败，则执行此操作。
 
 
-3.如果 `dirty` 为 `nil`（当`read.amended`为false时就是这种情况），创建一个新的 `map` 并将只读 map 中的所有内容复制到它。然后将记录添加到 `dirty`（注意，随着字段被复制，`entry` 对象的地址就是被复制的对象。因此，读映射和写映射中存在的每个键都指向准确的相同的 `条目` 对象。）
+3.如果 `dirty` 为 `nil`（当`read.amended`为false时就是这种情况），创建一个新的 `map` 并将只读 map 中的所有内容复制到它。然后将记录添加到 `dirty`（注意，随着字段被复制，`entry` 对象的地址就是被复制的对象。因此，读映射和写映射中存在的每个键都指向准确的相同的 `entry` 对象。）
 
 
 在删除的情况下，如果键存在于 `read` 中的 `readOnly` 对象中，它的 `entry` 实例会自动更新为 `nil`。这个操作不需要获取 `mu`。但是在 `dirty` 字段中搜索键时需要获取 `mu`。如果键不存在于 `read` 中，它会在 `dirty` 中查找，同时由 `mu` 保护。如果只在 `dirty` 中找到，则直接使用内置的 `delete` 函数删除 `entry` 对象。
@@ -520,7 +520,7 @@ func (e *entry) tryStore(i *interface{}) bool {
 可能会在调用从不同 goroutine 执行的 `missLocked()` 之后被替换，该 goroutine 也将在获取 `mu` 后执行（_Note ，每个带有后缀 `Locked` 的函数都应该在由 `mu` 保护的锁定区域内执行）。但是因为第 1 部分没有获取 `mu`，在源代码 6 的第 6 行检索到的值可能会过时。
 
 
-在第 2 部分中，再次检索了 `entry` 指针。现在，调用`e.unexpungeLocked()` 检查存储在条目中的值是否被 `expunged`：
+在第 2 部分中，再次检索了 `entry` 指针。现在，调用`e.unexpungeLocked()` 检查存储在entry中的值是否被 `expunged`：
 
 1. 如果它是 `nil` 或其他任何东西，则表示在 `dirty` 映射中也必须存在相同的键。
 2. 但如果它是 `expunged`，则表示该键不存在于 `dirty` 映射中，并且必须将其添加到其中。因此，由 `read.m[key]` 检索到的 `entry` 对象的指针被存储到与其适当的键相关联的`dirty` 中。因为使用了相同的指针，对底层 `entry` 对象的任何更改都会反映在 “干净” map 和 “dirty” map中。
@@ -546,10 +546,10 @@ func (e *entry) tryStore(i *interface{}) bool {
 1. `dirty` map 是 `nil`
 2. `dirty` map 不是 `nil`
 
-如果 `dirty` map 是 `nil`，则必须在添加新键之前通过从 `readOnly` 对象复制条目来创建它。否则，直接添加键而不做任何更改。
+如果 `dirty` map 是 `nil`，则必须在添加新键之前通过从 `readOnly` 对象复制entry来创建它。否则，直接添加键而不做任何更改。
 
 
-`dirty` 映射为 `nil` 也表示自从它的 `dirty` map 被提升为“干净” map 以来，没有新条目被添加到 `sync.Map` 对象中。因此，如果 `dirty` 是 `nil`，则源 5 中的字段 `read.amended` 应该是 `false`。
+`dirty` 映射为 `nil` 也表示自从它的 `dirty` map 被提升为“干净” map 以来，没有新entry被添加到 `sync.Map` 对象中。因此，如果 `dirty` 是 `nil`，则源 5 中的字段 `read.amended` 应该是 `false`。
 
 在将 `dirty` map 提升为干净 map 时（这发生在对结构 `sync.Map` 中定义的 `missLocked()` 的调用时；它仅在 `Load(...)`、`LoadOrStore(...)`时执行、`LoadAndDelete(...)` 或 `Delete(...)` 被调用）它只是被直接复制到“干净”的 map 中。发生这种情况时，用户可以自由地同时删除干净map中的键（这只是一个原子操作）并重新添加它们。但是在升级后第一次尝试将新键添加到map中时，干净映射的内容被复制到脏映射中。但是当发生这种情况时，在其 `entry` 对象的指针字段中带有 `nil` 的键被忽略，并且在“干净” map 中，它们被原子地更改为 `expunged`。
 
@@ -575,7 +575,7 @@ func (m *Map) dirtyLocked() {
 
 `tryExpungeLocked()` 定义如下：
 
-> 源码 9：`tryExpungeLocked()`——如果它是 `nil`，则用 expunged 更新条目的指针
+> 源码 9：`tryExpungeLocked()`——如果它是 `nil`，则用 expunged 更新entry的指针
 ```go
 
 func (e *entry) tryExpungeLocked() (isExpunged bool) {
