@@ -28,7 +28,6 @@
     g. Delete()(value interface{}, ok bool)  
     h. Range(f func(key, value interface{}) bool)_
 5. sync.Map 和 RWMutex 保护的 map 之间的性能对比。快速优化指南
-6.  _What does an extreme level of optimization look like?_
 6. 极致的优化是什么样的？
 
 
