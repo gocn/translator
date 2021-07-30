@@ -36,7 +36,7 @@
 
 在应用代码中，大多数操作都是依赖于 hash map。因此，如果 hash map 的读写很慢，它们最终会成为性能的主要瓶颈。在引入 `sync.Map` 之前，标准库只需要依赖于不是线程安全的内置 `map`。当多个 goroutines 调用它时，必须依赖 `sync.RWMutex` 来同步访问。但是这么做，并不能很好地利用多核 CPU 的性能，所以在 go1.9 引入 `sync.Map` 来解决多核 CPU 操作 map 的性能问题。当程序运行在 64 核的机器上，`sync.RWMutex` 的性能下降会比较明显。
 
-使用`sync.RWMutex`,[sync.RWMutex](https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/rwmutex.go#L28)中的值`readerCount`随着每次调用读锁而增加，这会导致缓存的竞争。最终导致处理器其他内核的性能下降。这是因为每增加一个核心，向每个核心的缓存发布更新的开销就会增加。
+使用`sync.RWMutex`,[sync.RWMutex](https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/rwmutex.go#L28)中`readerCount`的值随着每次调用读锁而增加，这会导致缓存的竞争。最终导致处理器其他内核的性能下降。这是因为每增加一个核心，向每个核心的缓存发布更新的开销就会增加。
 [sync.Map 文档](https://golang.org/pkg/sync/#Map)
 >  snyc.Map 类型针对两个常见案例进行优化
 > 
