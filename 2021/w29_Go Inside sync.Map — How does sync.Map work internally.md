@@ -7,7 +7,7 @@
 * 本文永久链接：
 
 - 译者：[guzzsek](https://github.com/laxiaohong)
-- 校对：[x'x](https:/github.com/**)
+- 校对：[lsj1342](https://github.com/lsj1342)
 
 提示: 这篇文章有点长
 
