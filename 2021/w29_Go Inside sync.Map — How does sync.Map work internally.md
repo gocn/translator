@@ -228,7 +228,7 @@ func (m *Map) Store(key, value interface{})
 `sync.Map` 最初是为了减少 Go 的标准库包所产生的开销，这些包一直使用由 `sync.RWMutex` 保护的 `map`。所以 Go 的作者们发现像 `sync.Map` 这样的存储不会增加太多的内存开销（另一种内存密集型解决方案是为每个使用的 goroutine 提供一个单独的映射副本，但让它们同步更新）而还提高程序在多核环境中的性能。因此，`sync.Map` 的初衷是为了解决[标准包中的问题](https://github.com/golang/go/issues/40999#issuecomment-679449778)，但还是公开了，希望大家觉得有用。
 
 
-但是，文档并没有真正详细说明 `sync.Map` 究竟在哪里最有用。 通过[基准测试](https://medium.com/@deckarep/the-new-kid-in-town-gos-sync-map-de24a6bf7c2c) 和 `[sync.Map](https://medium.com/@deckarep/the-new-kid-in-town-gos-sync-map-de24a6bf7c2c)` 表明，仅当它在具有超过 4 个核的系统上运行时，使用 `sync.Map` 比使用由 `sync.RWMutex` 保护的 `map` 更加高率。 `sync.Map` 最理想的用例是将其用作缓存，特别是频繁访问不相交的键；或从同一组键中广泛读取它。
+但是，文档并没有真正详细说明 `sync.Map` 究竟在哪里最有用。 通过[基准测试](https://medium.com/@deckarep/the-new-kid-in-town-gos-sync-map-de24a6bf7c2c) 和 `[sync.Map](https://medium.com/@deckarep/the-new-kid-in-town-gos-sync-map-de24a6bf7c2c)` 表明，仅当它在具有超过 4 个核的系统上运行时，使用 `sync.Map` 比使用由 `sync.RWMutex` 保护的 `map` 更加高效。 `sync.Map` 最理想的用例是将其用作缓存，特别是频繁访问不相交的键；或从同一组键中广泛读取它。
 
 
 新添加的键可能会留在可写的 map 中，而最常访问的键可能会留在可读的 map 中。当添加、读取和删除一组有限的键时，`sync.Map` 将执行最少的操作，其中每个操作都以相同的频率发生。当你不让写 map 中的键被提升时，就会发生这种情况经常添加和删除它们。在这种情况下，我们最好将 `map` 与 `sync.RWMutex` 或 `sync.Mutex` 一起使用（并发散列映射的确切选择通常通过基准测试决定）。
