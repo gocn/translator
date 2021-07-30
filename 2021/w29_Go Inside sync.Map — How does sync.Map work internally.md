@@ -155,7 +155,7 @@ func (m *RWMutexMap) Range(f func(key, value interface{}) (shouldContinue bool))
 当性能很重要时，我们可以通过减少并行获取相同锁的频率（从而减少锁争用的频率）或完全用 atomic 指令（如 atomic-load、atomic-store 和 atomic-compare）代替锁来解决这个问题和交换。atomic 操作也不是灵丹妙药，因为依赖于 atomic 比较和交换的状态更新在无限循环中运行，直到更新成功。当存在争用时，更新通常不会发生，因此当有大量并发更新时，导致它们忙等待。
 
 
-大多数应用程序通常依赖于两者的组合。甚至有些应用程序也尝试选择更快的替代方案，例如减少对循环中旋转的 atomic 比较和交换指令的调用次数。
+大多数应用程序通常使用两者的组合。甚至有些应用程序也尝试选择更快的替代方案，例如减少对循环中旋转的 atomic 比较和交换指令的调用次数。
 
 `[sync.RWMutex](https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/rwmutex.go#L28)` 使用信号量的组合以及两个附加变量 `readerCount` 和 `readerWait` 来记录正在读取和等待读取的数量。
 
