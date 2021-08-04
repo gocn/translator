@@ -3,7 +3,7 @@
 - 原文作者：Miki Tebeka
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w30_Data_Science_in_Go_How_Much_To_Tip.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[laxiaohong](https://github.com/laxiaohong)
+- 校对：[laxiaohong](https://github.com/laxiaohong)、[cvley](https://github.com/cvley)
 * * *
 ### 提出问题
 
