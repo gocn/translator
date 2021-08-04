@@ -1,4 +1,4 @@
-## Go 用于数据科学
+## Go 用于数据科学：付多少小费
 - 原文地址：https://www.ardanlabs.com/blog/2021/07/go-data-science-how-much-tip.html
 - 原文作者：Miki Tebeka
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w30_Data_Science_in_Go_How_Much_To_Tip.md
@@ -341,7 +341,7 @@ Thursday  : 0.75 quantile tip: 0.20 (125692 samples)
 Friday    : 0.75 quantile tip: 0.20 (125743 samples)
 ```
 
-步骤 12 展示了如何运行上步骤代码。我们可以看到周末小费的百分比并没有差异。
+步骤 12 运行了上步骤的代码，展示了每天的数据结果。我们可以看到周末小费的百分比并没有差异。
 
 ### 结论
 
