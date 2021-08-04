@@ -350,5 +350,4 @@ Friday    : 0.75 quantile tip: 0.20 (125743 samples)
 
 只需要一点好奇心并会一点 Go 就可以让您在数据科学之旅中走得更远。您不必使用深度学习、决策树、支持向量机和其他算法来获得有用的答案。
 
-How are you using Go for data science? I’d love to hear, ping me at miki@ardanlabs.com.
 您正如何将 Go 用于数据科学？我很想听听，请通过 miki@ardanlabs.com 联系我。
