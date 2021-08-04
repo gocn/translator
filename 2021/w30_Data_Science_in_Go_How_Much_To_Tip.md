@@ -1,5 +1,3 @@
-Data Science in Go How Much To Tip
-
 ## Go 用于数据科学
 - 原文地址：https://www.ardanlabs.com/blog/2021/07/go-data-science-how-much-tip.html
 - 原文作者：Miki Tebeka
