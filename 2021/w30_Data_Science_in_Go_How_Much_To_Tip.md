@@ -168,7 +168,7 @@ total: min=-333.30, mean=18.47, max=4268.30
 
 ### 小费计算
 
-**步骤 7: 加载过滤数据
+**步骤 7: 加载过滤数据**
 
 ```
 114 func loadDataFiltered(r io.Reader) ([]float64, []float64, error) {
