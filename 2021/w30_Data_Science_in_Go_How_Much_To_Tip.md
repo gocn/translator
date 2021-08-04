@@ -1,4 +1,4 @@
-## Go 用于数据科学：付多少小费
+## Go 应用于数据科学的案例分享：付多少小费
 - 原文地址：https://www.ardanlabs.com/blog/2021/07/go-data-science-how-much-tip.html
 - 原文作者：Miki Tebeka
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w30_Data_Science_in_Go_How_Much_To_Tip.md
