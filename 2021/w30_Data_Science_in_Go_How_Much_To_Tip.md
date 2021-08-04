@@ -1,37 +1,37 @@
-## Data Science in Go: How Much To Tip
+## Go 用于数据科学：付多少小费
 - 原文地址：https://www.ardanlabs.com/blog/2021/07/go-data-science-how-much-tip.html
 - 原文作者：Miki Tebeka
-- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w11_Go_Developer_Survey_2020_Results.md
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w30_Data_Science_in_Go_How_Much_To_Tip.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[laxiaohong](https://github.com/laxiaohong)、[cvley](https://github.com/cvley)
 * * *
-### The Question
+### 提出问题
 
-When you work on data science problems, you always start with a question you’re trying to answer. This question will affect the data you pick, your exploration process, and how you interpret the results.
+当处理数据科学难题时，你总会以一个你想要回答的问题开始。这个问题将会影响你选择数据，探索过程以及解释结果。
 
-The question for this article is: How much (in percentage) should you tip your taxi driver?
+本文的问题是：你应该给出租车司机多少（按百分比）小费？
 
-To answer the question, we’ll use a portion of the [NYC Taxi dataset](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page). The data file we’ll be using is [taxi-01-2020-sample.csv.bz2](https://github.com/353words/taxi/raw/master/taxi-01-2020-sample.csv.bz2)
+为了回答这个问题，我们将使用[纽约市出租车数据集](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page)的一部分,使用的数据文件是[taxi-01-2020-sample.csv.bz2](https://github.com/353words/taxi/raw/master/taxi-01-2020-sample.csv.bz2)
 
-_Note: CSV is a horrible, horrible format. There’s no standard, no schema and everything is unmarshalled to text (unlike JSON where you have types). If you can, pick another format. My preferred data storage format is [SQLite](https://www.sqlite.org/)._
+_注意： CSV 是一种十分令人讨厌的格式。它没有标准，没有模式，所有内容都被解释为文本（与JSON 不同）。如果可以，请选择其他格式。我首选的数据存储格式是 SQLite 。_
 
-### Exploration Code
+### 探索过程的代码
 
-We’re searching for the answer to our question, we’ll be focused on productivity. If at some point this code will get to production, go ahead and refactor it.
+我们正在寻找问题的答案，我们将专注于快速实现。如果以后将此代码投入到生产环境下，那么继续重构它。
 
-To simplify working with the input, we’ll pass the input file in the standard input. We’ll have several stages of exploring the data and each will have a corresponding command line switch. In the `main` function we have the following line:
+为了简化输入的工作，我们将在标准输入中传递输入文件。我们将有几个探索数据的阶段，每个阶段都有一个相应的命令行开关。在 `main` 函数中，我们有以下行：
 
 ```
 r := bzip2.NewReader(os.Stdin)
 ```
 
-and then we’ll call each exploration step with `r`.
+并且，我们在每个探索步骤都会调用到 `r` 。
 
-### First Contact
+### 初探
 
-Before you start working with data, it’s important to have a quick look at it to see that it matches your expectations. You should also check that the data fits in memory.
+在开始处理数据之前，快速查看它是否符合你的期望。此外，你还应该检查数据是否适合放入内存。
 
-**Listing 1: First Look**
+**步骤 1：初次查看**
 
 ```
 19 func firstLook(r io.Reader) error {
@@ -55,9 +55,9 @@ Before you start working with data, it’s important to have a quick look at it 
 37 }
 ```
 
-Listing 1 shows the first look on the data. On line 21, we create a `bufio.Scanner` to scan line by line. On lines 23-25, we print the first 5 lines from the file. On line 34, we print the file size and on line 35, we print the number of lines.
+步骤 1 显示了对数据的初步了解。在第 21 行，我们创建了一个 bufio.Scanner 用以逐行扫描。在第 23-25 行，我们打印文件的前 5 行。在第 34 行，我们打印文件大小，在第 35 行，我们打印了行数。
 
-**Listing 2: Running First Look**
+**步骤 2: 运行代码**
 
 ```
 $ go run taxi.go -first_look < taxi-01-2020-sample.csv.bz2
@@ -70,15 +70,15 @@ size: 101.68MB
 lines: 1000001
 ```
 
-Listing 2 shows how to run the first step. We run the program with `go run`. In the output we see the first 5 lines and the uncompressed file size and the number of lines.
+步骤 2 展示了如何运行第一步。我们用 `go run` 来运行代码。在输出中，我们看到文件的前 5 行以及未压缩文件的大小和行数。
 
-The file is a CSV file and small enough to fit in memory. To calculate the tip percentage we need only two columns: `tip_amount` and `total_amount`. If you’re curious about the data schema, see [here](https://www1.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf).
+该文件是一个 CSV 文件，小到可以放入内存。要计算小费百分比，我们只需要两列：`tip_amount` 和 `total_amount`。如果您对数据模式感到好奇，请参阅[此处](https://www1.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf)。
 
-### Loading the Data
+### 加载数据
 
-Once the initial look aligns with your assumptions, you can load the data. We’re going to use `github.com/jszwec/csvutil` to parse the CSV and [gonum](https://www.gonum.org/) to calculate some statistics.
+一旦初次查看的结果与您的假设一致，您就可以加载数据。我们将使用 `github.com/jszwec/csvutil` 解析 CSV 和 [gonum](https://www.gonum.org/) 来计算一些统计信息。
 
-**Listing 3: Imports**
+**步骤 3: 依赖引入**
 
 ```
 14     "github.com/jszwec/csvutil"
@@ -86,9 +86,9 @@ Once the initial look aligns with your assumptions, you can load the data. We’
 16     "gonum.org/v1/gonum/stat"
 ```
 
-Listing 3 shows the external imports in our code. On line 14, we import `csvutil` and on lines 15-16, we import `floats` and `stat` from `gonum`.
+步骤 3 展示了代码中的外部依赖导入。在第 14 行，我们导入 `csvutil` ，在第 15-16 行，我们从`gonum` 导入 `floats` 和 `stat`。
 
-**Listing 4: Load Data**
+**步骤 4: 加载数据**
 
 ```
 62 type Row struct {
@@ -123,9 +123,9 @@ Listing 3 shows the external imports in our code. On line 14, we import `csvutil
 91 }
 ```
 
-Listing 4 shows how we load the data. On lines 62-65, we define a `Row` struct with the fields that interest us. On line 68, we define the `tip` and `amount` slices to hold the values from the `tip_amount` and `total_amount` fields in the CSV. On lines 74-88, we run a `for` loop to upload the data and finally on line 90, we return the data.
+步骤 4 显示了我们如何加载数据。在第 62-65 行，我们定义了一个 `Row` 结构体来包含我们感兴趣的字段。在第 68 行，我们定义了 `tip` 和 `amount` 切片来保存 CSV 中 `tip_amount` 和 `total_amount` 字段的值。在第 74-88 行，我们运行一个for循环来上传数据。最后在第 90 行，进行数据返回。
 
-**Listing 5: Statistics**
+**步骤 5: 统计**
 
 ```
 39 func statistics(r io.Reader) error {
@@ -152,9 +152,9 @@ Listing 4 shows how we load the data. On lines 62-65, we define a `Row` struct w
 60 }
 ```
 
-Listing 5 shows the `statistics` step of our data exploration. On line 40, we load the date. On lines 45-50, we print the minimal, mean (average) and maximal values for the tip. On lines 52-57, we do the same for the total.
+步骤 5 显示了statistics我们数据探索的步骤。在第 40 行，我们加载日期。在第 45-50 行，我们打印了小费的最小值、平均值（平均值）和最大值。在第 52-57 行，我们对总数执行相同的操作。
 
-**Listing 6: Running Statistics**
+**步骤 6: 运行统计代码**
 
 ```
 $ go run taxi.go -stats < taxi-01-2020-sample.csv.bz2 
@@ -162,13 +162,13 @@ tip: min=-11.80, mean=2.21, max=333.50
 total: min=-333.30, mean=18.47, max=4268.30
 ```
 
-Listing 6 shows how to run the statistics step. We can see there are some bad values. Both minimum values are negative and the maximal value for the total amount is more than $4,000.
+步骤 6 显示了如何运行统计步骤的代码。我们可以看到有一些不好的值。两个最小值都是负数并且总金额的最大值超过 4,000 美元。
 
-In any real life dataset you will have bad values, and you need to decide what to do with them. We’re going to take the easy approach and ignore them. We will filter out negative values. Also, since we’re not planning on taxi rides that cost more than $100, we’ll filter out rows with `total_amount` bigger than 100.
+在任何现实生活中的数据集中，都会有错误的值，你需要决定如何处理它们。我们将采用简单的方法并忽略它们。我们将过滤掉负值。此外，由于我们不打算乘坐费用超过 100 美元的出租车，因此我们将过滤掉 `total_amount` 大于 100 的行。
 
-### Tip
+### 小费计算
 
-**Listing 7: Load Filtered Data**
+**步骤 7: 加载过滤数据
 
 ```
 114 func loadDataFiltered(r io.Reader) ([]float64, []float64, error) {
@@ -202,11 +202,11 @@ In any real life dataset you will have bad values, and you need to decide what t
 142 }
 ```
 
-Listing 7 shows loading of filtered data. The only difference from `loadData` are lines 133-135 where we filter out rows.
+步骤 7 展示了对过滤数据的加载。和 `loadData` 唯一的区别是第 133-135 行的过滤操作。
 
-Now we can calculate the tip we want to pay. We’d like to be on the generous side so we’ll use the 75% [quantile](https://en.wikipedia.org/wiki/Quantile) value. The 75% quantile (or percentile) is a number that 75% of the values are below it.
+现在我们可以计算我们想要支付的小费。我们希望保持慷慨，因此我们将使用 75% 的[分位数值](https://en.wikipedia.org/wiki/Quantile)。75% 分位数（或百分位数）是 75% 的值低于它的数字。
 
-**Listing 8: Desired Tip**
+**步骤 8: 期待支出的小费**
 
 ```
 93  func desiredTip(r io.Reader) error {
@@ -231,9 +231,9 @@ Now we can calculate the tip we want to pay. We’d like to be on the generous s
 112 }
 ```
 
-Listing 8 shows the `desiredTip` function. On line 94, we load the filtered data. On line 99, we print how many filtered values we have to check so we don’t filter out too many rows. On lines 101-104, we create a slice of percentages. Finally on lines 107-110, we calculate the 75% percentile and on line 107, we print it.
+步骤 8 展示了 `desiredTip` 函数。在第 94 行，我们加载了过滤后的数据。在第 99 行，我们打印了过滤后的行数，这样方便我们检查不会过滤掉太多行。在第 101-104 行，我们创建了一个百分比切片。最后在第 107-110 行，我们计算 75% 的百分位数，并在第 110 行，我们把它打印了出来。
 
-**Listing 9: Running Desired Tip**
+**步骤 9: 运行代码**
 
 ```
 $ go run taxi.go -tip < taxi-01-2020-sample.csv.bz2 
@@ -241,11 +241,11 @@ $ go run taxi.go -tip < taxi-01-2020-sample.csv.bz2
 0.75 quantile tip: 0.20
 ```
 
-Listing 9 shows the `tip` step output. We see we filtered out about 30% of the rows. And finally, we see that the 75% quantile is 20%.
+步骤 9 展示了 `tip` 步骤输出。我们看到我们过滤掉了大约 30% 的行。最后，我们看到 75% 的分位数是 20%。
 
-But wait! Maybe we should tip more on the weekend? Let’s have a look:
+可是，等等！也许我们会在周末多给点小费？我们来看一下：
 
-**Listing 10: Loading Data With Time**
+**步骤 10: 加载携带时间的数据**
 
 ```
 145 func unmarshalTime(data []byte, t *time.Time) error {
@@ -294,9 +294,9 @@ But wait! Maybe we should tip more on the weekend? Let’s have a look:
 188 }
 ```
 
-Listing 10 shows how to load the data with time. On lines 145-149, we write an `unmarshalTime` function to parse time from a `[]byte`. On lines 151-155, we define `TimeRow` which is a row that contains a `Time` field. On line 159, we define the `times` slice and on line 160, we register `unmarshalTime` to handle `time.Time` fields. Finally on line 187, we return the times, tip and total.
+步骤 10 显示了如何加载数据的时间维度。在第 145-149 行，我们编写了一个 `unmarshalTime` 函数来从 `[]byte` 解析为时间。在第 151-155 行，我们定义 `TimeRow` 为包含 `Time` 字段的行。在第 159 行，我们定义了 `times` 切片，在第 160 行，我们注册 `unmarshalTime` 以处理 `time.Time` 字段。最后在第 187 行，我们返回时间、小费和总数。
 
-**Listing 11: Tip by Weekday**
+**步骤 11: 按工作日计算小费**
 
 ```
 190 func weekdayTip(r io.Reader) error {
@@ -325,11 +325,11 @@ Listing 10 shows how to load the data with time. On lines 145-149, we write an `
 213 }
 ```
 
-Listing 11 shows the “tip by weekday” calculation. On line 196, we use a map to hold percentages per weekday. On lines 197 to 201, we populate the percentages for each week day, this is the equivalent of a “GROUP BY” operation in a database. On lines 203-209, we go over each weekday, calculate the .75 quantile and print it out.
+步骤 11 展示了 “工作日小费” 计算。在第 196 行，我们使用字典来保存每个工作日的百分比。在第 197 到 201 行，我们填充每个工作日的百分比，这相当于数据库中的 “GROUP BY” 操作。在第 203-209 行，我们遍历每个工作日，计算 0.75 分位数并将其打印出来。
 
-On line 209, we use the `-10s%` verb to have all weekdays take at least 10 characters and aligned to the line. This might seem like a trivial detail, but aligned output is much easier to compare for us humans - as you can see in the output below. We also align the number of samples for the same reason.
+在第 209 行，我们使用 `-10s%` 让所有工作日至少占 10 个字符来行对齐。这似乎是一个微不足道的细节，但对齐输出对于我们来说会更容易比较 - 正如您在下面的输出中看到的那样。出于同样的原因，我们也对齐了样本数量。
 
-**Listing 12: Running Weekday Tip**
+**步骤 12: 运行代码**
 
 ```
 $ go run taxi.go -daily < taxi-01-2020-sample.csv.bz2
@@ -341,10 +341,10 @@ Thursday  : 0.75 quantile tip: 0.20 (125692 samples)
 Friday    : 0.75 quantile tip: 0.20 (125743 samples)
 ```
 
-Listing 12 shows how to run the daily step. We can see that there’s no difference in the tip percentage over the weekend.
+步骤 12 运行了上步骤的代码，展示了每天的数据结果。我们可以看到周末小费的百分比并没有差异。
 
-### Conclusion
+### 结论
 
-A little curiosity and a little Go will get you pretty far in your data science journey. You don’t have to use deep learning, decision trees, support vector machines and other algorithms to get useful answers.
+只需要一点好奇心并会一点 Go 就可以让您在数据科学之旅中走得更远。您不必使用深度学习、决策树、支持向量机和其他算法来获得有用的答案。
 
-How are you using Go for data science? I’d love to hear, ping me at miki@ardanlabs.com.
+您正如何将 Go 用于数据科学？我很想听听，请通过 miki@ardanlabs.com 联系我。
