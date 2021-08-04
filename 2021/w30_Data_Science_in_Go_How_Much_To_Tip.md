@@ -3,11 +3,11 @@
 - 原文作者：Miki Tebeka
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w30_Data_Science_in_Go_How_Much_To_Tip.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[laxiaohong](https://github.com/laxiaohong)
 * * *
 ### 提出问题
 
-当处理数据科学难题时，总会以一个你想要回答的问题开始。这个问题将会影响你的数据选择，你的探索过程以及你如何去解释结果。
+当处理数据科学难题时，你总会以一个你想要回答的问题开始。这个问题将会影响你选择数据，探索过程以及解释结果。
 
 本文的问题是：你应该给出租车司机多少（按百分比）小费？
 
