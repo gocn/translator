@@ -17,14 +17,14 @@
 
 虽然这些答案在技术上是正确的，但我认为用简洁的语言展开构成这个"魔法"的层次结构会很棒！这也是一个很好的小练习，可以让你更深入地了解 Go 编译器的内部工作原理。
 
-仅供参考，本帖中的所有链接都指向即将发布的围棋1.17分支 Go 1.17 branch (https://github.com/golang/go/tree/release-branch.go1.17).
+仅供参考，本帖中的所有链接都指向即将发布的 Go 1.17 分支(https://github.com/golang/go/tree/release-branch.go1.17).
 
 ## A small interlude
 一些背景信息可能有助于理解这篇文章。
 
-Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org/src/cmd/compile/README) 开始阅读。前两个一般称为编译器前端，而后两个也称为编译器后端。
+Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org/src/cmd/compile/README) 开始阅读。前两个一般称为编译器"前端"，而后两个也称为编译器"后端"。
 
-* **语法分析**; 对源文件进行词法分析和语法分析，并为每个源文件构建语法树
+* **解析**; 对源文件进行词法分析和语法分析，并为每个源文件构建一个语法树
 * **AST 抽象语法树转换和类型检查**; 将语法树转换为编译器的 AST 表示形式，并对 AST 树进行类型检查
 * **生成 SSA 静态单赋值**; AST 树被转换为 Static Single Assignment (SSA静态单赋值)形式，这是一种可以实现优化的较低级别的中间表示形式
 * **生成机器码**; SSA 经过另一个特定于机器的优化过程，然后传递给汇编程序，转换为机器代码并写入最终的二进制文件
@@ -35,7 +35,7 @@ Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org
 ## 入口
 Go 编译器的入口点(毫不奇怪)是 *compile/internal/gc* 包中的 main() 函数(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go)
 
-如注释所示，这个函数负责解析 Go 源文件、类型检查编译过的 Go 包、将所有内容编译为机器代码并为编译过的包编写定义。
+如注释所示，这个函数负责解析 Go 源文件,对解析后的 Go 包进行类型检查,将所有内容编译为机器代码并为编译过的包编写定义。
 
 最初发生的事情之一就是类型检查。[typecheck.InitUniverse()](https://github.com/golang/go/blob/release-branch.go1.17/src/go/types/universe.go) ，它定义了基本类型、内置函数和操作数。
 
@@ -81,7 +81,7 @@ var builtinFuncs = [...]struct {
 		...
 	}
 ```
-同样，我们可以看到 len ()的所有有效输入类型
+同样，我们可以看到所有的类型将成为len()的有效输入
 ```go
 	okforlen[types.TARRAY] = true
 	okforlen[types.TCHAN] = true
@@ -95,11 +95,11 @@ var builtinFuncs = [...]struct {
 再深入一些，我们可以看到每个文件被单独解析，然后在五个不同的阶段进行类型检查。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/noder/noder.go#L40-L64)
 
 ```
-Phase 1: const, type, and names and types of funcs.
-Phase 2: Variable assignments, interface assignments, alias declarations.
-Phase 3: Type check function bodies.
-Phase 4: Check external declarations.
-Phase 5: Verify map keys, unused dot imports.
+Phase 1: const, type, and names and types of funcs. (常量，类型，标识符以及函数的类型)
+Phase 2: Variable assignments, interface assignments, alias declarations.（有效的赋值，接口赋值，别名声明）
+Phase 3: Type check function bodies.（函数体类型检查）
+Phase 4: Check external declarations. （检查外部声明）
+Phase 5: Verify map keys, unused dot imports.（检验Map的键和未使用的点引入）
 ```
 一旦在最后的类型检查阶段遇到 len 语句，它就会被转换为 *UnaryExpr*，因为它实际上不会最终成为一个函数调用。
 
@@ -159,7 +159,7 @@ func tcLenCap(n *ir.UnaryExpr) ir.Node {
 	...
 	compile(compilequeue)
 ```
-在 *buildssa* 和 *genssa* 之后，我们终于可以将 AST 树中的 len 表达式转换为 SSA。
+在 *buildssa* 和 *genssa* 之后，再深入几层,我们终于可以将 AST 树中的 len 表达式转换为 SSA。
 
 现在很容易看到每个可用类型是如何处理的！
 ```go
@@ -218,7 +218,7 @@ func (x *expandState) rewriteSelect(leaf *Value, selector *Value, offset int64, 
 	return locs
 ```
 ## Maps, Channels
-最后，对于映射和通道，我们使用 *referenceTypeBuiltin* 辅助函数。它的内部工作方式有点神奇，但是它最终做的是获取 map/chan 参数的地址并使用零偏移量引用它的结构布局，很像 *unsafe.Pointer(uintptr(unsafe.Pointer(s)))* 那样最终返回第一个结构字段的值。
+最后，对于Map和Channel，我们使用 *referenceTypeBuiltin* 辅助函数。它的内部工作方式有点神奇，但是它最终做的是获取 map/chan 参数的地址并使用零偏移量引用它的结构布局，很像 *unsafe.Pointer(uintptr(unsafe.Pointer(s)))* 那样最终返回第一个结构字段的值。
 ```go
 // referenceTypeBuiltin generates code for the len/cap builtins for maps and channels.
 func (s *state) referenceTypeBuiltin(n *ir.UnaryExpr, x *ssa.Value) *ssa.Value {
@@ -254,7 +254,7 @@ func (s *state) referenceTypeBuiltin(n *ir.UnaryExpr, x *ssa.Value) *ssa.Value {
 	return s.variable(n, lenType)
 }
 ```
-*hmap* 和 *hchan* 结构的定义表明，它们的第一个字段确实包含 *Len()* 所需要的东西，分别是 live map cells 和 channel queue data 。
+*hmap* 和 *hchan* 结构的定义表明，它们的第一个字段确实包含 *Len()* 所需要的东西，分别是 *count int // # live cells == size of map* (Map 的大小)和 *qcount uint // total data in the queue* (队列里所有的数据)。
 
 ```go
 type hmap struct {
@@ -289,9 +289,9 @@ type hchan struct {
 ## 临别赠言
 就是这样！这篇文章并没有我想象的那么长，我希望你也能对它感兴趣。
 
-我对于 Go 编译器的内部工作几乎没有经验，所以有些地方可能出错了。此外，很多事情在不久的将来都会发生改变，特别是随着泛型和新类型系统在接下来的几个 Go 版本中的出现，但我希望我至少提供了一种方法，可以让你接下来自己深入探索。
+我对于 Go 编译器的内部工作几乎没有经验，所以有些地方可能会有错。除此之外，随着泛型和新类型系统在接下来的几个 Go 版本中的出现，很多事情也都会发生改变。但我希望我至少提供了一种方法，可以让你接下来自己深入探索。
 
-请在任何情况下，都毫无犹豫地去寻求任何关于 Go 语言的评论，建议，新文章的灵感或者简单的谈论！
+请不要犹豫，向我提出意见、建议、新文章的想法，或者仅仅是谈一谈Go
 
 下次见!
 
