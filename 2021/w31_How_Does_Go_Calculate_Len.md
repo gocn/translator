@@ -1,45 +1,45 @@
-# How does go calculate len()?
+# Go语言是如何计算len()的?
 - 原文地址：https://tpaschalis.github.io/golang-len/
 - 原文作者：Paschalis Tsilias
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w31_How_Does_Go_Calculate_Len.md
 - 译者：[twx](https://github.com/1-st)
-- 校对：[]()
+- 校对：[Cluas](https:/github.com/Cluas) , [cvley](https://github.com/cvley)
 
-The impetus for this post was a question on the Gophers Slack a while back. A fellow developer wanted to know where to find more information on len.
+撰写此文的动力源于不久前在 Gophers Slack 上的一个问题 ：一位开发人员想知道在哪里可以找到更多关于 len 函数的信息。
 
-> I want to know how the len func gets called.
+> I want to know how the len func gets called. (我想知道 len 函数是怎么被调用的。)
 
-People chimed in quickly with a correct answer
+很快，有人回答了正确答案
 
-> It doesn’t. Len is compiler magic, not an actual function call.
+> It doesn’t. Len is compiler magic, not an actual function call. (Len 是编译器魔术，而不是一个实际的函数调用。)
 
-> … all the types len works on have the same header format, the compiler just treats the object like a header and returns the integer representing the length of elements
+> … all the types len works on have the same header format, the compiler just treats the object like a header and returns the integer representing the length of elements (所有 len 处理的类型都有相同的头部格式，编译器只是将对象当作头部对待，并返回表示元素长度的整数)
 
-And while those answers are technically true, I thought it would be nice to unfurl the layers that make up this ‘magic’ in a concise explanation! It was also a nice little exercise into getting more insight about the inner workings of the Go compiler.
+虽然这些答案在技术上是正确的，但我认为用简洁的语言展开构成这个"魔法"的层次结构会很棒！这也是一个很好的小练习，可以让你更深入地了解 Go 编译器的内部工作原理。
 
-FYI, all links in this post point to the soon-to-be-released [Go 1.17 branch](https://github.com/golang/go/tree/release-branch.go1.17).
+仅供参考，本帖中的所有链接都指向即将发布的 Go 1.17 分支(https://github.com/golang/go/tree/release-branch.go1.17).
 
 ## A small interlude
-Some background information which may be helpful in understanding the rest of this post.
+一些背景信息可能有助于理解这篇文章。
 
-The Go compiler consists of four main phases. You can start reading about them here. The first two are generally referred to as the compiler ‘frontend’, while the latter two are also called the compiler ‘backend’.
+Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org/src/cmd/compile/README) 开始阅读。前两个一般称为编译器"前端"，而后两个也称为编译器"后端"。
 
-* **Parsing**; the source files are tokenized, parsed, and a syntax tree is constructed for each source file.
-* **AST transformations and type-checking**; the syntax tree is converted to the compiler’s AST representation and the AST tree is type-checked.
-* **Generic SSA**; the AST tree is converted into Static Single Assignment (SSA) form, a lower-level intermediate representation where optimizations can be implemented.
-* **Generating machine code**; the SSA goes through another machine-specific optimization process, and is afterwards passed to the assembler to be translated to machine code and written out to the final binary.
+* **解析**; 对源文件进行词法分析和语法分析，并为每个源文件构建一个语法树
+* **AST 抽象语法树转换和类型检查**; 将语法树转换为编译器的 AST 表示形式，并对 AST 树进行类型检查
+* **生成 SSA 静态单赋值**; AST 树被转换为 Static Single Assignment (SSA静态单赋值)形式，这是一种可以实现优化的较低级别的中间表示形式
+* **生成机器码**; SSA 经过另一个特定于机器的优化过程，然后传递给汇编程序，转换为机器代码并写入最终的二进制文件
 
 
-Let’s dive back in!
+让我们开始深入吧！
 
-## The entrypoint
-The entrypoint of the Go compiler is (unsurprisingly) the [main()](https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go) function in the *compile/internal/gc package* .
+## 入口
+Go 编译器的入口点(毫不奇怪)是 *compile/internal/gc* 包中的 main() 函数(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go)
 
-As the docstring suggests, this function is responsible for parsing Go source files, type-checking the parsed Go package, compiling everything to machine code and writing the compiled package definition.
+如注释所示，这个函数负责解析 Go 源文件,对解析后的 Go 包进行类型检查,将所有内容编译为机器代码并为编译过的包编写定义。
 
-One of the things that takes place early on is [typecheck.InitUniverse()](https://github.com/golang/go/blob/release-branch.go1.17/src/go/types/universe.go) which defines the basic types, built-in functions and operands.
+最初发生的事情之一就是类型检查。[typecheck.InitUniverse()](https://github.com/golang/go/blob/release-branch.go1.17/src/go/types/universe.go) ，它定义了基本类型、内置函数和操作数。
 
-There, we see how all built-in functions are matched to an ‘operation’ and we can use *ir.OLEN* to trace the steps of a call to len.
+在这里，我们可以看到所有内置函数是如何被匹配到一个“操作”的，我们可以使用 ir.OLEN 来跟踪len()调用的步骤。
 
 ```go
 var builtinFuncs = [...]struct {
@@ -63,7 +63,7 @@ var builtinFuncs = [...]struct {
 	{"recover", ir.ORECOVER},
 }
 ```
-Later on in *InitUniverse*, one can see the initialization of the *okfor* arrays, which define the valid types for various operands; for example which types should be allowed for the *+* operator.
+稍后在 *InitUniverse* 中，可以看到 *okfor* 数组的初始化，它定义了各种操作数的有效类型; 例如，哪些类型应该允许 *+* 操作符使用。
 ```go
 	if types.IsInt[et] || et == types.TIDEAL {
 		...
@@ -81,7 +81,7 @@ Later on in *InitUniverse*, one can see the initialization of the *okfor* arrays
 		...
 	}
 ```
-In the same way, we can see all types which will be valid inputs for len()
+同样，我们可以看到所有的类型将成为len()的有效输入
 ```go
 	okforlen[types.TARRAY] = true
 	okforlen[types.TCHAN] = true
@@ -89,21 +89,21 @@ In the same way, we can see all types which will be valid inputs for len()
 	okforlen[types.TSLICE] = true
 	okforlen[types.TSTRING] = true
 ```
-## The compiler ‘frontend’
-Moving on to the next major steps in the compilation process, we reach the point where the input is parsed and typechecked starting with [noder.LoadPackage(flag.Args())](https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L191-L192).
+## 编译器前端
+接下来是编译的下一个主要步骤，这时候我们对输入进行解析并从 noder.LoadPackage(flag.Args()) 开始进行类型检查。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L191-L192)
 
-A few levels deeper we can see each file being [parsed](https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/noder/noder.go#L40-L64) individually and then type-checked in five distinct phases.
+再深入一些，我们可以看到每个文件被单独解析，然后在五个不同的阶段进行类型检查。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/noder/noder.go#L40-L64)
 
 ```
-Phase 1: const, type, and names and types of funcs.
-Phase 2: Variable assignments, interface assignments, alias declarations.
-Phase 3: Type check function bodies.
-Phase 4: Check external declarations.
-Phase 5: Verify map keys, unused dot imports.
+Phase 1: const, type, and names and types of funcs. (常量，类型，标识符以及函数的类型)
+Phase 2: Variable assignments, interface assignments, alias declarations.（有效的赋值，接口赋值，别名声明）
+Phase 3: Type check function bodies.（函数体类型检查）
+Phase 4: Check external declarations. （检查外部声明）
+Phase 5: Verify map keys, unused dot imports.（检验Map的键和未使用的点引入）
 ```
-Once the len statement is encountered in the last type-checking phase, it’s transformed to a *UnaryExpr*, as it won’t actually end up being a function call.
+一旦在最后的类型检查阶段遇到 len 语句，它就会被转换为 *UnaryExpr*，因为它实际上不会最终成为一个函数调用。
 
-The compiler implicitly takes the argument’s address and uses the *okforlen* array to verify the argument’s legality or emit a relevant error message.
+编译器隐式获取参数的地址，并使用 *okforlen* 数组来验证参数的合法性或发出相关的错误消息。
 ```go
 // typecheck1 should ONLY be called from typecheck.
 func typecheck1(n ir.Node, top int) ir.Node {
@@ -141,9 +141,9 @@ func tcLenCap(n *ir.UnaryExpr) ir.Node {
 	return n
 }
 ```
-Back to the main compiler flow and after everything is type-checked, all functions are [enqueued to be compiled](https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L277-L287).
+返回到主编译器流程，在所有内容都进行了类型检查之后，所有的函数都将被排队。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L277-L287)
 
-In compileFunctions() each element in the queue is passed through *ssagen.Compile*
+在 *compileFunctions()* 中，队列中的每个元素都通过 *ssagen.Compile* 传递
 ```go
 	compile = func(fns []*ir.Func) {
 		wg.Add(len(fns))
@@ -159,9 +159,9 @@ In compileFunctions() each element in the queue is passed through *ssagen.Compil
 	...
 	compile(compilequeue)
 ```
-where a few layers deep, after *buildssa* and *genssa* and we finally get to convert the len expression in the AST tree to SSA.
+在 *buildssa* 和 *genssa* 之后，再深入几层,我们终于可以将 AST 树中的 len 表达式转换为 SSA。
 
-At this point it’s easy to see how each one of the available types is handled!
+现在很容易看到每个可用类型是如何处理的！
 ```go
 // expr converts the expression n to ssa, adds it to s and returns the ssa result.
 func (s *state) expr(n ir.Node) *ssa.Value {
@@ -189,7 +189,7 @@ func (s *state) expr(n ir.Node) *ssa.Value {
 }
 ```
 ## Arrays
-For *arrays* we just return an constant integer based on the input array’s *NumElem()* method which just accesses the Bound field of the input array.
+对于数组，我们只需基于输入数组的 *NumElem ()* 方法返回一个常量整数，该方法只访问输入数组的 *Bound* 字段。
 ```go
 // Array contains Type fields specific to array types.
 type Array struct {
@@ -203,9 +203,9 @@ func (t *Type) NumElem() int64 {
 }
 ```
 ## Slices, Strings
-For slices and strings, we have to take a peek at how *ssa.OpSliceLen* and *ssa.OpStringLen* are handled.
+对于切片和字符串，我们必须了解 *ssa.OpSliceLen* 和 *ssa.OpStringLen* 是如何处理的。
 
-When either of those calls are lowered in the Late Expansion stage and the *rewriteSelect* method, slices and strings are recursively walked to find out their size using pointer arithmetic like *offset+x.ptrSize*
+当这两个调用中的任何一个在展开阶段遇到 *rewriteSelect* 方法时，编译器使用类似 *offset+x.ptrSize* 的指针算法递归地遍历切片和字符串以找出它们的大小
 ```go
 func (x *expandState) rewriteSelect(leaf *Value, selector *Value, offset int64, regOffset Abi1RO) []*LocalSlot {
 	switch selector.Op {
@@ -218,7 +218,7 @@ func (x *expandState) rewriteSelect(leaf *Value, selector *Value, offset int64, 
 	return locs
 ```
 ## Maps, Channels
-Finally for maps and channels we use the *referenceTypeBuiltin* helper. Its inner workings are a little magical, but what it ultimately does is take the address of the map/chan argument and reference its struct layout with zero offset, much like *unsafe.Pointer(uintptr(unsafe.Pointer(s)))* which ends up returning the value of first struct field.
+最后，对于Map和Channel，我们使用 *referenceTypeBuiltin* 辅助函数。它的内部工作方式有点神奇，但是它最终做的是获取 map/chan 参数的地址并使用零偏移量引用它的结构布局，很像 *unsafe.Pointer(uintptr(unsafe.Pointer(s)))* 那样最终返回第一个结构字段的值。
 ```go
 // referenceTypeBuiltin generates code for the len/cap builtins for maps and channels.
 func (s *state) referenceTypeBuiltin(n *ir.UnaryExpr, x *ssa.Value) *ssa.Value {
@@ -254,7 +254,7 @@ func (s *state) referenceTypeBuiltin(n *ir.UnaryExpr, x *ssa.Value) *ssa.Value {
 	return s.variable(n, lenType)
 }
 ```
-The definitions of the *hmap* and *hchan* structs show that their first fields **do** indeed contain what we need for *len* i.e. the live map cells and channel queue data respectively.
+*hmap* 和 *hchan* 结构的定义表明，它们的第一个字段确实包含 *Len()* 所需要的东西，分别是 *count int // # live cells == size of map* (Map 的大小)和 *qcount uint // total data in the queue* (队列里所有的数据)。
 
 ```go
 type hmap struct {
@@ -286,13 +286,13 @@ type hchan struct {
 	lock mutex
 }
 ```
-## Parting words
-Aaaand that’s all! This post wasn’t as lengthy as I thought it would be; I just hope it was interesting to you as well.
+## 临别赠言
+就是这样！这篇文章并没有我想象的那么长，我希望你也能对它感兴趣。
 
-I’ve got little experience with the inner workings of the Go compiler, so some things may be amiss. Also, many things are subject to change in the very near future, especially with generics and the new type system coming in the next couple of Go versions, but at least I hope I’ve provided a way that you can use to start digging around for yourself.
+我对于 Go 编译器的内部工作几乎没有经验，所以有些地方可能会有错。除此之外，随着泛型和新类型系统在接下来的几个 Go 版本中的出现，很多事情也都会发生改变。但我希望我至少提供了一种方法，可以让你接下来自己深入探索。
 
-In any case, please don’t hesitate to reach out for comments, suggestions, ideas for new posts or simply talk about Go!
+请不要犹豫，向我提出意见、建议、新文章的想法，或者仅仅是谈一谈Go
 
-Until next time, bye!
+下次见!
 
-*Written on July 31, 2021*
+*于2021年7月31日撰写*
