@@ -1,4 +1,4 @@
-# How does go calculate len()?
+# Go语言是如何计算len()的?
 - 原文地址：https://tpaschalis.github.io/golang-len/
 - 原文作者：Paschalis Tsilias
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w31_How_Does_Go_Calculate_Len.md
