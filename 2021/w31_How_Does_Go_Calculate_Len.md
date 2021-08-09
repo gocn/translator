@@ -3,7 +3,7 @@
 - 原文作者：Paschalis Tsilias
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w31_How_Does_Go_Calculate_Len.md
 - 译者：[twx](https://github.com/1-st)
-- 校对：[]()
+- 校对：[Cluas](https:/github.com/Cluas) , [cvley](https://github.com/cvley)
 
 撰写此文的动力源于不久前在 Gophers Slack 上的一个问题 ：一位开发人员想知道在哪里可以找到更多关于 len 函数的信息。
 
