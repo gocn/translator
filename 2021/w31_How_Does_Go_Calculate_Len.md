@@ -90,7 +90,7 @@ var builtinFuncs = [...]struct {
 	okforlen[types.TSTRING] = true
 ```
 ## 编译器前端
-接下来是编译的下一个主要步骤，这时候我们对输入进行解析并从 noder.LoadPackage(flag.Args()) 开始进行类型校正。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L191-L192)
+接下来是编译的下一个主要步骤，这时候我们对输入进行解析并从 noder.LoadPackage(flag.Args()) 开始进行类型检查。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L191-L192)
 
 再深入一些，我们可以看到每个文件被单独解析，然后在五个不同的阶段进行类型检查。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/noder/noder.go#L40-L64)
 
@@ -141,7 +141,7 @@ func tcLenCap(n *ir.UnaryExpr) ir.Node {
 	return n
 }
 ```
-返回到主编译器流程，在所有内容都进行了类型检查之后，所有的函数都将排队等待编译。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L277-L287)
+返回到主编译器流程，在所有内容都进行了类型检查之后，所有的函数都将被排队。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go#L277-L287)
 
 在 *compileFunctions()* 中，队列中的每个元素都通过 *ssagen.Compile* 传递
 ```go
