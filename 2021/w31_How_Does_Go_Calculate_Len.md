@@ -19,7 +19,7 @@
 
 仅供参考，本帖中的所有链接都指向即将发布的 Go 1.17 分支(https://github.com/golang/go/tree/release-branch.go1.17).
 
-## A small interlude
+## 小插曲
 一些背景信息可能有助于理解这篇文章。
 
 Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org/src/cmd/compile/README) 开始阅读。前两个一般称为编译器"前端"，而后两个也称为编译器"后端"。
