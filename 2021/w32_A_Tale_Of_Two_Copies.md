@@ -1,13 +1,13 @@
-# A Tale Of Two Copies?
+# 两次拷贝操作的故事
 - 原文地址：https://storj.io/blog/a-tale-of-two-copies
 - 原文作者：Jeff Wendling
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w32_A_Tale_Of_Two_Copies
 - 译者：[haoheipi](https://github.com/haoheipi)
 - 校对：[]()
 
-It was the best of times, it was the worst of times. That's when I hit a performance mystery that sent me down a multi-day rabbit hole of adventure. I was writing some code to take some entries, append them into a fixed size in-memory buffer, and then flush that buffer to disk when it was full. The main bit of code looked a little something like this:
+这是最好的时代，也是最坏的时代。最近，我遇到了一个性能方面的困惑，这让我进入了一场为期数天的探索中。我正在写部分代码来获取一些条目，然后将它们添加到一个固定大小的内存缓冲区中，最后在缓冲区满时将该缓冲区刷回到磁盘中。主代码看起来有点像这样:
 
-```
+```golang
 type Buffer struct {
 	fh  *os.File
 	n   uint
@@ -24,20 +24,20 @@ func (b *Buffer) Append(ent Entry) error {
 }
 ```
 
-with the idea being that when there's space in the buffer, we just insert the entry and increment a counter, and when we're full, it falls back to the slower path that writes to disk. Easy, right? Easy...
+我们的想法是，当缓冲区中有空间时，我们只需插入条目并增加一个计数器；当缓存区满了时，它将转到那个写入磁盘的较慢方法。非常地简单，对吗？
 
 
-## The Benchmark
+## 基准测试
 
-I had a question about what size the entries should be. The minimum size I could pack them into was 28 bytes, but that's not a nice power of 2 for alignment and stuff, so I wanted to compare it to 32 bytes. Rather than just relying on my intuition, I decided to write a benchmark. The benchmark would Append a fixed number of entries per iteration (100,000) and the only thing changing would be if the entry size was 28 or 32 bytes.
+我有一个关于条目大小的问题。我能将它们打包成的最小大小是 28 字节，但对于对齐和其他情况来说，这没有一个 2 的幂次方数合适，所以我想将它与 32 字节进行比较。我决定编写一个基准测试，而不是仅仅依靠我的直觉。基准测试将在每次迭代中追加固定数量的条目 (100,000) ，唯一改变的是条目大小是否为 28 或 32 字节。
 
-Even if I'm not relying on my intuition, I find it fun and useful to try to predict what will happen anyway. And so, I thought to myself:
+即使我不依赖我的直觉，但我发现尝试去预测将会发生什么是非常有用并且有趣的。于是，我心想:
 
-> Everyone knows that I/O is usually dominating over small CPU potential inefficiencies. The 28 byte version writes less data and does less flushes to disk than the 32 byte version. Even if it's somehow slower filling the memory buffer, which I doubt, that will be more than made up for by the extra writes that happen.
+> 大家都知道，I/O 性能通常比一个低效的小的 CPU 更占主导地位。与 32 字节版本相比，28 字节版本写入的数据更少，对磁盘的刷新也更少。即使在填充内存缓冲区时有点慢(我对此表示怀疑)，也会有更多的写操作来弥补。
 
-Maybe you thought something similar, or maybe something completely different. Or maybe you didn't sign up to do thinking right now and just want me to get on with it. And so, I ran the following benchmark:
+也许你想的是类似的事情，也许是完全不同的事情。也许你现在不是来思考的只是想让我继续思考。因此，我运行了以下基准测试:
 
-```
+```golang
 func BenchmarkBuffer(b *testing.B) {
 	fh := tempFile(b)
 	defer fh.Close()
@@ -63,32 +63,32 @@ func BenchmarkBuffer(b *testing.B) {
 ```
 
 
-## Confusion
+## 困惑
 
-And here are the results: 
+结果如下:
 
-```
+```bash
 BenchmarkBuffer/28       734286 ns/op      171.0 flushes      7.343 ns/key
 BenchmarkBuffer/32       436220 ns/op      196.0 flushes      4.362 ns/key
 ```
 
-That's right, a nearly 2x difference in performance where the benchmark writing to disk MORE is FASTER!
+没错，在基准测试中，写入磁盘数据更多的但还更快，性能相差近 2 倍!
 
-And so began my journey. The following is my best effort in remembering the long, strange trip I took diagnosing what I thought was happening. Spoiler alert: I was wrong a lot, and for a long time.
+我的探索就这样开始了。以下是我为解答我认为正在发生的事情而进行的漫长而奇怪的探寻所做的努力。剧透警告:我错了很多次，而且错了很长一段时间。
 
 
-# The Journey
+# 探索开始
 
-## CPU Profiles
+## CPU 性能剖析
 
-CPU profiles have a huge power to weight ratio. To collect them from a Go benchmark, all you have to do is specify `-cpuprofile=<some file>` on the command line and that's it. So of course this is the first thing I reached for. 
+CPU 性能报告是有非常高的参考价值。要从 Go 基准测试中收集它们，你所要做的就是在命令行中指定 `-cpuprofile=<some file>` ，仅此而已。当然，这是我第一次尝试。
 
-One thing to keep in mind, though, is that Go benchmarks by default will try to run for a fixed amount of time, and if one benchmark takes longer to do its job vs another, you get less iterations of it. Since I wanted to compare the results more directly, I made sure to also pass a fixed number of iterations to the command with `-benchtime=2000x`.
+不过，要记住的一件事是，Go 基准测试在默认情况下将尝试运行固定的时间，如果一个基准测试比另一个要花更长的时间来完成它的工作，那么它的迭代次数就会更少。因为我想更直接地比较结果，所以我确保向命令 `-benchtime=2000x` 传递固定次数的迭代。
 
-So let's take a look at these profiles. First, the 32 byte version:
+让我们来看看这些结果。首先，32 字节版本:
 
-```
-       .          .     24:func (b *Buffer) Append(ent Entry) error {
+```bash
+         .          .     24:func (b *Buffer) Append(ent Entry) error {
       30ms       30ms     25:	if b.n < numEntries-1 {
      110ms      110ms     26:		b.buf[b.n] = ent
       90ms       90ms     27:		b.n++
@@ -98,13 +98,13 @@ So let's take a look at these profiles. First, the 32 byte version:
          .          .     31:}
 ```
 
-The first column shows the amount of time spent on that line just in the context of the shown function, and the second column is the amount of time spent on that line including any functions it may have called.
+第一列显示仅在所示函数的上下文中花费的时间，第二列是在该行(包括它可能调用的任何函数)上花费的时间。
 
-From that, we can see that, as expected, most of the time is spent flushing to disk in appendSlow compared to writing to the in memory buffer.
+由此，我们可以看到，与写入内存缓冲区相比，大部分时间都花在了 appendSlow 中刷新磁盘上。
 
-And now here's the 28 byte version:
+这是 28 字节的版本:
 
-```
+```x86asm
          .          .     24:func (b *Buffer) Append(ent Entry) error {
       20ms       20ms     25:	if b.n < numEntries-1 {
      840ms      840ms     26:		b.buf[b.n] = ent
@@ -115,16 +115,16 @@ And now here's the 28 byte version:
          .          .     31:}
 ```
 
-A couple of things stand out to me here. First of all, WHAT? Second of all, it spends less time flushing to disk compared to the 32 byte version. That's at least expected because it does that less often (171 vs 196 times). And finally, WHAT?
+与 32 字节版本相比，它花费更少的时间刷新到磁盘。这至少是符合预期的，因为它刷新的次数更少( 171 次 vs 196 次)。
 
-Maybe the penalty for writing unaligned memory was worse than I thought. Let's take a look at the assembly to see what instruction it's stuck on.
+但也许内存不对齐的惩罚比我想象的更糟糕。让我们看一下汇编代码，看看它使用了什么指令。
 
 
-## The Assembly
+## 汇编过程
 
-Here's the section of code responsible for the 840ms on line 26 in the above profile:
+下面是在上面的结果文件中第 26 行出现 840ms 的代码部分:
 
-```
+```x86asm
          .          .     515129: IMULQ $0x1c, CX, CX          (1)
       90ms       90ms     51512d: LEAQ 0xc0(SP)(CX*1), CX      (2)
          .          .     515135: MOVUPS 0x7c(SP), X0          (3)
@@ -133,23 +133,23 @@ Here's the section of code responsible for the 840ms on line 26 in the above pro
          .          .     515145: MOVUPS X0, 0xc(CX)           (6)
 ```
 
-If you've never read assembly before, this may be a bit daunting, so I've numbered the lines and will provide a brief explanation. The most important bits to know are that `CX` , `SP` and `X0` are registers, and the syntax `0x18(CX)` means the value at address `CX` + `0x18` . Armed with that knowledge, we can understand the lines:
+如果您以前从未读过汇编，这可能会有点令人生畏，所以我已经对行进行了编号，并将提供一个简短的解释。要知道的最重要的寄存器是 `CX`， `SP` 和 `X0` ，语法 `0x18(CX)` 意味着地址 `CX` + `0x18` 的值。有了这些知识，我们就能理解这些行意思了:
 
-1. Multiply the `CX` register by `0x1c` and store it into `CX` . `0x1c` is the hex encoding of the decimal value 28.
+1. 将 `CX` 寄存器乘以 `0x1c` 并将其存储到 `CX` 中。 `0x1c` 是十进制值 28 的十六进制编码。
 
-    1. This computes the address we'll be storing the entry into. It computes `0xc0` + `SP` + `(CX*1)` and stores it into `CX` . From this, we deduce that the start of the entry array is at `0xc0(SP)` .
+2. 这是计算我们将存储的条目的地址。它计算 `0xc0` + `SP` + `(CX*1)` 并将其存储到 `CX` 中。由此，我们推断 entry 数组的开始位置是 `0xc0(SP)`。
 
-2. This loads 16 bytes starting at `0x7c(SP)` and stores it into `X0` .
+3. 这将从 `0x7c(SP)` 开始加载 16 个字节，并将其存储到 `X0` 。
 
-3. This stores the 16 bytes we just loaded into `0(CX)` .
+4. 这将存储我们刚刚加载到 `0(CX)` 中的 16 个字节。
 
-4. This loads 16 bytes starting at `0x88(SP)` and stores it into `X0` .
+5. 这将从 `0x88(SP)` 开始加载 16 个字节并将其存储到 `X0` 中。
 
-5. This stores the 16 bytes we just loaded into `0xc(CX)` .
+6. 这将存储我们刚刚加载到 `0xc(CX)` 中的 16 个字节。
 
-I don't know about you, but I saw no reason why line 4 should have so much weight compared to the other lines. So, I compared it to the 32 byte version to see if the generated code was different:
+我不知道你怎么想的，但我看不出为什么第 4 行比其他行有这么大的权重。所以，我将它与 32 字节版本进行了比较，看看生成的代码是否不同:
 
-```
+```x86asm
       40ms       40ms     515129: SHLQ $0x5, CX
       10ms       10ms     51512d: LEAQ 0xc8(SP)(CX*1), CX
          .          .     515135: MOVUPS 0x80(SP), X0
@@ -158,17 +158,17 @@ I don't know about you, but I saw no reason why line 4 should have so much weigh
       10ms       10ms     515148: MOVUPS X0, 0x10(CX)
 ```
 
-It looks like the only difference, aside from almost no time at all being spent in these instructions, is the SHLQ vs the IMULQ. The former is doing a "left shift" of 5, which effectivly multiplies by 2 to the 5th power, or 32, and the latter, as we previously saw, multiplies by 28. Could this possibly be the performance difference?
+看起来唯一的区别是 SHLQ vs IMULQ，但几乎没有时间花在这些指令上。前者是对 5 进行“左移”，实际上是乘以 2 的 5 次方，也就是 32，而后者，正如我们之前看到的，是乘以 28。这可能是性能上的差异吗?
 
-## Pipelines and Ports
+## 流水线和端口
 
-Modern CPUs are complex beasts. Maybe you have the mental model that your CPU reads instructions in and executes them one at a time as I once did. That couldn't be further from the truth. Instead, they execute multiple instructions at once, possibly out of order, in a [pipeline](https://en.wikipedia.org/wiki/Instruction_pipelining). But it gets even better: they have limits on how many of each kind of instruction can be run simultaneously. This is done by the CPU having multiple "ports", and certain instructions require and can run on different subsets of these ports.
+现代 cpu 是一个复杂的怪兽。也许你有这样的思维模式: CPU 读取指令，然后一次执行一个指令。但那根本不是事实。相反，它们在 [流水线](https://en.wikipedia.org/wiki/Instruction_pipelining) 中同时执行多条指令，可能是无序的。且它还有更好的地方: 它们限制了每种指令可以同时运行的数量。这是由具有多个 “端口” 的 CPU 完成的，某些指令需要并可以在这些端口的不同子集上运行。
 
-So what does that have to do with IMULQ vs SHLQ? Well, you may have noticed that the LEAQ following the IMULQ/SHLQ has a multiply in it (CX*1 ). But, because there aren't infinite ports, there must be a limited number of ports able to do multiplies.
+这和 IMULQ 和 SHLQ 有什么关系呢？好吧，你可能已经注意到，在 IMULQ/SHLQ 之后的 LEAQ 有一个乘法 （CX*1）。但是，因为没有无限的端口，所以能够进行乘法运算的端口数量是有限的。
 
-The LLVM project has lots of tools to help you understand what computers do, and one of them is a tool called [llvm-mca](https://www.llvm.org/docs/CommandGuide/llvm-mca.html#how-llvm-mca-works) . Indeed, if we run the two first instructions of the 32 and 28 byte versions through llvm-mca , it gives us an idea of what ports will be used when they are executed:
+LLVM 项目有很多工具可以帮助您理解计算机的功能，其中一个工具叫做 [LLVM-mca](https://www.llvm.org/docs/CommandGuide/llvm-mca.html#how-llvm-mca-works)。实际上，如果我们通过 llvm-mca 运行 32 字节和 28 字节版本的第一个指令，它会让我们知道在执行它们时将使用哪些端口:
 
-```
+```x86asm
 Resource pressure by instruction (32 byte version):
 [2]    [3]     [7]    [8]     Instructions:
 0.50    -       -     0.50    shlq  $5, %rcx
@@ -180,54 +180,53 @@ Resource pressure by instruction (28 byte version):
  -      -      1.00    -     leaq   192(%rsp,%rcx), %rcx
 ```
 
-The numbers are what percent of the time each instruction ran on the port (here, numbered 2, 3, 7 and 8) when executed in a loop.
+这些数字是每条指令在循环执行时在端口上运行的时间百分比(这里，编号为 2 、 3 、 7 和 8 )。
 
-So that's saying that in the 32 byte version, the SHLQ ran on port 2 half the time and port 8 the other half, and the LEAQ ran on port 3 half the time and port 7 the other half. This is implying that it can have 2 parallel executions at once. For example, on one iteration, it can use ports 2 and 3, and on the next iteration it can use ports 7 and 8, even if ports 2 and 3 are still being used. However, for the 28 byte version, the IMULQ must happen solely on port 3 due to the way the processor is built, which in turn limits the maximum throughput.
+也就是说，在 32 字节版本中，SHLQ 有一半时间运行在端口 2 上，另一半时间运行在端口 8 上，LEAQ 有一半时间运行在端口 3 上，另一半时间运行在端口 7 上。这意味着它可以同时有 2 个并行执行。例如，在一次迭代中，它可以使用端口 2 和 3，在下一次迭代中，它可以使用端口 7 和 8，即使端口 2 和 3 仍然在使用。然而，对于 28 字节版本，由于处理器的构建方式，IMULQ 只能在端口 3 上进行，这反过来又限制了最大吞吐量。
 
-And for a while, this is what I thought was happening. In fact, a first draft of this very blog post had that as the conclusion, but the more I thought about it, the less good of an explanation it seemed.
+有一段时间，我以为这就是问题的原因。事实上，这篇博文的初稿就有这个结论，但我越想越觉得这个解释不太好。
 
+## 陷阱迷宫
 
-## Trouble in Paradise
+以下是你可能会有的一些想法:
 
-Here are some thoughts that you may be having:
+1. 在最坏的情况下，这只能是 2 倍的速度差。
 
-1. In the worst case, that can only be a 2x speed difference.
+2. 循环中没有其他指令吗？不，那这必须使它在实际中远远小于 2 倍。
 
-2. Aren't there other instructions in the loop? That has to make it so that it's much less than 2x in practice.
+3. 32 字节版本在内存部分花费 230ms, 28 字节版本花费 880ms。
 
-3. The 32 byte version spends 230ms in the memory section and the 28 byte version spends 880ms.
+4. 这是比 2 倍大得多。
 
-4. That is much bigger than 2x bigger.
+5. 不对！
 
-5. Oh no.
-
-Well, maybe that last one was just me. With those doubts firmly in my mind, I tried to figure out how I could test to see if it was because of the IMULQ and SHLQ. Enter `perf` .
+也许最后一个是我的心声。带着这些疑问，我试着弄清楚我该如何测试它是否与 IMULQ 和 SHLQ 有关。现在进入 “perf” 篇。
 
 
 ## Perf
 
-[perf](https://perf.wiki.kernel.org/index.php/Main_Page) is a tool that runs on linux that allows you to execute programs and expose some detailed counters that CPUs keep about how they executed instructions (and more!). Now, I had no idea if there was a counter that would let me see something like "the pipeline stalled because insufficient ports or whatever", but I did know that it had counters for like, everything.
+[perf](https://perf.wiki.kernel.org/index.php/Main_Page)是一个在 linux 上运行的工具，它允许您执行程序，并暴露 cpu 保存的关于如何执行指令的详细计数器(以及更多其他细节!)。现在，我不知道是否有一个计数器可以让我看到 “流水线因端口不足或其他原因而停止” 之类的东西，但我知道它有类似于所有事情的计数器。
 
-If this were a movie, this would be the part where the main character is shown trudging through a barren desert, sun blazing, heat rising from the earth, with no end in sight. They'd see a mirage oasis and jump in, gulping down water, and suddenly realize it was sand.
+如果这是一部电影，这部分应该是主角在贫瘠的沙漠中跋涉，烈日炎炎，热量从地面上升，看不到尽头。他们会看到海市蜃楼般的绿洲，然后跳进水里，大口大口地吞下水，突然意识到那是沙子。
 
-A quick estimate shows that perf knows how to read over 700 different counters on my machine, and I feel like I looked at most of them. Take a look at [this huge table](https://perfmon-events.intel.com/skylake.html) if you're interested. I couldn't find any counters that could seem to explain the large difference in speed, and I was starting to get desparate.
+快速浏览了一遍，perf 知道如何在我的机器上读取 700 多个不同的计数器，我觉得我已经看过其中大部分了。如果你有兴趣，可以看看 [这个大表](https://perfmon-events.intel.com/skylake.html)。我找不到任何计数器能解释速度的巨大差异，我开始绝望了。
 
 
-## Binary Editing for Fun and Profit
+## 二进制数编辑的乐趣和收益
 
-At this point, I had no idea what the problem was, but it sure seemed like it wasn't port contention like I thought. One of the only other things that I thought it could be was alignment. CPUs tend to like to have memory accessed at nice multiples of powers of 2, and 28 is not one of those, and so I wanted to change the benchmark to write 28 byte entries but at 32 byte offsets.
+此时，我不知道问题是什么，但它看起来肯定不是我想的端口争用。我认为唯一可能的事情之一就是对齐。cpu 倾向于以 2 的幂次放访问内存，而 28 不是其中之一，所以我想改变基准测试，写入 28 字节的条目，但偏移量为 32 字节。
 
-Unfortunately, this wasn't as easy as I hoped. The code under test is very delicately balanced with respect to the Go compiler's inliner. Basically any changes to Append cause it to go over the threshold and stop it from being inlined, which really changes what's being executed.
+不幸的是，这并不像我希望的那么容易。被测试的代码与 Go 编译器的内联非常微妙地平衡了。基本上，对 Append 的任何更改都会导致它超过阈值并停止内联，这实际上会改变正在执行的内容。
 
-Enter binary patching. It turns out that in our case, the IMULQ instruction encodes to the same number of bytes as the SHLQ. Indeed, the IMULQ encodes as `486bc91c` , and the SLHQ as `48c1e105` . So it's just a simple matter of replacing those bytes and running the benchmark. I'll (for once) spare you the details of how I edited it (Ok, I lied: I hackily used dd ). The results sure did surprise me:
+输入二进制补丁。在我们的例子中，IMULQ 指令编码成与 SHLQ 相同的字节数。事实上，IMULQ 编码为`486bc91c`， SLHQ 编码为 `48c1e105` 。因此，只需替换这些字节并运行基准测试即可。我(仅此一次)就不告诉你我是如何编辑它的细节了(好吧，我撒谎了:我经常使用 dd)。结果确实让我大吃一惊:
 
-```
+```bash
 BenchmarkBuffer/28@32    813529 ns/op      171.0 flushes      8.135 ns/key
 ```
 
-I saw the results and felt defeated. It wasn't the IMULQ making the benchmark go slow. That benchmark has no IMULQ in it. It wasn't due to unaligned writes. The slowest instruction was written with the same alignment as in the 32 byte version as we can see from the profiled assembly:
+我看到了这个结果，感到很挫败。并不是 IMULQ 让基准测试变慢了。这个基准没有 IMULQ。这不是由于不对齐的写入。最慢的指令是用与 32 字节版本相同的对齐方式编写的，正如我们从汇编性能中看到的:
 
-```
+```x86asm
          .          .     515129: SHLQ $0x5, CX
       60ms       60ms     51512d: LEAQ 0xc0(SP)(CX*1), CX
          .          .     515135: MOVUPS 0x7c(SP), X0
@@ -236,14 +235,14 @@ I saw the results and felt defeated. It wasn't the IMULQ making the benchmark go
          .          .     515145: MOVUPS X0, 0xc(CX)
 ```
 
-What was left to try?
+还有什么可以尝试的呢?
 
 
-# A Small Change
+# 一个小的转变
 
-Sometimes when I have no idea why something is slow, I try writing the same code but in a different way. That may tickle the compiler just right to cause it to change which optimizations it can or can't apply, giving some clues as to what's going on. So in that spirit I changed the benchmark to this:
+有时，当我不知道为什么某些代码慢时，我会尝试用不同的方式编写相同的代码。这可能会引起编译器的调整，使它改变是否可以使用哪些优化，从而提供一些关于正在发生的事情的线索。本着这种精神，我把基准测试改成了这样:
 
-```
+```golang
 func BenchmarkBuffer(b *testing.B) {
 	// ... setup code
 
@@ -260,32 +259,32 @@ func BenchmarkBuffer(b *testing.B) {
 }
 ```
 
-It's hard to spot the difference, but it changed to passing a new entry value every time instead of passing the ent variable manually hoisted out of the loop. I ran the benchmarks again.
+这很难看出区别，但它改为了每次都传递一个新的条目值，而不是手动将 ent 变量传递出循环。我又做了一次基准测试。
 
-```
+```bash
 BenchmarkBuffer/28       407500 ns/op      171.0 flushes      4.075 ns/key
 BenchmarkBuffer/32       446158 ns/op      196.0 flushes      4.462 ns/key
 ```
 
-IT DID SOMETHING? How could that change possibly cause that performance difference? It's finally running faster than the 32 byte version! As usual, time to look at the assembly.
+它起作用了吗？这种变化怎么可能导致性能差异呢？它居然比 32 字节版本运行得更快了！像往常一样，该看下汇编了。
 
-```
+```x86asm
       50ms       50ms     515109: IMULQ $0x1c, CX, CX
          .          .     51510d: LEAQ 0xa8(SP)(CX*1), CX
          .          .     515115: MOVUPS X0, 0(CX)
      130ms      130ms     515118: MOVUPS X0, 0xc(CX)
 ```
 
-It's no longer loading the value from the stack to store it into the array, and instead just storing directly into the array from the already zeroed register. But we know from all the pipeline analysis done earlier that the extra loads should effectively be free, and the 32 byte version confirms that. It didn't get any faster even though it also is no longer loading from the stack.
+它不再从栈中加载值来存储到数组中，而是直接从已经归零的寄存器中存储到数组中。但是我们从前面所做的所有流水线分析中知道额外的负载应该是生效的，并且 32 字节版本证实了这一点。它并没有变得更快，即使它也不再从栈加载。
 
-So what's going on?
+到底发生了什么?
 
 
-## Overlapping Writes
+## 写重叠
 
-In order to explain this idea, it's important to show the assembly of the full inner loop instead of just the code that writes the entry to the in-memory buffer. Here's a cleaned up and annotated version of the slow 28 byte benchmark inner loop:
+为了解释这个想法，最重要的是要展示整个循环的汇编过程，而不仅仅是将条目写入内存缓冲区的代码。下面是一个经过清理和注释的较慢的 28 字节基准测试的内部循环:
 
-```
+```x86asm
 loop:
   INCQ AX                     (1)
   CMPQ $0x186a0, AX
@@ -316,27 +315,27 @@ slow:
 exit:
 ```
 
-1. Increment `AX` and compare it to 100,000 exiting if it's larger.
+1. 增加 `AX`，将它与 100,000 比较，如果它更大则退出。
 
-2. Copy 28 bytes on the stack from offsets `[0x60, 0x7c]` to offsets `[0x7c, 0x98] `.
+2. 从 offset `[0x60, 0x7c]` 复制栈上的 28 个字节到 offset `[0x7c, 0x98]`。
 
-3. Load the memory counter and see if we have room in the memory buffer
+3. 加载内存计数器，看看内存缓冲区中是否还有空间。
 
-4. Compute where the entry will be written to in the in-memory buffer.
+4. 计算条目将被写入内存缓冲区的位置。
 
-5. Copy 28 bytes on the stack at offsets `[0x7c, 0x98]` into the in-memory buffer.
+5. 在 offset `[0x7c, 0x98]` 处将栈上的 28 个字节复制到内存缓冲区中。
 
-6. Increment the memory counter and loop again.
+6. 增加内存计数器并再次循环。
 
-Steps 4 and 5 are what we've been looking at up to now.
+步骤 4 和步骤 5 是我们到目前为止一直在研究的内容。
 
-If step 2 seems silly and redundant, that's because it is. There's no reason to copy a value on the stack to another location on the stack and then load from that copy on the stack into the in-memory buffer. Step 5 could have just used offsets `[0x60, 0x7c]` instead and step 2 could have been eliminated. The Go compiler could be doing a better job here.
+似乎第二步看起来愚蠢而多余。确实如此，没有理由将栈上的值复制到栈上的另一个位置，然后从栈上的副本加载到内存缓冲区中。步骤 5 可以只使用偏移量 `[0x60, 0x7c]` 来代替，而步骤 2 可以被消除。Go 编译器在这里可以做得更好。
 
-But that shouldn't be why it's slow, right? The 32 byte code does almost the exact same silly thing and it goes fast, because of pipelines or pixie dust or something. What gives?
+但这不应该是它慢的原因，对吧? 32 字节的代码几乎做了同样愚蠢的事情，但它运行得很快，因为流水线或其他神奇的东西。到底发生了什么事?
 
-There's one crucial difference: the writes in the 28 byte case overlap. The MOVUPS instruction writes 16 bytes at a time, and as everyone knows, 16 + 16 is usually more than 28. So step 2 writes to bytes `[0x7c, 0x8c]` and then writes to bytes `[0x88, 0x98]` . This means the range `[0x88, 0x8c]` was written to twice. Here's a helpful ASCII diagram:
+有一个关键的区别: 28 字节的写重叠。MOVUPS 指令一次写 16 个字节，众所周知，16 + 16 通常大于 28。所以步骤 2 写入字节 `[0x7c, 0x8c]` 然后写入字节 `[0x88, 0x98]` 。这意味着 `[0x88, 0x8c]` 被写入了两次。下面是一个有用的 ASCII 图表:
 
-```
+```bash
 0x7c             0x8c
 ├────────────────┤
 │  Write 1 (16b) │
@@ -347,40 +346,40 @@ There's one crucial difference: the writes in the 28 byte case overlap. The MOVU
 ```
 
 
-## Store Forwarding
+## 存储转发
 
-Remember how CPUs are complex beasts? Well it gets even better. An optimization that some CPUs do is they have something called a "[write buffer](https://en.wikipedia.org/wiki/Write_buffer)". You see, memory access is often the slowest part of what CPUs do. Instead of, you know, actually writing the memory when the instruction executes, CPUs place the writes into a buffer first. I think the idea is to coalesce a bunch of small writes into larger sizes before flushing out to the slower memory subsystem. Sound familiar?
+还记得 cpu 是多么复杂的怪兽吗？它还有更多其他的优化。一些 cpu 做的优化是它们有一个叫做“[写缓冲区](https://en.wikipedia.org/wiki/Write_buffer)”的东西。你看，内存访问通常是 cpu 所做的最慢的部分。相反，你知道，当指令执行时，实际写入内存前，cpu 首先将写入放进缓冲区。我认为其思想是，在向较慢的内存子系统输出之前，将一组较小的写操作合并为较大的写操作。听起来是不是很熟悉?
 
-So now it has this write buffer buffering all of the writes. What happens if a read comes in for one of those writes? It would slow everything down if had to wait for that write to actually happen before reading it back out, so instead it tries to service the read from the write buffer directly if possible, and no one is the wiser. You clever little CPU. This optimization is called [store forwarding](https://easyperf.net/blog/2018/03/09/Store-forwarding).
+现在它有一个写缓冲区来缓冲所有写操作。如果在这些写操作中有一个读操作会发生什么呢？如果在读取数据之前必须等待写操作实际发生，那么它会减慢所有操作的速度，因此，如果可能的话，它会尝试直接从写缓冲区处理读操作，没有人比它更聪明。这种优化称为 [存储转发](https://easyperf.net/blog/2018/03/09/Store-forwarding)。
 
-But what if those writes overlap? It turns out that, on my CPU at least, this inhibits that "store forwarding" optimization. There's even a perf counter that keeps track of when this happens: [ld_blocks.store_forward](https://perfmon-events.intel.com/index.html?pltfrm=skylake.html&evnt=LD_BLOCKS.STORE_FORWARD).
+但是如果这些写重叠呢？事实证明，至少在我的 CPU 上，这抑制了“存储转发”的优化。甚至还有一个性能计数器来跟踪这种情况的发生:[ld_blocks.store_forward](https://perfmon-events.intel.com/index.html?pltfrm=skylake.html&evnt=LD_BLOCKS.STORE_FORWARD)。
 
-Indeed, the documentation about that counter says
+实际上，关于那个计数器的文档是这样描述：
 
-> Counts the number of times where store forwarding was prevented for a load operation. The most common case is a load blocked due to the address of memory access (partially) overlapping with a preceding uncompleted store.
+> 计算阻止存储转发的次数主要来源于加载操作。最常见的情况是由于内存访问地址(部分)与前面未完成的存储重叠而导致负载阻塞。
 
-Here's how often that counter hits for the different benchmarks so far where "Slow" means that the entry is constructed outside of the loop, and "Fast" means that the entry is constructed inside of the loop on every iteration:
+以下是到目前为止，计数器命中不同基准测试的频率，“慢”表示该条目在循环外构造，“快”表示在每次迭代中该条目在循环内构造:
 
-```
+```bash
 BenchmarkBuffer/28-Slow      7.292 ns/key      1,006,025,599 ld_blocks.store_forward
 BenchmarkBuffer/32-Slow      4.394 ns/key          1,973,930 ld_blocks.store_forward
 BenchmarkBuffer/28-Fast      4.078 ns/key          4,433,624 ld_blocks.store_forward
 BenchmarkBuffer/32-Fast      4.369 ns/key          1,974,915 ld_blocks.store_forward
 ```
 
-Well, a billion is usually bigger than a million. Break out the champagne.
+是的，十亿通常比一百万大。开香槟庆祝吧。
 
 
-# Conclusion
+# 结论
 
-After all of that, I have a couple of thoughts.
+在这之后，我有一些想法。
 
-Benchmarking is hard. People often say this, but maybe the only thing harder than benchmarking is adequately conveying how hard benchmarking is. Like, this was closer to the micro-benchmark than macro-benchmark side of things but still included performing millions of operations including disk flushes and actually measured a real effect. But at the same time, this would almost never be a problem in practice. It required the compiler to spill a constant value to the stack unnecessarily very closely to the subsequent read in a tight inner loop to notice. Doing any amount of real work to create the entries would cause this effect to vanish.
+基准测试是困难的。人们经常这么说，但也许唯一比基准测试更难的事情是充分传达基准测试有多困难。比如，这更接近于微观基准测试，而不是宏观基准测试，但仍然包括执行数以百万计的操作，包括磁盘刷新，并实际测量了实际效果。但与此同时，这在实践中几乎不会成为问题。它需要编译器将一个常量值溢出到栈中，而这个常量值与随后的读入非常接近，这是没有必要的。创建条目所做的任何实际工作都会导致这种效果消失。
 
-A recurring theme as I learn more about how CPUs work is that the closer you get to the "core" of what it does, the leakier and more full of edge cases and hazards it becomes. Store forwarding not working if there was a partially overlapping write is one example. Another is that the caches aren't [fully associative](https://en.wikipedia.org/wiki/CPU_cache#Associativity), so you can only have so many things cached based on their memory address. Like, even if you have 1000 slots available, if all your memory accesses are multiples of some factor, they may not be able to use those slots. [This blog post](https://danluu.com/3c-conflict/) has a great discussion. Totally speculating, but maybe this is because you have less "room" to solve those edge cases when under ever tighter physical constraints.
+随着我对 cpu 工作方式了解的越来越多，一个反复出现的主题是，你越接近 cpu 工作的“核心”，它就越容易泄漏，也就越充满边缘情况和危险。例如，如果有部分重叠的写，存储转发将会不工作。另一个原因是缓存不是 [完全关联的](https://en.wikipedia.org/wiki/CPU_cache#Associativity)，所以你只能根据它们的内存地址缓存这么多东西。比如，即使你有 1000 个可用的插槽，如果你所有的内存访问都是某个因子的倍数，他们可能无法使用这些插槽。[这篇博文](https://danluu.com/3c-conflict/)有很好的讨论。我猜测，也许这是因为在更严格的物理约束下，解决这些边缘情况的 “空间” 更小了。
 
-Before now, I've never been able to concretely observe the CPU slowing down from port exhaustion issues in an actual non-contrived setting. I still haven't. I've heard the adage that you can imagine every CPU instruction taking 0 cycles except for the ones that touch memory. As a first approximation, it seems pretty true.
+在此之前，我从未能够在实际的非人为设置中具体观察到端口耗尽问题导致的 CPU 减慢。我听过这样的说法，你可以想象每一条 CPU 指令占用 0 个周期，除了那些与内存有关的指令。作为初步估计，这似乎是正确的。
 
-I've put up the full code sample in [a gist](https://gist.github.com/zeebo/4c9e28ac277c74ae450ad1bff8068f93) for your viewing/downloading/running/inspecting pleasure.
+我已经把完整的代码示例放在 [a gist](https://gist.github.com/zeebo/4c9e28ac277c74ae450ad1bff8068f93)中，供您查看/下载/运行/校验。
 
-Often, things are more about the journey than the destination, and I think that's true here, too. If you made it this far, thanks for coming along on the journey with me, and I hope you enjoyed it. Until next time.
+通常情况下，探索比结果更重要，我认为在这里也是如此。如果你能走到这一步，谢谢你陪我一路走来，希望你喜欢。下次再见。
