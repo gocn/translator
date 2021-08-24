@@ -31,7 +31,7 @@ func main() {
 
 几个月前，当我们在建立一个提供跨平台剪贴板访问的新的包[`golang.design/x/clipboard`](https://golang.design/x/clipboard)时， 我们发现，Go中缺乏这样的设施，尽管有很多野路子，但仍然存在健全性和性能问题。
 
-在[`golang.design/x/clipboard`](https://golang.design/x/clipboard)软件包中，我们不得不与cgo合作来访问系统级的API（从技术上讲，它是一个来自传统的、广泛使用的C系统的API），但缺乏在C端了解执行进度的设施。例如，在Go端，我们必须在一个goroutine中调用C代码，然后并行地做其他事情。
+在[`golang.design/x/clipboard`](https://golang.design/x/clipboard)软件包中，我们不得不与cgo合作来访问系统级的API（从技术上讲，它是一个来自传统的、广泛使用的C系统的API），但缺乏在C端了解执行进度的设施。例如，在Go代码这边，我们必须在一个goroutine中调用C代码，然后并行地做其他事情。
 
 ```go
 go func() {
@@ -41,9 +41,9 @@ go func() {
 // .. 在Go端做点事 ..
 ```
 
-然而，在某些情况下，我们需要一种机制来了解C端的执行进度，这就带来了Go和C之间通信和同步的需要。例如，如果我们需要我们的Go代码等待C端代码完成一些初始化工作，直到某个执行点执行，我们将需要这种类型的通信来精确的了解C函数的执行进度。
+然而，在某些情况下，我们需要一种机制来了解C代码的执行进度，这就带来了Go和C之间通信和同步的需要。例如，如果我们需要我们的Go代码等待C代码完成一些初始化工作，直到某个执行点执行，我们将需要这种类型的通信来精确的了解C函数的执行进度。
 
-我们遇到的一个真实的例子是需要与剪贴板设施互动。在Linux的[X Window 环境](https://en.wikipedia.org/wiki/X_Window_System)中，剪贴板是分散的，只能由每个应用程序拥有。需要访问剪贴板信息的人需要创建他们的剪贴板实例。假设一个应用程序`A`想把某些东西粘贴到剪贴板上，它必须向X窗口服务器提出请求，然后成为剪贴板的所有者，在其他应用程序发出复制请求时把信息送回去。
+我们遇到的一个真实的例子是需要与剪贴板设施互动。在Linux的[X Window 环境](https://en.wikipedia.org/wiki/X_Window_System)中，剪贴板是分散的，只能由每个应用程序拥有。需要访问剪贴板信息的人需要创建他们的剪贴板实例。假设一个应用程序`A`想把某些东西粘贴到剪贴板上，它必须向X Window服务器提出请求，然后成为剪贴板的所有者，在其他应用程序发出复制请求时把信息送回去。
 
 这种设计被认为是自然的，经常需要应用程序进行合作。如果另一个应用程序`B`试图提出请求，成为剪贴板的下一个所有者，那么`A`将失去其所有权。之后，来自应用程序`C`、`D`等的复制请求将被转发给应用程序`B`而不是`A`。类似于一个共享的内存区域被别人覆盖了，而原来的所有者失去了访问权。
 
@@ -57,9 +57,9 @@ clipboard.Write("某些信息")
 我们必须从内部保证，当函数返回时，信息应该可以被其他应用程序访问。
 
 
-当时，我们处理这个问题的第一个想法是，从Go到C传递一个channel，然后通过channel从C到Go发送一个值。经过快速的研究，我们意识到这是不可能的，因为由于[Cgo中传递指针的规则](https://pkg.go.dev/cmd/cgo#hdr-Passing_pointers)，channel不能作为一个值在C和Go之间传递（见之前的[提案文件](https://golang.org/design/12416-cgo-pointers)）。即使有办法将整个channel的值传递给C，在C端也没有设施可以通过该channel发送值，因为C没有`<-`操作符的语言支持。
+当时，我们处理这个问题的第一个想法是，从Go到C传递一个`channel`，然后通过`channel`从C到Go发送一个值。经过快速的研究，我们意识到这是不可能的，因为由于[Cgo中传递指针的规则](https://pkg.go.dev/cmd/cgo#hdr-Passing_pointers)，`channel`不能作为一个值在C和Go之间传递（见之前的[提案文件](https://golang.org/design/12416-cgo-pointers)）。即使有办法将整个`channel`的值传递给C，在C端也没有设施可以通过该`channel`发送值，因为C没有`<-`操作符的语言支持。
 
-下一个想法是传递一个函数回调，然后让它在C端被调用。该函数的执行将使用所需的channel向等待的goroutine发送一个通知。
+下一个想法是传递一个函数回调，然后让它在C端被调用。该函数的执行将使用所需的`channel`向等待的goroutine发送一个通知。
 
 经过几次尝试，我们发现唯一可能的方法是附加一个全局函数指针，并通过一个函数包装器使其被调用:
 
@@ -95,7 +95,7 @@ func main() {
 }
 ```
 
-在上面的例子中，Go一方的`gocallback`指针是通过C函数`myfunc`传递的。在C端，将有一个使用`go_func_callback`的调用，通过传递结构`gocallback`作为参数，在C端被调用:
+在上面的例子中，Go一方的`gocallback`指针是通过C函数`myfunc`传递的。在C代码侧，将有一个使用`go_func_callback`的调用，通过传递结构`gocallback`作为参数，在C端被调用:
 
 ```c
 // myfunc将在需要时触发一个回调，c_func，并通过void*参数传递
@@ -147,7 +147,7 @@ package cgo
 type Handle uintptr
 
 
-// NewHandle返回一个给定值的句柄。
+// NewHandle 返回一个给定值的句柄。
 //
 // 该句柄在程序对其调用Delete之前一直有效。该句柄
 // 使用资源，而且这个包假定C代码可能会保留这个句柄。
@@ -162,7 +162,7 @@ func NewHandle(v interface{}) Handle
 // 如果句柄是无效的，该方法就会陷入恐慌。
 func (h Handle) Value() interface{}
 
-// Delete会使一个句柄失效。这个方法应该只被调用一次
+// Delete 会使一个句柄失效。这个方法应该只被调用一次
 // 程序不再需要将句柄传递给C，并且C代码
 // 不再有一个句柄值的拷贝。
 //
@@ -409,16 +409,12 @@ func (h Handle) Delete() {
 
 正如人们可能已经意识到的那样，前面的方法比预期的要复杂得多，而且非同小可：它依赖的基础是，运行时垃圾收集器不是一个移动的垃圾收集器，虽然接口会逃到堆里。
 
-尽管内部运行时实现中的其他几个地方依赖于这些事实，例如channel实现，但它仍然比我们预期的要复杂一些。
+尽管内部运行时实现中的其他几个地方依赖于这些事实，例如`channel`实现，但它仍然比我们预期的要复杂一些。
 
-Notably, the previous `NewHandle` actually behaves to return a unique handle when the provided Go value refers to the same object. This is the core that brings the complexity of the implementation. However, we have another possibility: `NewHandle` always returns a different handle, and a Go value can have multiple handles.
 值得注意的是，以前的`NewHandle`实际上表现为当提供的Go值指的是同一个对象时，会返回一个唯一的手柄。这就是带来实现复杂性的核心。然而，我们还有另一种可能：`NewHandle`总是返回一个不同的句柄，而一个Go值可以有多个句柄。
 
 我们真的需要句柄是唯一的并保持它满足[幂等性](https://en.wikipedia.org/wiki/Idempotence)吗？经过与Go团队的简短讨论，我们达成共识，对于句柄的目的，似乎没有必要保持其唯一性，原因如下:
 
-1. The semantic of `NewHandle` is to return a *new* handle, instead of a unique handle;
-2. The handle is nothing more than just an integer and guarantee it to be unique may prevent misuse of the handle, but it cannot always avoid the misuse until it is too late;
-3. The complexity of the implementation.
 1. `NewHandle`的语义是返回一个*新的*句柄，而不是一个唯一的句柄。
 2. 句柄不过是一个整数，保证它的唯一性可以防止句柄的误用，但它不能总是避免滥用，直到为时已晚。
 3. 实现的复杂性。
@@ -446,7 +442,6 @@ var (
 )
 ```
 
-Whenever we want to allocate a new ID (`NewHandle`), one can increase the handle number `handleIdx` atomically, then the next allocation will always be guaranteed to have a larger number to use. With that allocated number, we can easily store it to a global map that persists all the Go values.
 每当我们想分配一个新的ID（`NewHandle`）时，可以原子式地增加句柄编号`handleIdx`，那么下一次分配将始终保证有一个更大的编号可以使用。有了这个分配的数字，我们可以很容易地把它存储到一个全局map上，这个map可以持久地保存所有的Go值。
 
 剩下的工作就变得微不足道了。当我们想使用句柄来检索相应的Go值时，我们通过句柄号访问值map:
