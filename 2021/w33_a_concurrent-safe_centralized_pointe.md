@@ -31,14 +31,14 @@ func main() {
 
 几个月前，当我们在建立一个提供跨平台剪贴板访问的新的包[`golang.design/x/clipboard`](https://golang.design/x/clipboard)时， 我们发现，Go中缺乏这样的设施，尽管有很多野路子，但仍然存在健全性和性能问题。
 
-在[`golang.design/x/clipboard`](https://golang.design/x/clipboard)软件包中，我们不得不与cgo合作来访问系统级的API（从技术上讲，它是一个来自传统的、广泛使用的C系统的API），但缺乏在C端了解执行进度的设施。例如，在Go代码这边，我们必须在一个goroutine中调用C代码，然后并行地做其他事情。
+在[`golang.design/x/clipboard`](https://golang.design/x/clipboard)软件包中，我们不得不与cgo合作来访问系统级的API（从技术上讲，它是一个来自传统的、广泛使用的C系统的API），但缺乏在C代码侧了解执行进度的设施。例如，在Go代码这边，我们必须在一个goroutine中调用C代码，然后并行地做其他事情。
 
 ```go
 go func() {
-	C.doWork() // Cgo: 调用一个C函数，并在C端做一些事情
+	C.doWork() // Cgo: 调用一个C函数，并在C代码侧做一些事情
 }()
 
-// .. 在Go端做点事 ..
+// .. 在Go代码侧做点事 ..
 ```
 
 然而，在某些情况下，我们需要一种机制来了解C代码的执行进度，这就带来了Go和C之间通信和同步的需要。例如，如果我们需要我们的Go代码等待C代码完成一些初始化工作，直到某个执行点执行，我们将需要这种类型的通信来精确的了解C函数的执行进度。
@@ -57,9 +57,9 @@ clipboard.Write("某些信息")
 我们必须从内部保证，当函数返回时，信息应该可以被其他应用程序访问。
 
 
-当时，我们处理这个问题的第一个想法是，从Go到C传递一个`channel`，然后通过`channel`从C到Go发送一个值。经过快速的研究，我们意识到这是不可能的，因为由于[Cgo中传递指针的规则](https://pkg.go.dev/cmd/cgo#hdr-Passing_pointers)，`channel`不能作为一个值在C和Go之间传递（见之前的[提案文件](https://golang.org/design/12416-cgo-pointers)）。即使有办法将整个`channel`的值传递给C，在C端也没有设施可以通过该`channel`发送值，因为C没有`<-`操作符的语言支持。
+当时，我们处理这个问题的第一个想法是，从Go到C传递一个`channel`，然后通过`channel`从C到Go发送一个值。经过快速的研究，我们意识到这是不可能的，因为由于[Cgo中传递指针的规则](https://pkg.go.dev/cmd/cgo#hdr-Passing_pointers)，`channel`不能作为一个值在C和Go之间传递（见之前的[提案文件](https://golang.org/design/12416-cgo-pointers)）。即使有办法将整个`channel`的值传递给C，在C代码侧也没有设施可以通过该`channel`发送值，因为C没有`<-`操作符的语言支持。
 
-下一个想法是传递一个函数回调，然后让它在C端被调用。该函数的执行将使用所需的`channel`向等待的goroutine发送一个通知。
+下一个想法是传递一个函数回调，然后让它在C代码侧被调用。该函数的执行将使用所需的`channel`向等待的goroutine发送一个通知。
 
 经过几次尝试，我们发现唯一可能的方法是附加一个全局函数指针，并通过一个函数包装器使其被调用:
 
@@ -95,7 +95,7 @@ func main() {
 }
 ```
 
-在上面的例子中，Go一方的`gocallback`指针是通过C函数`myfunc`传递的。在C代码侧，将有一个使用`go_func_callback`的调用，通过传递结构`gocallback`作为参数，在C端被调用:
+在上面的例子中，Go一方的`gocallback`指针是通过C函数`myfunc`传递的。在C代码侧，将有一个使用`go_func_callback`的调用，通过传递结构`gocallback`作为参数，在C代码侧被调用:
 
 ```c
 // myfunc将在需要时触发一个回调，c_func，并通过void*参数传递
@@ -192,7 +192,7 @@ func main() {
 }
 ```
 
-字符串`s`通过一个创建的句柄传递给C函数`myprint`，在C端:
+字符串`s`通过一个创建的句柄传递给C函数`myprint`，在C代码侧:
 
 ```c
 #include <stdint.h> // for uintptr_t
@@ -517,9 +517,9 @@ Handle/concurrent-8      768ns ±0%    759ns ±1%   -1.21%  (p=0.003 n=9+9)
 
 ## 进一步阅读建议
 
-- Alex Dubov. runtime: provide centralized facility for managing (c)go pointer handles. Feb 5, 2020. https://golang.org/issue/37033
-- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的手柄 2021年2月21日。 https://golang.org/cl/294670
-- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的手柄 2021年2月23日。https://golang.org/cl/295369
+- Alex Dubov. runtime: 为管理(c)go指针句柄提供集中的设施 2020年2月5日。 https://golang.org/issue/37033
+- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的句柄 2021年2月21日。 https://golang.org/cl/294670
+- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的句柄 2021年2月23日。https://golang.org/cl/295369
 - Ian Lance Taylor. cmd/cgo: 指定Go和C之间传递指针的规则。 2015年8月31日。 https://golang.org/issue/12416
 - Ian Lance Taylor. Proposal:  Go和C之间传递指针的规则，2015年10月。 https://golang.org/design/12416-cgo-pointers
 - Go Contributors. cgo. 2019年3月12日。 https://github.com/golang/go/wiki/cgo
