@@ -4,7 +4,7 @@
 - 原文作者：欧长坤
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w33_a_concurrent-safe_centralized_pointe.md
 - 译者：[Cluas](https://github.com/Cluas)
-- 校对：[]()
+- 校对：[laxiaohong](https://github.com/laxiaohong)
 
 在Go 1.17发行版中，我们贡献了一个新的cgo设施[runtime/cgo.Handle](https://tip.golang.org/pkg/runtime/cgo/#Handle)，以帮助未来的cgo应用在Go和C之间传递指针的同时，更好、更容易地构建并发安全的应用。本文将通过询问该功能为我们提供了什么，为什么我们需要这样一个设施，以及我们最终究竟如何贡献具体实现来引导我们了解这个功能。
 ## 从 Cgo 和 X Window 剪贴板开始
