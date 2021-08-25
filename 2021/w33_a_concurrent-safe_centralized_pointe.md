@@ -517,11 +517,11 @@ Handle/concurrent-8      768ns ±0%    759ns ±1%   -1.21%  (p=0.003 n=9+9)
 
 ## 进一步阅读建议
 
-- Alex Dubov. runtime: 为管理(c)go指针句柄提供集中的设施 2020年2月5日。 https://golang.org/issue/37033
-- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的句柄 2021年2月21日。 https://golang.org/cl/294670
-- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的句柄 2021年2月23日。https://golang.org/cl/295369
+- Alex Dubov. runtime: 为管理(c)go指针句柄提供集中的设施。 2020年2月5日。 https://golang.org/issue/37033
+- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的句柄。 2021年2月21日。 https://golang.org/cl/294670
+- Changkun Ou. runtime/cgo: 添加用于管理(c)go指针的句柄。 2021年2月23日。https://golang.org/cl/295369
 - Ian Lance Taylor. cmd/cgo: 指定Go和C之间传递指针的规则。 2015年8月31日。 https://golang.org/issue/12416
-- Ian Lance Taylor. Proposal:  Go和C之间传递指针的规则，2015年10月。 https://golang.org/design/12416-cgo-pointers
-- Go Contributors. cgo. 2019年3月12日。 https://github.com/golang/go/wiki/cgo
-- The golang.design Initiative. 📋 Go中的跨平台剪贴板包。2021年2月25日。 https://github.com/golang-design/clipboard
-- The golang.design Initiative. ⌨️ GO中的跨平台热键包。2021年2月27日。 https://github.com/golang-design/hotkey
+- Ian Lance Taylor. Proposal:  Go和C之间传递指针的规则。 2015年10月。 https://golang.org/design/12416-cgo-pointers
+- Go Contributors. cgo。 2019年3月12日。 https://github.com/golang/go/wiki/cgo
+- The golang.design Initiative. 📋 Go中的跨平台剪贴板包。 2021年2月25日。 https://github.com/golang-design/clipboard
+- The golang.design Initiative. ⌨️ GO中的跨平台热键包。 2021年2月27日。 https://github.com/golang-design/hotkey
