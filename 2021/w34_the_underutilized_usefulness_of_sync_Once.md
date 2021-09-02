@@ -1,5 +1,11 @@
 # Go sync.Once 的妙用
 
+- 原文地址：https://blog.chuie.io/posts/synconce/
+- 原文作者：Jason Chu
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w34_the_underutilized_usefulness_of_sync_Once.md
+- 译者：[张宇](https://github.com/pseudoyu)
+- 校对：[]()
+
 如果你曾用过 Go 中的 goroutines，你也许会遇到几个并发原语言，如 `sync.Mutex`, `sync.WaitGroup` 或是 `sync.Map`，但是你听说过 `sync.Once` 么？
 
 也许你听说过，那 go 文档是怎么描述它的呢？
