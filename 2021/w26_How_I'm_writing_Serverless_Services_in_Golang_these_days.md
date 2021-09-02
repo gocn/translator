@@ -3,50 +3,49 @@
 * 原文地址：https://ewanvalentine.io/how-im-writing-serverless-services-in-golang-these-days/
 * 原文作者：`EwanValentine`
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w26_How_I'm_writing_Serverless_Services_in_Golang_these_days.md
-- 译者：[Jancd](https://github.com/Jancd)
+- 译者：[Jancd](https://github.com/Jancd)，译者注：本文最好结合附录的代码仓库阅读理解
 
+## 介绍
 
-## Introduction
+我已经用go编程将近5年了，同时我用Lambda函数到也有这么长时间了。本文将介绍我在过去几年中学到的知识，用go编写serverless微服务。
 
-I’ve been programming with Go for almost 5 years now, and it’s been almost as long since I first created a Lambda function. This article will cover what I’ve learnt over the past few years, writing serverless Go microservices.
+我主要使用的技术栈是AWS的，因此本文的某些内容将特定于AWS，但是大多数概念在其他云提供商上是通用的。
 
-The stack I use mostly is AWS, therefore some elements of this article will be AWS specific, however most of the concepts should translate into other cloud providers.
+## 项目结构
 
-## Project Structure
+对于构建较为复杂项目，我倾向于遵循go项目结构的建议和Bobs提出的整洁架构。
 
-The way I structure more complex projects, tend to follow the suggested Go project structure, and Uncle Bobs clean architecture.
+这里没必要给出一个完整的示例（一个类似CRUD的应用程序），但希望你可以从这个小示例中借鉴经验，运用到更大的项目中。
 
-This may seem overkill for the size of the example I've given (a single CRUD like application), but hopefully you can mentally extrapolate from this to a larger example, where you can hopefully see the value.
+整洁架构目的是使架构模块化和可插拔，使用精心设计的接口，这可能是go除了并发之外最强大的特性。
 
-The aim is to make the architeture modular and pluggable, using carefully designed interfaces, possibly Go's strongest feature besides concurrency.
-
-First up, a look at the general layout.
+首先，看一下总体布局。
 
 /internal
-My internal directory, I use for code I don’t want to expose to the outside world, or at least signal to other users of this codebase, that the contents of this folder are, well… as the name suggests, internal.
+`/internal`目录，主要编写不想对外暴露的代码，或者向代码库的其他用户说明，这个文件夹的内容就是顾名思义的意思 - `internal`。
 
-I use this for code used to connect to external services or databases for example.
+例如，我在这里编写连接到外部服务或数据库的代码。
 
 /pkg
-I use the pkg directory to house code which can be reused across the project, and can be safely used in other projects if needed. Although, if you’re writing code for services, as opposed to libraries, external use is less of a concern.
+`pkg`目录用来存放可以在整个项目中重复使用的通用代码，同时它也可以在其他项目中安全地使用。不过，如果你正在为服务编写代码，而不是库，那应该考虑不放在这儿。
 
-## Splitting code by domain
+## 按照业务区分代码
 
-I generally, at least in services which have multiple concerns, try to split code by domain. So if I have a service which has posts and comments, I will keep all the code specific to those domains together in a sub-package. Leaving pkg and internal for shared functionality, which isn’t specific to a particular domain.
+通常，至少在有多个关注点的服务中，我会尝试按业务区分代码。假设我有一个有发布和评论的服务，我将把所有特定于这些业务的代码放在一个子包中。将pkg和internal留给共享功能，而不是特定于特定的业务。
 
-There’s no hard or fast rule when it comes to structuring your serverless application, the approaches of outlined above tend to work for me for bigger services. But for a service with a couple of functions for example, you might find this overkill. Remember, it's perfectly okay to just have everything in your project root if you think that's all that's needed. Many projects start off in a single main.go file and grow as needed. My example demonstrates how you might want to structure a bigger, more formalised project.
+在构建serverless应用程序时，并没有硬性或快速的规则，上面概述的方法往往适用于更大的服务。但是在这个示例中，对于一个具有两个函数的服务来说，你可能会发现这有点过分了。如果认为所有需要的东西都在项目根目录中，那么完全可以这样做。许多项目都以单一的main.go文件开始，并根据需求慢慢增长。我的示例演示了你可能希望如何构建一个更大、更正式的项目。
 
-## Architecture
+## 结构
 
-When structuring my Serverless projects, I try to follow the approaches outlined in Uncle Bob’s infamous ‘Clean Architecture’ book. Again, this isn’t a must, but it does outline some good core principles which I’ve found to make my code easier to test, easier to run locally, and more resilient to change.
+在组织我的Serverless项目时，我试图遵循Bob那本臭名昭著的《干净的架构》一书中列出的方法。当然，这不是必须的，但它确实概括了一些好的核心原则，我发现这些原则可以使我的代码更容易测试，更容易本地运行，更有弹性地进行更改。
 
-The key thing is to treat concepts such as ‘http’, ‘lambda’, your cache, your database etc, all as minor details, shielded away from your business logic. Your code is split up into a set of well defined concepts:
+关键是要把诸如“http”、“lambda”、你的缓存、你的数据库等元素当作次要的细节，从你的业务逻辑中屏蔽掉。你的代码被分解成一组定义良好的概念:
 
-## Entities
+## 实例
 
-An entity is a type, in the case of Go a struct, which communicates the shape of the business problem. So for example a comment type, which may have a user id, a timestamp, and a text field. This entity is then used to represent the data stored within the datastore, but marshalling datastore queries to and from this entity struct.
+业务示例在go中会被定义为结构体，它表达业务问题具象。例如，comment类型可能有一个用户id、一个时间戳和一个文本字段。然后，该实体用于表示存储在数据存储中的数据，往返于此实例结构中的数据存储查询。
 
-Entity example:
+用户示例:
 
 ```go
 // User -
@@ -58,11 +57,11 @@ type User struct {
 }
 ```
 
-## Repositories
+## 存储层
 
-A repository is a fairly familiar concept in many frameworks and languages. A repository is a common set of methods interfacing a certain datastore technology. This means that switching datastores, is a case of writing a new repository which satisfies those same methods. Using interfaces, this makes it easy to switch around datastores/database technologies.
+在许多框架和语言中，存储层是一个相当熟悉的概念。存储层是一组连接特定数据存储技术的通用方法。这意味着切换数据存储，就是编写一个满足相同方法的新存储层。通过使用接口，可以轻松切换数据存储/数据库技术。
 
-Create user repository example:
+创建用户存储层示例：
 
 ```go
 // Create a user
@@ -81,17 +80,17 @@ func (r *DynamoDBRepository) Create(ctx context.Context, user *User) error {
 }
 ```
 
-## Services
+## 服务
 
-Services are code abstractions around calls to external services, or other services within your ecosystem. Or they can represent an internal concept which groups a few blocks together. In my example, I use a service to encapsulate a domain, which can then be plugged into our deliveries with all of its required configuration already set-up.
+服务是围绕外部服务或生态系统中的其他服务调用的代码抽象。或者它们可以代表一个内部概念，将几个块组合在一起。在我的示例中，我使用一个服务来封装一个业务，然后可以将其安排到已经设置好的所有所需配置的交付中。
 
-### Use cases
+### 用例
 
-Use cases represent your core business logic, it should call services and repositories, deal with entities and return generic data types. In other words, your business logic should not be aware of the underlying database technology, because you’re using a repository. Your business logic shouldn’t be aware of the transport type, your use case could be called via a web server, a command line interface, a lambda function, etc. Because you just return the generic data type from your use case, you can call this using anything. This gives you a lot of flexibility, in order to call your use case, you need a delivery.
+用例代表核心业务逻辑，它应该调用服务和存储层，处理实体并返回通用数据类型。换句话说，你的业务逻辑不应该知道底层数据库技术，因为你正在使用存储层。你的业务逻辑不应该知道传输类型，同时你的用例可以通过web服务器、命令行接口、lambda函数等调用。因为你只是从用例返回泛型数据类型，所以可以使用任何东西调用它。这给了你很大的灵活性，为了调用用例，你需要一个交付。
 
-In our example, we have a generic user entity, we do some validation on it, and pass it to the repository to be saved. In more complex examples, you might need to call a number of repositories and services here.
+在我们的示例中，我们有一个通用的用户实例，我们对它进行一些验证，并将其传递到存储层进行保存。在更复杂的示例中，你可能需要调用许多存储层和服务。
 
-Create user use case example:
+创建用户用例示范：
 
 ```go
 // Create a single user
@@ -111,13 +110,13 @@ func (u *Usecase) Create(ctx context.Context, user *User) error {
 }
 ```
 
-## Deliveries
+## 交付
 
-A delivery is a type which interfaces a protocol or user interface in some sense. So a command line interface, http request etc. The delivery just takes the data from the request body, arguments, or whatever, converts them into a generic data type, and passes it to the correct use case. Which will then return some data, to be marshalled into a json response, etc, etc.
+交付在某种意义上是一种接口协议或用户界面的类型。比如命令行界面，http请求等等。传递只是从请求体、参数或其他内容中获取数据，将它们转换为通用数据类型，并将其传递给正确的用例。然后返回一些数据，将其编组为json响应，等等。
 
-The sum of all these parts, means that it’s very simple to switch around your datastore, or the method of calling your business logic. The aim is always to protect business logic from minor details such as external technologies and underlying technologies.
+所有这些部分加起来，意味着在数据存储或调用业务逻辑的方法之间切换非常简单。其目的始终是保护业务逻辑不受外部技术和底层技术等次要细节的影响。
 
-Create user Lambda:
+创建用户Lambda:
 
 ```go
 // Create a user
@@ -135,24 +134,24 @@ func (h *handler) Create(ctx context.Context, body []byte) (helpers.Response, er
 }
 ```
 
-## Testing
+## 测试
 
-The architeture outlined above makes things very easy to test. I tend to write tests for each use case. I use Go’s simple approach to dependency injection, using interfaces, to switch the datastore to a mock version.
+上面概述的架构使测试变得非常容易。我倾向于为每个用例编写测试。我使用go的简单依赖注入方法，使用接口将数据存储切换到模拟版本。
 
-Because the use case takes generic data types, we don’t need to mock calling a lambda function within our tests, which keeps our tests clean and focussed on just the business logic also.
+因为用例采用通用数据类型，所以我们不需要在测试中模拟调用lambda函数，这使我们的测试保持干净，并且只关注业务逻辑。
 
-In terms of tooling and libraries, I try to keep it mostly standard library. However a few libraries and tools I’ve found to be useful timesavers, especially for repetitive patterns such as assertions and generating dummy implementations.
+在工具和库方面，我尽量保持它主要使用标准库。然而，我发现有一些库和工具可以节省时间，特别是对于断言和生成虚拟实现这样的重复模式，如下：
 
 https://github.com/stretchr/testify
 https://github.com/golang/mock
 
-A lot of people frown upon using tools for testing, and using external libraries etc, but I think it’s worth being pragmatic, I found I ended up manually doing the job of go mock and testify when I tried being 100% standard library, and that wasn’t worth the time or the effort. I recommend carefully assessing and using tools that genuinely save you time and are of a high quality.
+很多人不赞成使用工具进行测试，并使用外部库等，但我认为值得是务实的，最后我发现我手工做的工作去模拟，证明当我试着使用标准库实现100%的测试覆盖所花的时间和精力是不值得的。我建议仔细评估和使用那些真正节省时间和高质量的工具。
 
-### Integration Testing
+### 集成测试
 
-I sometimes like to write some light integration tests which can run in CI environments, which are less about the business logic and more about things having the correct access and connectivity etc. In my example, I’ve written some integration tests as part of my Lambda delivery. In my Cloudformation script, I also include an integration DynamoDB table.
+有时我喜欢编写一些能够在CI环境中运行的轻量级集成测试，这些测试与业务逻辑无关，而更多地关注的是如何获得正确的访问和连接等问题。在我的示例中，我编写了一些集成测试作为Lambda交付的一部分。在我的Cloudformation脚本中，我还包含了一个集成DynamoDB表。
 
-Example integration test:
+集成测试实例:
 
 ```go
 func TestCanCreate(t *testing.T) {
@@ -175,11 +174,11 @@ func TestCanCreate(t *testing.T) {
 }
 ```
 
-## Routing
+## 路由
 
-If I’m writing RESTful endpoints, utilising HTTP verbs on resources, you can combine a resource into a single endpoint, using the HTTP verb to route to the correct use case. As shown below:
+如下我正在编写RESTful端点，利用机器上的HTTP verbs，你可以将资源合并到单个端点中，使用HTTP verbs路由到正确的用例。如下所示:
 
-Example:
+示例:
 
 ```go
 func Router(handler handler) func(context.Context, Request) (Response, error) {
@@ -221,19 +220,19 @@ func Router(handler handler) func(context.Context, Request) (Response, error) {
 }
 ```
 
-As you can see, I use HTTP verbs to route to the correct handler of a resource, for routes with multiple endpoints using the same verb, I use the presence of a path argument or not to differentiate further. This covers basic CRUD operations perfectly.
+如你所见，我使用HTTP verbs来路由到资源的正确处理程序，对于使用相同谓词的多个端点的路由，我使用path参数或不使用path参数来进一步区分。这完美地涵盖了基本的CRUD操作。
 
-## Logging
+## 日志
 
-For logging, I’ve found it’s crucially important to use structured logging, as opposed to just logging our strings to stdout. Structured logging is just a term for logging in a predictable way. In JSON for example. This means you can store and perform analysis more readily on your logs. Storing them to Kibana for example, an indexing on certain fields. In AWS for example, you can just Cloudwatch Insights, which will pick up on JSON fields, and allow you to perform rich search queries, with a SQL like syntax. Having some form of structured logging, opens up a lot of opportunities for visibility and diving deeper into your services behaviours. It makes debugging a breeze combined with good tooling.
+对于日志记录，我发现使用结构化日志记录至关重要，而不仅仅是将字符串记录到标准输出。结构化日志只是一个术语，用于以可预测的方式进行日志记录。比如JSON。这意味着你可以更容易地在日志上存储和执行分析。例如，将它们存储到Kibana，对某些字段的索引。例如，在AWS中，你可以只使用Cloudwatch Insights，它将收集JSON字段，并允许你使用类似SQL的语法执行丰富的搜索查询。拥有某种形式的结构化日志，可以为你的服务行为提供大量可见性和深入挖掘的机会。它使调试与良好的工具结合起来变得轻而易举。
 
-For Go applications, I tend to use Logrus, but more recently I’ve been playing around with a great library brought out by Uber, called Zap.
+对于go应用程序，我倾向于使用Logrus，但最近我一直在使用Uber推出的一个很棒的库Zap。
 
-## Tracing
+## 追踪
 
-There are lots of great tracing tools out there, especially for Go. Such as: Jaeger, Zipkin etc. However, as we’re using AWS in these examples, we’re going to take a look at AWS X-Ray. X-Ray integrates directly into most of the main AWS Services, the bread and butter services, such as API Gateway, Lambda, SQS, and several more. Which means it’s perfect for serverless use-cases.
+市面上有很多很棒的跟踪工具，特别是go，如:Jaeger， Zipkin等。然而，当我们在这些例子中使用AWS时，我们将看一下AWS X-Ray。X-Ray直接集成到大多数主要的AWS服务，基本服务，如API Gateway、Lambda、SQS等。这意味着它非常适合serverless的用例。
 
-The serverless framework itself makes this process incredibly easy, you simply include the following in your serverless.yml file:
+serverless框架本身使得这个过程非常容易，你只需在serverless.yml文件中添加tracing配置:
 
 ```yaml
 provider:
@@ -242,66 +241,66 @@ provider:
     lambda: true
 ```
 
-Which enables tracing for your API Gateway, and your Lambdas functions. You can use the X-Ray SDK to add further tracing to other services, using their instrumentation tools.
+它支持对API网关和Lambdas函数的跟踪,同时你可以使用X-Ray SDK向其他服务添加进一步的跟踪，使用它们的工具。
 
-To add the instrumentation to track other AWS services, you simply wrap the client of that service, in the xray instrumentation.
+要添加跟踪其他AWS服务的检测，只需将该服务的客户端包装在X-Ray检测中。
 
 ```go
 xray.Configure(xray.Config{LogLevel: "trace"})
 xray.AWS(ddb.Client)
 ```
 
-Then, when interacting with supported AWS services, make sure you use 'with context', for example:
+然后，在与支持的AWS服务交互时，确保使用“with context”，例如:
 
 ```go
 result, err := r.session.GetItemWithContext(ctx, input)
 ```
 
-The context being the one passed into your Lambda handler, it'll be automatically connected end to end, and you'll be able to view your traces in the X-Ray UI.
+上下文是传递到Lambda处理程序中的，它将自动端到端连接，并且你将能够在X-Ray UI中查看你的追踪记录。
 
 ![](https://ewanvalentine.io/content/images/2019/09/Screenshot-2019-09-03-at-13.28.06.png)
 
-## Running locally
+## 本地运行
 
-In other languages, such as nodejs, there are plugins to emulate the behaviour of serverless gateway (serverless-offline), but due to the compiled nature of Go, that becomes tricky, and to my knowledge, no such alternative exists for Go at this time. If there is… please do let me know!
+在其他语言中，比如nodejs，有一些插件可以模拟serverless网关(serverless 离线)的行为，但由于go的编译特性，这变得很棘手，据我所知，目前还不存在这样的替代方案。如果有…请告诉我!
 
-But, because we’ve architected our service to decouple the runtime from the business logic, we can easily write a new delivery type, which we can use to spin up locally.
+但是，因为我们已经将服务的架构设计为将运行时与业务逻辑解耦，所以我们可以很容易地编写新的交付类型，我们可以使用它在本地启动。
 
-Instead of compiling our service with the lambda entrypoint, we utilise a basic web server, found in the cmd directory. Which exposes all of our http deliveries. In summary, with very little effort, we can create new ways of interacting with our data and our business logic.
+我们不用lambda入口点来编译我们的服务，而是使用一个基本的web服务器，在cmd目录中。这暴露了我们所有的http交付。总之，只需花费很少的努力，我们就可以创建与数据和业务逻辑交互的新方法。
 
-## Infrastructure
+## 基础设施
 
-Like most people using AWS, I tend to just use Cloudformation, although sometimes it’s easy to feel as though you’re a YAML developer, it’s a powerful, yet verbose tool in your arsenal. But there are very good alternatives at your disposal, such as terraform.
+像大多数使用AWS的人一样，我倾向于只使用Cloudformation，尽管有时很容易觉得自己是YAML开发人员，但它是你的工具库中一个强大而冗长的工具。但也有很好的替代方案可供选择，比如terraform。
 
-However, with Serverless, which generates cloudformation under the hood, Cloudformation generally feels like a better fit. Especially as you can include Cloudformation along with your serverless config.
+然而，有了Serverless， 特别是当你可以在你的serverless配置中包含Cloudformation时，cloudformation通常感觉更适合。
 
-There are exceptions to this however. For example, I used to put DynamoDB configurations in my Serverless config. Until I went to delete and recreate a serverless stack one day and I was warned I’d be deleting all the data in my DynamoDB table. Of course! After that fright, I now make sure to define my DynamoDB, or anything dealing with data that could be lost if a table was dropped, in separate cloudformation stack files. You lose the easy of being able to generate all of your tables with a serverless up command. But you gain some extra safety and assurance.
+然而，也有例外。 例如，我曾经将DynamoDB配置放在我的serverless配置中。直到有一天我删除并重新创建了一个serverless堆栈，并被警告我将删除DynamoDB表中的所有数据。当然！在那次惊吓之后，我现在确保在单独的 cloudformation 堆栈文件中定义我的 DynamoDB，或任何处理如果删除表可能会丢失的数据的内容。你失去了使用serverless `up`命令生成所有表的容易性，但是你会获得一些额外的安全和保证。
 
-Other services which are generally stateless however, can be defined in your serverless.yml safely.
+然而，其他通常无状态的服务可以安全地在serverless.yml中定义。
 
 ## Databases 
 
-Serverless has huge implications in terms of the type of database you choose. The key thing to note about the serverless architecture is its concurrency capabilities, and statelessness. Which are both benefits, of course. However, this can become a burden on traditional databases, which tend to use some form of connection pooling in order to manage the load to a database. Connection pooling is inherently stateful. So this works fine on a long-running process, such as a webserver. However, your Lambda functions being stateless, have no concept of a connection pool, it has to create a fresh connection each time. Which means you can face very quickly hit connection limits to your database.
+就所选择的数据库类型而言，serverless具有巨大的影响。关于serverless体系结构需要注意的关键是它的并发能力和无状态性。当然，这两个好处都有。但是，这可能会成为传统数据库的负担，因为传统数据库往往使用某种形式的连接池来管理数据库的负载。连接池本身就是有状态的。所以这在长期运行的进程上工作得很好，比如web服务器。但是，Lambda函数是无状态的，没有连接池的概念，每次都必须创建一个新的连接。这意味着你可能很快就会遇到数据库的连接限制。
 
-In the my early forays into serverless architecture, I was using a hosted MongoDB server, it was a managed instance, so I thought I didn't have to worry too much about scaling etc. However, we kept running out of RAM, we scaled the instance up a few times, but that was only a temporary fix, we were also massively overpowered for the relatively small amount of data we were dealing with. We kept hitting connection limits, and running out of RAM. It turns out, the high concurrency and lack of connection pooling meant connections were being spawned by the thousands and not being properly closed again, connections were leaking. After reviewing and patching all of the code to explicitly handle closing connections, we were still seeing issues during bursts of traffic.
+在我早期对serverless架构的尝试中，我使用了一个托管的MongoDB服务器，它是一个托管实例，所以我认为我不必太担心伸缩性等问题。然而，我们不断耗尽RAM，我们将实例扩展了几次，但这只是一个临时的修复，我们也无法处理相对较少的数据。我们不断达到连接限制，并耗尽RAM。事实证明，高并发性和缺乏连接池意味着数以千计的连接被生成，没有被正确地再次关闭，连接正在泄漏。在检查并修补了所有显式处理关闭连接的代码后，我们仍然在流量激增时看到问题。
 
-There are ways to mitigate this, for example, creating a long-running process betwixt your cloud functions and your database, which handles connection pooling and returns results. You can also add caching to this layer to lessen the load of your database. This layer can become pretty thin and light-weight, but it's added complexity for sure.
+有一些方法可以减轻这种情况，例如，在云函数和数据库之间创建一个长期运行的进程，它处理连接池并返回结果。还可以向这一层添加缓存，以减少数据库的负载。这一层可以变得非常薄和轻量级，但它无疑增加了复杂性。
 
-The second solution is to use a serverless database, for example DynamoDB, or Cloud Datastore. However these come with limitations also. They're new, and have different APIs. If you come from a SQL background, you're adopting an entirely new, NoSQL database query syntax. There are alternavtives to this problem emerging, for example Aurora, which is a serverless SQL wrapper. Which lets you use a MySQL, or PostgresSQL flavoured database instance, exposing a serverless friendly query connection. This only offers restricted versions of each though, so you need to consider this as well.
+第二种解决方案是使用serverless数据库，例如DynamoDB或云数据存储。然而，这些也有局限性。它们是新的，有不同的api。如果你有SQL背景，你会采用一种全新的NoSQL数据库查询语法。对于这个问题，有其他的替代方案，例如Aurora，它是一个serverless的SQL包装器。它允许你使用MySQL或PostgresSQL风格的数据库实例，公开一个serverless友好的查询连接。但这只提供了每个版本的限制版本，所以你也需要考虑这一点。
 
 ## Deployments
 
-Typically I have a deployment pipeline for each service, which is triggered by GitHub webhook events, such as merging into master.
+通常我有每个服务的部署pipeline，这是由GitHub的webhook事件触发，如合并到master。
 
-I tend to use AWS Code Pipeline and Code Build, it’s already integrated into the AWS stack, and ships with everything you need to deploy Lambdas. It’s also pretty lightweight configuration wise. I ship the cloudformation for the pipeline along with my service. Another good option is CircleCI which offers a free trial.
+我倾向于使用AWS Code Pipeline和Code Build，它已经集成到AWS堆栈中，并且附带了部署Lambdas所需的一切。它也是非常轻量级的配置。我为pipeline运送云的形成随我的服务。另一个不错的选择是CircleCI，它提供免费试用。
 
-## Service Discovery
+## 服务发现
 
-As you build out more and more services, you find use cases where you might need to communicate between services. You may have some services in Fargate, some in Lambda, etc. One issue I had architecting on serverless technologies, and AWS services, is that it’s tricky to communicate between all of these different services and protocols, and it’s tricky to find the location of each service without using ARNs. So this is where, in a typical microservice architecture, you’d use service discovery.
+当你构建越来越多的服务时，你会发现可能需要在服务之间进行通信的用例。你可以在Fargate和Lambda等地获得一些服务。我在serverless技术和AWS服务上遇到的一个问题是，在所有这些不同的服务和协议之间进行通信很棘手，而且在不使用arn的情况下查找每个服务的位置也很棘手。因此，在典型的微服务体系结构中，这就是需要使用服务发现的地方。
 
-Service discovery allows you to register the location of services, with a user friendly name, so that you can find other services by name. AWS provides a Serverless offering for this, called Cloudmap. I use Cloudmap to register the ARNs of my functions. I also wrote a series of libraries to abstract the process of calling other functions, and locating other services.
+服务发现允许你用用户友好的名称注册服务的位置，这样你就可以通过名称找到其他服务。AWS为此提供了一个名为Cloudmap的serverless产品。我使用Cloudmap注册我的函数的arn。我还编写了一系列库来抽象调用其他函数和定位其他服务的过程。
 
-Example calling a Lambda function using our service discovery framework:
+使用我们的服务发现框架调用Lambda函数的示例:
 
 ```go
 d := discover.NewDiscovery(
@@ -313,18 +312,18 @@ d.Request("my-namespace.users->create-user", types.Request{
 }, opts)
 ```
 
-Under the hood, this finds the service with the namespace of my-namespace, the users service, and calls the create-user function as part of that service from Cloudmap. Cloudmap returns the ARN with some additional metadata, including its type, in this case a function. Because we instantiated this library using the Lambda adapter for functions (which is also the default), it then uses the Lambda SDK to call that Lambda function.
+在底层，它找到名称空间为my-namespace的服务，即用户服务，并从Cloudmap调用创建用户函数作为该服务的一部分。Cloudmap返回带有一些附加元数据的ARN，包括它的类型，在本例中是一个函数。因为我们使用Lambda函数适配器（这也是默认的）实例化了这个库，所以它随后使用Lambda SDK调用该Lambda函数。
 
-From your codes point of view, it doesn't care where it is, or what it is, it can intuitively infer how to handle that interaction, protecting your code from the details of Lambda.
+从代码的角度来看，它并不关心它在哪里，或者它是什么，它可以直观地推断出如何处理交互，保护代码不受Lambda细节的影响。
 
-## Conclusion
+## 总结
 
-I’m still learning every day, and in all probability, my approach will change several more times in the next year or so. The approaches and tools I’ve outlined aren’t foolproof, but it’s a solid start.
+我每天都在学习，而且很有可能，我的方法在接下来的一年左右会改变好几次。我列出的方法和工具并不是完美的，但它是一个很好的开始。
 
-The most important lesson I hope you take away from this, however, is protecting your business logic from the sea of AWS services and technologies. Treat Lambda as an unimportant detail, treat DynamoDB as an unimportant detail. The important parts are your use cases, which should encapsulate your business logic, and should not be aware of your database, or your delivery mechanism, etc.
+很重要的一点是，我希望你能记住：保护好你的业务逻辑免受 AWS 服务和技术的冲击。将 Lambda 视为不重要的细节，将 DynamoDB 视为不重要的细节，而重要的部分是你的用例。它应该封装你的业务逻辑，同时你的数据库、交付机制等等是不透明的。
 
-One thing I've noticed, it feels much easier to architect distributed systems with Docker and Kubernetes for example; there are design patterns and primatives that are clearly defined and well understood. I still think this is missing or incomplete with serverless as a concept, largely driven by the plethora of services and the differences between cloud platforms offerings. With Kubernetes, docker is docker, you can take a unified approach.
+我注意到一件事，比如用Docker和Kubernetes来构建分布式系统要容易得多，有一些设计模式和基本元素被清晰地定义和理解。我仍然认为“serverless”这个概念是缺失的或不完整的，主要是由过多的服务和云平台产品之间的差异所驱动。有了Kubernetes， docker只是docker，你可以采取统一的方式。
 
-But we can achieve the same with serverless architectures, using careful abstractions, and understanding how the same patterns we see in traditional architectures, can apply to serverless.
+但是我们可以通过使用谨慎的抽象，以及理解我们在传统体系结构中看到的相同模式如何应用于serverless体系结构来实现相同的目标。
 
-Example repo: https://github.com/EwanValentine/serverless-api-example
+示例仓库: https://github.com/EwanValentine/serverless-api-example
