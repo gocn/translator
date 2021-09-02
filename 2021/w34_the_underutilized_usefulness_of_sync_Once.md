@@ -151,9 +151,9 @@ func (c *QueryClient) DoQuery(name string) []byte {
 
 ## 进一步阅读/其他注意事项
 
-另一个类似于 `sync.Once` 的机制是 [golang.org/x/sync/singleflight](https://pkg.go.dev/golang.org/x/sync/singleflight)。`singleflight` 只会删除正在进行中的请求中的重复请求（即不会持久化缓存），但与 `sync.Once` 相比，`singleflight` 通过上下文实现起来可能更简洁（通过使用 `select` 和 `ctx.Done()`），并且在生产环境中，可以通过上下文取消这一点很重要。`singleflight` 实现的模式和 `sync.Once` 十分接近，但如果 map 中存有值，则会提前返回。
+另一个类似于 `sync.Once` 的机制是 [golang.org/x/sync/singleflight](https://pkg.go.dev/golang.org/x/sync/singleflight)。`singleflight` 只会删除正在进行中的请求中的重复请求（即不会持久化缓存），但与 `sync.Once` 相比，`singleflight` 通过 context 实现起来可能更简洁（通过使用 `select` 和 `ctx.Done()`），并且在生产环境中，可以通过 context 取消这一点很重要。`singleflight` 实现的模式和 `sync.Once` 十分接近，但如果 map 中存有值，则会提前返回。
 
-[ianlancetaylor](https://github.com/golang/go/issues/25312#issuecomment-387800105) 建议结合上下文使用 `sync.Once`，方式如下：
+[ianlancetaylor](https://github.com/golang/go/issues/25312#issuecomment-387800105) 建议结合 context 使用 `sync.Once`，方式如下：
 
 ```go
 c := make(chan bool, 1)
