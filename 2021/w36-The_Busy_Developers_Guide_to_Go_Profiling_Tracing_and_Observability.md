@@ -4,7 +4,7 @@
 - 原文作者：Felix Geisendörfer
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w36-The_Busy_Developers_Guide_to_Go_Profiling_Tracing_and_Observability.md
 - 译者：[cvley](https://github.com/cvley)
-- 校对：
+- 校对：[朱亚光](https://github.com/zhuyaguang)
 
 - **[简介](#简介):** [本文内容](#read-this) · [Go 语言的心智模型](#mental-model-for-go) · 性能分析与追踪
 - **使用场景：** 降低成本 · 降低延迟 · 内存泄露 · 程序挂起（Hanging） · 中断
@@ -21,7 +21,7 @@
 
 ## 本文内容
 
-本文是实践指南，目标读者是那些想要通过使用性能分析和追踪技术来提升程序的忙碌 gopher。如果你还不熟悉 Go 的内部原理，建议你先阅读整个简介。之后你就可以自由阅读感兴趣的章节。
+本文是实践指南，目标读者是那些想要通过使用性能分析和追踪技术来提升程序的忙碌 gopher 们。如果你还不熟悉 Go 的内部原理，建议你先阅读整个简介。之后你就可以自由阅读感兴趣的章节。
 ## Go 的心智模型
 
 在不理解 Go 语言底层运行机制的情况下，成为一个熟练编写 Go 代码的开发者是可能的。但当面对性能分析和调试时，理解内部的心智模型将大有裨益。因此下面我们将展示 Go  的基础模型。这个模型应该足够让你避免绝大多数常见的错误，但是 [所有的模型都是错误的](https://en.wikipedia.org/wiki/All_models_are_wrong)，因此鼓励你探索更深层的资料，以便在将来解决更难的问题。
