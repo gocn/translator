@@ -1,4 +1,4 @@
-- 原文地址：
+- 原文地址：https://github.com/DataDog/go-profiler-notes/blob/main/stack-traces.md
 - 原文作者：张洋
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w37_stack_traces_in_go.md
 - 译者：[cuua](https://github.com/cuua)
