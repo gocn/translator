@@ -1,14 +1,9 @@
-# 并发安全的集中式指针管理设施
 
 - 原文地址：
 - 原文作者：张洋
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w37_stack_traces_in_go.md
 - 译者：[cuua](https://github.com/cuua)
 - 校对：
-
-[Introduction](#intrudction) - [Goroutine Stack](#goroutine-stack) ([Stack Layout](#stack-layout), [Real Example](#real-example), [cgo](#cgo)) - [Unwinding](#unwinding) ([Frame Pointer](#frame-pointer), [gopclntab](#gopclntab), [DWARF](#dwarf)) - [Symbolization](#symbolization)
-
-This document was last updated for `go1.16` but probably still applies to older/newer versions for the most parts.
 
 # Stack Traces in Go
 
