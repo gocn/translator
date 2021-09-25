@@ -1,5 +1,5 @@
 - 原文地址：https://github.com/DataDog/go-profiler-notes/blob/main/stack-traces.md
-- 原文作者：张洋
+- 原文作者：Felix Geisendörfer
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w37_stack_traces_in_go.md
 - 译者：[cuua](https://github.com/cuua)
 - 校对：
@@ -131,7 +131,7 @@ Go的运行时，包括内置探查器，专门使用[gopclntab]（#gopclntab）
 
 帧指针展开是一个简单的过程，它遵循基本指针寄存器（`rbp`）指向栈上指向下一帧指针的第一个帧指针，依此类推。换句话说，它是沿着堆栈布局图形中的橙色线条前进。对于每个访问的帧指针，位于帧指针上方8个字节的返回地址（pc）将被沿途收集，就是这样:)
 
-帧指针的主要缺点是，在正常程序执行期间，将其推到栈上会给每个函数调用增加一些性能开销。Go作者在[Go 1.7发行说明](https://golang.org/doc/go1.7) 中评估，平均程序的平均执行开销为2%. 另一个数据点是Linux内核，它的开销为[5-10%](https://lore.kernel.org/lkml/20170602104048.jkkzssljsompjdwy@) 使用de/T/#u），例如sqlite和pgbench。正因为如此，`gcc`之类的编译器提供了诸如`fomit frame pointers`之类的选项来省略它们以获得更好的性能。然而，这是一个魔鬼的交易：它会立即给您带来小的性能胜利，但它会降低您在将来调试和诊断性能问题的能力。因此，一般建议如下：
+帧指针的主要缺点是，在正常程序执行期间，将其推到栈上会给每个函数调用增加一些性能开销。Go作者在[Go 1.7发行说明](https://golang.org/doc/go1.7) 中评估，平均程序的平均执行开销为2%. 另一个数据点是Linux内核，它的开销为[5-10%](https://lore.kernel.org/lkml/20170602104048.jkkzssljsompjdwy@suse.de/T/#u) ，例如sqlite和pgbench。正因为如此，`gcc`之类的编译器提供了诸如`fomit frame pointers`之类的选项来省略它们以获得更好的性能。然而，这是一个魔鬼的交易：它会立即给您带来小的性能胜利，但它会降低您在将来调试和诊断性能问题的能力。因此，一般建议如下：
 
 >始终使用帧指针编译。忽略帧指针是一种有害的编译器优化，会破坏调试器，遗憾的是，这通常是默认的。
 
@@ -153,7 +153,7 @@ Russ Cox最初在他的[Go 1.2运行时符号信息](https://golang.org/s/go12sy
 
 Go的栈跟踪实现的核心是[`gentraceback()`](https://github.com/golang/go/blob/go1.16.3/src/runtime/traceback.go#L76-L86) 从不同位置调用的函数。如果调用方是例如`runtime.Callers()`函数只需要进行展开，但是例如`panic()`需要文本输出，这也需要符号化。此外，代码必须处理[链接寄存器架构](https://en.wikipedia.org/wiki/Link_register) 之间的差异比如ARM，它的工作原理与x86略有不同。对于Go团队中的系统开发人员来说，这种展开、符号化、对不同体系结构的支持和定制数据结构的组合可能只是日常工作中的一部分，但这对我来说肯定很棘手，因此请注意我下面描述中的潜在不准确之处。
 
-每个帧查找都从传递给[`findfunc()`](https://github.com/golang/go/blob/go1.16.3/src/runtime/symtab.go#L671) 的当前'pc'开始它查找包含“pc”的函数的元数据。历史上，这是使用'O(logn)二进制搜索完成的，但[现在](https://go-review.googlesource.com/c/go/+/2097/) 有一个类似哈希映射的索引[`findfuncbucket`](https://github.com/golang/go/blob/go1.16.3/src/runtime/symtab.go#L671) 结构，通常使用'O(1)`算法直接引导我们找到正确的条目。
+每个帧查找都从传递给[`findfunc()`](https://github.com/golang/go/blob/go1.16.3/src/runtime/symtab.go#L671) 的当前'pc'开始它查找包含'pc'的函数的元数据。历史上，这是使用'O(logn)二进制搜索完成的，但[现在](https://go-review.googlesource.com/c/go/+/2097/) 有一个类似哈希映射的索引[`findfuncbucket`](https://github.com/golang/go/blob/go1.16.3/src/runtime/symtab.go#L671) 结构，通常使用'O(1)`算法直接引导我们找到正确的条目。
 
 [_func](https://github.com/golang/go/blob/9baddd3f21230c55f0ad2a10f5f20579dcf0a0bb/src/runtime/runtime2.go#L825) 我们刚刚检索到的元数据包含一个进入“pctab”表的“pcsp”偏移量，该表将程序计数器映射到栈指针增量。要解码此信息，我们调用[`funcspdelta()`](https://github.com/golang/go/blob/go1.16.3/src/runtime/symtab.go#L903) 它对所有更改函数的'sp delta'的程序计数器进行线性搜索，直到找到最接近的（'pc'，'sp delta'）对。对于具有递归调用周期的栈，使用一个微小的程序计数器缓存来避免执行大量重复的工作。
 
@@ -207,6 +207,6 @@ main.main()
 ## 历史
 为了支持第三方探测器，如[perf](http://www.brendangregg.com/perf.html) [Go 1.7](https://golang.org/doc/go1.7) （2016-08-15）版本开始在默认情况下为[64位二进制文件](https://sourcegraph.com/search?q=framepointer_enabled+repo:%5Egithub%5C.com/golang/go%24+&patternType=literal) 启用帧指针
 
-## 学分
-非常感谢[迈克尔·普拉特](https://github.com/prattmic)供[审阅](https://github.com/DataDog/go-profiler-notes/commit/6a62d5908079ddac9c92d319f49fde846f329c55#r49179154) 本文档中“gopclntab”部分，并捕获我分析中的一些重大错误。
+## 鸣谢
+非常感谢[迈克尔·普拉特](https://github.com/prattmic) 供[审阅](https://github.com/DataDog/go-profiler-notes/commit/6a62d5908079ddac9c92d319f49fde846f329c55#r49179154) 本文档中“gopclntab”部分，并捕获我分析中的一些重大错误。
 
