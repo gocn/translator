@@ -53,7 +53,7 @@ Go的栈布局在不同平台上略有不同。为了使事情易于管理，我
 ### 真实案例
 查看好看的图片可以很好地获得对栈的高级理解，但也有其局限性。有时，为了全面理解，您需要查看原始位和字节。如果你对此不感兴趣，请跳到下一节。
 
-要查看栈，我们将使用[delve](https://github.com/go-delve/delve)这是一个很好的go调试器。为了检查栈，我编写了一个名为 [stackannotate.star](./delve/stackannotate.star) 的脚本，可用于打印一个简单的[example程序]（./examples/stackannotate/main.go）的带注释栈：
+要查看栈，我们将使用[delve](https://github.com/go-delve/delve)这是一个很好的go调试器。为了检查栈，我编写了一个名为 [stackannotate.star](./delve/stackannotate.star) 的脚本，可用于打印一个简单的[example程序](../static/images/2021_w37_stack_traces_in_go/main.go) 的带注释栈：
 
 
 ```
