@@ -1,4 +1,11 @@
-⬅ [Index of all go-profiler-notes](https://github.com/DataDog/go-profiler-notes/blob/main/README.md)
+# Go's pprof tool & format
+
+* 原文地址：https://github.com/DataDog/go-profiler-notes/blob/main/pprof.md
+* 原文作者：`felixge`
+* 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w39_go_profiler_notes_pprof_tool_format
+
+- 译者：[小超人](https:/github.com/laxiaohong)
+- 校对：
 
 The various profilers built into Go are designed to work with the pprof visualization tool. [pprof](https://github.com/google/pprof) itself is an inofficial Google project that is designed to analyze profiling data from C++, Java and Go programs. The project defines a protocol buffer format that is used by all Go profilers and described in this document.
 
@@ -16,7 +23,7 @@ The pprof format is defined in the [profile.proto](https://github.com/google/ppr
 
 A picture is worth a thousand words, so below is an automatically [generated](https://github.com/seamia/protodot) visualization of the format. Please note that fields such as `filename` are pointers into the `string_table` which are not visualized, improvements for this would be welcome!
 
-[![profile.proto visualized](https://github.com/DataDog/go-profiler-notes/raw/main/profile.png)](https://github.com/DataDog/go-profiler-notes/blob/main/profile.png)
+[![profile.proto visualized](../static/images/2021_w39/profile.png)](../static/images/2021_w39/profile.png)
 
 pprof's data format appears to be designed to for efficency, multiple languages and different profile types (CPU, Heap, etc.), but because of this it's very abstract and full of indirection. If you want all the details, follow the links above. If you want the **tl;dr**, keep reading:
 
