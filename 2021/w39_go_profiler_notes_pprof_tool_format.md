@@ -10,10 +10,10 @@
 
 The various profilers built into Go are designed to work with the pprof visualization tool. [pprof](https://github.com/google/pprof) itself is an inofficial Google project that is designed to analyze profiling data from C++, Java and Go programs. The project defines a protocol buffer format that is used by all Go profilers and described in this document.
 
-在 Go 中内置的几种性能分析器都是为使用 pprof 可视化工具而设计的。pprof 本身不是谷歌的官方项目，pprof 一开始设计的目的是分析来自 c++、Java 和 Go 程序的数据。该项目使用 protocol buffer 协议定义了所有 Go 性能分析器的格式，本文都会对他们进行描述。
+在 Go 中内置的几种分析器都是为使用 pprof 的可视化工具而设计的。[pprof](https://github.com/google/pprof) 本身不是谷歌的官方项目，pprof 一开始设计的目的是分析来自 c++、Java 和 Go 程序的数据。该项目使用 protocol buffer 协议定义了所有 Go 分析器的格式，本文都会对他们进行描述。
 
 The Go project itself [bundles](https://github.com/golang/go/tree/master/src/cmd/pprof) a version of pprof that can be invoked via `go tool pprof`. It's largely the same as the upstream tool, except for a few tweaks. Go recommends to always use `go tool pprof` instead of the upstream tool for working with Go profiles.
-Go 项目本身捆绑了一个可以通过 `go tool pprof` 调用的 pprof 版本。 除了一些调整外，它与原本的 pprof 工具大致相同。 Go 建议始终使用 `go tool pprof`来进行性能分析，而不是原来的 pprof 工具来分析 Go 性能。
+Go 项目本身[捆绑了](https://github.com/golang/go/tree/master/src/cmd/pprof) 一个可以通过 `go tool pprof` 命令调用的 pprof 工具。 除了一些调整外，它与原本的 pprof 工具大致相同。 Go 建议始终使用 `go tool pprof` 命令来进行分析，而不是原来的 pprof 工具来分析 Go 。
 
 ## Features
 ## 特点
@@ -37,7 +37,7 @@ A picture is worth a thousand words, so below is an automatically [generated](ht
 [![profile.proto visualized](../static/images/2021_w39/profile.png)](../static/images/2021_w39/profile.png)
 
 pprof's data format appears to be designed to for efficency, multiple languages and different profile types (CPU, Heap, etc.), but because of this it's very abstract and full of indirection. If you want all the details, follow the links above. If you want the **tl;dr**, keep reading:
-pprof 的数据格式似乎是为效率、多语言(编程语言)和不同的性能分析类型(CPU、堆等)而设计的，但正因为如此，它非常抽象，不直观。如果你想了解所有细节，请点击上面的链接。继续向下阅读就能知道这么设计的原因。
+pprof 的数据格式似乎是为效率、多语言(编程语言)和不同的性能分析类型(CPU、堆等)而设计的，但正因为如此，它非常抽象，显得不直观。如果你想了解所有细节，请点击[这里](https://github.com/google/pprof/blob/master/proto/profile.proto) 。继续向下阅读也能知道这么设计的原因。
 A pprof file contains a list of **stack traces** called _samples_ that have one or more numeric **value** associated with them. For a CPU profile the value might be the CPU time duration in nanoseonds that the stack trace was observed for during profiling. For a heap profile it might be the number of bytes allocated. The **value types** themselves are described in the beginning of the file and used to populate the "SAMPLE" drop down in the pprof UI. In addition to the values, each stack trace can also include a set of **labels**. The labels are key-value pairs and can even include a unit. In Go those labels are used for [profiler labels](https://rakyll.org/profiler-labels/).
 pprof 文件包含采集的堆栈列表，这些堆栈信息具有一个或多个与之关联的数值。 比如对于 CPU 性能分析，该值可能是在性能分析期间观察到堆栈的 CPU 持续时间（以纳秒为单位）。 对于堆性能分析，它可能是分配的字节数。 值类型本身在文件的开头进行了描述，并用于填充 pprof UI 中的“SAMPLE”下拉列表。 除了值之外，每个堆栈跟踪还可以包括一组标签。 标签是键值对，甚至可以包含一个单元。 在 Go 中，这些标签应用在[分析器标签](https://rakyll.org/profiler-labels/) 上 。
 
@@ -61,7 +61,7 @@ Below are a few tools for decoding pprof files into human readable text output. 
 下面是一些用于将 pprof 文件解码为人类可读文本输出的工具。 它们按输出格式的复杂程度排序，显示简化输出的工具列在最前面： 
 
 #### Using `pprofutils`
-### 使用 pprof 工具
+### 使用 pprofutils 来进行辅助分析
 [pprofutils](https://github.com/felixge/pprofutils) is a small tool for converting between pprof files and Brendan Gregg's [folded text](https://github.com/brendangregg/FlameGraph#2-fold-stacks) format. You can use it like this:
 [pprofutils](https://github.com/felixge/pprofutils) 是一个用于在 pprof 文件和 Brendan Gregg 的[折叠文本](https://github.com/brendangregg/FlameGraph#2-fold-stacks) 格式之间转换的小工具。你可以这样使用它
 
@@ -213,7 +213,7 @@ The [original pprof tool](https://github.com/gperftools/gperftools/blob/master/s
 [最初的 pprof工具](https://github.com/gperftools/gperftools/blob/master/src/pprof) 是谷歌内部使用 perl 开发的脚本。根据版权标题，开发可能要追溯到1998年。它于2005年作为 [gperftools ](https://github.com/google/tcmalloc/blob/master/docs/gperftools.md) 的一部分首次发布，并于2010年 [添加](https://github.com/golang/go/commit/c72fb37425f6ee6297371e0053d6d1f958d49a41) 到Go项目中。
 
 In 2014 the Go project [replaced](https://github.com/golang/go/commit/8b5221a57b41a19abcb4e3dde20014af494048c2) the perl based version of the pprof tool with a Go implementation by  that was already used inside of Google at this point. This implementation was re-released as a [standalone project](https://github.com/google/pprof) in 2016. Since then the Go project has been vendoring a copy of the upstream project, [updating](https://github.com/golang/go/commits/master/src/cmd/vendor/github.com/google/pprof) it on a regular basis.
-2014年，Go项目用 [Raul Silvera](https://www.linkedin.com/in/raul-silvera-a0521b55/) 的Go实现[取代了](https://github.com/golang/go/commit/8b5221a57b41a19abcb4e3dde20014af494048c2) 基于perl的pprof工具版本，谷歌目前已经使用了这个实现。这个实现在2016年作为[一个独立的项目](https://github.com/google/pprof) 重新发布。从那时起，Go项目一直在提供上游项目的副本，并定期对其进行 [更新](https://github.com/golang/go/commits/master/src/cmd/vendor/github.com/google/pprof) 。
+2014年，Go项目用 [Raul Silvera](https://www.linkedin.com/in/raul-silvera-a0521b55/) 的Go实现[取代了](https://github.com/golang/go/commit/8b5221a57b41a19abcb4e3dde20014af494048c2) 基于perl的pprof工具，目前谷歌已经使用了这个实现的工具。这个实现在2016年作为[一个独立的项目](https://github.com/google/pprof) 进行重新发布。从那时起，Go项目一直在提供上游项目的 pprof，并定期对其进行 [更新](https://github.com/golang/go/commits/master/src/cmd/vendor/github.com/google/pprof) 。
 
 
 
@@ -230,8 +230,9 @@ Go 1.9(2017-08-24)增加了对pprof标签的支持。它还开始在默认情况
 - 解释为什么可以给 pprof一个路径到概要文件所属的二进制文件。
   
 -   Get into more details about line numbers / addresses.
+- 更加多关于行号和地址的细节信息
 -   Talk about mappings and when a Go binary might have more than one
-
+- 讨论 go 的二进制文件有多个版本时的关联映射问题
 ## Disclaimers
 ## 免责声明
 
