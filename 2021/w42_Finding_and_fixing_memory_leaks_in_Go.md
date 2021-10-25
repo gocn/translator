@@ -218,7 +218,7 @@ sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 
 最后的任务是努力使用户不再发生这种情况。脑海中我们有几种方法：
 
-1. 更好的样本。
+1. 更好的示例程序。
 2. 更好的 `GoDoc`。我们更新了我们的库生成器，在生成的库中加入了一个注释，说当你用完后要 `Close` 客户端。参见https://github.com/googleapis/google-cloud-go/issues/3031。
 3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Final类？有什么想法我们可以做得更好吗？请在https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
 
