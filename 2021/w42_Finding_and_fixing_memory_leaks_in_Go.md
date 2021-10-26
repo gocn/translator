@@ -220,6 +220,6 @@ sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 
 1. 更好的示例程序。
 2. 更好的 `GoDoc`。我们更新了我们的库生成器，在生成的库中加入了一个注释，说当你用完后要 `Close` 客户端。参见https://github.com/googleapis/google-cloud-go/issues/3031。
-3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Final类？有什么想法我们可以做得更好吗？请在https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
+3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Finalizer方法？有什么想法我们可以做得更好吗？请在https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
 
 希望你能学到一些关于 `Go`、内存泄漏、`pprof`、 `gRPC` 和 `Bash` 的知识。我很想听听你关于你所发现的内存泄露的故事，以及你是如何解决这些问题的! 如果你对我们的[代码库](https://github.com/googleapis/google-cloud-go)或[示例程序](https://github.com/GoogleCloudPlatform/golang-samples)有什么想法，欢迎提交问题让我们知道。
