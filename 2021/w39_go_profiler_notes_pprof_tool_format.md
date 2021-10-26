@@ -178,7 +178,7 @@ period_type {
 period: 10000000
 ```
 
-这份输出样例也是没有给出全部的内容，[点击这里查看所有的内容](../static/txt/2021_w39/examples/cpu/pprof.samples.cpu.001.pprof.txt)。
+这份输出样例也是没有给出全部的内容，[点击这里查看所有的内容](https://github.com/gocn/translator/raw/master/static/images/2021_w39/pprof.samples.cpu.001.pprof.txt)。
 
 ## 历史
 
