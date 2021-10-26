@@ -1,3 +1,12 @@
+## Go 语言的 goroutine 性能分析
+
+* 原文地址：https://github.com/DataDog/go-profiler-notes/blob/main/goroutine.md
+* 原文作者：`felixge`
+* 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w40_Goroutine_Profiling_in_Go.md
+
+- 译者：[朱亚光](https://github.com/zhuyaguang)
+- 校对：
+
 ⬅ [完整的 Go 性能分析和采集系列笔记戳这儿](https://github.com/DataDog/go-profiler-notes/blob/main/README.md)
 
 本文档最后一次更新时所用的 Go版本是 1.15.6，但是大多数情况下，新老版本都适用。
