@@ -1,52 +1,52 @@
-⬅ [Index of all go-profiler-notes](https://github.com/DataDog/go-profiler-notes/blob/main/README.md)
+⬅ [完整的 Go 性能分析和采集系列笔记戳这儿](https://github.com/DataDog/go-profiler-notes/blob/main/README.md)
 
-This document was last updated for `go1.15.6` but probably still applies to older/newer versions for the most parts.
+本文档最后一次更新时所用的 Go版本是 1.15.6，但是大多数情况下，新老版本都适用。
 
-## Description
+## 描述
 
-The Go runtime keeps track of all goroutines in a simple slice called [allgs](https://github.com/golang/go/blob/3a778ff50f7091b8a64875c8ed95bfaacf3d334c/src/runtime/proc.go#L500). It contains both active and dead goroutines. The latter are kept around for reuse when new goroutines are spawned.
+Go 运行时在一个称为 [allgs](https://github.com/golang/go/blob/3a778ff50f7091b8a64875c8ed95bfaacf3d334c/src/runtime/proc.go#L500) 简单切片追踪所有的 goroutines。这里面包含了活跃的和死亡的 goroutine 。死亡的 goroutine 保留下来，等到生成新的 goroutine 时重用。
 
-Go has various APIs to inspect the active goroutines in `allgs` along with their current stack trace, as well as various other properties. Some APIs expose this information as statistical summaries, while other APIs provide information for each individual goroutine.
+Go 有各种 API 来监测 `allgs `中活跃的 goroutine 和这些 goroutines 当前的堆栈跟踪信息，以及各种其他属性。一些 API 将这些信息公开为统计摘要，而另外一些 API 则给每个单独的 goroutine 信息提供查询接口。
 
-Despite the differences between the APIs, the [common](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/mprof.go#L729) [definition](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/traceback.go#L931) of an "active" goroutine seems to be:
+尽管 API 之间有差异，但是活跃的 goroutine 都有如下[共同](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/mprof.go#L729) [定义](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/traceback.go#L931)
 
--   It's not [`dead`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L65-L71)
--   It's not a [system goroutine](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/traceback.go#L1013-L1021) nor finalizer goroutine.
+-   非[死](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L65-L71)
+-   不是[系统 goroutine](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/traceback.go#L1013-L1021)，也不是 finalizer goroutine。
 
-In other words, goroutines that are running as well as those waiting on i/o, locks, channels, scheduling, etc. are all considered to be "active", even so one might naively not think of the latter ones as such.
+换句话说，正在运行的 goroutine 和那些等待  i/o、锁、通道、调度的 goroutine 一样，都被认为是活跃的。尽管人们可能会天真的认为后面那几种等待的 goroutine 是不活跃的。
 
-## Overhead
+## 开销
 
-All Goroutine profiling available in Go requires an `O(N)` **stop-the-world** phase where `N` is the number of allocated goroutines. A [naive benchmark](https://github.com/felixge/fgprof/blob/fe01e87ceec08ea5024e8168f88468af8f818b62/fgprof_test.go#L35-L78) [indicates](https://github.com/felixge/fgprof/blob/master/BenchmarkProfilerGoroutines.txt) that the world is stopped for ~1µs per goroutine when using the [runtime.GoroutineProfile()](https://golang.org/pkg/runtime/#GoroutineProfile) API. But this number is likely to fluctuate in response to factors such as the average stack depth of the program, the number of dead goroutines, etc..
+Go 中 所有可用的 goroutine 分析都需要一个 `O(N)` **stop-the-world** 阶段。这里的 `N` 是指已分配 goroutine 的数量。一个简单的[基准测试](https://github.com/felixge/fgprof/blob/fe01e87ceec08ea5024e8168f88468af8f818b62/fgprof_test.go#L35-L78) [表明](https://github.com/felixge/fgprof/blob/master/BenchmarkProfilerGoroutines.txt)，当使用 [runtime.GoroutineProfile()](https://golang.org/pkg/runtime/#GoroutineProfile) API时，每个goroutine 的世界会停止约1个µs。但是这个数字可能会随着诸如程序的平均堆栈深度、死掉的 goroutines 数量等因素的变化而波动。
 
-As a rule of thumb, applications that are extremely latency sensitive and make use of thousands of active goroutines might want to be a little careful with goroutine profiling in production. That being said, large number of goroutines, and perhaps even Go itself, might not be good idea for such applications to begin with.
+根据经验，对于延迟非常敏感并使用数千个活跃 goroutine 的应用程序，在生产中使用 goroutine 分析可能需要谨慎一些。因此，对于包含大量的 goroutine ，甚至 Go 本身这样的应用程序来说，使用 goroutine 分析可能不是一个好主意。
 
-Most applications that don't spawn crazy amounts of goroutines and can tolerate a few ms of ocassional extra latency should have no issues with continous goroutine profiling in production.
+大多数应用程序不会产生大量的 goroutine，并且可以容忍几毫秒的额外延迟，在生产中持续 goroutine 性能分析应该没有问题。
 
-## Goroutine Properties
+## Goroutine 属性
 
-Goroutines have a lot of [properties](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L406-L486) that can help to debug Go applications. The ones below are particulary interesting and exposed via the APIs described later on in this document to varying degrees.
+Goroutines 有很多[属性](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L406-L486) 可以帮助调试 Go 应用程序。下面的属性非常有趣，并且可以通过文章后面描述的 API 不同程度地暴露。
 
--   [`goid`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L428): The unique id of the goroutine, the main goroutine has id `1`.
--   [`atomicstatus`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L14-L105): The status of the goroutine, one of the following:
-    -   `idle`: just got allocated
-    -   `runnable`: on a run queue, waiting to be scheduled
-    -   `running`: executing on an OS thread
-    -   `syscall`: blocked on a syscall
-    -   `waiting`: parked by the scheduler, see `g.waitreason`
-    -   `dead`: just exited or being reinitialized
-    -   `copystack`: stack is currently being moved
-    -   `preempted`: just preempted itself
--   [`waitreason`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L996-L1024): The reason a goroutine is in `waiting` status, e.g. sleep, channel operations, i/o, gc, etc.
--   [`waitsince`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L430): The approximate timestamp a goroutine has entered `waiting` or `syscall` status as determined by the first gc after the wait started.
+-   [`goid`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L428): goroutine 的唯一 id， 主 goroutine 的 id 为`1`.
+-   [`atomicstatus`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L14-L105): goroutine 的状态如下：
+    -   `idle`: 刚分配
+    -   `runnable`: 在运行队列上，等待调度
+    -   `running`: 在操作系统线程上执行
+    -   `syscall`: 在系统调用时阻塞
+    -   `waiting`: 等待调度，见`g.waitreason`
+    -   `dead`: 刚刚退出或被重新初始化
+    -   `copystack`: 堆栈当前正在移动
+    -   `preempted`: 抢占
+-   [`waitreason`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L996-L1024):goroutine 等待的原因，比如 sleep、channel 操作、i/o、gc等等。
+-   [`waitsince`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L430): goroutine 进入 `waiting` 或者 `syscall` 状态的大约时间戳，由等待启动后第一个 GC 确定。
 -   [`labels`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L472): A set of key/value [profiler labels](https://rakyll.org/profiler-labels/) that can be attached to goroutines.
--   `stack trace`: The function that is currently being executed as well as its callers. This is exposed as either a plain text output of filenames, function names and line numbers or a slice of program counter addresses (pcs). 🚧 _Research more details on this, e.g. can func/file/line text be converted to pcs?_
--   [`gopc`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L466): The program counter address (pc) of the `go ...` call that caused this goroutine to be created. Can be converted to the file, function name and line number.
--   [`lockedm`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L460): The thread this goroutine is locked to, if any.
+-   `stack trace`: 当前正在执行的函数及其调用者。要么是文件名、函数名和行号的纯文本输出，要么是程序计数器地址的一个切片(pcs)。 你也可以进一步研究更多的细节比如： 文件名、函数名和行号的纯文本可以转换成pcs吗？
+-   [`gopc`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L466):  `go ...` 调用程序计数地址 (pc) 导致 goroutine 的创建。可以转换为文件、函数名和行号。
+-   [`lockedm`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L460): 该 goroutine 的锁定的线程，如果有的话。
 
-## Feature Matrix
+## 特征矩阵
 
-The feature matrix below give you a quick idea on the current availability of these properties through the various APIs. Also available as a [google sheet](https://docs.google.com/spreadsheets/d/1txMRjhDA0NC9eSNRRUMMFI5uWJ3FBnACGVjXYT1gKig/edit?usp=sharing).
+下面的特征矩阵让你快速了解，调用这些 API 时，这些属性当前的可用性。也可以通过[谷歌表格](https://docs.google.com/spreadsheets/d/1txMRjhDA0NC9eSNRRUMMFI5uWJ3FBnACGVjXYT1gKig/edit?usp=sharing)获取。
 
 [![goroutine feature matrix](https://github.com/DataDog/go-profiler-notes/raw/main/goroutine-matrix.png)](https://github.com/DataDog/go-profiler-notes/blob/main/goroutine-matrix.png)
 
@@ -54,18 +54,20 @@ The feature matrix below give you a quick idea on the current availability of th
 
 ### [`runtime.Stack()`](https://golang.org/pkg/runtime/#Stack) / [`pprof.Lookup(debug=2)`](https://golang.org/pkg/runtime/pprof/#Lookup)
 
-This returns unstructured text output showing the stack of all active goroutines as well as the properties listed in the feature matrix above.
+该 API 将返回非结构化文本输出，显示所有活动 goroutines 的堆栈信息以及上面特性矩阵中列出的属性。
 
-The `waitsince` property is included as `nanotime() - gp.waitsince()` in minutes, but only if the duration exceeds 1 minute.
+`waitsince`属性包含了以分钟为单位的`nanotime() - gp.waitsince()`，但当持续时间超过1分钟。
 
-`pprof.Lookup(debug=2)` is a simplified alias for how this profile is used. The actual invocation looks like this:
+pprof.Lookup(debug=2) 是如何使用 profile 简单的别名。实际调用是下面这样：
 
+~~~go
 profile := pprof.Lookup("goroutine")
 profile.WriteTo(os.Stdout, 2)
+~~~
 
-The profile implementation itself simply invokes `runtime.Stack()`.
+简单调用下 `runtime.Stack()`就可以实现 profile 
 
-Below is a truncated example of the returned output, see [2.runtime.stack.txt](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.runtime.stack.txt) for a full example.
+下面是返回输出的截短示例，完整例子可以看 [2.runtime.stack.txt](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.runtime.stack.txt) 
 
 ```shell
 goroutine 1 [running]:
@@ -99,14 +101,15 @@ internal/poll.(*FD).Accept(0xc00019e000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
 
 ### [`pprof.Lookup(debug=1)`](https://golang.org/pkg/runtime/pprof/#Lookup)
 
-This profiling method is invoked the same way as `pprof.Lookup(debug=2)`, but produces very different data:
+该分析方法调用和`pprof.Lookup(debug=2)` 一样，但是会产生的数据却大相径庭：
 
--   Instead of listing individual goroutines, goroutines with the same stack/labels are listed once along with their count.
--   pprof labels are included, `debug=2` does not include them.
+-   不会列出单独的 goroutines 信息，把拥有相同堆栈信息和标签的 goroutines 和他们的数量一起列出。
+-   包含了 pprof 标签，`debug=2`不包含标签。
 -   Most other goroutine properties from `debug=2` are not included.
--   The output format is also text based, but looks very different than `debug=2`.
+-   不包含`debug=2`中大多数 goroutine 属性。
+-   输出格式也是基于文本的，但看起来与' debug=2 '非常不同。
 
-Below is a truncated example of the returned output, see [2.pprof.lookup.goroutine.debug1.txt](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.pprof.lookup.goroutine.debug1.txt) for a full example.
+下面是返回输出的截短示例，完整例子可以看 [2.pprof.lookup.goroutine.debug1.txt](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.pprof.lookup.goroutine.debug1.txt) 
 
 ```shell
 goroutine profile: total 9
@@ -141,9 +144,9 @@ goroutine profile: total 9
 
 ### [`pprof.Lookup(debug=0)`](https://golang.org/pkg/runtime/pprof/#Lookup)
 
-This profiling method is invoked the same way as `pprof.Lookup(debug=1)`, and produces the same data. The only difference is that the data format is the [pprof](https://github.com/DataDog/go-profiler-notes/blob/main/pprof.md) protocol buffer format.
+该分析方法调用和`pprof.Lookup(debug=1)` 一样，并且产生的数据也一样。唯一的不同技术数据格式是 [pprof](https://github.com/DataDog/go-profiler-notes/blob/main/pprof.md) protocol buffer 格式。
 
-Below is a truncated example of the returned output as reported by `go tool pprof -raw`, see [2.pprof.lookup.goroutine.debug0.pb.gz](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.pprof.lookup.goroutine.debug0.pb.gz) for a full example.
+下面是通过 `go tool pprof -raw` 命令返回输出的截短示例，完整例子可以看[2.pprof.lookup.goroutine.debug0.pb.gz](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.pprof.lookup.goroutine.debug0.pb.gz) 
 
 ```shell
 PeriodType: goroutine count
@@ -179,17 +182,17 @@ Mappings
 
 ### [`runtime.GoroutineProfile()`](https://golang.org/pkg/runtime/#GoroutineProfile)
 
-This function essentially returns a slice of all active goroutines and their current stack trace. The stack traces are given in the form of program addresses which can be resolved to function names using [`runtime.CallersFrames()`](https://golang.org/pkg/runtime/#CallersFrames).
+该函数实际返回一个slice，包含了所有活跃 goroutines 和他们当前的堆栈跟踪信息。堆栈跟踪信息以函数地址的形式给出，可以使用[`runtime.CallersFrames()`](https://golang.org/pkg/runtime/#CallersFrames)将函数地址解析为函数名。
 
-This method is used by [fgprof](https://github.com/felixge/fgprof) to implement wall clock profiling.
+该方法被我的开源项目 [fgprof](https://github.com/felixge/fgprof) 用来实现挂钟分析。
 
-The following features are not available, but might be interesting to propose to the Go project in the future:
+下面的特性是不可用的，但是很期待在未来的 Go 项目中可能会被加入进去。
 
--   Include goroutine properties outlined above that are not available yet, especially labels.
--   Filter by pprof labels, this could reduce stop-the-world, but would require additional book keeping by the runtime.
--   Limit the number of returned goroutines to a random subset, could also reduce stop-the-world and might be easier to implement than filtering by label.
+-   包含上面但是目前还不能使用的 goroutine 属性，特别是标签。
+-   通过pprof标签过滤，这可以减少 stop-the-world ，但会需要额外的运行时内务。
+-   将返回的 goroutine 的数量限制为一个随机子集，也可以减少 stop-the-world，而且可能比按标签过滤更容易实现。
 
-Below is a truncated example of the returned output, see [2.runtime.goroutineprofile.json](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.runtime.goroutineprofile.json) for a full example.
+下面是返回输出的截短示例，完整例子可以看 [2.runtime.goroutineprofile.json](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.runtime.goroutineprofile.json) 。
 
 ~~~json
 [
@@ -221,14 +224,14 @@ Below is a truncated example of the returned output, see [2.runtime.goroutinepro
 
 ### [`net/http/pprof`](https://golang.org/pkg/net/http/pprof/)
 
-This package exposes the [`pprof.Lookup("goroutine")`](https://golang.org/pkg/runtime/pprof/#Lookup) profiles described above via HTTP endpoints. The output is identical.
+这个包通过  HTTP endpoints 暴露上面描述的 [`pprof.Lookup("goroutine")`](https://golang.org/pkg/runtime/pprof/#Lookup) 分析结果，输出和上面 API 是一样的。
 
-## History
+## 历史
 
-Goroutine profiling was [implemented](https://codereview.appspot.com/5687076/) by [Russ Cox](https://github.com/rsc) and first appeared in the [weekly.2012-02-22](https://golang.org/doc/devel/weekly.html#2012-02-22) release prior to go1.
+Goroutine 性能分析是由 [Russ Cox](https://github.com/rsc) [实现](https://codereview.appspot.com/5687076/) ，第一次出现在 [2012-2-22的周例会上](https://golang.org/doc/devel/weekly.html#2012-02-22)，在 go1 之前发布。
 
-## Disclaimers
+## 免责声明
 
-I'm [felixge](https://github.com/felixge) and work at [Datadog](https://www.datadoghq.com/) on [Continuous Profiling](https://www.datadoghq.com/product/code-profiling/) for Go. You should check it out. We're also [hiring](https://www.datadoghq.com/jobs-engineering/#all&all_locations) : ).
+我是 [felixge](https://github.com/felixge)，就职于 [Datadog](https://www.datadoghq.com/) ，主要工作内容为 Go 的 [持续性能优化](https://www.datadoghq.com/product/code-profiling/)。你应该了解下。我们也在[招聘](https://www.datadoghq.com/jobs-engineering/#all&all_locations) : ).
 
-The information on this page is believed to be correct, but no warranty is provided. Feedback is welcome!
+本页面的信息可认为正确，但不提供任何保证。欢迎反馈！
