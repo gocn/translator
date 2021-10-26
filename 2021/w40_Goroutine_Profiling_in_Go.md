@@ -1,5 +1,11 @@
 ## Go 语言的 goroutine 性能分析
 
+- 原文地址：https://github.com/DataDog/go-profiler-notes/blob/main/goroutine.md
+- 原文作者：`felixge`
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w40_Goroutine_Profiling_in_Go.md
+- 译者：[朱亚光](https://github.com/zhuyaguang)
+- 校对：[张晓武](https://github.com/fivezh)
+
 ⬅ [完整的 Go 性能分析和采集系列笔记戳这儿](https://github.com/DataDog/go-profiler-notes/blob/main/README.md)
 
 本文档最后一次更新时所用的 Go版本是 1.15.6，但是大多数情况下，新老版本都适用。
@@ -41,7 +47,7 @@ Goroutines 有很多[属性](https://github.com/golang/go/blob/go1.15.6/src/runt
     -   `preempted`: 抢占
 -   [`waitreason`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L996-L1024):goroutine 等待的原因，比如 sleep、channel 操作、i/o、gc等等。
 -   [`waitsince`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L430): goroutine 进入 `waiting` 或者 `syscall` 状态的大约时间戳，由等待启动后第一个 GC 确定。
--   [`labels`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L472): A set of key/value [profiler labels](https://rakyll.org/profiler-labels/) that can be attached to goroutines.
+-   [`labels`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L472): 可以附加到 goroutines 上的一系列 键/值[分析标签](https://rakyll.org/profiler-labels/)。
 -   `stack trace`: 当前正在执行的函数及其调用者。要么是文件名、函数名和行号的纯文本输出，要么是程序计数器地址的一个切片(pcs)。 你也可以进一步研究更多的细节比如： 文件名、函数名和行号的纯文本可以转换成pcs吗？
 -   [`gopc`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L466):  `go ...` 调用程序计数地址 (pc) 导致 goroutine 的创建。可以转换为文件、函数名和行号。
 -   [`lockedm`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L460): 该 goroutine 的锁定的线程，如果有的话。
