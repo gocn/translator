@@ -88,7 +88,7 @@ Mappings
 1: 0x0/0x0/0x0   [FN]
 ```
 
-上面的样例没有给出全部的内容，[点击这里查看所有的内容](https://github.com/gocn/translator/raw/master/static/images/pprof.samples.cpu.001.pprof.txt)。
+上面的样例没有给出全部的内容，[点击这里查看所有的内容](https://github.com/gocn/translator/raw/master/static/images/2021_w39/pprof.samples.cpu.001.pprof.txt)。
 #### Using `protoc`
 ### 使用 `protoc`
 
