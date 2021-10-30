@@ -24,13 +24,13 @@ The operations above are a subset of the [waiting states](https://github.com/gol
 
 - [`time.Sleep`](https://golang.org/pkg/time/#Sleep) (but [`time.After`](https://golang.org/pkg/time/#After), [`time.Tick`](https://golang.org/pkg/time/#Tick) and other channel based wrappers will show up)
 - GC
-- Syscalls (e.g. [Network I/O](./examples/block-net/), File I/O, etc.)
+- Syscalls (e.g. [Network I/O](https://github.com/DataDog/go-profiler-notes/tree/main/examples/block-net/), File I/O, etc.)
 - Runtime Internal Locks (e.g. for [stopTheWorld](https://github.com/golang/go/blob/go1.15.7/src/runtime/proc.go#L900))
 - Blocking in [cgo](https://golang.org/cmd/cgo/) calls
 - Events that block forever (e.g. sending/receiving on nil channels)
 - Blocking events that have not completed yet
 
-In some cases [Goroutine Profiling](:/32e5aa86a57346f7aaa6ceef1a1ce782) (debug=2) can be a good alternative to block profiling since it covers all waiting states and can show ongoing blocking events that have not yet completed.
+In some cases [Goroutine Profiling](https://github.com/gocn/translator/blob/master/2021/w40_Goroutine_Profiling_in_Go.md) (debug=2) can be a good alternative to block profiling since it covers all waiting states and can show ongoing blocking events that have not yet completed.
 
 ## Usage
 
@@ -52,7 +52,7 @@ Personally I struggle to parse the second sentence, and prefer to describe the `
 - `rate == 1` tracks every blocking event, regardless of the event `duration`.
 - `rate => 2` sets the sampling rate in `nanoseconds`. Every event with a `duration >= rate` will be tracked. For events with a `duration < rate`, the profiler will [randomly](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L408) sample `duration / rate` events. E.g. if you have an event with a duration of `100ns` and your rate is `1000ns`, there is a `10%` chance it will be tracked by the block profiler.
 
-Block durations are aggregated over the lifetime of the program (while the profiling is enabled). To get a [pprof formated](:/b0f2ce66f1f84cdb8737176526721ef5) snapshot of the current stack traces that lead to blocking events and their cumulative time duration, you can call:
+Block durations are aggregated over the lifetime of the program (while the profiling is enabled). To get a [pprof formated](https://github.com/gocn/translator/blob/master/2021/w39_go_profiler_notes_pprof_tool_format.md) snapshot of the current stack traces that lead to blocking events and their cumulative time duration, you can call:
 
 ```go
 pprof.Lookup("block").WriteTo(myFile, 0)
@@ -105,13 +105,13 @@ The costs of updating the hash map is probably similar to collecting the stack t
 
 Anyway, what does all of this mean in terms of overhead for your application? It generally means that block profiling is **low overhead**. Unless your application spends literally all of its time parking and unparking goroutines due to contention, you probably won't be able to see a measurable impact even when sampling every block event.
 
-That being said, the benchmark results below (see [Methodology](./bench/)) should give you an idea of the **theoretical worst case** overhead block profiling could have. The graph `chan(cap=0)` shows that setting `blockprofilerate` from  `1` to `1000` on a [workload](:/dbdb419bb81b408c9f035b96875a87be) that consists entirely in sending tiny messages across unbuffered channels decreases throughput significantly. Using a buffered channel as in graph `chan(cap=128)` greatly reduces the problem to the point that it probably won't matter for real applications that don't spend all of their time on channel communication overheads.
+That being said, the benchmark results below (see [Methodology](https://github.com/DataDog/go-profiler-notes/tree/main/bench/) should give you an idea of the **theoretical worst case** overhead block profiling could have. The graph `chan(cap=0)` shows that setting `blockprofilerate` from  `1` to `1000` on a [workload](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_chan.go) that consists entirely in sending tiny messages across unbuffered channels decreases throughput significantly. Using a buffered channel as in graph `chan(cap=128)` greatly reduces the problem to the point that it probably won't matter for real applications that don't spend all of their time on channel communication overheads.
 
-It's also interesting to note that I was unable to see significant overheads for [`mutex`](:/39ebff685750457d8fe47f855adcba49) based workloads. I believe this is due to the fact that mutexes employe spin locks before parking a goroutine when there is contention. If somebody has a good idea for a workload that exhibits high non-spinning mutex contention in Go, please let me know!
+It's also interesting to note that I was unable to see significant overheads for [`mutex`](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_mutex.go) based workloads. I believe this is due to the fact that mutexes employe spin locks before parking a goroutine when there is contention. If somebody has a good idea for a workload that exhibits high non-spinning mutex contention in Go, please let me know!
 
 Anyway, please remember that the graphs below show workloads that were specifically designed to trigger the worst block profiling overhead you can imagine. Real applications will usually see no significant overhead, especially when using a `blockprofilerate` >= `10000` (10µs).
 
-<img src="./bench/block_linux_x86_64.png" alt="block_linux_x86_64" style="zoom:80%;" />
+<img src="https://github.com/gocn/translator/raw/master/static/images/2021_w43_Block_Profiling_in_Go/block_linux_x86_64.png" alt="block_linux_x86_64" style="zoom:80%;" />
 
 ### Memory Usage
 
@@ -127,7 +127,7 @@ The first call to `runtime.SetBlockProfileRate()` takes `100ms` because it tries
 
 ### Sampling Bias
 
-Up until Go 1.17 the block profiler was biased towards favoring infrequent long events over frequent short events. A [detailed analysis](:/18cfdbfe38364dec83125a6b711ff2ab) explains the problem.
+Up until Go 1.17 the block profiler was biased towards favoring infrequent long events over frequent short events. A [detailed analysis](https://github.com/DataDog/go-profiler-notes/blob/main/block-bias.md) explains the problem.
 
 ### Time Stamp Counter
 
@@ -151,7 +151,7 @@ Blocking time is not bound by wall clock time. Multiple goroutines can simultane
 
 ## Relationship with Mutex Profiling
 
-The [mutex](:/d15b5fc3e1e44fc796327379341acf00) profiling feature in Go overlaps with block profiling. It seems like both can be used to understand mutex contention. When using the mutex profiler it will report the `Unlock()` call sites rather than the `Lock()` call sites reported by the block profiler. The mutex profiler also uses a simpler and probably unbiased sampling mechanism which should make it more accurate. However, the mutex profiler does not cover channel contention, so the block profiler is a bit more flexible. When the mutex and block profiler are both enabled, it seems likely that some overhead will be wasted on tracking duplicate contention events.
+The [mutex](https://github.com/DataDog/go-profiler-notes/blob/main/mutex.md) profiling feature in Go overlaps with block profiling. It seems like both can be used to understand mutex contention. When using the mutex profiler it will report the `Unlock()` call sites rather than the `Lock()` call sites reported by the block profiler. The mutex profiler also uses a simpler and probably unbiased sampling mechanism which should make it more accurate. However, the mutex profiler does not cover channel contention, so the block profiler is a bit more flexible. When the mutex and block profiler are both enabled, it seems likely that some overhead will be wasted on tracking duplicate contention events.
 
 🚧 This section needs more research that I'll do as part of my mutex profiler notes.
 
@@ -161,7 +161,7 @@ The block profiler does not support [profiler labels](https://rakyll.org/profile
 
 ## pprof Output
 
-Below is an example of block profile encoded in [pprof's protobuf format](./pprof). There are two value types:
+Below is an example of block profile encoded in [pprof's protobuf format](https://github.com/DataDog/go-profiler-notes/blob/1be84098ce82f7fbd66742e38c3d81e508a088f9/examples/block-sample/main.go). There are two value types:
 
 - contentions/count
 - delay/nanoseconds
