@@ -10,7 +10,7 @@
 
 ## 描述
 
-Go 中的阻塞分析帮助你分析程序在等待下列阻塞操作上的花费时间：
+Go 中的阻塞分析有助于您分析程序在等待下列阻塞操作上的花费时间：
 
 - [select](https://github.com/golang/go/blob/go1.15.7/src/runtime/select.go#L511)
 - [chan send](https://github.com/golang/go/blob/go1.15.7/src/runtime/chan.go#L279)
@@ -18,13 +18,13 @@ Go 中的阻塞分析帮助你分析程序在等待下列阻塞操作上的花�
 - [semacquire](https://github.com/golang/go/blob/go1.15.7/src/runtime/sema.go#L150) ( [`Mutex.Lock`](https://golang.org/pkg/sync/#Mutex.Lock), [`RWMutex.RLock`](https://golang.org/pkg/sync/#RWMutex.RLock) , [`RWMutex.Lock`](https://golang.org/pkg/sync/#RWMutex.Lock), [`WaitGroup.Wait`](https://golang.org/pkg/sync/#WaitGroup.Wait))
 - [notifyListWait](https://github.com/golang/go/blob/go1.15.7/src/runtime/sema.go#L515) ( [`Cond.Wait`](https://golang.org/pkg/sync/#Cond.Wait))
 
-只有当 Go 通过将 goroutine 置于[等待](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L51-L59)状态来暂停执行时，时间才会被跟踪。因此，例如 `Mutex.Lock()`，如果锁可以立即或通过少量自旋被获得，那么这样的操作将不会出现在您的分析结果中。
+只有当 Go 通过将 goroutine 置于[等待](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L51-L59)状态来暂停执行时，时间才会被跟踪。例如 `Mutex.Lock()`，如果锁可以立即或通过少量自旋被获得，那么这样的操作将不会出现在您的分析结果中。
 
-上面的操作是Go 运行时使用的[等待状态](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L996-L1024)的子集，而下面的操作**将不会**出现在分析文件中：
+上面的操作是 Go 运行时使用的[等待状态](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L996-L1024)的子集，下面的操作**将不会**出现在分析文件中：
 
 - [`time.Sleep`](https://golang.org/pkg/time/#Sleep)（但是 [`time.After`](https://golang.org/pkg/time/#After), [`time.Tick`](https://golang.org/pkg/time/#Tick) 和其他封装了channel的操作会显示出来）
 - 垃圾回收
-- 系统调用（例如 [网络 I/O](https://github.com/DataDog/go-profiler-notes/tree/main/examples/block-net/)，文件 I/O等）
+- 系统调用（例如[网络 I/O](https://github.com/DataDog/go-profiler-notes/tree/main/examples/block-net/)，文件 I/O 等）
 - 运行时内部锁（例如 [stopTheWorld](https://github.com/golang/go/blob/go1.15.7/src/runtime/proc.go#L900)）
 - [cgo](https://golang.org/cmd/cgo/) 阻塞调用
 - 永远阻塞的事件（例如在 nil 通道上发送/接收）
@@ -34,7 +34,7 @@ Go 中的阻塞分析帮助你分析程序在等待下列阻塞操作上的花�
 
 ## 用法
 
-阻塞分析器默认是被禁用的。您可以通过按下面方式通过传递`rate > 0` 来启用它。
+阻塞分析器默认是被禁用的。您可以通过按下面方式通过传递 `rate > 0` 来启用它。
 
 ```
 runtime.SetBlockProfileRate(rate)
@@ -42,15 +42,15 @@ runtime.SetBlockProfileRate(rate)
 
 参数 `rate` 会影响分析器的[精度](#精度)和[开销](#开销)。在文档中，rate 是这样描述的：
 
-> SetBlockProfileRate 控制 goroutine 阻塞事件在阻塞分析中的比例。分析器旨在对每个阻塞事件所花费的纳秒速率进行平均采样。
+> SetBlockProfileRate 控制 goroutine 阻塞事件在阻塞分析中的比例。分析器旨在对每个阻塞事件耗时以纳秒级进行平均采样。
 >
-> 如果想要囊括全部的阻塞事件，将 rate 置为 1。完全关闭则置为 0。
+> 如果想要囊括全部的阻塞事件，可将 rate 置为 1。完全关闭则置为 0。
 
 就个人而言，我很难理解第二句。我更喜欢这样描述 `rate`
 （又名 `blockprofilerate`）：
 - `rate <= 0` 完全禁用分析器（默认设置）
 - `rate == 1` 跟踪每个阻塞事件，不论事件的 `duration` 是多少。
-- `rate => 2` 设置纳秒采样率。每一个 `duration >= rate` 的事件都能被追踪到。对于 `duration < rate` 的事件，分析器将会[随机](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L408)采样 `duration / rate` 的事件。例如，假设您的事件耗时 `100ns` ，rate 值设为`1000ns` ，那么事件就有 `10%` 的概率被分析器追踪。
+- `rate => 2` 设置纳秒采样率。每一个 `duration >= rate` 的事件都能被追踪到。对于 `duration < rate` 的事件，分析器将会[随机](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L408)采样 `duration / rate` 的事件。例如，假设您的事件耗时 `100ns` ，rate 值设为 `1000ns` ，那么事件就有 `10%` 的概率被分析器追踪。
 
 阻塞持续时间在程序的整个生命周期内聚合（启用分析时）。要获取导致阻塞事件及其累积持续时间的当前堆栈信息的 [pprof 格式](https://github.com/gocn/translator/blob/master/2021/w39_go_profiler_notes_pprof_tool_format.md)的快照，您可以调用：
 
@@ -64,11 +64,11 @@ pprof.Lookup("block").WriteTo(myFile, 0)
 
 ## 开销
 
-当 `blockprofilerate` >= `10000` (10µs) 时，应该对生产环境应用的影响可以忽略不计，也包括那些存在争抢非常严重的应用。
+当 `blockprofilerate` >= `10000` (10µs) 时，对生产环境应用的影响可以忽略不计，也包括那些争抢非常严重的应用。
 
 ### 实现细节
 
-阻塞分析基本是在 Go 运行时内部实现的（有关代码，可以点击[描述](#描述)中的链接。
+阻塞分析基本是在 Go 运行时内部实现的（有关代码，可以点击[描述](#描述)中的链接）。
 
 ```go
 func chansend(...) {
@@ -90,7 +90,7 @@ func chansend(...) {
 
 当开启阻塞分析时，每一个阻塞操作都会有两个 `cputicks()` 调用的开销。在 `amd64` 上，这是通过使用了 [RDTSC指令](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 优化后的汇编来完成的，并且[在我的机器](https://github.com/felixge/dump/tree/master/cputicks)上花费了可忽略不计的 `~10ns/op` 。
 
-根据设置的 `blockprofilerate`（在[精度](#精度)一节有更多相关内容），阻塞事件最终可能会被保存。这意味着堆栈跟踪被收集，此动作在[我的机器](https://github.com/felixge/dump/tree/master/go-callers-bench) 上耗时`~1µs`（栈深=16）。通过增加相关 [`blockRecord`](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L133-L138) 计数和周期的方式，堆栈会作为键更新一个[内部哈希表](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L144)。
+根据设置的 `blockprofilerate`（在[精度](#精度)一节有更多相关内容），阻塞事件最终可能会被保存。这意味着堆栈跟踪信息被收集，此动作在[我的机器](https://github.com/felixge/dump/tree/master/go-callers-bench) 上耗时`~1µs`（堆栈深度=16）。通过增加相关 [`blockRecord`](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L133-L138) 计数和周期的方式，堆栈会作为键更新一个[内部哈希表](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L144)。
 
 ```go
 type blockRecord struct {
@@ -105,11 +105,11 @@ type blockRecord struct {
 
 不管怎样，就您的应用程序开销而言，所有这些意味着什么？这通常意味着阻塞分析是**低开销**的。除非您的应用程序由于争用而花费几乎所有时间暂停和取消暂停 goroutine，这样的话即使对每个阻塞事件进行了采样，您也可能无法看到可衡量的影响。
 
-话虽如此，下面的基准测试结果（详情见[Methodology](https://github.com/DataDog/go-profiler-notes/tree/main/bench/) ）会让您了解到阻塞分析在**理论最坏情况下**的开销。图  `chan(cap=0)` 展示了通过无缓冲通道发送消息时`blockprofilerate` 从 `1` 到 `1000` 的[工作负载](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_chan.go) ，吞吐量显著下降。图 `chan(cap=128)` 使用的是缓冲通道，开销大大减少，所以对于不会将所有时间耗费在通道通信开销上的应用程序可能是无关紧要的。
+话虽如此，下面的基准测试结果（详情见[Methodology](https://github.com/DataDog/go-profiler-notes/tree/main/bench/) ）会让您了解到阻塞分析在**理论最坏情况下**的开销。图  `chan(cap=0)` 展示了通过无缓冲通道发送消息时`blockprofilerate` 从 `1` 到 `1000` 的[工作负载](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_chan.go) ，可看到吞吐量显著的下降。图 `chan(cap=128)` 使用的是缓冲通道，开销大大减少，所以对于不会将所有时间耗费在通道通信开销上的应用程序可能是无关紧要的。
 
-值得注意的是，我无法基于工作负载看到[互斥锁](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_mutex.go)的开销。我认为是互斥锁在争抢时在暂停 goroutine 之前使用的是自旋锁。如果有人对在 Go 中能表现出非自旋锁争抢的工作负载有好的想法，请告诉我！
+值得注意的是，我无法基于负载看到[互斥锁](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_mutex.go)的开销。我认为是互斥锁在争抢时在暂停 goroutine 之前使用的是自旋锁。如果有人对在 Go 中能表现出非自旋锁争抢的工作负载方面有好的想法，请告诉我！
 
-无论如何，请记住，下图显示了专门设计用于触发您可以想象的最坏阻塞分析开销的工作负载。实际应用程序通常不会看到显着的开销，尤其是在使用blockprofilerate>= 10000(10µs) 时。
+无论如何，请记住，下图显示了专门设计用于触发您可以想象的最坏阻塞分析开销的工作负载。实际应用程序通常不会看到显着的开销，尤其是在使用 blockprofilerate>= 10000(10µs) 时。
 
 <img src="https://github.com/gocn/translator/raw/master/static/images/2021_w43_Block_Profiling_in_Go/block_linux_x86_64.png" alt="block_linux_x86_64" style="zoom:80%;" />
 
@@ -119,7 +119,7 @@ type blockRecord struct {
 
 此外，每个唯一的堆栈跟踪都会占用一些额外的内存。[`runtime.MemStats`](https://golang.org/pkg/runtime/#MemStats) 的 `BuckHashSys` 字段允许您在运行时检查使用情况。未来，我可能会尝试提供有关这方面的其他信息以及真实数据。
 
-### 初始化时间
+### 时间初始化
 
 第一次调用 `runtime.SetBlockProfileRate()` 会耗费 `100ms`是因为它试图[测量](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime.go#L22-L47)挂钟和[TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter)时钟之间的速度比率。然而，最近关于异步抢占的更改[破坏](https://github.com/golang/go/issues/40653#issuecomment-766340860)了此代码，因此现在该调用耗时仅在 `~10ms`。
 
@@ -131,13 +131,13 @@ type blockRecord struct {
 
 ### 时间戳计数器
 
-`amd64` 和其他平台使用 [TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 实现了`cputicks()` 功能。这种技术历来受到频率缩放和其他类型 CPU 功率转换问题的挑战。现代 CPU 提供不变的 TSCs ，但是[仍有一些 Go 语言用户](https://github.com/golang/go/issues/16755#issuecomment-332279965)在提出该问题。我不知道这些是由于硬件损坏还是多路系统问题，但希望将来对此进行更多研究。
+`amd64` 和其他平台使用 [TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 实现了`cputicks()` 功能。这种技术历来受到频率缩放和其他类型 CPU 功率转换问题的挑战。现代 CPU 提供不变的 TSCs ，但是[仍有一些 Go 语言用户](https://github.com/golang/go/issues/16755#issuecomment-332279965)在提出该问题。我不知道这些是否是由于硬件损坏还是多路系统问题所引入的，但希望将来对此进行更多研究。
 
-另请注意[初始化时间](#初始化时间)部分中的错误描述，这可能会影响将 cputicks 转换为挂钟时间的精度。
+另请注意[时间初始化](#时间初始化)部分中的错误描述，可能会影响将 cputicks 转换为挂钟时间的精度。
 
 ### 堆栈深度
 
-阻塞分析的最大堆栈深度为[32](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L31)。在更深的堆栈深度发生的阻塞事件仍将包含在阻塞分析中，但是结果数据可能很难被处理。
+阻塞分析的最大堆栈深度为[32](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L31)。在更深的堆栈深度发生的阻塞事件仍将包含在阻塞分析中，但是结果数据可能就很难被处理了。
 
 ### 自旋锁
 
@@ -151,15 +151,15 @@ type blockRecord struct {
 
 ## 与互斥分析的关系
 
-Go 中的[互斥](https://github.com/DataDog/go-profiler-notes/blob/main/mutex.md)分析功能与阻塞分析功能重叠，似乎两者都可以用来理解互斥量争用。使用互斥分析器时，它会报告 `Unlock()` 的调用点，而阻塞分析中会报告 `Lock()` 的调用点。互斥量分析器还使用更简单且可能是无偏的采样机制，这应该使其更准确。但是，互斥分析器不包括通道争用，因此阻塞分析器更灵活一些。当互斥和阻塞分析器都启用时，跟踪重复的争用事件可能会浪费一些开销。
+Go 中的[互斥](https://github.com/DataDog/go-profiler-notes/blob/main/mutex.md)分析功能与阻塞分析功能重叠，似乎两者都可以用来理解互斥量争用。使用互斥分析器时，它会报告 `Unlock()` 的调用点，而阻塞分析中会报告 `Lock()` 的调用点。互斥量分析器还使用了更简单且可能是无偏的采样机制，这应该使其更准确。但是，互斥分析器不包括通道争用，因此阻塞分析器更灵活一些。当互斥和阻塞分析器都启用时，跟踪重复的争用事件可能会浪费一些开销。
 
 🚧 本节需要更多的研究，我将在互斥分析器笔记中做这些研究。
 
 ## 分析器标签
 
-阻塞分析器目前不支持[分析器标签](https://rakyll.org/profiler-labels/)，但看起来这在未来可能很容易实现。
+阻塞分析器目前不支持[分析器标签](https://rakyll.org/profiler-labels/)，但这在未来很有可能被实现。
 
-## pprof输出
+## pprof 输出
 
 下面是一个以 [pprof 的 protobuf 格式](https://github.com/DataDog/go-profiler-notes/blob/1be84098ce82f7fbd66742e38c3d81e508a088f9/examples/block-sample/main.go)编码的阻塞分析示例。有两种值类型：
 
