@@ -1,16 +1,16 @@
 ***
 - 原文地址：https://github.com/DataDog/go-profiler-notes/blob/main/block.md
 - 原文作者：felixge
-- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w43_Block_Profiling_in_Go.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[laxiaohong](https://github.com/laxiaohong)
 ***
 
-# Block Profiling in Go
+# Go中的阻塞分析
 
-## Description
+## 描述
 
-The block profile in Go lets you analyze how much time your program spends waiting on the blocking operations listed below:
+Go 中的阻塞分析有助于您分析程序在等待下列阻塞操作上的花费时间：
 
 - [select](https://github.com/golang/go/blob/go1.15.7/src/runtime/select.go#L511)
 - [chan send](https://github.com/golang/go/blob/go1.15.7/src/runtime/chan.go#L279)
@@ -18,57 +18,57 @@ The block profile in Go lets you analyze how much time your program spends waiti
 - [semacquire](https://github.com/golang/go/blob/go1.15.7/src/runtime/sema.go#L150) ( [`Mutex.Lock`](https://golang.org/pkg/sync/#Mutex.Lock), [`RWMutex.RLock`](https://golang.org/pkg/sync/#RWMutex.RLock) , [`RWMutex.Lock`](https://golang.org/pkg/sync/#RWMutex.Lock), [`WaitGroup.Wait`](https://golang.org/pkg/sync/#WaitGroup.Wait))
 - [notifyListWait](https://github.com/golang/go/blob/go1.15.7/src/runtime/sema.go#L515) ( [`Cond.Wait`](https://golang.org/pkg/sync/#Cond.Wait))
 
-Time is only tracked when Go has to suspend the goroutine's execution by parking it into a [waiting](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L51-L59) state. So for example a `Mutex.Lock()` operation will not show up in your profile if the lock can be aquired immediately or via a short amount of [spinning](https://en.wikipedia.org/wiki/Spinlock).
+只有当 Go 通过将 goroutine 置于[等待](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L51-L59)状态来暂停执行时，时间才会被跟踪。例如 `Mutex.Lock()`，如果锁可以立即或通过少量自旋被获得，那么这样的操作将不会出现在您的分析结果中。
 
-The operations above are a subset of the [waiting states](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L996-L1024) used by the Go runtime, i.e. the operations below **will not** show up in a block profile:
+上面的操作是 Go 运行时使用的[等待状态](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L996-L1024)的子集，下面的操作**将不会**出现在分析文件中：
 
-- [`time.Sleep`](https://golang.org/pkg/time/#Sleep) (but [`time.After`](https://golang.org/pkg/time/#After), [`time.Tick`](https://golang.org/pkg/time/#Tick) and other channel based wrappers will show up)
-- GC
-- Syscalls (e.g. [Network I/O](https://github.com/DataDog/go-profiler-notes/tree/main/examples/block-net/), File I/O, etc.)
-- Runtime Internal Locks (e.g. for [stopTheWorld](https://github.com/golang/go/blob/go1.15.7/src/runtime/proc.go#L900))
-- Blocking in [cgo](https://golang.org/cmd/cgo/) calls
-- Events that block forever (e.g. sending/receiving on nil channels)
-- Blocking events that have not completed yet
+- [`time.Sleep`](https://golang.org/pkg/time/#Sleep)（但是 [`time.After`](https://golang.org/pkg/time/#After), [`time.Tick`](https://golang.org/pkg/time/#Tick) 和其他封装了channel的操作会显示出来）
+- 垃圾回收
+- 系统调用（例如[网络 I/O](https://github.com/DataDog/go-profiler-notes/tree/main/examples/block-net/)，文件 I/O 等）
+- 运行时内部锁（例如 [stopTheWorld](https://github.com/golang/go/blob/go1.15.7/src/runtime/proc.go#L900)）
+- [cgo](https://golang.org/cmd/cgo/) 阻塞调用
+- 永远阻塞的事件（例如在 nil 通道上发送/接收）
+- 阻止尚未完成的事件
 
-In some cases [Goroutine Profiling](https://github.com/gocn/translator/blob/master/2021/w40_Goroutine_Profiling_in_Go.md) (debug=2) can be a good alternative to block profiling since it covers all waiting states and can show ongoing blocking events that have not yet completed.
+在某些场景下， [Goroutine Profiling](https://github.com/gocn/translator/blob/master/2021/w40_Goroutine_Profiling_in_Go.md) (debug=2) 可能是阻塞分析的一个很好的文档，因为它涵盖了所有等待状态，并且可以显示尚未完成且正在进行的阻塞事件。
 
-## Usage
+## 用法
 
-The block profiler is disabled by default. You can enable it by passing a `rate > 0` as shown below.
+阻塞分析器默认是被禁用的。您可以通过按下面方式通过传递 `rate > 0` 来启用它。
 
 ```
 runtime.SetBlockProfileRate(rate)
 ```
 
-The `rate` impacts the [Accuracy](#accuracy) and [Overhead](#overhead) of the profiler. In the [docs](https://golang.org/pkg/runtime/#SetBlockProfileRate) the rate is described like this:
+参数 `rate` 会影响分析器的[精度](#精度)和[开销](#开销)。在文档中，rate 是这样描述的：
 
-> SetBlockProfileRate controls the fraction of goroutine blocking events that are reported in the blocking profile. The profiler aims to sample an average of one blocking event per rate nanoseconds spent blocked.
+> SetBlockProfileRate 控制 goroutine 阻塞事件在阻塞分析中的比例。分析器旨在对每个阻塞事件耗时以纳秒级进行平均采样。
 >
-> To include every blocking event in the profile, pass rate = 1. To turn off profiling entirely, pass rate <= 0.
+> 如果想要囊括全部的阻塞事件，可将 rate 置为 1。完全关闭则置为 0。
 
-Personally I struggle to parse the second sentence, and prefer to describe the `rate` (aka `blockprofilerate`) like this instead:
+就个人而言，我很难理解第二句。我更喜欢这样描述 `rate`
+（又名 `blockprofilerate`）：
+- `rate <= 0` 完全禁用分析器（默认设置）
+- `rate == 1` 跟踪每个阻塞事件，不论事件的 `duration` 是多少。
+- `rate => 2` 设置纳秒采样率。每一个 `duration >= rate` 的事件都能被追踪到。对于 `duration < rate` 的事件，分析器将会[随机](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L408)采样 `duration / rate` 的事件。例如，假设您的事件耗时 `100ns` ，rate 值设为 `1000ns` ，那么事件就有 `10%` 的概率被分析器追踪。
 
-- `rate <= 0` disables the profiler entirely (the default)
-- `rate == 1` tracks every blocking event, regardless of the event `duration`.
-- `rate => 2` sets the sampling rate in `nanoseconds`. Every event with a `duration >= rate` will be tracked. For events with a `duration < rate`, the profiler will [randomly](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L408) sample `duration / rate` events. E.g. if you have an event with a duration of `100ns` and your rate is `1000ns`, there is a `10%` chance it will be tracked by the block profiler.
-
-Block durations are aggregated over the lifetime of the program (while the profiling is enabled). To get a [pprof formated](https://github.com/gocn/translator/blob/master/2021/w39_go_profiler_notes_pprof_tool_format.md) snapshot of the current stack traces that lead to blocking events and their cumulative time duration, you can call:
+阻塞持续时间在程序的整个生命周期内聚合（启用分析时）。要获取导致阻塞事件及其累积持续时间的当前堆栈信息的 [pprof 格式](https://github.com/gocn/translator/blob/master/2021/w39_go_profiler_notes_pprof_tool_format.md)的快照，您可以调用：
 
 ```go
 pprof.Lookup("block").WriteTo(myFile, 0)
 ```
 
-Alternatively you can use [github.com/pkg/profile](https://pkg.go.dev/github.com/pkg/profile) for convenience, or [net/http/pprof](https://golang.org/pkg/net/http/pprof/) to expose profiling via http, or use a [continious profiler](https://www.datadoghq.com/product/code-profiling/) to collect the data automatically in production.
+为了方便，你可以使用 [github.com/pkg/profile](https://pkg.go.dev/github.com/pkg/profile) 或 [net/http/pprof](https://golang.org/pkg/net/http/pprof/) 通过 http 查看分析，再或者使用[持续分析器](https://www.datadoghq.com/product/code-profiling/) 在生产环境中自动收集数据。
 
-Last but not least you can use the [`runtime.BlockProfile`](https://golang.org/pkg/runtime/#BlockProfile) API to get the same information in a structured format.
+此外，您可以使用[`runtime.BlockProfile`](https://golang.org/pkg/runtime/#BlockProfile) API 以结构化格式获取相同的信息。
 
-## Overhead
+## 开销
 
-**tl;dr:** A `blockprofilerate` >= `10000` (10µs) should have negligable impact on production apps, including those suffering from extreme contention.
+当 `blockprofilerate` >= `10000` (10µs) 时，对生产环境应用的影响可以忽略不计，也包括那些争抢非常严重的应用。
 
-### Implementation Details
+### 实现细节
 
-Block profiling is essentially implemented like this inside of the Go runtime (see the links in the [Description](#description) above for real code):
+阻塞分析基本是在 Go 运行时内部实现的（有关代码，可以点击[描述](#描述)中的链接）。
 
 ```go
 func chansend(...) {
@@ -86,11 +86,11 @@ func chansend(...) {
 }
 ```
 
-This means that unless you enable block profiling, the overhead should be effectively zero thanks to CPU branch prediction.
+这意味着如果您未启用阻塞分析，由于 CPU 分支预测，开销实际上是 0。
 
-When block profiling is enabled, every blocking operation will pay the overhead of two `cputicks()` calls. On `amd64` this is done via [optimized assembly](https://github.com/golang/go/blob/go1.15.7/src/runtime/asm_amd64.s#L874-L887) using the [RDTSC instruction](https://en.wikipedia.org/wiki/Time_Stamp_Counter) and takes a negligible `~10ns/op` on [my machine](https://github.com/felixge/dump/tree/master/cputicks). On other platforms various alternative clock sources are used which may have higher overheads and lower accuracy.
+当开启阻塞分析时，每一个阻塞操作都会有两个 `cputicks()` 调用的开销。在 `amd64` 上，这是通过使用了 [RDTSC指令](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 优化后的汇编来完成的，并且[在我的机器](https://github.com/felixge/dump/tree/master/cputicks)上花费了可忽略不计的 `~10ns/op` 。
 
-Depending on the configured `blockprofilerate` (more about this in the [Accuracy](#accuracy) section) the block event may end up getting saved. This means a stack trace is collected which takes `~1µs` on [my machine](https://github.com/felixge/dump/tree/master/go-callers-bench) (stackdepth=16). The stack is then used as a key to update an [internal hashmap](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L144) by incrementing the corresponding [`blockRecord`](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L133-L138) count and cycles.
+根据设置的 `blockprofilerate`（在[精度](#精度)一节有更多相关内容），阻塞事件最终可能会被保存。这意味着堆栈跟踪信息被收集，此动作在[我的机器](https://github.com/felixge/dump/tree/master/go-callers-bench) 上耗时`~1µs`（堆栈深度=16）。通过增加相关 [`blockRecord`](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L133-L138) 计数和周期的方式，堆栈会作为键更新一个[内部哈希表](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L144)。
 
 ```go
 type blockRecord struct {
@@ -99,74 +99,74 @@ type blockRecord struct {
 }
 ```
 
-The costs of updating the hash map is probably similar to collecting the stack traces, but I haven't measured it yet.
+更新哈希表的开销大概和收集堆栈跟踪信息差不多，不过我还没测过。
 
-### Benchmarks
+### 基准
 
-Anyway, what does all of this mean in terms of overhead for your application? It generally means that block profiling is **low overhead**. Unless your application spends literally all of its time parking and unparking goroutines due to contention, you probably won't be able to see a measurable impact even when sampling every block event.
+不管怎样，就您的应用程序开销而言，所有这些意味着什么？这通常意味着阻塞分析是**低开销**的。除非您的应用程序由于争用而花费几乎所有时间暂停和取消暂停 goroutine，这样的话即使对每个阻塞事件进行了采样，您也可能无法看到可衡量的影响。
 
-That being said, the benchmark results below (see [Methodology](https://github.com/DataDog/go-profiler-notes/tree/main/bench/) should give you an idea of the **theoretical worst case** overhead block profiling could have. The graph `chan(cap=0)` shows that setting `blockprofilerate` from  `1` to `1000` on a [workload](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_chan.go) that consists entirely in sending tiny messages across unbuffered channels decreases throughput significantly. Using a buffered channel as in graph `chan(cap=128)` greatly reduces the problem to the point that it probably won't matter for real applications that don't spend all of their time on channel communication overheads.
+话虽如此，下面的基准测试结果（详情见[Methodology](https://github.com/DataDog/go-profiler-notes/tree/main/bench/) ）会让您了解到阻塞分析在**理论最坏情况下**的开销。图  `chan(cap=0)` 展示了通过无缓冲通道发送消息时`blockprofilerate` 从 `1` 到 `1000` 的[工作负载](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_chan.go) ，可看到吞吐量显著的下降。图 `chan(cap=128)` 使用的是缓冲通道，开销大大减少，所以对于不会将所有时间耗费在通道通信开销上的应用程序可能是无关紧要的。
 
-It's also interesting to note that I was unable to see significant overheads for [`mutex`](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_mutex.go) based workloads. I believe this is due to the fact that mutexes employe spin locks before parking a goroutine when there is contention. If somebody has a good idea for a workload that exhibits high non-spinning mutex contention in Go, please let me know!
+值得注意的是，我无法基于负载看到[互斥锁](https://github.com/DataDog/go-profiler-notes/blob/main/bench/workload_mutex.go)的开销。我认为是互斥锁在争抢时在暂停 goroutine 之前使用的是自旋锁。如果有人对在 Go 中能表现出非自旋锁争抢的工作负载方面有好的想法，请告诉我！
 
-Anyway, please remember that the graphs below show workloads that were specifically designed to trigger the worst block profiling overhead you can imagine. Real applications will usually see no significant overhead, especially when using a `blockprofilerate` >= `10000` (10µs).
+无论如何，请记住，下图显示了专门设计用于触发您可以想象的最坏阻塞分析开销的工作负载。实际应用程序通常不会看到显着的开销，尤其是在使用 blockprofilerate>= 10000(10µs) 时。
 
 <img src="https://github.com/gocn/translator/raw/master/static/images/2021_w43_Block_Profiling_in_Go/block_linux_x86_64.png" alt="block_linux_x86_64" style="zoom:80%;" />
 
-### Memory Usage
+### 内存使用情况
 
-Block profiling utilizes a shared hash map that [uses](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L207) `1.4 MiB` of memory even when empty. Unless you explicitly [disable heap profiling](https://twitter.com/felixge/status/1355846360562589696) in your application, this map will get allocated regardless of whether you use the block profiler or not.
+阻塞分析利用共享哈希表进行映射，即使表为空时也会[使用](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L207)  `1.4 MiB` 内存。除非您在程序中明确[禁用堆分析](https://twitter.com/felixge/status/1355846360562589696)，否则无论您是否使用了阻塞分析器，哈希表都会被分配内存。
 
-Addtionally each unique stack trace will take up some additional memory. The `BuckHashSys` field of [`runtime.MemStats`](https://golang.org/pkg/runtime/#MemStats) allows you to inspect this usage at runtime. In the future I might try to provide additional information about this along with real world data.
+此外，每个唯一的堆栈跟踪都会占用一些额外的内存。[`runtime.MemStats`](https://golang.org/pkg/runtime/#MemStats) 的 `BuckHashSys` 字段允许您在运行时检查使用情况。未来，我可能会尝试提供有关这方面的其他信息以及真实数据。
 
-### Initialization Time
+### 时间初始化
 
-The first call to `runtime.SetBlockProfileRate()` takes `100ms` because it tries to [measure](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime.go#L22-L47) the speed ratio between the wall clock and the [TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter) clock. However, recent changes around async preemption have [broken](https://github.com/golang/go/issues/40653#issuecomment-766340860) this code, so the call is taking only `~10ms` right now.
+第一次调用 `runtime.SetBlockProfileRate()` 会耗费 `100ms`是因为它试图[测量](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime.go#L22-L47)挂钟和[TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter)时钟之间的速度比率。然而，最近关于异步抢占的更改[破坏](https://github.com/golang/go/issues/40653#issuecomment-766340860)了此代码，因此现在该调用耗时仅在 `~10ms`。
 
-## Accuracy
+## 精度
 
-### Sampling Bias
+### 采样偏差
 
-Up until Go 1.17 the block profiler was biased towards favoring infrequent long events over frequent short events. A [detailed analysis](https://github.com/DataDog/go-profiler-notes/blob/main/block-bias.md) explains the problem.
+在 Go 1.17 之前，阻塞分析器偏向于不频繁的长事件而不是频繁的短事件。一个[详细的分析](https://github.com/DataDog/go-profiler-notes/blob/main/block-bias.md)说明此问题。
 
-### Time Stamp Counter
+### 时间戳计数器
 
-`amd64` and other platforms use [TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter) for implementing the `cputicks()` function. This technique has been historically challenged by problems with frequency scaling and other kinds of CPU power transitions. Modern CPUs should provide invariant TSCs, but at [least some Go users](https://github.com/golang/go/issues/16755#issuecomment-332279965) are still reporting issues. I can't tell whether those are due to broken hardware or issues regarding multi-socket systems, but hope to do more research on this in the future.
+`amd64` 和其他平台使用 [TSC](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 实现了`cputicks()` 功能。这种技术历来受到频率缩放和其他类型 CPU 功率转换问题的挑战。现代 CPU 提供不变的 TSCs ，但是[仍有一些 Go 语言用户](https://github.com/golang/go/issues/16755#issuecomment-332279965)在提出该问题。我不知道这些是否是由于硬件损坏还是多路系统问题所引入的，但希望将来对此进行更多研究。
 
-Please also note the bug description in the [Initialization Time](#initialization-time) section which may impact the accuracy of converting cputicks to wall clock time.
+另请注意[时间初始化](#时间初始化)部分中的错误描述，可能会影响将 cputicks 转换为挂钟时间的精度。
 
-### Stack Depth
+### 堆栈深度
 
-The max stack depth for block profiles is [32](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L31). Block events occurring at deeper stack depths will still be included in the profile, but the resulting data might be more difficult to work with.
+阻塞分析的最大堆栈深度为[32](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L31)。在更深的堆栈深度发生的阻塞事件仍将包含在阻塞分析中，但是结果数据可能就很难被处理了。
 
-### Spin Locks
+### 自旋锁
 
-As described earlier, contended Go mutexes will first try to [spin](https://en.wikipedia.org/wiki/Spinlock) for a bit before yielding to the scheduler. If the spinning is successful, no block event will be tracked. This presents another subtle bias in the block profiler towards events of longer duration.
+如前所述，存在争抢的 Go 互斥锁将先自旋一段时间，然后才服从调度器程序。如果自旋成功，阻塞事件就会跟踪不到。所以阻塞分析器更偏向于持续时间较长的事件。
 
-🚧 This section needs more research that I'll do as part of my mutex profiler note.
+🚧 本节需要更多的研究，我将在互斥分析器笔记中做这些研究。
 
-## Relationship with Wall Clock Time
+## 与挂钟时间的关系
 
-Blocking time is not bound by wall clock time. Multiple goroutines can simultaneously spend time blocking, which means it's possible to see profiles with a cumulative block duration that exceeds the runtime of the program.
+阻塞时间不受挂钟时间的限制。多个 goroutine 可以同时花费时间阻塞，这意味着分析中可以看到累积的阻塞持续时间超过程序运行时间。
 
-## Relationship with Mutex Profiling
+## 与互斥分析的关系
 
-The [mutex](https://github.com/DataDog/go-profiler-notes/blob/main/mutex.md) profiling feature in Go overlaps with block profiling. It seems like both can be used to understand mutex contention. When using the mutex profiler it will report the `Unlock()` call sites rather than the `Lock()` call sites reported by the block profiler. The mutex profiler also uses a simpler and probably unbiased sampling mechanism which should make it more accurate. However, the mutex profiler does not cover channel contention, so the block profiler is a bit more flexible. When the mutex and block profiler are both enabled, it seems likely that some overhead will be wasted on tracking duplicate contention events.
+Go 中的[互斥](https://github.com/DataDog/go-profiler-notes/blob/main/mutex.md)分析功能与阻塞分析功能重叠，似乎两者都可以用来理解互斥量争用。使用互斥分析器时，它会报告 `Unlock()` 的调用点，而阻塞分析中会报告 `Lock()` 的调用点。互斥量分析器还使用了更简单且可能是无偏的采样机制，这应该使其更准确。但是，互斥分析器不包括通道争用，因此阻塞分析器更灵活一些。当互斥和阻塞分析器都启用时，跟踪重复的争用事件可能会浪费一些开销。
 
-🚧 This section needs more research that I'll do as part of my mutex profiler notes.
+🚧 本节需要更多的研究，我将在互斥分析器笔记中做这些研究。
 
-## Profiler Labels
+## 分析器标签
 
-The block profiler does not support [profiler labels](https://rakyll.org/profiler-labels/) right now, but it seems like this might be easy to implement in the future.
+阻塞分析器目前不支持[分析器标签](https://rakyll.org/profiler-labels/)，但这在未来很有可能被实现。
 
-## pprof Output
+## pprof 输出
 
-Below is an example of block profile encoded in [pprof's protobuf format](https://github.com/DataDog/go-profiler-notes/blob/1be84098ce82f7fbd66742e38c3d81e508a088f9/examples/block-sample/main.go). There are two value types:
+下面是一个以 [pprof 的 protobuf 格式](https://github.com/DataDog/go-profiler-notes/blob/1be84098ce82f7fbd66742e38c3d81e508a088f9/examples/block-sample/main.go)编码的阻塞分析示例。有两种值类型：
 
 - contentions/count
 - delay/nanoseconds
 
-The `blockprofilerate` used to create the profile is not included, neither are [profiler labels](./profiler-labels).
+用于创建分析文件的`blockprofilerate` 没有包括在这里，也不属于[分析器标签](https://rakyll.org/profiler-labels/)。
 
 ```
 $ go tool pprof -raw block.pb.gz 
@@ -189,13 +189,13 @@ Mappings
 1: 0x0/0x0/0x0   [FN]
 ```
 
-## History
+## 历史
 
-Block profiling was [implemented](https://codereview.appspot.com/6443115) by [Dmitry Vyukov](https://github.com/dvyukov) and first appeared in the [go1.1](https://golang.org/doc/go1.1) release (2013-05-13).
+阻塞分析由 [Dmitry Vyukov](https://github.com/dvyukov)  [实现](https://codereview.appspot.com/6443115)，并首次出现在 [go1.1](https://golang.org/doc/go1.1) 版本 (2013-05-13) 中。
 
-## Disclaimers
+## 免责声明
 
-I'm [felixge](https://github.com/felixge) and work at [Datadog](https://www.datadoghq.com/) on [Continuous Profiling](https://www.datadoghq.com/product/code-profiling/) for Go. You should check it out. We're also [hiring](https://www.datadoghq.com/jobs-engineering/#all&all_locations) : ).
+我是 [felixge](https://github.com/felixge)，就职于 [Datadog](https://www.datadoghq.com/) ，主要工作内容为 Go 的[持续性能优化](https://www.datadoghq.com/product/code-profiling/) 。你应该了解下。我们也在[招聘](https://www.datadoghq.com/jobs-engineering/#all&all_locations): ).
 
-The information on this page is believed to be correct, but no warranty is provided. Feedback is welcome!
+本页面的信息可认为正确，但不提供任何保证。欢迎反馈！
 
