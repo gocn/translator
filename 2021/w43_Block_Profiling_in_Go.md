@@ -3,7 +3,7 @@
 - 原文作者：felixge
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w43_Block_Profiling_in_Go.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[laxiaohong](https://github.com/laxiaohong)
 ***
 
 # Go中的阻塞分析
