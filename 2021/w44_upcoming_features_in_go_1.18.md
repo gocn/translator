@@ -1,15 +1,16 @@
-# UPCOMING FEATURES IN GO 1.18
-Go 1.18 will be a significant release of the programming language that will contain some major features that I’m excited about. The upcoming version is scheduled for early 2021. The first beta should be out in a month. Let’s take a look at some of the new features that will be available.
+# GO 1.18 中即将出现的特性功能
+Go 1.18 将是 Go 语言的一个重要版本，它将包含一些令我兴奋的主要功能。即将到来的版本计划在 2021 年初发布。第一个测试版应该会在一个月内推出。让我们来提前看看将有哪些新功能被加入到这个版本中。
 
-## GENERICS
-The long-awaited generics support will land in Go 1.18. The lack of generics in Go was the biggest point of criticism of the developer community. It took some years from the design phase to the actual implementation that will land in Go 1.18.
+## 范型
+期待已久的泛型支持将在 Go 1.18 中出现。Go 中缺乏泛型是开发者社区批评的最大问题。从设计阶段到将在 Go 1.18 中出现的实际实现，花了好几年时间。
 
-The topic is too large to explain in detail in this blog post. There are already a lot of good blog posts about it. The following is my favorite that covers all relevant aspects of it: [https://bitfieldconsulting.com/golang/generics](https://bitfieldconsulting.com/golang/generics). If you want to play with Go generics, there’s a hosted Go Playground available [here](https://go2goplay.golang.org/).
+这个话题太大，无法在这篇博文中详细解释。已经有很多关于它的好博文了。以下是我最喜欢的一篇，涵盖了所有相关方面：
+ [https://bitfieldconsulting.com/golang/generics](https://bitfieldconsulting.com/golang/generics)。 如果你想玩 Go 泛型，[这里](https://go2goplay.golang.org/)有一个托管的 Go Playground 可供选择。
 
-## WORKSPACES
-Workspaces enable developers to work on multiple modules at the same time much easier. Until Go 1.17, it’s only possible with the `go.mod` `replace` directive, which can be painful to use if you have many modules in development. What’s also a huge pain is the fact that every time you want to commit your code, you have to remove the `replace` lines to be able to use a stable/released version of a module.
+## 工作空间（WORKSPACES）
+工作区使开发者能够更容易地同时处理多个模块的工作。在 Go 1.17 之前，这只能通过`go.mod``replace`指令来实现，如果你有很多模块在开发中，使用这个指令会很痛苦。同样令人痛苦的是，每次你想提交你的代码时，你必须删除`replace`行，以便能够使用一个模块的 稳定/发布 版本。
 
-With workspaces, these development situations get much simpler to handle. A new file named `go.work` can be added to the project that contains paths to local development versions of dependent modules. The `go.mod` remains untouched without the need to use the `replace` directive.
+有了工作区，这些开发情况的处理就简单多了。一个名为`go.work`的新文件可以被添加到项目中，它包含了依赖模块的本地开发版本的路径。`go.mod`保持不动，不需要使用`replace`指令。
 ```go
 go 1.17
 
@@ -21,41 +22,42 @@ directory (
 replace golang.org/x/net => example.com/fork/net v1.4.5
 ```
 
-In usual project situations, it’s recommended to not commit the `go.work` file, as its main use case is local development.
+在通常的项目情况下，建议不要提交`go.work`文件，因为它的主要使用情况是本地开发。
 
-If you want to build your project locally without the workspace feature, you can do so by providing the following command line flag:
+如果你想在本地构建你的项目而不使用工作区功能，你可以通过提供以下命令行标志来实现：
 ```sh
 go build -workfile=off
 ```
-With running the `go build` command like this, you can be sure that your project builds without the local development versions of the dependent modules.
+通过像这样运行`go build`命令，你可以确保你的项目在构建时没有依赖模块的本地开发版本。
+## 官方模糊测试支持
+在 Go 1.18 中也将提供正式的模糊测试支持。模糊功能将被视为实验性的，API 还没有被 Go 1 的兼容性承诺所覆盖。它应该作为一个概念验证，Go 团队请求社区提供反馈。
 
-## OFFICIAL FUZZING SUPPORT
-Official fuzzing support will also be available in Go 1.18. The fuzzing features will be considered experimental, and the API will not be covered by the Go 1 compatibility promise yet. It should serve as a proof-of-concept and the Go team asks for feedback from the community.
+如果你还没有听说过模糊测试，测试版公告的[博文](https://go.dev/blog/fuzz-beta)对它进行了很好的描述：
 
-f you haven’t heard of fuzzing yet, the [blog post](https://go.dev/blog/fuzz-beta) of the beta announcement describes it very well:
+***模糊测试是一种自动化测试，它持续操纵程序的输入，以发现问题，如 panic 或 bug。这些半随机的数据突变可以发现现有单元测试可能遗漏的新的代码覆盖范围，并发现被忽略或者未被覆盖的边缘案例的错误。由于模糊测试可以接触到这些边缘案例，所以模糊测试对于发现安全隐患和漏洞特别有价值。***
 
-***Fuzzing is a type of automated testing which continuously manipulates inputs to a program to find issues such as panics or bugs. These semi-random data mutations can discover new code coverage that existing unit tests may miss, and uncover edge case bugs which would otherwise go unnoticed. Since fuzzing can reach these edge cases, fuzz testing is particularly valuable for finding security exploits and vulnerabilities.***
+你可以在[这里](https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md)阅读 Katie Hockman 的设计文档。 还有[Go Time 播客集](https://changelog.com/gotime/187)，与 Katie 一起讨论的这个话题。
+## 新的软件包 net/netip
+新包`net/netip`增加了一个新的 IP 地址类型，与`net.IP`类型相比，它有很多优点。 简单来说：它很小，可比较，而且没有内存分配操作。 已经有一篇来自 Brad Fitzpatrick 的[详细博文](https://tailscale.com/blog/netaddr-new-ip-type-for-go/)介绍了所有的细节。如果你喜欢视频，在[布拉德在 FOSDEM 2021 的演讲](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) 中也有一段介绍，从时间 18:45 开始观看。
 
-You can read the design doc by Katie Hockman [here](https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md). There’s also [Go Time podcast episode](https://changelog.com/gotime/187) with Katie that covers this topic.
+## 更快的（？）go fmt 运行
+`go fmt`命令现在以并行方式运行格式化。正如[Github issue](https://github.com/golang/go/issues/43566)中描述的那样，格式化大型代码库的速度应该会快很多。
+> 但我很困惑为什么在我的机器上进行第一次测试时没有发现快很多，它变得更糟糕了。
 
-## NEW PACKAGE NET/NETIP
-The new package `net/netip` adds a new IP address type, which has many advantages compared to the `net.IP` type. The TLDR version is: it’s small, comparable, and doesn’t allocate. There’s already a [detailed blog post](https://tailscale.com/blog/netaddr-new-ip-type-for-go/) from Brad Fitzpatrick about all the details. If you prefer video, there is also a section in the [talk of Brad at FOSDEM 2021](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) starting at time 18:45.
-
-## FASTER (?) GO FMT RUNS
 The `go fmt` command runs formatting in parallel now. As described in the [Github issue](https://github.com/golang/go/issues/43566), formatting large codebases should be much faster - but I was wondering why I didn’t notice it in a first test on my machine. It got much worse.
 
-I tested it on the [repository of CockroachDB](https://github.com/cockroachdb/cockroach) on my Macbook Pro 2019 (2,6 GHz 6-Core Intel Core i7, 16 GB 2667 MHz DDR4) with the following command:
+我在我的 Macbook Pro 2019(2,6 GHz 6-Core Intel Core i7, 16 GB 2667 MHz DDR4) 的[CockroachDB 仓库](https://github.com/cockroachdb/cockroach)上用以下命令进行测试：
 ```sh
 time go test ./pkg/...
 ```
-With Go 1.17 it took **56 seconds** to format all files. With the latest `gotip` version, it took **1 minute and 20 seconds**. I also had to increase the ulimit on my machine to prevent a crash. Let’s see how this feature evolves until the stable release.
+使用 Go 1.17，花了**56 秒**来格式化所有文件。使用最新的`gotip`版本，花了**1分 20 秒**。我还不得不提高我机器上的 ulimit，以防止崩溃。让我们看看这个功能在稳定版之前是如何发展的。
 
-## TRY OUT THE UPCOMING FEATURES
-You can also play with the latest experimental Go version called `gotip` directly on your machine. When you’ve already installed a stable version of Go, you just have to run the following commands:
+## 试用即将推出的特性功能
+你也可以直接在你的机器上玩最新的实验性 Go 版本`gotip`。当你已经安装了稳定版本的 Go，你只需要运行：
 ```sh
 go install golang.org/dl/gotip@latest
 gotip download
 ```
-When the installation was successful, you can use the `gotip` command just like the usual `go` command with all subcommands.
+当安装成功后，你可以像通常的`go`命令一样使用`gotip`命令的所有子命令。
 
-This blog post does not cover all the new features that will be available in Go 1.18. If you want to read about all the bug fixes and features, you can see a list of Go 1.18 issues [here](https://dev.golang.org/release#Go1.18).
+这篇博文并没有涵盖 Go 1.18 中的所有新功能。如果你想阅读所有的错误修复和新功能特性，你可以在[这里](https://dev.golang.org/release#Go1.18)看 Go 1.18 的问题列表。
