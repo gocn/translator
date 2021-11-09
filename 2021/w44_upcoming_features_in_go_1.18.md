@@ -43,13 +43,11 @@ go build -workfile=off
 
 你可以在[这里](https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md)阅读 Katie Hockman 的设计文档。 还有[Go Time 播客集](https://changelog.com/gotime/187)，与 Katie 一起讨论的这个话题。
 ## 新的软件包 net/netip
-新包`net/netip`增加了一个新的 IP 地址类型，与`net.IP`类型相比，它有很多优点。 简单来说：它很小，可比较，而且没有内存分配操作。 已经有一篇来自 Brad Fitzpatrick 的[详细博文](https://tailscale.com/blog/netaddr-new-ip-type-for-go/)介绍了所有的细节。如果你喜欢视频，在[布拉德在 FOSDEM 2021 的演讲](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) 中也有一段介绍，从时间 18:45 开始观看。
+新包`net/netip`增加了一个新的 IP 地址类型，与`net.IP`类型相比，它有很多优点。 简单来说：它很小，可比较，而且没有内存分配操作。 已经有一篇来自 Brad Fitzpatrick 的[详细博文](https://tailscale.com/blog/netaddr-new-ip-type-for-go/)介绍了所有的细节。如果你喜欢视频，在[Brad在 FOSDEM 2021 的演讲](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) 中也有一段介绍，从时间 18:45 开始观看。
 
 ## 更快的（？）go fmt 运行
 `go fmt`命令现在以并行方式运行格式化。正如[Github issue](https://github.com/golang/go/issues/43566)中描述的那样，格式化大型代码库的速度应该会快很多。
 > 但我很困惑为什么在我的机器上进行第一次测试时没有发现快很多，它变得更糟糕了。
-
-The `go fmt` command runs formatting in parallel now. As described in the [Github issue](https://github.com/golang/go/issues/43566), formatting large codebases should be much faster - but I was wondering why I didn’t notice it in a first test on my machine. It got much worse.
 
 我在我的 Macbook Pro 2019(2,6 GHz 6-Core Intel Core i7, 16 GB 2667 MHz DDR4) 的[CockroachDB 仓库](https://github.com/cockroachdb/cockroach)上用以下命令进行测试：
 ```sh
@@ -66,3 +64,14 @@ gotip download
 当安装成功后，你可以像通常的`go`命令一样使用`gotip`命令的所有子命令。
 
 这篇博文并没有涵盖 Go 1.18 中的所有新功能。如果你想阅读所有的错误修复和新功能特性，你可以在[这里](https://dev.golang.org/release#Go1.18)看 Go 1.18 的问题列表。
+
+## 文中提到的链接
+- 范性 Go Playground https://go2goplay.golang.org/
+- 模糊测试测试版本公告博文 https://go.dev/blog/fuzz-beta
+- 模糊测试 Katie Hockman 的设计文档 https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md
+- Go Time 播客集 https://changelog.com/gotime/187
+- net/netip Brad Fitzpatrick 的详细博文 https://tailscale.com/blog/netaddr-new-ip-type-for-go/
+- Brad在 FOSDEM 2021 的演讲 https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s
+- go fmt Github issue https://github.com/golang/go/issues/43566
+- CockroachDB 仓库 https://github.com/cockroachdb/cockroach
+- Go 1.18 release issues (https://dev.golang.org/release#Go1.18)
