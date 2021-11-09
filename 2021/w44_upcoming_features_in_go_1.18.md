@@ -39,7 +39,7 @@ f you haven’t heard of fuzzing yet, the [blog post](https://go.dev/blog/fuzz-b
 You can read the design doc by Katie Hockman [here](https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md). There’s also [Go Time podcast episode](https://changelog.com/gotime/187) with Katie that covers this topic.
 
 ## NEW PACKAGE NET/NETIP
-The new package `net/netip` adds a new IP address type, which has many advantages compared to the `net.IP` type. The TLDR version is: it’s small, comparable, and doesn’t allocate. There’s already a [detailed blog post](https://tailscale.com/blog/netaddr-new-ip-type-for-go/) from Brad Fitzpatrick about all the details. If you prefer video, there is also a section in the [talk of Brad at FOSDEM 2021](https://sebastian-holstein.de/post/2021-11-08-go-1.18-features/[%E2%80%9CGo%20at%20Tailscale%E2%80%9D](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s)) starting at time 18:45.
+The new package `net/netip` adds a new IP address type, which has many advantages compared to the `net.IP` type. The TLDR version is: it’s small, comparable, and doesn’t allocate. There’s already a [detailed blog post](https://tailscale.com/blog/netaddr-new-ip-type-for-go/) from Brad Fitzpatrick about all the details. If you prefer video, there is also a section in the [talk of Brad at FOSDEM 2021](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) starting at time 18:45.
 
 ## FASTER (?) GO FMT RUNS
 The `go fmt` command runs formatting in parallel now. As described in the [Github issue](https://github.com/golang/go/issues/43566), formatting large codebases should be much faster - but I was wondering why I didn’t notice it in a first test on my machine. It got much worse.
