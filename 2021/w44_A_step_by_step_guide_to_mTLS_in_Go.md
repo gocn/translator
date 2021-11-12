@@ -4,21 +4,21 @@
 - 译者：[朱亚光](https://github.com/zhuyaguang)
 - 校对：
 
-# A step by step guide to mTLS in Go
+# 手把手教你用 Go 实现一个 mTLS
 
-Ever wondered what mTLS (mutual TLS) looks like? Come, learn to implement mTLS using Golang and OpenSSL.
+想知道什么是 mTLS（双向TLS）长什么样？来吧，让我们用 Golang 和 OpenSSL 实现一个 mTLS。
 
-## Introduction
+## 介绍
 
-TLS (Transport Layer Security) provides the necessary encryption for applications when communicating over a network. HTTPS (Hypertext Transfer Protocol Secure) is an extension of HTTP that leverages TLS for security. The TLS technique requires a CA (Certificate Authority) to issue a X.509 digital certificate to a service, which is then handed over to the consumer of the service for it to validate it with the CA itself. mTLS extends the same idea to applications, for example, microservices wherein both the provider and the consumer require to produce their own certificates to the other party. These certificates are validated by both parties with their respective CAs. Once validated, the communication between the server/client or provider/consumer happens securely.
+TLS （安全传输层协议简称）为通过网络通信的应用程序提供必要的加密。HTTPS (超文本安全协议)是HTTP的一种扩展，利用TLS实现安全性。TLS 技术要求 CA (证书颁发机构)向服务颁发 X.509 数字证书，然后将该数字证书移交给服务的消费者，由其使用 CA 本身进行验证。mTLS 将同样的思想扩展到应用程序中，例如，在微服务中，提供者和消费者都需要向对方生成自己的证书。这些证书由双方使用各自的 CA 进行验证。一旦经过验证，服务器/客户端或提供者/使用者之间的通信就会安全地进行。
 
-## The Implementation
+## 实现
 
-### Step 1 - Build a simple HTTP Server and Client
+### 第一步 - 构建一个简单的 HTTP 服务端和客户端
 
-Let’s first create a simple HTTP Server in `server.go` which responds with `Hello, world!` when requested for the `/hello` resource over port `8080`.
+让我们先 在`server.go` 里创建一个简单的 HTTP 服务，当访问 `8080` 端口，请求 `/hello`  资源时回复 `Hello, world!` 
 
-```
+```go
 package main
 
 import (
@@ -41,9 +41,9 @@ log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
 
-The Client simply requests for the `/hello` resource over port `8080` and prints the response body to `stdout`. Here is what `client.go` looks like:
+客户端通过  `8080` 端口请求  `/hello` 资源，然后将响应体通过 `stdout` 打印。下面是 `client.go` 代码:
 
-```
+```go
 package main
 
 import (
@@ -72,17 +72,29 @@ fmt.Printf("%s\n", body)
 }
 ```
 
-Open an instance of the terminal and run the Server like so:
+打开一个终端并运行服务端：
 
-Open another instance of the terminal and run the Client:
+~~~go
+go run -v server.go
+~~~
 
-You should see the following output from the Client.
+打开另外一个终端运行客户端：
 
-### Step 2 - Generate and use the Certificates with the Server
+~~~
+go run -v client.go
+~~~
 
-Use the following command to generate the certificates. The command creates a 2048 bit key certificate which is valid for 10 years. Additionally, the `CN=localhost` asserts that the certificate is valid for the `localhost` domain.
+你可以从客户端看到以下输出：
 
-```
+~~~
+Hello, world!
+~~~
+
+### 第二步 - 生成和使用服务端证书
+
+使用以下命令生成证书。该命令将创建一个有效期为10年的2048位密钥证书。此外，`CN=localhost` 说明该证书对 `localhost` 域是有效的。
+
+```shell
 openssl req -newkey rsa:2048 \
   -new -nodes -x509 \
   -days 3650 \
@@ -91,47 +103,47 @@ openssl req -newkey rsa:2048 \
   -subj "/C=US/ST=California/L=Mountain View/O=Your Organization/OU=Your Unit/CN=localhost"
 ```
 
-You should now have `cert.pem` and `key.pem` in your directory.
+你应该目录里面有 `cert.pem` 和 `key.pem` 证书了。
 
-Let’s now enable TLS over HTTP i.e. HTTPS on the Server. Replace the `http.ListenAndServe(":8080", nil)` call in `server.go` with `http.ListenAndServeTLS(":8443", "cert.pem", "key.pem", nil)` for the Server to listen to HTTPS connections over port `8443` while supplying the certificates generated earlier.
+现在让我们启用服务器 HTTP 的 TLS，也就是 HTTPS。`server.go` 里面的  `http.ListenAndServe(":8080", nil)` 调用替换成 `http.ListenAndServeTLS(":8443", "cert.pem", "key.pem", nil)` ，通过 `8443` 端口监听链接。同时提供前面生成的证书。
 
-```
+```sh
 -// Listen to port 8080 and wait
 -log.Fatal(http.ListenAndServe(":8080", nil))
 +// Listen to HTTPS connections on port 8443 and wait
 +log.Fatal(http.ListenAndServeTLS(":8443", "cert.pem", "key.pem", nil))
 ```
 
-You can verify the Server’s working by running it and browsing to `https://localhost:8443/hello`.
+你可以通过运行并在浏览器输入 `https://localhost:8443/hello` 来验证服务器是否工作。
 
 ![Secure Server](https://venilnoronha.io/assets/images/2018-09-04-a-step-by-step-guide-to-mtls-in-go/server_https.png)
 
-Let’s now update `client.go` to connect to the Server over HTTPS.
+现在我们更新 `client.go`  代码来通过 HTTPS 连接服务端。
 
-```
+```shell
 -// Request /hello over port 8080 via the GET method
 -r, err := http.Get("http://localhost:8080/hello")
 +// Request /hello over HTTPS port 8443 via the GET method
 +r, err := http.Get("https://localhost:8443/hello")
 ```
 
-Since our Client doesn’t yet know about the certificates, running it should spit out the following error on the Server.
+由于我们客户端还不知道证书，直接运行服务器会显示下面的错误：
 
-```
+```shell
 http: TLS handshake error from [::1]:59436: remote error: tls: bad certificate
 ```
 
-On the Client, you should observe the following.
+在客户端，你需要注意以下几点：
 
 ```
 x509: certificate is not valid for any names, but wanted to match localhost
 ```
 
-### Step 3 - Supply the Certificates to the Client
+### 第三步- 向客户端提供证书
 
-Update the `client.go` code to read the previously generated certificates, like so:
+更新  `client.go`  代码读取之前生成的证书，代码如下：
 
-```
+```go
 -// Request /hello over HTTPS port 8443 via the GET method
 -r, err := http.Get("https://localhost:8443/hello")
 
@@ -156,11 +168,15 @@ Update the `client.go` code to read the previously generated certificates, like 
 +r, err := client.Get("https://localhost:8443/hello")
 ```
 
-Here, we read the `cert.pem` file and supply it as the root CA when creating the Client. Running the Client should now successfully display the following.
+这里，我们读取 `cert.pem` 文件并在创建客户端时提供根 CA 。运行客户端现在应该可以成功显示以下内容：
 
-### Final Step - Enable mTLS
+~~~
+Hello, world!
+~~~
 
-On the Client, read and supply the key pair as the client certificate.
+### 最后一步 - 启用 mTLS
+
+在客户端，读取并提供密钥对作为客户端证书。
 
 ```
 +// Read the key pair to create certificate
@@ -183,7 +199,7 @@ RootCAs: caCertPool,
 }
 ```
 
-On the Server, we create a similar CA pool and supply it to the TLS config to serve as the authority to validate Client certificates. We also use the same key pair for the Server certificate.
+在服务端，我们创建一个类似于 CA 池 ，并将其提供给 TLS 配置，来作为验证客户端证书的权威。我们还对服务器证书使用相同的密钥对。
 
 ```
 -// Listen to HTTPS connections on port 8443 and wait
@@ -214,13 +230,17 @@ On the Server, we create a similar CA pool and supply it to the TLS config to se
 +log.Fatal(server.ListenAndServeTLS("cert.pem", "key.pem"))
 ```
 
-Run `server.go` and then `client.go` and you should see a success message on the Client, like so:
+先 运行 `server.go` 然后运行 `client.go`，然后你可以在客户端上看到如下一条成功的消息：
 
-### All Together
+~~~
+Hello, world!
+~~~
 
-Finally, the `server.go` looks like the following.
+### 完整代码
 
-```
+最终， `server.go`  代码如下：
+
+```go
 package main
 
 import (
@@ -267,9 +287,9 @@ log.Fatal(server.ListenAndServeTLS("cert.pem", "key.pem"))
 }
 ```
 
-The `client.go` file looks like so:
+`client.go` 代码如下：
 
-```
+```go
 package main
 
 import (
@@ -324,10 +344,10 @@ fmt.Printf("%s\n", body)
 }
 ```
 
-## Conclusion
+## 结论
 
-Golang makes it really easy to implement mTLS, and this one’s just ~100 LOC.
+Golang 让实现 mTLS 变得非常容易，而且不到100行代码。
 
 ___
 
-I’d love to hear what you think.
+我很想听听你的意见。
