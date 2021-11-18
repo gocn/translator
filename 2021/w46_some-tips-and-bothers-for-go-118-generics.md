@@ -1,17 +1,19 @@
-# Some tips and bothers for Go 1.18 Generics
+# Go 1.18 泛型的一些技巧和困扰
+- 原文地址：https://dev.to/codehex/some-tips-and-bothers-for-go-118-generics-lc7
+- 原文作者：[Kei Kamikawa](https://github.com/Code-Hex)
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w46_some-tips-and-bothers-for-go-118-generics.md
+- 译者：[Cluas](https://github.com/Cluas)
 
-As of 2021-11-17, there is probably no cache library that uses the Go 1.18 Generics feature.
+截至 2021 年 11 月 17 日，社区可能还没有使用 Go 1.18 泛型功能的缓存库。
 
-I've tried to implement the first Go 1.18 generics cache library here. I'm very happy if you give me a GitHub star.
-
+我尝试在这里实现了第一个 Go 1.18 泛型的缓存库。如果你能够给的 GitHub 加个 Star，我会感到非常高兴。
 [https://github.com/Code-Hex/go-generics-cache](https://github.com/Code-Hex/go-generics-cache)
 
-In this article, I'll introduce some of the things I noticed about Go Generics while developing this cache library, as well as some of the tips and bothers I found.
+在这篇文章中，我将介绍我在开发这个缓存库时注意到的关于 Go 泛型的一些情况，以及我发现的一些技巧和困扰。
 
-## Return zero value for any type
+## 对任何类型都返回零值
 
-You will often write code that returns any and error, such as the following. When an error occurs in a function, you would have written code that returns zero-value and error, but now you need to think a little bit differently.
-
+你经常会写一些返回 `any`和 `error`的代码，比如说下面这样。当一个函数发生错误时，你会写一些返回零值和错误的代码，但现在你需要换一种思维方式。
 ```go
 func Do[V any](v V) (V, error) {
     if err := validate(v); err != nil {
@@ -23,9 +25,9 @@ func Do[V any](v V) (V, error) {
 func validate[V any](v V) error
 ```
 
-Let’s suppose you write `return 0, err` here. This will be a compilation error. The reason is that `any` type can be a type other than `int` type, such as `string` type. So how do we do this?
+假设你在这里写`return 0, err`。这将是一个编译错误。原因是`any`类型可以是`int`类型以外的类型，比如`string`类型。那么我们应该怎么做呢？
 
-Let's declare a variable once using `V` of the type parameter. Then you can write it in a compilable form as follows.
+让我们用类型参数的`V`声明一次变量。然后你可以把它写成可编译的形式，如下：
 
 ```go
 func Do[V any](v V) (V, error) {
@@ -37,7 +39,7 @@ func Do[V any](v V) (V, error) {
 }
 ```
 
-In addition, named return values can be used to simplify the writing for a single line.
+此外，可以使用带命名的返回值来简化单行的书写。
 
 ```go
 func Do[V any](v V) (ret V, _ error) {
@@ -48,11 +50,11 @@ func Do[V any](v V) (ret V, _ error) {
 }
 ```
 [https://gotipplay.golang.org/p/0UqA0PIO9X8](https://gotipplay.golang.org/p/0UqA0PIO9X8)
-## Don't try to do type switch with `constraints`
+## 不要试图用`约束`做类型转换
 
-I wanted to provide two methods, `Increment` and `Decrement`.They can add or subtract values from the [go-generics-cache](https://github.com/Code-Hex/go-generics-cache) library if the stored value satisfies the [Number constraint](https://github.com/Code-Hex/go-generics-cache/blob/d5c3dda0e57b4c533c1e744869032c33a4fc2d9e/constraint.go#L5-L8).
+我想提供两个方法，`Increment`和`Decrement`。它们可以从[go-generics-cache](https://github.com/Code-Hex/go-generics-cache)库中增加或减少值，如果存储的值满足[Number 约束](https://github.com/Code-Hex/go-generics-cache/blob/d5c3dda0e57b4c533c1e744869032c33a4fc2d9e/constraint.go#L5-L8)。
 
-Let's use `Increment` method as an example. I initially wrote code like this.
+让我们用`Increment`方法作为一个例子。我最初写的代码是这样的：
 
 ```go
 type Cache[K comparable, V any] struct {
@@ -75,21 +77,19 @@ func (c *Cache[K, V]) Increment(k K, n V) (val V, _ error) {
 }
 ```
 
-I was thinking of using the type of the value `n V` to match the constraints that are satisfied. This method that adds if the `Number` constraint is satisfied, and does nothing otherwise.
+我在考虑使用值`n V`的类型来匹配被满足的约束。如果满足`Number`约束，这个方法就会增加，否则什么都不做。
 
-This will not compile.
+这将不会被编译。
 
-1. Go does not provide conditional branching for constraints.
-1. constraints is an interface. Go does not allow type assertions using interface.
-1. The type of `n` is not determined, so `+` operation is not possible.
-1. In the first place, there is no guarantee that `items` type is the same type as `n`.
+1. Go 不为约束条件提供条件分支
+2. 约束是一个接口，Go 不允许使用接口进行类型断言
+3. `n`的类型没有确定，所以`+`操作是不可能的
+4. 首先，不能保证`items`的类型与`n`的类型相同
 
-To solve this problem, I redesigned the interface. Why did I want to create methods in the `Cache` struct?
+为了解决这些问题，我决定嵌入`Cache`结构。我还定义了一个`NumberCache`结构，可以一直处理`Number`约束。
 
-- To inherit the data of the fields held by the `Cache` struct.
-- To handle methods of the `Cache`.
-
-To solve these points, I decided to embed the `Cache` struct. And I defined a `NumberCache` struct that can always handle `Number` constraints.
+- 继承 `Cache`结构体所持有的字段数据
+- 处理 `Cache`的方法
 
 ```go
 type NumberCache[K comparable, V Number] struct {
@@ -97,7 +97,7 @@ type NumberCache[K comparable, V Number] struct {
 }
 ```
 
-This way, we can guarantee that the type of the value passed to the `Cache` struct will always be a `Number` constraint. So we can add an `Increment` method to `NumberCache` struct.
+这样，我们可以保证传递给`Cache`结构的值的类型永远是`Number`的约束。所以我们可以给`NumberCache`结构添加一个`Increment`方法。
 
 ```go
 func (c *NumberCache[K, V]) Increment(k K, n V) (val V, _ error) {
@@ -112,30 +112,31 @@ func (c *NumberCache[K, V]) Increment(k K, n V) (val V, _ error) {
 ```
 [https://gotipplay.golang.org/p/poQeWw4UE_L](https://gotipplay.golang.org/p/poQeWw4UE_L)
 
-## The point of bothered me
+## 使我困扰的点
 
-Let's look at the definition of the `Cache` struct again.
+让我们再看一下`Cache`结构的定义。
 
 ```go
 type Cache[K comparable, V any] struct {
     items map[K]V
 }
 ```
-Go Generics is defined as a language specification with a constraint which is called [comparable](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#comparable-types-in-constraints). Which allows only types can use `==` and `!=`.
+Go 范型被定义为一种带有约束的语言规范，这种约束被称为 [comparable](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#comparable-types-in-constraints)。这允许只有类型可以使用 `==` 和 `!=`。
 
-I feel that this constraint is bothered me. Let’s explain the reasons why bother me.
+我觉得这个约束条件让我很困扰。让我解释一下困扰我的原因。
 
-I defined a function that compares two `comparable` values.
+我定义了一个函数来比较两个 `comparable` 的值。
+
 ```go
 func Equal[T comparable](v1, v2 T) bool {
     return v1 == v2
 }
 ```
-Allowing only `comparable` types are going to result in an error if an incomparable type is passed to the function at compile-time. You may think this is useful.
+只允许 `comparable` 的类型，如果在编译时将不可比较的类型传递给函数，就会导致错误。你可能认为这很有用。
 
-However, according to Go's specification, `interface{}` also satisfies this comparable constraint.
+然而，根据 Go 的规范，`interface{}`也满足这个可比较的约束。
 
-If `interface{}` can be satisfied, the following code can be compiled.
+如果`interface{}`可以被满足，下面的代码就可以被编译了。
 
 ```go
 func main() {
@@ -144,19 +145,24 @@ func main() {
     Equal(v1, v2)
 }
 ```
-This shows that `func()` type which is a non-comparable type. but can be converting as a comparable type by casting it to the `interface{}` type.
+这表明`func()`类型是一个不可比较的类型。但可以通过将其转换为`interface{}`类型来转换为可比较的类型。
 
-`interface{}` type will only know at runtime whether it is a comparable type or not.
+`interface{}`类型只有在运行时才能知道它是否是一个可比较的类型。
 
-If this is a complex code, it may be difficult to notice.
+如果这是一段复杂的代码，可能很难被注意到。
 
 [https://gotipplay.golang.org/p/tbKKuehbzUv](https://gotipplay.golang.org/p/tbKKuehbzUv)
 
-I believe that we need another comparable constraints that do not accept `interface{}` to notice at compile-time.
+我相信我们需要另一个不接受`interface{}`的可比约束，以便在编译时注意到。
 
-Can this constraints be defined by Go users? The answer is currently not.
+这种约束可以由 Go 用户来定义吗？目前的答案是不能。
 
-This is because `comparable` constraint contains "comparable structures" and "comparable arrays". These constraints cannot currently be defined by Go users. Therefore, I would like to provide them as a Go specification.
+这是因为`comparable`约束包含 "可比较的结构体" 和 "可比较的数组"。
 
-I also created a proposal for it, so if you can relate to it, I would appreciate it if you could give me 👍 in GitHub issue.
+这些约束目前不能由 Go 用户定义。因此，我想把它们作为 Go 规范来提供。
+
+我还为此创建了一个提案，如果你也认同这个说法，请在 GitHub 问题上给我👍，我将不胜感激。
 [https://github.com/golang/go/issues/49587](https://github.com/golang/go/issues/49587)
+
+## 文中提到的链接
+- comparable  https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#comparable-types-in-constraints
