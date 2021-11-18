@@ -3,13 +3,14 @@
 - 原文作者：[Kei Kamikawa](https://github.com/Code-Hex)
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w46_some-tips-and-bothers-for-go-118-generics.md
 - 译者：[Cluas](https://github.com/Cluas)
+- 校对：[astaxie](https://github.com/astaxie)
 
 截至 2021 年 11 月 17 日，社区可能还没有使用 Go 1.18 泛型功能的缓存库。
 
 我尝试在这里实现了第一个 Go 1.18 泛型的缓存库。如果你能够给的 GitHub 加个 Star，我会感到非常高兴。
 [https://github.com/Code-Hex/go-generics-cache](https://github.com/Code-Hex/go-generics-cache)
 
-在这篇文章中，我将介绍我在开发这个缓存库时注意到的关于 Go 泛型的一些情况，以及我发现的一些技巧和困扰。
+在这篇文章中，我将介绍我在开发这个缓存库时遇到的关于 Go 泛型的一些情况，以及我发现的一些技巧和困扰。
 
 ## 对任何类型都返回零值
 
