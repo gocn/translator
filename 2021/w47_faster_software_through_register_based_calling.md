@@ -1,4 +1,4 @@
-# Faster software through register based calling
+# 基于寄存器调用的软件加速
 
 - 原文地址：https://menno.io/posts/golang-register-calling/
 - 原文作者：[Menno Finlay-Smits](https://github.com/mjs)
