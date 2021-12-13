@@ -1,4 +1,4 @@
-# Faster software through register based calling
+# 基于寄存器调用的软件加速
 
 - 原文地址：https://menno.io/posts/golang-register-calling/
 - 原文作者：[Menno Finlay-Smits](https://github.com/mjs)
@@ -6,43 +6,43 @@
 - 译者：[cvley](https://github.com/cvley)
 - 校对：
 
-Posted on November 23, 2021
+2021 年 11 月 23 日发表
 
-The [release notes for Go 1.17](https://golang.org/doc/go1.17#compiler) mention an interesting change in the Go compiler: function arguments and return values will now be passed using registers instead of the stack. The [proposal document](https://go.googlesource.com/proposal/+/refs/changes/78/248178/1/design/40724-register-calling.md) for the feature mentions an expected 5-10% throughput improvement across a range of applications which is significant, especially for no effort on the developers part aside from recompiling with a newer version of the Go compiler. I was curious to see what this actually looks like and decided to take a deeper look. This will get more than a little nerdy so buckle up!
+ [Go 1.17 的发布说明](https://golang.org/doc/go1.17#compiler) 中提到一个 Go 编译器有趣的变更：现在将使用寄存器来代替栈，用于传递函数的参数和返回值。这个特性的 [提案文档](https://go.googlesource.com/proposal/+/refs/changes/78/248178/1/design/40724-register-calling.md) 提到，大量的应用预期可以提升 5-10% 的吞吐，尤其是对于开发者而言，除了使用新版的 Go 编译器重新编译外，没有其他的工作量。我好奇这个变更的原理，因此决定深入研究一番。接下来的旅程多少有些技术宅的气息，那么坐好我们开始吧！
 
-Note that although the catalyst for this blog article was a change in Go, much of this article should be of interest generally even if you don't use Go.
+注意尽管本篇博客的诱因来自于 Go 的一个变更，但即使你不使用 Go，也可以发现本文绝大部分的内容非常有趣。
 
-### Refresher: Registers
+### 复习：寄存器
 
-At this point it's helpful to remind ourselves of what CPU registers are. In a nutshell, they are small amounts of high speed temporary memory built into the processor. Each register has a name and stores one [word](https://en.wikipedia.org/wiki/Word_(computer_architecture)) of data each - this is 64 bits on almost all modern computers.
+此时回顾 CPU 寄存器的内容对下文的理解有用。简单来说，寄存器是处理器中少量的高速临时存储。每个寄存器都有一个名字，每个可以存储一个 [word](https://en.wikipedia.org/wiki/Word_(computer_architecture)) 的数据——对于现在绝大多数的计算机来说，是 64 bits。
 
-Some registers are general purpose while others have specific functions. In this article you'll come across the AX, BX and CX general purpose registers, as well as the SP (stack pointer) register which is special purpose.
+一些寄存器有通用的目的，而其他的有特定的功能。在本文中，你将遇到 AX, BX 和 CX 通用目的的寄存器，同时也包括 SP （stack pointer，栈指针）这一特殊用途的寄存器。
 
-### Refresher: the Stack
+### 复习：栈
 
-It's also useful to remind ourselves what the stack is in a computer program. It's a chunk of memory that's placed at the top of a program's memory. The stack is typically used store local variables, function arguments, function return values and function return addresses. The stack grows downwards as items are added to it.
+回顾计算机程序中栈的概念也是有用的。它是放在程序内存顶部的一块内存。栈一般用于存储局部变量、函数参数、函数返回值和函数返回的地址。栈会随着不断添加内容而逐渐向下扩大。
 
-Eli Bendersky has an [excellent article](https://eli.thegreenplace.net/2011/02/04/where-the-top-of-the-stack-is-on-x86) about how stacks work which contains this helpful diagram:
+Eli Bendersky 有一篇解释栈工作原理的[精彩文章](https://eli.thegreenplace.net/2011/02/04/where-the-top-of-the-stack-is-on-x86)，其中就包含下面这张图：
 
 ![](../static/images/w47_faster_software_through_register_based_calling/stack1.png)
 
-When items are added to the stack we say that they are _pushed_ onto the stack. When items are removed from the stack we say that they are _popped_ off the stack. There are x86 CPU instructions for pushing and popping data onto and off the stack.
+当在栈中添加元素时，我们称为_入_栈。当从栈中移除元素时，我们称为_出_栈。x86 CPU 有对应出入栈的指令。
 
-The SP register mentioned earlier points to the item currently at the top of the stack.
+前面提到的 SP 寄存器指向当前栈顶的元素。
 
-Note that I'm taking some liberties here. The stack works like this on x86 computers (and many other CPU architectures) but not on all of them.
+注意这里的表述有些随意。在 x86 电脑上（和许多其他 CPU 架构上）栈的工作原理是这样，但并非全部都是如此。
 
-### Calling Conventions
+### 调用约定
 
-In compiled software, when some code wants to call a function, the arguments for that function need to somehow be passed to the function (and the return values need to be passed back somehow when the function completes). There are different agreed-upon ways to do this and each style of passing arguments and return values around is a "calling convention".
+在编译好的软件中，当某些代码想要调用一个函数时，这个函数的参数需要以某种方式传入到函数中（当函数完成时，返回值也需要以某种方式传出来）。完成这个目的有多种不同的可行方法，对应每种传递参数和返回值的方法叫做“调用约定”。
 
-The part of the Go 1.17 release notes quoted above is really about a change in Go's calling conventions.
+Go 1.17 发布说明中，有一部分引用了上面这段话，实际上也是对应 Go 调用约定的一个变更。
 
-This is all hidden from you unless you're programming in assembler or are trying to make bits of code written in different programming languages work together. Even so, it's still interesting to see how the machinery works under the hood.
+除非你使用汇编语言来编程，或者尝试融合其他语言的代码，否则是无法感知这个变更的。即使这样，能够了解机器层面的工作方式依旧非常有趣。
 
-### A Small Program
+### 一段简单的代码
 
-In order to compare the code the Go compiler generates in 1.16 vs 1.17 we need a simple test program. It doesn't have to do much, just call a function that takes a couple of arguments which then returns a value. Here's the trivial program I came up with:
+为了对比 Go 编译器在 1.16 和 1.17 生成代码的不同，我们需要一段简单的测试程序。这段程序无需太复杂，仅仅调用一个接受一些参数的函数，然后返回一个值就可以。下面这个是我想到的一个简单的程序：
 
     package main
     
@@ -56,41 +56,41 @@ In order to compare the code the Go compiler generates in 1.16 vs 1.17 we need a
         z := add(22, 33)
         fmt.Println(z)
     }
-    
 
-### Disassembling
 
-In order to see the CPU instructions being generated by the Go compiler we need a disassembler. One tool that can do this is venerable [objdump](https://linux.die.net/man/1/objdump) which comes with the GNU binutils suite and may already be installed if you're running Linux. I'll be using `objdump` in this article.
+### 反汇编
 
-The Go build pipeline is a little unusual in that it generates a kind of bespoke abstract assembly language before converting this to actual machine specific instructions. This intermediate assembly language can be seen using the `go tool objdump` command.
+为了看到 Go 编译器生成的 CPU 指令，我们需要一个反汇编器。可以完成这个目的的一个工具是令人尊敬的 [objdump](https://linux.die.net/man/1/objdump)，它在 GNU binutils 套件中，如果你使用的是 Linux，可能已经安装了它。在本文中我将使用 `objdump` 。
 
-It's tempting to use this output for our exploration here but this intermediate assembly language [isn't necessarily a direct representation](https://www.mit.edu/afs.new/sipb/project/golang/doc/asm.html) of the machine code that will be generated for a given platform. For this reason I've chosen to stick with objdump.
+Go 的编译流程有些不寻常之处，在将代码转换成真正的机器特定的指令前，它会先生成了一种定制的抽象汇编语言。这个中间态的汇编语言可以通过使用 `go tool objdump` 命令查看。
 
-### Go 1.16's Output
+使用这个输出来探索有些诱人，但这个中间态的汇编语言 [不是为指定平台生成的机器码的直接表示](https://www.mit.edu/afs.new/sipb/project/golang/doc/asm.html)。因此，我们选择使用 objdump。
 
-Let's take a look at the output from Go 1.16 which we expect to be using stack based calling. First let's build the binary using Go 1.16 and make sure it works:
+### Go 1.16 的输出
+
+我们看下 Go 1.16 的输出，预期调用使用的是栈。首先使用 Go 1.16 编译出二进制文件，并确保可执行：
 
     $ go1.16.10 build -o prog-116 ./main.go
     $ ./prog-116
     55
-    
 
-My Linux distro already had Go 1.17.3 installed and I used the approach described in the [official docs](https://golang.org/doc/manage-install#installing-multiple) for installing Go 1.16.10.
 
-Great! Now lets disassemble it to see the generated instructions:
+我的 Linux 发行版已经安装了 Go 1.17.3，我使用的安装方法参考的是安装 Go 1.16.10 的 [官方文档](https://golang.org/doc/manage-install#installing-multiple)中描述的方法。
+
+很棒！现在我们进行反编译，看下生成的指令：
 
     $ objdump -d prog-116 > prog-116.asm
-    
 
-The first thing I noticed is that there's quite of lot of code:
+
+我首先注意到的是，代码真多：
 
     $ wc -l prog-116.asm
     164670 prog-116.asm
-    
 
-That's a lot of instructions for such a small program but this is because every Go program includes the Go runtime which is a non-trivial amount of software for scheduling goroutines and providing all the conveniences we expect as Go developers. Fortunately for us, the instructions directly relating to the code in our test program are right at the bottom:
 
-(I'm omitting the offsets and raw bytes that objdump normally provides for clarity; also some of Go's setup code)
+对于这么简短的程序来说，生成的指令太多了，这是因为每个 Go 程序包含了 Go 的运行时，而运行时的代码量较多，用于调度 goroutines 并提供 Go 开发的所有便利。幸运的是，和测试程序直接相关的指令在底部：
+
+（为了简单，我省略了 objdump 一般会提供的偏移量和 raw 字节；同时也省略一些 Go 设置的代码）
 
     0000000000497640 <main.main>:
       ...
@@ -115,21 +115,21 @@ That's a lot of instructions for such a small program but this is because every 
       nop
       call   491140 <fmt.Fprintln>
       ...
-    
 
-Weird! This doesn't look like our code at all. Where's the call to our `add` function? In fact, `movq $0x37,(%rsp)` (move the value 0x37 to memory location pointed to by the stack pointer register) looks super suspicious. 22 + 33 = 55 which is 0x37 in hex. It looks like the Go compiler has optimised the code, working out the addition at compile time, eliminating most of our code in the process!
 
-In order to study this further we need to tell the Go compiler to not [inline](https://dave.cheney.net/tag/inlining) the add function which can be done using a special comment to annotate the add function. `add` now looks like this:
+奇怪！这和我们代码看起来完全不一样。 `add` 函数的调用在哪里？事实上， `movq $0x37,(%rsp)` （把 0x37 移动到栈指针寄存器指向的内存位置）看起来非常可疑。22 + 33 = 55，是十六进制的 0x37。看起来 Go 编译器已经对代码进行了优化，在编译时计算出了加法的结果，在这个过程中消除了大部分的代码。
+
+为了进一步研究，我们需要使用一个特殊的注释来标识 add 函数，以此告诉 Go 编译器不要[内联](https://dave.cheney.net/tag/inlining) add 函数。`add` 现在看起来是这样：
 
     //go:noinline
     func add(i, j int) int {
         return i + j
     }
-    
 
-Compiling the code and running `objdump` again, the disassembly looks more as we might expect. Let's start with `main()` - I've broken up the disassembly into pieces and added commentary.
 
-The main func begins with base pointer and stack pointer initialisation:
+编译代码并再次运行 `objdump`，反编译的结果看起来更符合我们的预期。我们从 `main()` 开始——我已经把反汇编进行了拆分并添加了注释。
+
+main 函数以基址指针和栈指针的初始化开始：
 
     0000000000497660 <main.main>:
         mov    %fs:0xfffffffffffffff8,%rcx
@@ -139,28 +139,28 @@ The main func begins with base pointer and stack pointer initialisation:
         sub    $0x58,%rsp
         mov    %rbp,0x50(%rsp)
         lea    0x50(%rsp),%rbp
-    
 
-followed by,
+
+接下来，
 
         movq   $0x16,(%rsp)
         movq   $0x21,0x8(%rsp)
-    
 
-Here we see the arguments to `add` being pushed onto the stack in preparation for the function call. 0x16 (22) is moved to where the stack pointer is pointing. 0x21 (33) is copied to 8 bytes after where the stack pointer is pointing (so earlier in the stack). The offset of 8 is important because we're dealing with 64-bit (8 byte) integers. An 8 byte offset means the 33 is placed on the stack directly after the 22.
+
+这里我们看到 `add` 的参数已经被放到栈上，用于准备函数调用。0x16 (22) 移动到栈指针指向的地方。0x21 (33) 复制了栈指针指向位置后的 8 个字节（也就是之前栈上的内容）。8 这个偏移量很重要，因为我们处理的是 64 位（8 字节）的整数。一个 8 字节的偏移表示的是 33 被直接放在 22 后面的栈中。
 
         call   4976e0 <main.add>
         mov    0x10(%rsp),%rax
         mov    %rax,0x30(%rsp)
-    
 
-Here's where the add function actually gets called. When the `call` instruction is executed by the CPU, the current value of the instruction pointer is pushed to the stack and execution jumps to the `add` function. Once `add` returns, execution continues here where `z` (stack pointer + 0x30 as it turns out) is assigned to the returned value (stack pointer + 0x10). The AX register is used as temporary storage when moving the return value.
 
-There's more code that follows in main to handle the call the fmt.Println but that's outside the scope of this article.
+这里是 add 函数被调用的地方。当 `call` 指令在 CPU 上执行时，指令指针的当前值被推到栈上，执行跳到 `add` 函数。一旦 `add` 返回，执行会继续把返回值（栈指针 + 0x10）分配给 `z`（栈指针 + 0x30 作为结果）。
 
-One thing I found interesting looking at this code is that the classic `push` instructions aren't being used to add values onto the stack. Values are placed onto the stack using `mov`. It turns out that this is for performance reasons. A `mov` [generally requires fewer CPU cycles](https://agner.org/optimize/instruction_tables.pdf) than a `push`.
+在 main 函数调用里还有更多的代码，用于处理 fmt.Println 的调用，但它们不在本文的讨论范围。
 
-We should also have a look at `add`:
+在观察这段代码时，我发现一个有趣的情况是，并没有使用经典的 `push` 指令来加和。值通过 `mov` 放入栈中。这么做是为了性能考虑。一次 `mov` 比一次 `push` [一般需要更少得 CPU 周期](https://agner.org/optimize/instruction_tables.pdf)。
+
+我们也应该看一下 `add`：
 
     0000000000497640 <main.add>:
         mov    0x10(%rsp),%rax
@@ -168,54 +168,54 @@ We should also have a look at `add`:
         add    %rcx,%rax
         mov    %rax,0x18(%rsp)
         ret    
-    
 
-The second argument (at SP + 0x10) is copied to the AX register, and the first argument (at SP + 0x08) is copied to the CX register. But hang on, weren't the arguments at SP and SP+0x10? They were but when the `call` instruction was executed, the instruction pointer was pushed to the stack which means the stack pointer had to be decremented to make room for it - this means the offsets to the arguments have to be adjusted to account for this.
 
-The `add` instruction is easy enough to understand. Here CX and AX are added (with the result left in AX). The result is then pushed to the return location (SP + 0x18).
+第二个参数（在 SP + 0x10）复制到 AX 寄存器中，第一个参数（在 SP +0x08）复制到 CX 寄存器中。但等一下，参数不应该在 SP 和 SP+0x10 吗？当 `call` 指令执行时，它们确实在那里，指令指针入栈，所以栈指针需要减少，才有空间放入它们——这表明参数的偏移需要根据这个情况来调整。
 
-The `ret` (return) instruction grabs the return address off the stack and starts execution just after the `call` in `main`.
+`add` 指令简单易懂。其中 CX 和 AX 相加（结果存在 AX）。然后结果传入返回的位置（SP +0x18）。
 
-Phew! That's a lot of code for a simple program. Although it's useful to understand what's going on, be thankful that we don't have to write assembly language very often these days!
+`ret` （返回）指令从栈中拿到返回地址，执行 `main` 中 `call` 后面的指令。
 
-### Examining Go 1.17's Output
+哈！对于这么简单的程序来说，代码真多。尽管理解工作原理很有用，但谢天谢地我们现在几乎不写汇编语言了！
 
-Now let's take a look at the same program compiled with Go 1.17. The compilation and disassembly steps are similar to Go 1.16:
+### 检查 Go 1.17 的输出
+
+现在我们看下通用的程序使用 Go 1.17 编译的情况。编译和反汇编的步骤和 Go 1.16 相似：
 
     $ go build -o prog-117 ./main.go
     $ objdump -d prog-117 > prog-117.asm
-    
 
-The main disassembly starts the same as under Go 1.16 but - as expected - differs in the call to `add`:
+
+主要的反汇编代码和 Go 1.16 下开始的地方是一样的——符合预期——但在 `add` 调用的地方不同：
 
         mov    $0x16,%eax
         mov    $0x21,%ebx
         xchg   %ax,%ax
         call   47e260 <main.add>
-    
 
-Instead of copying the function arguments onto the stack, they're copied into the AX and BX registers. This is the essence of register based calling.
 
-~The `xchg %ax,%ax` instruction is a bit more mysterious and I only have theories regarding what it's for. Email me if you know and I'll add the detail here.~
+不同于被复制到栈上，函数参数被复制到 AX 和 BX 寄存器上。这是基于寄存器调用的本质。
 
-**Update**: The `xchg %ax,%ax` instruction is almost certainly there to work around a [bug](https://www.intel.com/content/www/us/en/support/articles/000055650/processors.html) in a number of Intel processors. The instruction ("exchange AX with AX") does nothing but introduces two bytes of padding before the `call` instruction that follows - this serves to work around the processor bug. There's a Go [GitHub issue](https://github.com/golang/go/issues/35881) which has much more detail. Thank you to the many people who wrote about this.
+~`xchg %ax,%ax` 指令有些神秘，我仅知道对应的原理。如果你了解，可以发邮件联系，我将会在这里添加细节信息。~
 
-As we've already seen earlier, the `call` instruction moves execution to the `add` function.
+**更新**: `xchg %ax,%ax` 指令可以确定是为了兼容在一些 Intel 处理器上的 [bug](https://www.intel.com/content/www/us/en/support/articles/000055650/processors.html)。这个指令（"exchange AX with AX"）除了在 `call` 指令前引入两个字节的对齐填充外，没有其他功能——这用于兼容处理器的 bug。Go [GitHub issue](https://github.com/golang/go/issues/35881) 有详细的信息。感谢那些作者。
 
-Now let's take a look at `add`:
+正如我们前面所见，`call` 指令把执行移动到 `add` 函数中。
+
+现在我们看下 `add`:
 
     000000000047e260 <main.add>:
         add    %rbx,%rax
         ret    
-    
 
-Well that's simple! Unlike the Go 1.16 version, there's no need to move arguments from the stack into registers in order to add them, and there's no need to move the result back to the stack. The function arguments are expected to be in the AX and BX registers, and the return value is expected to come back via AX. The `ret` instruction moves execution back to where `call` was executed, using the return address that `call` left on the stack.
 
-With so much less work being done when handling function arguments and return values, it's starting to become clearer why register based calling might be faster.
+就是这么简单！不像 Go 1.16 版本，无需把栈上的参数移动到寄存器再相加，也无需再把结果移动到栈。函数参数预期是在 AX 和 BX 寄存器中，返回值预期返回到 AX。`ret` 指令在 `call` 执行后，通过使用 `call` 留在栈上的返回地址，返回执行流程。
 
-### Performance Comparison
+在函数参数和返回值的处理过程中，仅有少量的工作量，基于寄存器调用可能更快的答案也逐渐浮出水面。
 
-So how much faster is register based calling? I created a simple Go benchmark program to check:
+### 性能对比
+
+那么基于寄存器的调用可以快多少呢？我创建了一个简单的 Go 基准程序来验证：
 
     package main
     
@@ -237,37 +237,36 @@ So how much faster is register based calling? I created a simple Go benchmark pr
     	}
     	result = z
     }
-    
 
-Note the use of a variable outside of the benchmark function to ensure that the [compiler won't optimise](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go) the assignment to `z` away.
 
-The benchmark can be run like this:
+注意在基准函数外使用变量，是为了保证[编译器不会优化](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go) 掉 `z` 的分配。
+
+基准测试可以这么运行：
 
     go test bench_test.go -bench=.
-    
 
-On my somewhat long in the tooth laptop, the best result I could get under Go 1.16 was:
+
+在我这个有些年头的笔记本上，在 Go 1.16 下能得到的最好结果是：
 
     BenchmarkIt-4   	512385438	         2.292 ns/op
-    
 
-With Go 1.17:
+
+Go 1.17 的结果：
 
     BenchmarkIt-4   	613585278	         1.915 ns/op
-    
 
-That's a noticeable improvement - a 16% reduction in execution time for our example. Not bad, especially as the improvement comes for free for all Go programs just by using a newer version of the compiler.
 
-### Conclusion
+提升很显著——我们的例子执行时间下降了 16%。效果不错，尤其是这个提升对于所有的 Go 程序都很容易，仅仅需要使用编译器的新版本就可以了。
+### 结论
 
-I hope you found it interesting to explore some lower level details of software that we don't think about much these days and that you learned something along the way.
+我希望你对探索一些软件底层细节的内容感兴趣，毕竟我们现在很少考虑这方面的内容，希望你在这个过程中有所收获。
 
-Many thanks to [Ben Hoyt](https://benhoyt.com/writings/) and [Brian Thorne](https://hardbyte.nz/) for their detailed reviews and input into this article.
+非常感谢 [Ben Hoyt](https://benhoyt.com/writings/) 和 [Brian Thorne](https://hardbyte.nz/) 对本文的详细审阅。
 
-**Update**: This article ended up generating quite a bit of discussion elsewhere, in particular:
+**更新**：本文在其他地方获得非常多的讨论，尤其是：
 
 *   [Reddit](https://www.reddit.com/r/golang/comments/r0apqf/a_deep_dive_into_the_register_based_calling/)
 *   [Hacker News](https://news.ycombinator.com/item?id=29316415)
 
 
-[Source](https://menno.io/posts/golang-register-calling/)
+[源](https://menno.io/posts/golang-register-calling/)
