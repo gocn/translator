@@ -3,7 +3,7 @@
 - 原文作者：Emre Odabas
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w48_quick_guide_go1.18_features.md
 - 译者：[cuua](https://github.com/cuua)
-- 校对：
+- 校对：[zxmfke](http://github.com/zxmfke)
 
 即将在2022年第一季发布的Go 1.18版本，有很多新特性正等着我们。
 
