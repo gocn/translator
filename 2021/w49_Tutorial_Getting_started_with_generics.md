@@ -8,17 +8,21 @@
 
 Table of Content
 
-[Prerequisites](https://go.dev/doc/tutorial/generics#prerequisites)
+[Prerequisites](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#prerequisites)
 
-[Create a folder for your code](https://go.dev/doc/tutorial/generics#create_folder)
+[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#create_folder)
 
-[Add non-generic functions](https://go.dev/doc/tutorial/generics#non_generic_functions)
+[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#non_generic_functions)
 
-[Add a generic function to handle multiple types](https://go.dev/doc/tutorial/generics#add_generic_function)
+[Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#add_generic_function)
 
-[Remove type arguments when calling the generic function](https://go.dev/doc/tutorial/generics#remove_type_arguments)
+[Remove type arguments when calling the generic function](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#remove_type_arguments)
 
-[Declare a type constraint](https://go.dev/doc/tutorial/generics#declare_type_constraint)[Conclusion](https://go.dev/doc/tutorial/generics#conclusion)[Completed code](https://go.dev/doc/tutorial/generics#completed_code)
+[Declare a type constraint](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#declare_type_constraint)
+
+[Conclusion](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#conclusion)
+
+[Completed code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#completed_code)
 
 > **Note: This is beta content.**
 
