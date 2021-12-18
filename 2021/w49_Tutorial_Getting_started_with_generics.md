@@ -401,6 +401,7 @@ Suggested next topics:
 - You’ll find useful Go best practices described in [Effective Go](https://go.dev/doc/effective_go) and [How to write Go code](https://go.dev/doc/code).
 
 <h2 id="completed_code"> Completed code </h2>
+
 You can run this program in the [Go playground](https://go.dev/play/p/apNmfVwogK0?v=gotip). On the playground simply click the **Run** button.
 
 ```go
