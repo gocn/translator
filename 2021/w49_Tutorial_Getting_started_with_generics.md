@@ -326,7 +326,7 @@ Generic Sums, type parameters inferred: 46 and 62.97
 
 Next, you’ll further simplify the function by capturing the union of integers and floats into a type constraint you can reuse, such as from other code.
 
-<h2 id="declare_type_constraint> Declare a type constraint </h2>
+<h2 id="Declare_type_constraint"> Declare a type constraint </h2>
 
 In this last section, you’ll move the constraint you defined earlier into its own interface so that you can reuse it in multiple places. Declaring constraints in this way helps streamline code, such as when a constraint is more complex.
 
