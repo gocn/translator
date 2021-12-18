@@ -10,9 +10,9 @@ Table of Content
 
 [Prerequisites](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#prerequisites)
 
-[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Createa_folder)
+[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#create_folder)
 
-[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#add_non-generic_functions)
+[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#add_non_generic_functions)
 
 [Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add_generic_function)
 
