@@ -10,19 +10,19 @@ Table of Content
 
 [Prerequisites](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#prerequisites)
 
-[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#create_folder)
+[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Createa folder for your code)
 
-[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#non_generic_functions)
+[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add non-generic functions)
 
-[Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#add_generic_function)
+[Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add a generic function to handle multiple types)
 
-[Remove type arguments when calling the generic function](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#remove_type_arguments)
+[Remove type arguments when calling the generic function](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Remove type arguments when calling the generic function)
 
-[Declare a type constraint](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#declare_type_constraint)
+[Declare a type constraint](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Declare a type constraint)
 
-[Conclusion](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#conclusion)
+[Conclusion](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Conclusion)
 
-[Completed code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#completed_code)
+[Completed code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Completed code)
 
 > **Note: This is beta content.**
 
