@@ -1,7 +1,7 @@
 # 教程：如何开始使用泛型
 
 - 原文地址：https://go.dev/doc/tutorial/generics
-- 原文作者：Emre Odabas
+- 原文作者：go.dev
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
