@@ -6,139 +6,135 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
-Table of Content
+目录
 
-[Prerequisites](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#prerequisites)
+- [前提条件](#prerequire)
+- [为你的代码创建一个文件夹](#add_folder)
+- [添加非泛型函数](#add_non_genertic_function)
+- [添加一个泛型函数来处理多种类型](#add_generic_function)
+- [在调用泛型函数时删除类型参数](#delete_type_arguement)
+- [声明一个类型约束](#declare_type_constrant)
+- [结论](#conclusion)
+- [完整代码](#complete_code)
 
-[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#create_folder)
+> 备注：这是一个beta版本的内容
 
-[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#add_non_generic_functions)
+这个教程介绍了Go泛型的基础概念。 通过泛型，你可以宣告并使用函数或者是类型，那些用于调用代码时参数需要兼容多个不同类型的情况。
 
-[Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add_generic_function)
+在这个教程里，你会宣告两个普通的函数，然后复制一份相同的逻辑到一个泛型的方法里。
 
-[Remove type arguments when calling the generic function](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Remove_type_arguments)
+你会通过以下几个章节来进行学习：
 
-[Declare a type constraint](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Declare_type_constraint)
+1. 为你的代码创建一个文件夹；
+2. 添加非泛型函数；
+3. 添加一个泛型函数来处理多种类型；
+4. 在调用泛型函数时删除类型参数；
+5. 声明一个类型约束。
 
-[Conclusion](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Conclusion)
+> 备注：对其他教程，可以查看[教程](https://go.dev/doc/tutorial/)
+>
+> 备注：你同时也可以使用 ["Go dev branch"模式](https://go.dev/play/?v=gotip)来编辑和运行你的代码，如果你更喜欢以这种形式的话
 
-[Completed code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Completed_code)
+<h2 id="prerequire"> 前提条件 </h2>
 
-> **Note: This is beta content.**
+- 安装Go 1.18 Beta 1或者更新的版本。对安装流程，请看安装并使用beta版本。
+- 代码编辑器。任何你顺手的代码编辑器。
+- 一个命令终端。Go在任何终端工具上都很好使用，比如Linux 、Mac、PowerShell或者Windows上的cmd。
 
-This tutorial introduces the basics of generics in Go. With generics, you can declare and use functions or types that are written to work with any of a set of types provided by calling code.
+### 安装并使用beta版本
 
-In this tutorial, you’ll declare two simple non-generic functions, then capture the same logic in a single generic function.
+这个教程需要Beta 1的泛型特性。安装beta版本，需要通过下面几个步骤：
 
-You’ll progress through the following sections:
-
-1. Create a folder for your code.
-2. Add non-generic functions.
-3. Add a generic function to handle multiple types.
-4. Remove type arguments when calling the generic function.
-5. Declare a type constraint.
-
-**Note:** For other tutorials, see [Tutorials](https://go.dev/doc/tutorial/index.html).
-
-**Note:** If you prefer, you can use [the Go playground in “Go dev branch” mode](https://go.dev/play/?v=gotip) to edit and run your program instead.
-
-<h2 id="prerequisites"> Prerequisites </h2>
-- **An installation of Go 1.18 Beta 1 or later.** For installation instructions, see [Installing and using the beta](https://go.dev/doc/tutorial/generics#installing_beta).
-- **A tool to edit your code.** Any text editor you have will work fine.
-- **A command terminal.** Go works well using any terminal on Linux and Mac, and on PowerShell or cmd in Windows.
-
-#### Installing and using the beta
-
-This tutorial requires the generics feature available in Beta 1. To install the beta, following these steps:
-
-1. Run the following command to install the beta.
+1. 执行下面的指令安装beta版本
 
    ```shell
    $ go install golang.org/dl/go1.18beta1@latest
    ```
 
-2. Run the following command to download updates.
+2. 执行下面的指令下载更新
 
    ```shell
    $ go1.18beta1 download
    ```
 
-3. Run `go` commands using the beta instead of a released version of Go (if you have one).
+3. 用beta版本执行go命令，而不是Go的发布版本(如果你本地有安装的话)
 
-   You can run commands with the beta either by using the beta name or by aliasing the beta to another name.
+   你可以使用beta版本名称或者把beta重命名成别的名称来执行命令。
 
-   - Using the beta name, you can run commands by invoking `go1.18beta1` instead of `go`:
+   - 使用beta版本名称，你可以通过go1.18beta1来执行指令而不是go：
 
      ```shell
      $ go1.18beta1 version
      ```
 
-   - By aliasing the beta name to another name, you can simplify the command:
+   - 通过对beta版本名称重命名，你可以简化指令：
 
      ```shell
      $ alias go=go1.18beta1
      $ go version
      ```
 
-Commands in this tutorial will assume you have aliased the beta name.
+在这个教程中将假设你已经对beta版本名称进行了重命名。
 
-<h2 id="create_folder"> Create a folder for your code </h2>
-To begin, create a folder for the code you’ll write.
+<h2 id="add_folder"> 为你的代码创建一个文件夹 </h2>
 
-1. Open a command prompt and change to your home directory.
+在一开始，先给你要写的代码创建一个文件夹
 
-   On Linux or Mac:
+1. 打开一个命令提示符并切换到/home文件夹
+
+   在Linux或者Mac上：
 
    ```shell
    $ cd
    ```
 
-   On Windows:
+   在windows上：
 
    ```shell
    C:\> cd %HOMEPATH%
    ```
 
-   The rest of the tutorial will show a $ as the prompt. The commands you use will work on Windows too.
+   在接下去的教程里面会用`$`来代表提示符。指令在windows上也适用。
 
-2. From the command prompt, create a directory for your code called generics.
+2. 在命令提示符下，为你的代码创建一个名为generics的目录
 
    ```shell
    $ mkdir generics
    $ cd generics
    ```
 
-3. Create a module to hold your code.
+3. 创建一个module来存放你的代码
 
-   Run the `go mod init` command, giving it your new code’s module path.
-
-   ```shell
+   执行`go mod init`指令，参数为你新代码的module路径
+   
+   ```go
    $ go mod init example/generics
    go: creating new go.mod: module example/generics
    ```
 
-   **Note:** For production code, you’d specify a module path that’s more specific to your own needs. For more, be sure to see [Managing dependencies](https://go.dev/doc/modules/managing-dependencies).
+   > 备注：对生产环境，你会指定一个更符合你自己需求的module路径。更多的请看[依赖管理](https://go.dev/doc/modules/managing-dependencies) 
 
-Next, you’ll add some simple code to work with maps.
+接下来，你会增加一些简单的和maps相关的代码。
 
-<h2 id="add_non_generic_functions"> Add non-generic functions </h2>
-In this step, you’ll add two functions that each add together the values of a map and return the total.
+<h2 id="add_non_genertic_function"> 添加普通函数 </h2>
 
-You’re declaring two functions instead of one because you’re working with two different types of maps: one that stores `int64` values, and one that stores `float64` values.
+在这一步中，你将添加两个函数，每个函数分别计算map的值的总和，并回传这个总和。
 
-#### Write the code
+你将声明两个函数而不是一个，因为你要处理两种不同类型的map：一个存储的值int64，另一个存储的值是float64。
 
-1. Using your text editor, create a file called main.go in the generics directory. You’ll write your Go code in this file.
+### 写代码
 
-2. Into main.go, at the top of the file, paste the following package declaration.
+1. 用你的文本编辑器，在generics文件夹里面创建一个叫main.go的文件。你将会在这个文件内写你的Go代码。
+
+2. 到main.go文件的上方，粘贴如下的包的宣告。
 
    ```go
    package main
    ```
 
-   A standalone program (as opposed to a library) is always in package `main`.
+   一个独立的程序（相对于一个库）总是在main包中。
 
-3. Beneath the package declaration, paste the following two function declarations.
+3. 在包的声明下面，粘贴以下两个函数的声明。
 
    ```go
    // SumInts adds together the values of m.
@@ -160,13 +156,13 @@ You’re declaring two functions instead of one because you’re working with tw
    }
    ```
 
-   In this code, you:
+   在这段代码中，你：
 
-   - Declare two functions to add together the values of a map and return the sum.
-     - `SumFloats` takes a map of `string` to `float64` values.
-     - `SumInts` takes a map of `string` to `int64` values.
+   - 声明两个函数，将一个map的值加在一起，并返回总和。
+     - SumFloats接收一个map，key为string类型，value为floa64类型。
+     - SumInt接收一个map，key为string类型，value为int64类型。
 
-4. At the top of main.go, beneath the package declaration, paste the following `main` function to initialize the two maps and use them as arguments when calling the functions you declared in the preceding step.
+4. 在main.go的顶部，包声明的下面，粘贴以下main函数，用来初始化两个map，并在调用你在上一步中声明的函数时将它们作为参数。
 
    ```go
    func main() {
@@ -188,53 +184,53 @@ You’re declaring two functions instead of one because you’re working with tw
    }
    ```
 
-   In this code, you:
+   在这段代码中，你：
 
-   - Initialize a map of `float64` values and a map of `int64` values, each with two entries.
-   - Call the two functions you declared earlier to find the sum of each map’s values.
-   - Print the result.
+   - 初始化一个key为string，value为float64的map和一个key为string，value为int64的map，各有2条数据；
+   - 调用之前宣告的两个方法来获取每个map的值的总和；
+   - 打印结果。
 
-5. Near the top of main.go, just beneath the package declaration, import the package you’ll need to support the code you’ve just written.
+5. 靠近main.go顶部，仅在包宣告的下方，导入你刚刚写的代码所需要引用的包。
 
-   The first lines of code should look like this:
+   第一行代码应该看起来如下所示：
 
    ```go
    package main
-   
    import "fmt"
    ```
 
-6. Save main.go.
+6. 保存main.go.
 
-#### Run the code
+### 运行代码
 
-From the command line in the directory containing main.go, run the code.
+在main.go所在目录下，通过命令行运行代码
 
-```shell
+```go
 $ go run .
 Non-Generic Sums: 46 and 62.97
 ```
 
-With generics, you can write one function here instead of two. Next, you’ll add a single generic function for maps containing either integer or float values.
+有了泛型，你可以只写一个函数而不是两个。接下来，你将为maps添加一个泛型函数，来允许接收整数类型或者是浮点数类型。
 
-<h2 id="add_generic_function"> Add a generic function to handle multiple types </h2>
-In this section, you’ll add a single generic function that can receive a map containing either integer or float values, effectively replacing the two functions you just wrote with a single function.
+<h2 id="add_generic_function"> 添加泛型函数处理多种类型 </h2>
 
-To support values of either type, that single function will need a way to declare what types it supports. Calling code, on the other hand, will need a way to specify whether it is calling with an integer or float map.
+在这一节，你将会添加一个泛型函数来接收一个map，可能值是整数类型或者浮点数类型的map，有效地用一个函数替换掉你刚才写的2个函数。
 
-To support this, you’ll write a function that declares *type parameters* in addition to its ordinary function parameters. These type parameters make the function generic, enabling it to work with arguments of different types. You’ll call the function with *type arguments* and ordinary function arguments.
+为了支持不同类型的值，这个函数需要有一个方法来宣告它所支持的类型。另一方面，调用代码将需要一种方法来指定它是用整数还是浮点数来调用。
 
-Each type parameter has a *type constraint* that acts as a kind of meta-type for the type parameter. Each type constraint specifies the permissible type arguments that calling code can use for the respective type parameter.
+为了实现上面的描述，你将会宣告一个除了有普通函数参数，还有`类型参数`的函数。这个类型参数实现了函数的通用性，使得它可以处理多个不同的类型。你将会用`类型参数`和普通函数参数来调用这个泛型函数。
 
-While a type parameter’s constraint typically represents a set of types, at compile time the type parameter stands for a single type – the type provided as a type argument by the calling code. If the type argument’s type isn’t allowed by the type parameter’s constraint, the code won’t compile.
+每个类型参数都有一个`类型约束`，类似于每个类型参数的meta-type。每个类型约束都指定了调用代码时每个对应输入参数的可允许的类型。
 
-Keep in mind that a type parameter must support all the operations the generic code is performing on it. For example, if your function’s code were to try to perform `string` operations (such as indexing) on a type parameter whose constraint included numeric types, the code wouldn’t compile.
+虽然类型参数的约束通常代表某些类型，但是在编译的时候类型参数只代表一个类型-在调用代码时作为类型参数。如果类型参数的类型不被类型参数的约束所允许，代码则无法编译。
 
-In the code you’re about to write, you’ll use a constraint that allows either integer or float types.
+需要记住的是类型参数必须满足泛型代码对它的所有的操作。举个例子，如果你的代码尝试去做一些string的操作(比如索引)，而这个类型参数包含数字的类型，那代码是无法编译的。
 
-#### Write the code
+在下面你要编写的代码里，你会使用允许整数或者浮点数类型的限制。
 
-1. Beneath the two functions you added previously, paste the following generic function.
+### 写代码
+
+1. 在你之前写的两个函数的下方，粘贴下面的泛型函数
 
    ```go
    // SumIntsOrFloats sums the values of map m. It supports both int64 and float64
@@ -248,14 +244,14 @@ In the code you’re about to write, you’ll use a constraint that allows eithe
    }
    ```
 
-   In this code, you:
+   在这段代码里，你：
 
-   - Declare a `SumIntsOrFloats` function with two type parameters (inside the square brackets), `K` and `V`, and one argument that uses the type parameters, `m` of type `map[K]V`. The function returns a value of type `V`.
-   - Specify for the `K` type parameter the type constraint `comparable`. Intended specifically for cases like these, the `comparable` constraint is predeclared in Go. It allows any type whose values may be used as an operand of the comparison operators `==` and `!=`. Go requires that map keys be comparable. So declaring `K` as `comparable` is necessary so you can use `K` as the key in the map variable. It also ensures that calling code uses an allowable type for map keys.
-   - Specify for the `V` type parameter a constraint that is a union of two types: `int64` and `float64`. Using `|` specifies a union of the two types, meaning that this constraint allows either type. Either type will be permitted by the compiler as an argument in the calling code.
-   - Specify that the `m` argument is of type `map[K]V`, where `K` and `V` are the types already specified for the type parameters. Note that we know `map[K]V` is a valid map type because `K` is a comparable type. If we hadn’t declared `K` comparable, the compiler would reject the reference to `map[K]V`.
+   - 宣告了一个带有2个类型参数(方括号内)的SumIntsOrFloats函数，K和V，一个使用类型参数的参数，类型为map[K]V的参数m。
+     - 为K类型参数指定可比较的类型约束。事实上，针对此类情况，在Go里面可比较的限制是会提前宣告。它允许任何类型的值可以作为比较运算符==和!=的操作符。在Go里面，map的key是需要可比较的。因此，将K宣告为可比较的是很有必要的，这样你就可以使用K作为map变量的key。这样也保证了调用代码方使用一个被允许的类型做map的key。
+     - 为V类型参数指定一个两个类型合集的类型约束：int64和float64。使用`|`指定了2个类型的合集，表示约束允许这两种类型。任何一个类型都会被编译器认定为合法的传参参数。
+     - 指定参数m为类型map[K]V，其中K和V的类型已经指定为类型参数。注意到因为K是可比较的类型，所以map[K]V是一个有效的map类型。如果我们没有宣告K是可比较的，那么编译器会拒绝对map[K]V的引用。
 
-2. In main.go, beneath the code you already have, paste the following code.
+2. 在main.go里，在你现在的代码下方，粘贴如下代码：
 
    ```go
    fmt.Printf("Generic Sums: %v and %v\n",
@@ -263,19 +259,19 @@ In the code you’re about to write, you’ll use a constraint that allows eithe
        SumIntsOrFloats[string, float64](floats))
    ```
 
-   In this code, you:
+   在这段代码里，你：
 
-   - Call the generic function you just declared, passing each of the maps you created.
+   - 调用你刚才宣告的泛型函数，传递你创建的每个map。
 
-   - Specify type arguments – the type names in square brackets – to be clear about the types that should replace type parameters in the function you’re calling.
+   - 指定类型参数-在方括号内的类型名称-来明确你所调用的函数中应该用哪些类型来替代类型参数。
 
-     As you’ll see in the next section, you can often omit the type arguments in the function call. Go can often infer them from your code.
+     你将会在下一节看到，你通常可以在函数调用时省略类型参数。Go通常可以从代码里推断出来。
 
-   - Print the sums returned by the function.
+   - 打印函数返回的总和。
 
-#### Run the code
+### 运行代码
 
-From the command line in the directory containing main.go, run the code.
+在main.go所在目录下，通过命令行运行代码
 
 ```shell
 $ go run .
@@ -283,20 +279,21 @@ Non-Generic Sums: 46 and 62.97
 Generic Sums: 46 and 62.97
 ```
 
-To run your code, in each call the compiler replaced the type parameters with the concrete types specified in that call.
+为了运行你的代码，在每次调用的时候，编译器都会用该调用中指定的具体类型替换类型参数。
 
-In calling the generic function you wrote, you specified type arguments that told the compiler what types to use in place of the function’s type parameters. As you’ll see in the next section, in many cases you can omit these type arguments because the compiler can infer them.
+在调用你写的泛型函数时，你指定了类型参数来告诉编译器用什么类型来替换函数的类型参数。正如你将在下一节所看到的，在许多情况下，你可以省略这些类型参数，因为编译器可以推断出它们。
 
-<h2 id="remove_type_arguments"> Remove type arguments when calling the generic function </h2>
-In this section, you’ll add a modified version of the generic function call, making a small change to simplify the calling code. You’ll remove the type arguments, which aren’t needed in this case.
+<h2 id="delete_type_arguement"> 当调用泛型函数时移除类型参数 </h2>
 
-You can omit type arguments in calling code when the Go compiler can infer the types you want to use. The compiler infers type arguments from the types of function arguments.
+在这一节，你会添加一个泛型函数调用的修改版本，通过一个小的改变来简化代码。在这个例子里你将移除掉不需要的类型参数。
 
-Note that this isn’t always possible. For example, if you needed to call a generic function that had no arguments, you would need to include the type arguments in the function call.
+当Go编译器可以推断出你要使用的类型时，你可以在调用代码中省略类型参数。编译器从函数参数的类型中推断出类型参数。
 
-#### Write the code
+注意这不是每次都可行的。举个例子，如果你需要调用一个没有参数的泛型函数，那么你需要在调用函数时带上类型参数。
 
-- In main.go, beneath the code you already have, paste the following code.
+### 写代码
+
+- 在main.go的代码下方，粘贴下面的代码。
 
   ```go
   fmt.Printf("Generic Sums, type parameters inferred: %v and %v\n",
@@ -304,13 +301,13 @@ Note that this isn’t always possible. For example, if you needed to call a gen
       SumIntsOrFloats(floats))
   ```
 
-  In this code, you:
+  在这段代码里，你：
 
-  - Call the generic function, omitting the type arguments.
+  - 调用泛型函数，省略类型参数。
 
-#### Run the code
+### 运行代码
 
-From the command line in the directory containing main.go, run the code.
+在main.go所在目录下，通过命令行运行代码
 
 ```shell
 $ go run .
@@ -319,18 +316,19 @@ Generic Sums: 46 and 62.97
 Generic Sums, type parameters inferred: 46 and 62.97
 ```
 
-Next, you’ll further simplify the function by capturing the union of integers and floats into a type constraint you can reuse, such as from other code.
+接下来，你将通过把整数和浮点数的合集定义到一个你可以重复使用的类型约束中，比如从其他的代码，来进一步简化这个函数。
 
-<h2 id="Declare_type_constraint"> Declare a type constraint </h2>
-In this last section, you’ll move the constraint you defined earlier into its own interface so that you can reuse it in multiple places. Declaring constraints in this way helps streamline code, such as when a constraint is more complex.
+<h2 id="declare_type_constrant"> 宣告类型约束 </h2>
 
-You declare a *type constraint* as an interface. The constraint allows any type implementing the interface. For example, if you declare a type constraint interface with three methods, then use it with a type parameter in a generic function, type arguments used to call the function must have all of those methods.
+在最后一节中，你将把你先前定义的约束移到它自己的interface中，这样你就可以在多个地方重复使用它。以这种方式声明约束有助于简化代码，尤其当一个约束越来越复杂的时候。
 
-Constraint interfaces can also refer to specific types, as you’ll see in this section.
+你将类型参数定义为一个interface。约束允许任何类型实现这个interface。举个例子，如果你定义了一个有三个方法的类型参数interface，然后用它作为一个泛型函数的类型参数，那么调用这个函数的类型参数必须实现这些方法。
 
-#### Write the code
+你将在本节中看到，约束interface也可以指代特定的类型。
 
-1. Just above `main`, immediately after the import statements, paste the following code to declare a type constraint.
+### 写代码
+
+1. 在main函数上面，紧接着import下方，粘贴如下代码来定义类型约束。
 
    ```go
    type Number interface {
@@ -338,15 +336,15 @@ Constraint interfaces can also refer to specific types, as you’ll see in this 
    }
    ```
 
-   In this code, you:
+   在这段代码里，你：
 
-   - Declare the `Number` interface type to use as a type constraint.
+   - 宣告一个Number interface类型作为类型限制
 
-   - Declare a union of `int64` and `float64` inside the interface.
+   - 在interface内宣告int64和float64的合集
 
-     Essentially, you’re moving the union from the function declaration into a new type constraint. That way, when you want to constrain a type parameter to either `int64` or `float64`, you can use this `Number` type constraint instead of writing out `int64 | float64`.
+     本质上，你是在把函数声明中的合集移到一个新的类型约束中。这样子，当你想要约束一个类型参数为int64或者float64，你可以使用Number interface而不是写 int64 | float64。
 
-2. Beneath the functions you already have, paste the following generic `SumNumbers` function.
+2. 在你已写好的函数下方，粘贴如下泛型函数，SumNumbers。
 
    ```go
    // SumNumbers sums the values of map m. Its supports both integers
@@ -360,11 +358,11 @@ Constraint interfaces can also refer to specific types, as you’ll see in this 
    }
    ```
 
-   In this code, you:
+   在这段代码，你：
 
-   - Declare a generic function with the same logic as the generic function you declared previously, but with the new interface type instead of the union as the type constraint. As before, you use the type parameters for the argument and return types.
+   - 声明一个泛型函数，其逻辑与你之前声明的泛型函数相同，但是是使用新的interface类型作为类型参数而不是合集。和之前一样，你使用类型参数作为参数和返回类型。
 
-3. In main.go, beneath the code you already have, paste the following code.
+3. 在main.go，在你已写完的代码下方，粘贴如下代码。
 
    ```go
    fmt.Printf("Generic Sums with Constraint: %v and %v\n",
@@ -372,15 +370,14 @@ Constraint interfaces can also refer to specific types, as you’ll see in this 
        SumNumbers(floats))
    ```
 
-   In this code, you:
+   在这段代码里，你：
 
-   - Call `SumNumbers` with each map, printing the sum from the values of each.
+   - 每个map依次调用SumNumbers，并打印数值的总和。
+   - 与上一节一样，你可以在调用泛型函数时省略类型参数（方括号中的类型名称）。Go编译器可以从其他参数中推断出类型参数。
 
-     As in the preceding section, you omit the type arguments (the type names in square brackets) in calls to the generic function. The Go compiler can infer the type argument from other arguments.
+### 运行代码
 
-#### Run the code
-
-From the command line in the directory containing main.go, run the code.
+在main.go所在目录下，通过命令行运行代码
 
 ```shell
 $ go run .
@@ -390,18 +387,20 @@ Generic Sums, type parameters inferred: 46 and 62.97
 Generic Sums with Constraint: 46 and 62.97
 ```
 
-<h2 id="conclusion"> Conclusion </h2>
-Nicely done! You’ve just introduced yourself to generics in Go.
+<h2 id="conclusion"> 总结 </h2>
 
-If you want to keep experimenting, you can try writing the `Number` interface in terms of `constraints.Integer` and `constraints.Float`, to allow more numeric types.
+完美结束！你刚才已经给你自己介绍了Go的泛型。
 
-Suggested next topics:
+如果你想继续试验，你可以尝试用整数约束和浮点数约束来写Number interface，来允许更多的数字类型。
 
-- The [Go Tour](https://tour.golang.org/welcome/1) is a great step-by-step introduction to Go fundamentals.
-- You’ll find useful Go best practices described in [Effective Go](https://go.dev/doc/effective_go) and [How to write Go code](https://go.dev/doc/code).
+建议阅读的相关文章：
 
-<h2 id="completed_code"> Completed code </h2>
-You can run this program in the [Go playground](https://go.dev/play/p/apNmfVwogK0?v=gotip). On the playground simply click the **Run** button.
+- [Go Tour](https://tour.golang.org/welcome/1) 是一个很好的，手把手教Go基础的介绍。
+- 你可以在 [Effective Go](https://go.dev/doc/effective_go) 和 [How to write Go code](https://go.dev/doc/code) 中找到非常实用的GO的练习。
+
+<h2 id="complete_code"> 完整代码 </h2>
+
+你可以在Go playground运行这个代码。在playground只需要点击`Run`按钮即可。
 
 ```go
 package main
