@@ -42,7 +42,7 @@ You’ll progress through the following sections:
 
 **Note:** If you prefer, you can use [the Go playground in “Go dev branch” mode](https://go.dev/play/?v=gotip) to edit and run your program instead.
 
-## Prerequisites
+<h2 id="prerequisites"> Prerequisites </h2>
 
 - **An installation of Go 1.18 Beta 1 or later.** For installation instructions, see [Installing and using the beta](https://go.dev/doc/tutorial/generics#installing_beta).
 - **A tool to edit your code.** Any text editor you have will work fine.
@@ -83,7 +83,7 @@ This tutorial requires the generics feature available in Beta 1. To install the 
 
 Commands in this tutorial will assume you have aliased the beta name.
 
-## Create a folder for your code
+<h2 id="create_folder"> Create a folder for your code </h2>
 
 To begin, create a folder for the code you’ll write.
 
@@ -220,7 +220,7 @@ Non-Generic Sums: 46 and 62.97
 
 With generics, you can write one function here instead of two. Next, you’ll add a single generic function for maps containing either integer or float values.
 
-## Add a generic function to handle multiple types
+<h2 id="add_generic_function"> Add a generic function to handle multiple types </h2>
 
 In this section, you’ll add a single generic function that can receive a map containing either integer or float values, effectively replacing the two functions you just wrote with a single function.
 
@@ -291,7 +291,7 @@ To run your code, in each call the compiler replaced the type parameters with th
 
 In calling the generic function you wrote, you specified type arguments that told the compiler what types to use in place of the function’s type parameters. As you’ll see in the next section, in many cases you can omit these type arguments because the compiler can infer them.
 
-## Remove type arguments when calling the generic function
+<h2 id="remove_generic_function"> Remove type arguments when calling the generic function </h2>
 
 In this section, you’ll add a modified version of the generic function call, making a small change to simplify the calling code. You’ll remove the type arguments, which aren’t needed in this case.
 
@@ -326,7 +326,7 @@ Generic Sums, type parameters inferred: 46 and 62.97
 
 Next, you’ll further simplify the function by capturing the union of integers and floats into a type constraint you can reuse, such as from other code.
 
-## Declare a type constraint
+<h2 id="declare_type_constraint> Declare a type constraint </h2>
 
 In this last section, you’ll move the constraint you defined earlier into its own interface so that you can reuse it in multiple places. Declaring constraints in this way helps streamline code, such as when a constraint is more complex.
 
@@ -396,7 +396,7 @@ Generic Sums, type parameters inferred: 46 and 62.97
 Generic Sums with Constraint: 46 and 62.97
 ```
 
-## Conclusion
+<h2 id="conclusion"> Conclusion </h2>
 
 Nicely done! You’ve just introduced yourself to generics in Go.
 
@@ -407,7 +407,7 @@ Suggested next topics:
 - The [Go Tour](https://tour.golang.org/welcome/1) is a great step-by-step introduction to Go fundamentals.
 - You’ll find useful Go best practices described in [Effective Go](https://go.dev/doc/effective_go) and [How to write Go code](https://go.dev/doc/code).
 
-## Completed code
+<h2 id="completed_code"> Completed code </h2>
 
 You can run this program in the [Go playground](https://go.dev/play/p/apNmfVwogK0?v=gotip). On the playground simply click the **Run** button.
 
