@@ -10,19 +10,19 @@ Table of Content
 
 [Prerequisites](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#prerequisites)
 
-[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Createa folder for your code)
+[Create a folder for your code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Createa_folder)
 
-[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add non-generic functions)
+[Add non-generic functions](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#add_non-generic_functions)
 
-[Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add a generic function to handle multiple types)
+[Add a generic function to handle multiple types](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Add_generic_function)
 
-[Remove type arguments when calling the generic function](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Remove type arguments when calling the generic function)
+[Remove type arguments when calling the generic function](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Remove_type_arguments)
 
-[Declare a type constraint](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Declare a type constraint)
+[Declare a type constraint](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Declare_type_constraint)
 
 [Conclusion](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Conclusion)
 
-[Completed code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Completed code)
+[Completed code](https://github.com/zxmfke/translator/blob/master/2021/w49_Tutorial_Getting_started_with_generics.md#Completed_code)
 
 > **Note: This is beta content.**
 
@@ -123,7 +123,7 @@ To begin, create a folder for the code you’ll write.
 
 Next, you’ll add some simple code to work with maps.
 
-## Add non-generic functions
+<h2 id="add_non_generic_functions"> Add non-generic functions </h2>
 
 In this step, you’ll add two functions that each add together the values of a map and return the total.
 
@@ -291,7 +291,7 @@ To run your code, in each call the compiler replaced the type parameters with th
 
 In calling the generic function you wrote, you specified type arguments that told the compiler what types to use in place of the function’s type parameters. As you’ll see in the next section, in many cases you can omit these type arguments because the compiler can infer them.
 
-<h2 id="remove_generic_function"> Remove type arguments when calling the generic function </h2>
+<h2 id="remove_type_arguments"> Remove type arguments when calling the generic function </h2>
 
 In this section, you’ll add a modified version of the generic function call, making a small change to simplify the calling code. You’ll remove the type arguments, which aren’t needed in this case.
 
