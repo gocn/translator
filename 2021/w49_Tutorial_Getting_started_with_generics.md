@@ -1,4 +1,4 @@
-# 教程：如何开始使用泛型
+# Go 官方出品泛型教程：如何开始使用泛型
 
 - 原文地址：https://go.dev/doc/tutorial/generics
 - 原文作者：go.dev
