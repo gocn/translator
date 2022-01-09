@@ -1,0 +1,153 @@
+# Go Fuzzing
+
+- 原文地址：https://tip.golang.org/doc/fuzz/
+- 原文作者：Go Team
+- 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w1_Go_Fuzzing.md
+- 译者：[fivezh](https://github.com/fivezh)
+- 校对：[]()
+
+Go supports fuzzing in its standard toolchain beginning in Go 1.18.
+
+## Overview
+
+Fuzzing is a type of automated testing which continuously manipulates inputs to a program to find bugs. Go fuzzing uses coverage guidance to intelligently walk through the code being fuzzed to find and report failures to the user. Since it can reach edge cases which humans often miss, fuzz testing can be particularly valuable for finding security exploits and vulnerabilities.
+
+Below is an example of a [fuzz test](https://tip.golang.org/doc/fuzz/#glos-fuzz-test), highlighting it’s main components.
+
+![Example code showing the overall fuzz test, with a fuzz target within it. Before the fuzz target is a corpus addition with f.Add, and the parameters of the fuzz target are highlighted as the fuzzing arguments.](../static/images/2022/w1_Go_Fuzzing/example.png)
+
+## Writing and running fuzz tests
+
+### Requirements
+
+Below are rules that fuzz tests must follow.
+
+- A fuzz test must be a function named like `FuzzXxx`, which accepts only a `*testing.F`, and has no return value.
+- Fuzz tests must be in *_test.go files to run.
+- A [fuzz target](https://tip.golang.org/doc/fuzz/#glos-fuzz-target) must be a method call to `(*testing.F).Fuzz` which accepts a `*testing.T` as the first parameter, followed by the fuzzing arguments. There is no return value.
+- There must be exactly one fuzz target per fuzz test.
+- All [seed corpus](https://tip.golang.org/doc/fuzz/#glos-seed-corpus) entries must have types which are identical to the [fuzzing arguments](https://tip.golang.org/doc/fuzz/#fuzzing-arguments), in the same order. This is true for calls to `(*testing.F).Add` and any corpus files in the testdata/fuzz directory of the fuzz test.
+- The fuzzing arguments can only be the following types:
+    - `string`, `[]byte`
+    - `int`, `int8`, `int16`, `int32`/`rune`, `int64`
+    - `uint`, `uint8`/`byte`, `uint16`, `uint32`, `uint64`
+    - `float32`, `float64`
+    - `bool`
+
+### Suggestions
+
+Below are suggestions that will help you get the most out of fuzzing.
+
+- Fuzzing should be run on a platform that supports coverage instrumentation (currently AMD64 and ARM64) so that the corpus can meaningfully grow as it runs, and more code can be covered while fuzzing.
+- Fuzz targets should be fast and deterministic so the fuzzing engine can work efficiently, and new failures and code coverage can be easily reproduced.
+- Since the fuzz target is invoked in parallel across multiple workers and in nondeterministic order, the state of a fuzz target should not persist past the end of each call, and the behavior of a fuzz target should not depend on global state.
+
+### Custom settings
+
+The default go command settings should work for most use cases of fuzzing. So typically, an execution of fuzzing on the command line should look like this:
+
+```
+$ go test -fuzz={FuzzTestName}
+```
+
+However, the `go` command does provide a few settings when running fuzzing. These are documented in the [`cmd/go` package docs](https://pkg.go.dev/cmd/go).
+
+To highlight a few:
+
+- `-fuzztime`: the total time or number of iterations that the fuzz target will be executed before exiting, default indefinitely.
+- `-fuzzminimizetime`: the time or number of iterations that the fuzz target will be executed during each minimization attempt, default 60sec. You can completely disable minimization by setting `-fuzzminimizetime 0` when fuzzing.
+- `-parallel`: the number of fuzzing processes running at once, default `$GOMAXPROCS`. Currently, setting -cpu during fuzzing has no effect.
+
+### Corpus file format
+
+Corpus files are encoded in a special format. This is the same format for both the [seed corpus](https://tip.golang.org/doc/fuzz/#glos-seed-corpus), and the [generated corpus](https://tip.golang.org/doc/fuzz/#glos-generated-corpus).
+
+Below is an example of a corpus file:
+
+```
+go test fuzz v1
+[]byte("hello\\xbd\\xb2=\\xbc ⌘")
+int64(572293)
+```
+
+The first line is used to inform the fuzzing engine of the file’s encoding version. Although no future versions of the encoding format are currently planned, the design must support this possibility.
+
+Each of the lines following are the values that make up the corpus entry, and can be copied directly into Go code if desired.
+
+In the example above, we have a `[]byte` followed by an `int64`. These types must match the fuzzing arguments exactly, in that order. A fuzz target for these types would look like this:
+
+```
+f.Fuzz(func(*testing.T, []byte, int64) {})
+```
+
+The easiest way to specify your own seed corpus values is to use the `(*testing.F).Add` method. In the example above, that would look like this:
+
+```
+f.Add([]byte("hello\\xbd\\xb2=\\xbc ⌘"), int64(572293))
+```
+
+However, you may have large binary files that you’d prefer not to copy as code into your test, and instead remain as individual seed corpus entries in the testdata/fuzz/{FuzzTestName} directory. The [`file2fuzz`](https://pkg.go.dev/golang.org/x/tools/cmd/file2fuzz) tool at golang.org/x/tools/cmd/file2fuzz can be used to convert these binary files to corpus files encoded for `[]byte`.
+
+To use this tool:
+
+```
+$ go install golang.org/x/tools/cmd/file2fuzz@latest
+$ file2fuzz
+```
+
+## Resources
+
+- Tutorial
+
+    :
+
+    - For an introductory tutorial of fuzzing with Go, please see [the blog post](https://go.dev/blog/fuzz-beta).
+    - More to come soon!
+
+- Documentation
+
+    :
+
+    - The [`testing`](https://pkg.go.dev//testing#hdr-Fuzzing) package docs describes the `testing.F` type which is used when writing fuzz tests.
+    - The [`cmd/go`](https://pkg.go.dev/cmd/go) package docs describe the flags associated with fuzzing.
+
+- Technical details
+
+    :
+
+    - [Design draft](https://golang.org/s/draft-fuzzing-design)
+    - [Proposal](https://golang.org/issue/44551)
+
+## Glossary
+
+**corpus entry:** An input in the corpus which can be used while fuzzing. This can be a specially-formatted file, or a call to `(*testing.F).Add`.
+
+**coverage guidance:** A method of fuzzing which uses expansions in code coverage to determine which corpus entries are worth keeping for future use.
+
+**fuzz target:** The function of the fuzz test which is executed for corpus entries and generated values while fuzzing. It is provided to the fuzz test by passing the function to `(*testing.F).Fuzz`.
+
+**fuzz test:** A function in a test file of the form `func FuzzXxx(*testing.F)` which can be used for fuzzing.
+
+**fuzzing:** A type of automated testing which continuously manipulates inputs to a program to find issues such as bugs or [vulnerabilities](https://tip.golang.org/doc/fuzz/#glos-vulnerability) to which the code may be susceptible.
+
+**fuzzing arguments:** The types which will be passed to the fuzz target, and mutated by the [mutator](https://tip.golang.org/doc/fuzz/#glos-mutator).
+
+**fuzzing engine:** A tool that manages fuzzing, including maintaining the corpus, invoking the mutator, identifying new coverage, and reporting failures.
+
+**generated corpus:** A corpus which is maintained by the fuzzing engine over time while fuzzing to keep track of progress. It is stored in `$GOCACHE`/fuzz.
+
+**mutator:** A tool used while fuzzing which randomly manipulates corpus entries before passing them to a fuzz target.
+
+**package:** A collection of source files in the same directory that are compiled together. See the [Packages section](https://tip.golang.org/ref/spec#Packages) in the Go Language Specification.
+
+**seed corpus:** A user-provided corpus for a fuzz test which can be used to guide the fuzzing engine. It is composed of the corpus entries provided by f.Add calls within the fuzz test, and the files in the testdata/fuzz/{FuzzTestName} directory within the package.
+
+**test file:** A file of the format xxx_test.go that may contain tests, benchmarks, examples and fuzz tests.
+
+**vulnerability:** A security-sensitive weakness in code which can be exploited by an attacker.
+
+## Feedback
+
+If you experience any problems or have an idea for a feature, please [file an issue](https://github.com/golang/go/issues/new?&labels=fuzz).
+
+For discussion and general feedback about the feature, you can also participate in the [#fuzzing channel](https://gophers.slack.com/archives/CH5KV1AKE) in Gophers Slack.
