@@ -1,4 +1,4 @@
-# Go Fuzzing
+# Go 模糊测试
 
 - 原文地址：https://tip.golang.org/doc/fuzz/
 - 原文作者：Go Team
@@ -6,63 +6,63 @@
 - 译者：[fivezh](https://github.com/fivezh)
 - 校对：[]()
 
-Go supports fuzzing in its standard toolchain beginning in Go 1.18.
+从 Go 1.18版本开始，标准工具集开始支持模糊测试。
 
-## Overview
+## 概述
 
-Fuzzing is a type of automated testing which continuously manipulates inputs to a program to find bugs. Go fuzzing uses coverage guidance to intelligently walk through the code being fuzzed to find and report failures to the user. Since it can reach edge cases which humans often miss, fuzz testing can be particularly valuable for finding security exploits and vulnerabilities.
+模糊测试（Fuzzing）是一种自动化测试方法，通过不断地控制程序输入来发现程序错误。Go 中模糊测试使用覆盖率引导来智能浏览被测试代码，发现并向用户报告错误。这种方式由于常常能到达人类冗余遗漏的边界情况，模糊测试在发现安全漏洞和缺陷方面特别有价值。
 
-Below is an example of a [fuzz test](https://tip.golang.org/doc/fuzz/#glos-fuzz-test), highlighting it’s main components.
+下面是 [模糊测试](https://tip.golang.org/doc/fuzz/#glos-fuzz-test) 的一个例子，标注了其中主要组成部分。
 
-![Example code showing the overall fuzz test, with a fuzz target within it. Before the fuzz target is a corpus addition with f.Add, and the parameters of the fuzz target are highlighted as the fuzzing arguments.](../static/images/2022/w1_Go_Fuzzing/example.png)
+![示例代码中展示了整个模糊测试的情况，其中有一个模糊目标。用f.Add在模糊目标之前添加测试种子语料库，模糊目标的参数作为模糊参数被突出显示。](../static/images/2022/w1_Go_Fuzzing/example.png)
 
-## Writing and running fuzz tests
+## 编写和运行模糊测试
 
-### Requirements
+### 要求
 
-Below are rules that fuzz tests must follow.
+下面是模糊测试必须遵守的规则：
 
-- A fuzz test must be a function named like `FuzzXxx`, which accepts only a `*testing.F`, and has no return value.
-- Fuzz tests must be in *_test.go files to run.
-- A [fuzz target](https://tip.golang.org/doc/fuzz/#glos-fuzz-target) must be a method call to `(*testing.F).Fuzz` which accepts a `*testing.T` as the first parameter, followed by the fuzzing arguments. There is no return value.
-- There must be exactly one fuzz target per fuzz test.
-- All [seed corpus](https://tip.golang.org/doc/fuzz/#glos-seed-corpus) entries must have types which are identical to the [fuzzing arguments](https://tip.golang.org/doc/fuzz/#fuzzing-arguments), in the same order. This is true for calls to `(*testing.F).Add` and any corpus files in the testdata/fuzz directory of the fuzz test.
-- The fuzzing arguments can only be the following types:
+- 模糊测试必须是以 `FuzzXxx` 命名的函数，只能接收一个 `*testing.F` 的参数，且没有返回值
+- 模糊测试必须在 *_test.go 文件中运行
+- 一个 [模糊目标](https://tip.golang.org/doc/fuzz/#glos-fuzz-target) 必须是调用 `(*testing.F).Fuzz` 的方法，该方法接收 `*testing.T` 作为首个参数，紧随之后的是模糊参数。该函数没有返回值
+- 每个模糊测试中必须有一个模糊目标
+- 所有的 [语料库](https://tip.golang.org/doc/fuzz/#glos-seed-corpus) 中的条目必须和 [模糊参数](https://tip.golang.org/doc/fuzz/#fuzzing-arguments) 相同类型、顺序一致。 这一要是适用于调用 `(*testing.F).Add` 函数和模糊测试 `testdata/fuzz` 目录下的所有文件
+- 模糊参数只能是如下类型：
     - `string`, `[]byte`
     - `int`, `int8`, `int16`, `int32`/`rune`, `int64`
     - `uint`, `uint8`/`byte`, `uint16`, `uint32`, `uint64`
     - `float32`, `float64`
     - `bool`
 
-### Suggestions
+### 建议
 
-Below are suggestions that will help you get the most out of fuzzing.
+下面的建议将帮助你从模糊处理中获得最大收益。
 
-- Fuzzing should be run on a platform that supports coverage instrumentation (currently AMD64 and ARM64) so that the corpus can meaningfully grow as it runs, and more code can be covered while fuzzing.
-- Fuzz targets should be fast and deterministic so the fuzzing engine can work efficiently, and new failures and code coverage can be easily reproduced.
-- Since the fuzz target is invoked in parallel across multiple workers and in nondeterministic order, the state of a fuzz target should not persist past the end of each call, and the behavior of a fuzz target should not depend on global state.
+- 模糊测试应该在支持覆盖检测的平台上运行（目前是AMD64和ARM64），如此语料库可以在运行过程中进行有意义的增长，并且在模糊测试时可以覆盖更多代码
+- 模糊目标应该是快速和确定的，这样模糊引擎就能有效地工作，新的失败和代码覆盖率就能轻易地重现
+- 由于模糊目标是以非确定性的顺序在多个worker间并行调用，所以模糊目标的状态不应该在每次调用结束后持续存在，而且模糊目标的行为不应该依赖于全局状态
 
-### Custom settings
+### 自定义设置
 
-The default go command settings should work for most use cases of fuzzing. So typically, an execution of fuzzing on the command line should look like this:
+默认的 go 命令设置适用于大多数模糊测试的情况。通常情况下，在命令行上执行的模糊测试应该是这样的
 
 ```
 $ go test -fuzz={FuzzTestName}
 ```
 
-However, the `go` command does provide a few settings when running fuzzing. These are documented in the [`cmd/go` package docs](https://pkg.go.dev/cmd/go).
+然而，`go`命令在运行模糊测试时也提供了一些设置，这些设置在 [`cmd/go`包文档](https://pkg.go.dev/cmd/go) 中。
 
-To highlight a few:
+其中几个:
 
-- `-fuzztime`: the total time or number of iterations that the fuzz target will be executed before exiting, default indefinitely.
-- `-fuzzminimizetime`: the time or number of iterations that the fuzz target will be executed during each minimization attempt, default 60sec. You can completely disable minimization by setting `-fuzzminimizetime 0` when fuzzing.
-- `-parallel`: the number of fuzzing processes running at once, default `$GOMAXPROCS`. Currently, setting -cpu during fuzzing has no effect.
+- `-fuzztime`: 在退出前执行模糊目标的总时间或迭代次数，默认为无限期地
+- `-fuzzminimizetime`: 在每次最小化尝试中，模糊目标将被执行的时间或迭代次数，默认为60秒。你可以通过 `-fuzzminimizetime 0` 完全禁用最小化设置
+- `-parallel`: 同时运行的模糊处理进程的数量，默认为`$GOMAXPROCS`。目前，在模糊摸索过程中设置 `-cpu` 没有作用
 
-### Corpus file format
+### 语料库文件格式
 
-Corpus files are encoded in a special format. This is the same format for both the [seed corpus](https://tip.golang.org/doc/fuzz/#glos-seed-corpus), and the [generated corpus](https://tip.golang.org/doc/fuzz/#glos-generated-corpus).
+语料库文件是以一种特殊的格式进行编码的。这对于[种子语料库](https://tip.golang.org/doc/fuzz/#glos-seed-corpus)和[生成语料库](https://tip.golang.org/doc/fuzz/#glos-generated-corpus)是相同的格式。
 
-Below is an example of a corpus file:
+下面是一个语料库文件的例子：
 
 ```
 go test fuzz v1
@@ -70,84 +70,78 @@ go test fuzz v1
 int64(572293)
 ```
 
-The first line is used to inform the fuzzing engine of the file’s encoding version. Although no future versions of the encoding format are currently planned, the design must support this possibility.
+第一行是用来通知模糊测试引擎文件的编码版本。虽然目前没有计划未来的编码格式版本，但设计上必须支持这种可能性。
 
-Each of the lines following are the values that make up the corpus entry, and can be copied directly into Go code if desired.
+下面的每一行都是构成语料库条目的值，如果需要，可以直接复制到Go代码中。
 
-In the example above, we have a `[]byte` followed by an `int64`. These types must match the fuzzing arguments exactly, in that order. A fuzz target for these types would look like this:
+在上面的例子中，我们有一个`[]byte`，后面是一个`int64`。这些类型必须与模糊处理的参数完全类型匹配、顺序一致。这些类型的模糊测试目标会是这样的：
 
 ```
 f.Fuzz(func(*testing.T, []byte, int64) {})
 ```
 
-The easiest way to specify your own seed corpus values is to use the `(*testing.F).Add` method. In the example above, that would look like this:
+指定自定义种子语料库的最简单方法是使用`(*testing.F).Add`方法。在上面的例子中，可以这样操作：
 
 ```
 f.Add([]byte("hello\\xbd\\xb2=\\xbc ⌘"), int64(572293))
 ```
 
-However, you may have large binary files that you’d prefer not to copy as code into your test, and instead remain as individual seed corpus entries in the testdata/fuzz/{FuzzTestName} directory. The [`file2fuzz`](https://pkg.go.dev/golang.org/x/tools/cmd/file2fuzz) tool at golang.org/x/tools/cmd/file2fuzz can be used to convert these binary files to corpus files encoded for `[]byte`.
+然而，可能有一些大的二进制文件，你不希望将其作为代码复制到你的测试中，而是作为单独的种子语料库条目保留在 `testdata/fuzz/{FuzzTestName}` 目录下。[`file2fuzz`](https://pkg.go.dev/golang.org/x/tools/cmd/file2fuzz)工具可以用来将这些二进制文件转换成以 `[]byte` 编码的语料库文件。
 
-To use this tool:
+如此使用该工具:
 
 ```
 $ go install golang.org/x/tools/cmd/file2fuzz@latest
 $ file2fuzz
 ```
 
-## Resources
+## 相关资源
 
-- Tutorial
+- 教程:
 
-    :
+    - 关于用Go进行模糊测试的介绍性教程，请参见[博文](https://go.dev/blog/fuzz-beta)
+    - 更多内容即将来临!
 
-    - For an introductory tutorial of fuzzing with Go, please see [the blog post](https://go.dev/blog/fuzz-beta).
-    - More to come soon!
+- 文档:
 
-- Documentation
+    - [`testing`](https://pkg.go.dev//testing#hdr-Fuzzing)包文档描述了在编写模糊测试时使用的`testing.F`类型
+    - [`cmd/go`](https://pkg.go.dev/cmd/go) 包文档描述了与模糊处理相关的标志
 
-    :
+- 技术细节:
 
-    - The [`testing`](https://pkg.go.dev//testing#hdr-Fuzzing) package docs describes the `testing.F` type which is used when writing fuzz tests.
-    - The [`cmd/go`](https://pkg.go.dev/cmd/go) package docs describe the flags associated with fuzzing.
+    - [设计初稿](https://golang.org/s/draft-fuzzing-design)
+    - [提案](https://golang.org/issue/44551)
 
-- Technical details
+## 词汇表
 
-    :
+**语料库条目（corpus entry）:** 语料库中的一条输入记录，可以在模糊测试时使用。这可以是一个特殊格式的文件，或者是对`(*testing.F).Add`的调用
 
-    - [Design draft](https://golang.org/s/draft-fuzzing-design)
-    - [Proposal](https://golang.org/issue/44551)
+**覆盖面指导（coverage guidance）:** 一种使用代码覆盖率的扩展来确定哪些语料库条目值得保留以供将来使用的模糊测试方法
 
-## Glossary
+**模糊目标（fuzz target）:** 模糊测试的函数，在模糊测试时对语料库条目和生成的值进行执行。它通过向`(*testing.F).Fuzz`传递函数来提供给模糊测试
 
-**corpus entry:** An input in the corpus which can be used while fuzzing. This can be a specially-formatted file, or a call to `(*testing.F).Add`.
+**模糊测试（fuzz test）:** 测试文件中用于模糊处理的一个函数，其形式为`func FuzzXxx(*testing.F)`
 
-**coverage guidance:** A method of fuzzing which uses expansions in code coverage to determine which corpus entries are worth keeping for future use.
+**模糊化（fuzzing）:** 一种自动测试，它不断地操纵程序的输入，以发现代码潜在问题，如错误或[漏洞](https://tip.golang.org/doc/fuzz/#glos-vulnerability)
 
-**fuzz target:** The function of the fuzz test which is executed for corpus entries and generated values while fuzzing. It is provided to the fuzz test by passing the function to `(*testing.F).Fuzz`.
+**模糊参数（fuzzing arguments）:** 传递给模糊目标的类型，并由[mutator](https://tip.golang.org/doc/fuzz/#glos-mutator)进行变异处理
 
-**fuzz test:** A function in a test file of the form `func FuzzXxx(*testing.F)` which can be used for fuzzing.
+**模糊引擎（fuzzing engine）:** 一个管理模糊处理的工具，包括维护语料库、调用突变器、识别新的覆盖范围和报告错误
 
-**fuzzing:** A type of automated testing which continuously manipulates inputs to a program to find issues such as bugs or [vulnerabilities](https://tip.golang.org/doc/fuzz/#glos-vulnerability) to which the code may be susceptible.
+**生成的语料库（generated corpus）:** 一个语料库，它由模糊引擎在模糊处理过程中长期维护，以跟踪进展。它被保存在`$GOCACHE/fuzz`中
 
-**fuzzing arguments:** The types which will be passed to the fuzz target, and mutated by the [mutator](https://tip.golang.org/doc/fuzz/#glos-mutator).
+**突变器（ mutator）:** 一个在模糊处理时使用的工具，在将语料库条目传递给模糊处理目标之前，对其进行随机处理
 
-**fuzzing engine:** A tool that manages fuzzing, including maintaining the corpus, invoking the mutator, identifying new coverage, and reporting failures.
+**包（package）:** 同一目录下的源文件的集合，这些文件被编译在一起。请参阅 Go 语言规范中的 [Packages 部分](https://tip.golang.org/ref/spec#Packages)。
 
-**generated corpus:** A corpus which is maintained by the fuzzing engine over time while fuzzing to keep track of progress. It is stored in `$GOCACHE`/fuzz.
+**种子语料库（seed corpus）:** 用户为模糊测试提供的语料库，可用于指导模糊测试引擎。它由模糊测试中`f.Add`调用添加的语料库条目，以及软件包中`testdata/fuzz/{FuzzTestName}`目录下的文件组成
 
-**mutator:** A tool used while fuzzing which randomly manipulates corpus entries before passing them to a fuzz target.
+**测试文件（test file）:** 一个格式为xxx_test.go的文件，可以包含测试、基准、例子和模糊测试
 
-**package:** A collection of source files in the same directory that are compiled together. See the [Packages section](https://tip.golang.org/ref/spec#Packages) in the Go Language Specification.
+**漏洞（vulnerability）:** 一种代码中安全敏感的弱点，可被攻击者所利用
 
-**seed corpus:** A user-provided corpus for a fuzz test which can be used to guide the fuzzing engine. It is composed of the corpus entries provided by f.Add calls within the fuzz test, and the files in the testdata/fuzz/{FuzzTestName} directory within the package.
+## 反馈
 
-**test file:** A file of the format xxx_test.go that may contain tests, benchmarks, examples and fuzz tests.
+如果你遇到任何问题或有一个关于功能的想法，欢迎[提交问题](https://github.com/golang/go/issues/new?&labels=fuzz)
 
-**vulnerability:** A security-sensitive weakness in code which can be exploited by an attacker.
-
-## Feedback
-
-If you experience any problems or have an idea for a feature, please [file an issue](https://github.com/golang/go/issues/new?&labels=fuzz).
-
-For discussion and general feedback about the feature, you can also participate in the [#fuzzing channel](https://gophers.slack.com/archives/CH5KV1AKE) in Gophers Slack.
+关于该功能的讨论和一般反馈，也可以参与Gophers Slack的[#fuzzing频道](https://gophers.slack.com/archives/CH5KV1AKE)
