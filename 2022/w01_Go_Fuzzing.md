@@ -14,7 +14,7 @@ Fuzzing is a type of automated testing which continuously manipulates inputs to 
 
 Below is an example of a [fuzz test](https://tip.golang.org/doc/fuzz/#glos-fuzz-test), highlighting it’s main components.
 
-![Example code showing the overall fuzz test, with a fuzz target within it. Before the fuzz target is a corpus addition with f.Add, and the parameters of the fuzz target are highlighted as the fuzzing arguments.](https://tip.golang.org/doc/fuzz/example.png)
+![Example code showing the overall fuzz test, with a fuzz target within it. Before the fuzz target is a corpus addition with f.Add, and the parameters of the fuzz target are highlighted as the fuzzing arguments.](../static/images/2022/w1_Go_Fuzzing/example.png)
 
 ## Writing and running fuzz tests
 
