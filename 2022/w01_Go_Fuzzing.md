@@ -2,7 +2,7 @@
 
 - 原文地址：https://tip.golang.org/doc/fuzz/
 - 原文作者：Go Team
-- 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w1_Go_Fuzzing.md
+- 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w01_Go_Fuzzing.md
 - 译者：[fivezh](https://github.com/fivezh)
 - 校对：[zxmfke](https://github.com/zxmfke)
 
