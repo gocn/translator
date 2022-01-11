@@ -4,7 +4,7 @@
 - 原文作者：Go Team
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w1_Go_Fuzzing.md
 - 译者：[fivezh](https://github.com/fivezh)
-- 校对：[]()
+- 校对：[zxmfke](https://github.com/zxmfke)
 
 从 Go 1.18版本开始，标准工具集开始支持模糊测试。
 
