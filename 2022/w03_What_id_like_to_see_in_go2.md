@@ -1,4 +1,4 @@
-# What I'd like to see in go2
+# Go2.0 展望
 
 - 原文地址：https://www.sethvargo.com/what-id-like-to-see-in-go-2
 - 原文作者：Seth Vargo
@@ -8,60 +8,60 @@
  
 ![What id like to see in go2](https://github.com/gocn/translator/raw/master/static/images/2022/w03_What_id_like_to_see_in_go2/courses-app-screenshot.png) 
 
-Go is one of my favorite programming languages, but it is still far from perfect. Over the past 10 years, I have used Go to both build small side projects and large scale applications. While the language has evolved significantly from its original release in 2009, this post highlights some of the areas where I think Go still has room for improvement.
+Go是我最喜欢的编程语言之一，但它离完美还很远。在过去的10年里，我使用Go来构建小项目和大规模应用程序。虽然从2009年的最初版本开始，Go已经有了很大的发展，但本文仍然要强调一些我认为Go语言可以改进的地方。
 
-Before we get started, I want to be absolutely clear: I am NOT criticizing individual humans or their contributions. My only intent is to try and make Go the best programming language.
+在我们开始之前，我想明确一点:我不是在批评一些人或他们的贡献。我唯一的目的就是让Go成为最好的编程语言。
 
-## A modern templating engine 
+## 一个现代模板引擎
 
-The Go standard library has two templating packages: text/template and html/template. They use roughly the same syntax, but html/template handles entity escaping and a few other web-specific constructs. Unfortunately neither package is suitable or powerful enough for sufficiently advanced use cases without heavy developer investment.
+Go标准库有两个模板包: text/template 和 html/template. 他们几乎用着同样的语法, 但是 html/template 处理实体转义和一些其他的web特定的构造. 不幸的是，如果不进行大量的开发人员投资，这两个包对于足够高级的用例来说都不合适或不够强大。
 
-- *Compile-time errors.* Unlike Go itself, the Go templating packages will happily let you pass an integer as a string, only to render an error at runtime. This means developers need to rigorously test all possible inputs into their templates, instead of being able to rely on the type system. Go's templating packages should support compile time type checking.
+- *编译时错误.* 不像Go本身，Go模板包会很乐意让你以字符串形式传递一个整数，只是在运行时呈现一个错误。这意味着开发人员需要严格地测试模板中所有可能的输入，而不是依赖于类型系统。Go的模板包应该支持编译时类型检查。
 
-- *A range clause that matches Go*. After 10 years, I still mess up the order for the range clause in Go templating, because it is sometimes backwards from Go itself. With two arguments, the templating engine matches the standard library:
+- *匹配Go*的range子句。* 10年过去了，我仍然把Go模板中range子句的顺序搞得一团糟，因为它有时是向后的。使用两个参数，模板引擎匹配标准库:
 
   ```go
   {{ range $a, $b := .Items }} // [$a = 0, $b = "foo"]
   for a, b := range items { // [a = 0, b = "foo"]
   ```
-  However, with only one argument, the template engine yields the value while Go renders yields the index:
+  然而，只有一个参数时，模板引擎会生成值，而Go呈现时会生成索引:
 
   ```go
   {{ range $a := .Items }} // [$a = "foo"]
   for a := range items { // [a = 0]
   ```
-  Go's template package should match how the standard library works.
+  Go的模板包应该与标准库的工作方式相匹配。
 
-- *Batteries included, reflection optional.* As a general rule, I think most developers should never need to interact with reflection. However, if you want to do anything beyond basic addition and subtraction, Go's templating packages are going to force you into reflection. The built-in functions are incredibly minimal, and only satisfy a small subset of use cases.
+- *功能齐备，反射可选。*作为一个普遍的规则，我认为大多数开发者不应该需要与反射交互。然而，如果你想做一些基本的加法和减法之外的事情，Go的模板包将迫使你使用反射。内置函数非常小，只满足用例的一小部分。
 
-  After I wrote [Consul Template](https://github.com/hashicorp/consul-template), it became pretty clear that the standard Go template functions were not sufficient to meet the needs of users. More than half of issues were about trying to use Go's templating language. Today, Consul Template has [more than 50 "helper" functions](https://github.com/hashicorp/consul-template/blob/master/docs/templating-language.md), the vast majority of which should really in the standard templating language.
+  在我编写了[Consul Template](https://github.com/hashicorp/consul-template)之后，很明显，标准的Go模板功能不足以满足用户的需求。超过一半的问题是关于尝试使用Go的模板语言。今天，Consul Template拥有[超过50个“助手”函数](https://github.com/hashicorp/consul-template/blob/master/docs/templating-language.md)，其中绝大多数应该使用标准模板语言。
 
-  Consul Template isn't alone here. [Hugo](https://gohugo.io/) also has a [pretty expansive list of helper functions](https://gohugo.io/functions/), again, the vast majority of which should really be in the standard templating language. Even on my most recent project, [Exposure Notifications](https://g.co/ens), we [could not escape the reflection](https://github.com/google/exposure-notifications-verification-server/blob/0ec489ba95137d5be10e1617d1dcdc2d1ee6e5e9/pkg/render/renderer.go#L232-L280).
+  Consul Template并不是唯一这样做的。[Hugo](https://gohugo.io/)也有一个[非常广泛的助手函数列表](https://gohugo.io/functions/)，同样，其中绝大多数应该是在标准的模板语言中。甚至在我最近的项目[Exposure Notifications](https://g.co/ens)中，我们[无法逃避反射](https://github.com/google/exposure-notifications-verification-server/blob/0ec489ba95137d5be10e1617d1dcdc2d1ee6e5e9/pkg/render/renderer.go#L232-L280)。
 
-  Go's templating language really needs to have broader function surface area.
+  Go的模板语言确实需要更大的函数表。
 
-- *Short-circuit evaluation.*
+- *短路估计.*
 
-  EDIT: As many have pointed out, this feature is [coming in Go 1.18](https://tip.golang.org/doc/go1.18#text/template).
+  编辑:正如许多人指出的那样，这个特性将会在Go 1.18中出现(https://tip.golang.org/doc/go1.18#text/template)。
 
-  Go's templating language always evaluates an entire conditional in a clause, which makes for some really fun bugs (that again will not manifest until runtime.) Consider the following, where $foo could be nil:
+  Go的模板语言总是在子句中计算整个条件，这导致了一些非常有趣的bug(同样，这些bug在运行时才会显示出来)。考虑下面的例子，其中$foo可以是nil:
   ```go
-  {{ if (and $foo $foo.Bar) }}
+  {{if (and $foo $foo. bar)}}
   ```
-  It may seem like this is fine, but both of the and conditions will be evaluated - there is no short-circuit logic within an expression. That means this will throw a runtime exception if $foo is nil.
+  这看起来似乎很好，但是和条件都将被求值——表达式中没有短路逻辑。这意味着如果$foo为nil，这将抛出一个运行时异常。
 
-  To get around this, you have to separate the conditional clauses:
+  为了解决这个问题，你必须将条件句分开:
   ```go
-  {{ if $foo }}
-  {{ if $foo.Bar }}
-  {{ end }}
+  {{if $foo}}
+  {{如果$ foo。酒吧}}
+  {{结束}}
   ```
-  Go's templating language should function like the standard library and stop executing a conditional on the first truthy value.
+  Go的模板语言应该像标准库一样，在第一个值为真时停止执行条件。
 
-- *Investment in web-specific utilities.* I was a Ruby on Rails developer for many years, and I really loved how easy it was to build beautiful web applications. With Go's templating language, even the simplest of tasks - like printing a list of items to a sentence - is unapproachable for beginners, especially when compared to Rails' Enumerable#to_sentence.
+- **往网络专用库投入精力**。我是一名经验丰富的Ruby on Rails开发人员，我非常喜欢它能够轻松地构建漂亮的web应用程序。使用Go的模板语言，即使是最简单的任务——比如将条目列表打印成一个句子——对于初学者来说也是无法实现的，尤其是与Rails的Enumerable#to_sentence相比
 
-## Improved range so as to not copy values
-While it is very well-documented, it is always unexpected that values in a range clause are copied. For example, consider the following code:
+## 改进 range ,以便不用复制值
+虽然有很好的文档，但是range子句中的值总是会被复制。例如，考虑以下代码:
 ```go
 type Foo struct {
   bar string
@@ -79,17 +79,17 @@ func main() {
   fmt.Printf("cp: %q\n", cp)
 }
 ```
-What is the value of cp? If you said [A B C], sadly you are incorrect. The value of cp is actually:
+cp的值是什么？如果你认为是[A B C],不好意思你错了，正确的值是[C C C]
 
 ```go
   [C C C]
 ```
-This is because Go uses a copy of the value instead of the value itself in the range clause. In Go 2.0, the range clause should pass values by reference. There are already a few proposals for Go 2.0 in this space, including [improve for-loop ergonomics](https://github.com/golang/go/issues/24282) and [redefine range loop variables in each iteration](https://github.com/golang/go/issues/20733), so I am cautiously hopeful on this one.
+这是因为go在range子句里使用了复制品而不是元素本身。 在Go2.0中，range子句应该采取引用传值. 在这方面已经有了些许提案, 包括 [improve for-loop ergonomics](https://github.com/golang/go/issues/24282) 和 [redefine range loop variables in each iteration](https://github.com/golang/go/issues/20733), 所以我非常希望能有这样的改动.
 
-## Deterministic select
-In cases where multiple conditions of a select statement are true, the winning case is chosen via a uniform pseudo-random selection. This is a very subtle source of errors, and it is exacerbated by the similar-looking switch statement which does evaluate in the order in which it is written.
+## 决定性的 select
+在一个select语句的多个条件为真的情况下，胜出的情况是通过一致的伪随机选择来选择的。这是一个非常微妙的错误来源，而且类似的switch语句会加重这种错误，switch语句按照写入的顺序求值。
 
-Consider the following code which we would like to behave as "if the system is stopped, do nothing. Otherwise wait for new work for up to 5 seconds, then timeout":
+考虑下面的代码，我们希望其表现是“如果系统停止了，什么也不做；否则等待5秒，然后提示超时":
 ```go
 for {
   select {
@@ -102,7 +102,7 @@ for {
   }
 }
 ```
-If multiple conditions are true when entering the select statement (e.g. doneCh is closed and more than 5 seconds have passed), it is undetermined behavior for which path will execute. This makes writing correct cancellation code annoyingly verbose:
+如果在进入select语句时多个条件为真(例如doneCh是关闭的，已经超过5秒)，则该路径将执行的行为是未知的。这使得编写正确的取消代码非常繁琐:
 ```go
 for {
   // Check here in case we've been CPU throttled for an extended time, we need to
@@ -135,21 +135,20 @@ for {
   }
 }
 ```
-If select were updated to be deterministic, the original code (which is much simpler and easier to reach in my opinion) would work as intended. However, due to the non-deterministic nature of select, we have to continuously check the dominant condition.
+如果select被更新为确定性的，那么原始代码(在我看来更简单、更容易获得)就会像预期的那样工作。然而，由于选择的非确定性，我们必须不断地检查优势条件。
 
-Tangentially related, I would love to see a shorthand syntax for "read from this channel if it contains any messages, otherwise continue along". The current syntax is verbose:
+与此相关的是，我希望看到“如果这个通道包含任何消息，则从它读取，否则继续”的简写语法,而当前的语法是冗余的:
 ```go
 select {
 case <-doneCh:
   return
 default:
 }
-I would love to see a more succinct version of this check, perhaps a syntax like:
-
+我希望看到这个检查的更简洁的版本，可能是这样的语法:
 select <-?doneCh: // not valid Go
 ```
-## Structured logging interfaces
-Go's standard library includes the log package, which is fine for basic use. However, most production systems want structured logging, and there is [no shortage](https://www.client9.com/logging-packages-in-golang/) of structured logging libraries in Go:
+## 结构化日志接口
+Go的标准库包含了日志包，这对于基本的使用是很好的。然而，大多数生产系统都需要结构化日志记录，并且Go语言[不缺少](https://www.client9.com/logging-packages-in-golang/)结构化的日志库:
 
 - [apex/log](https://github.com/apex/log)
 - [go-kit/log](https://github.com/go-kit/kit/tree/master/log)
@@ -160,9 +159,9 @@ Go's standard library includes the log package, which is fine for basic use. How
 - [sirupsen/logrus](https://github.com/sirupsen/logrus)
 - [uber/zap](https://github.com/uber-go/zap) 
 
-Go's lack of opinion in this space has led to the proliferation of these packages, most of which have incompatible functions and signatures. As a result, it is impossible for a library author to emit structured logs. For example, I would love to be able to emit structured logs in [go-retry](https://github.com/sethvargo/go-retry), [go-envconfig](https://github.com/sethvargo/go-envconfig), or [go-githubactions](https://github.com/sethvargo/go-githubactions), but doing so would require tightly coupling with one of these libraries. Ideally I want my library users to have choice over their structure logging solution, but the lack of a common interface for structure logging makes this extremely difficult.
+Go在这方面的意见缺乏导致了这些包的泛滥，其中大多数具有不功能和标识符都不兼容。因此，库作者不可能作出结构化的日志。例如,我希望能够实现结构化登录[go-retry](https://github.com/sethvargo/go-retry), [go-envconfig](https://github.com/sethvargo/go-envconfig),或[go-githubactions](https://github.com/sethvargo/go-githubactions),但这样做需要与其中一个库紧密耦合。理想情况下，我希望我的库用户能够选择他们的结构日志记录解决方案，但是缺乏用于结构日志记录的通用接口使这变得非常困难。
 
-*The Go standard library needs to define a structured logging interface*, and all these existing upstream packages can choose to implement that interface. Then, as a library author, I can choose to accept a log.StructuredLogger interface and implementers can make their own choices:
+Go标准库需要定义一个结构化的日志接口，所有这些现有的上游包可以选择实现这个接口。然后，作为一个库作者，我可以选择接受log.StructuredLogger接口并且实现者可以做出自己的选择:
 ```go
 func WithLogger(l log.StructuredLogger) Option {
   return func(f *Foo) *Foo {
@@ -171,7 +170,7 @@ func WithLogger(l log.StructuredLogger) Option {
   }
 }
 ```
-I put together a quick sketch of what such an interface might look like:
+我做出了这种interface的草稿
 ```go
 // StructuredLogger is an interface for structured logging.
 type StructuredLogger interface {
@@ -211,17 +210,17 @@ type LogField struct {
   Value interface{}
 }
 ```
-There is a lot of discussion to have around what the actual interface might look like, how to minimize allocations, and how to maximize compatibility, but the goal is to define an interface that other logging libraries could easily implement.
+关于实际的接口可能是什么样子、如何最小化分配以及如何最大化兼容性有很多讨论，但我们的目标是定义一个其他日志库可以轻松实现的接口。
 
-Back in my Ruby days, there was a proliferation of Ruby version managers, each with their own dotfile name and syntax. Fletcher Nichol managed to convince all the maintainers of those Ruby version managers to standardize on .ruby-version, simply by [writing a gist](https://gist.github.com/fnichol/1912050). It is my hope that we can do something similar in the Go community with structured logging.
+但是在我的Ruby时代，Ruby版本管理器的数量激增，每个版本管理器都有自己的dotfile名称和语法。Fletcher Nichol仅仅通过[写一个gist](https://gist.github.com/fnichol/1912050)就成功地说服了所有Ruby版本管理器的维护者对.ruby-version进行标准化。我希望我们可以在Go社区做一些类似的结构化日志记录。
 
-## Multi-error handling
-There are many cases, especially for background jobs or periodic tasks, where a system may process things in parallel or continue-on-error. In those cases, it's helpful to return a multi-error. There is no built-in support for handling collections of errors in the standard library.
+## 多错误处理
+在很多情况下，特别是在后台任务或周期性任务中，系统可能并行处理一些事情或在错误时继续处理。在这些情况下，返回一个多重错误是有帮助的。标准库中没有处理错误集合的内置支持。
 
-Having clear and concise standard library definitions around multi-error handling could unify the community and reduce risks for improper error handling, as we saw with error wrapping and unwrapping.
+围绕多错误处理拥有清晰而简明的标准库定义可以统一社区，并减少错误处理不当的风险，就像我们在error wrapping和unwrapping时看到的那样。
 
-## Marshalling for JSON error
-Speaking of errors, did you know that embedding an error type into a struct field and then marshalling that struct as JSON will marshal the "error" field as {}?
+## JSON 序列化错误
+说到error，您知道将error类型嵌入到结构字段中，然后将该结构序列化为JSON时候会将error字段序列化为{}吗?
 ```go
 // https://play.golang.org/p/gl7BPJOgmjr
 package main
@@ -247,17 +246,17 @@ func main() {
   fmt.Println(string(b1))
 }
 ```
-At least for the built-in errorString type, Go should marshal as the result of .Error(). Alternatively, for Go 2.0, JSON marshalling could return an error when trying to marshal an error type that does not implement custom marshalling logic.
+至少对于内置的errorString类型，Go应该作为.Error()的结果进行序列化。另外，对于Go2.0，当试图序列化一个error类型而没有实现自定义序列化逻辑时，JSON序列化可能会返回一个error。
 
-## No more public variables in the standard library
-As just one example, both http.DefaultClient and http.DefaultTransport are global variables with shared state. http.DefaultClient has no configured timeout, which makes it trivial to DOS your own service and create bottlenecks. Many packages mutate http.DefaultClient and http.DefaultTransport, which can waste days of developer resources tracking down bugs.
+## 标准库中不再有公共变量
+这只是一个例子，两者都是http.DefaultClient和http.DefaultTransport具有共享状态的全局变量。http.DefaultClient没有配置超时，这使得创建自己的服务很简单，并容易产生瓶颈。许多包会改变http.DefaultClient和http.DefaultTransport，这可能会浪费开发人员数天的成本来追踪错误。
 
-Go 2.0 should make these private and expose them via a function call that returns a unique allocation of the variable in question. Alternatively, Go 2.0 could implement "frozen" global variables, such that they cannot be mutated by other packages.
+Go 2.0应该将这些变量设为私有的，并通过一个函数调用来公开它们，该函数调用将返回有问题的变量的唯一分配。或者，Go 2.0可以实现“冻结”全局变量，这样它们就不会被其他包改变。
 
-I also worry about this class of issues from a software supply chain standpoint. If I can develop a useful package that secretly modifies the http.DefaultTransport to use a custom RoundTripper that funnels all your traffic through my servers, that would make for a very bad time.
+从软件供应链的角度来看，我也担心这类问题。如果我能开发一个有用的包，秘密修改http.DefaultTransport使用自定义的RoundTripper，通过我的服务器过滤您的所有流量，这将是一个非常糟糕的时刻。
 
-## Native support for buffered renderers
-This is more of a "thing that isn't well-known or documented". Most examples, including the examples in the Go documentation, encourage behavior the following for marshalling JSON or rendering HTML via a web request:
+## 缓冲渲染的原生支持
+这更像是一件“不为人知或没有记录在案的事情”。大多数例子，包括Go文档中的例子，都鼓励通过web请求来序列化JSON或渲染HTML:
 ```go
 func toJSON(w http.ResponseWriter, i interface{}) {
   if err := json.NewEncoder(w).Encode(i); err != nil {
@@ -271,16 +270,13 @@ func toHTML(w http.ResponseWriter, tmpl string, i interface{}) {
   }
 }
 ```
-However, for both of these cases, if i is sufficiently large, it is possible that encoding/execution fails after the first bytes (and a 200 status code) have been sent. At this point, the request is irrecoverable, since you can't change the response code.
+但是，对于这两种情况，如果i足够大，那么在第一个字节(和200状态码)被发送之后，encoding/execution就可能失败。此时，请求是不可恢复的，因为您不能更改响应代码。
 
-The largely accepted solution to mitigate this is to render first, then copy to w. This still leaves a small room for error (where writing to w fails due to connection issues), but it ensures that encoding/execution is successful before sending the first byte. However, allocating a byte slice on each request can be expensive, so you typically [use a buffer pool](https://github.com/google/exposure-notifications-verification-server/blob/08797939a56463fe85f0d1b7325374821ee31448/pkg/render/html.go#L65-L91).
+为了缓解这个问题，被广泛接受的解决方案是先渲染，然后复制到w。这仍然为错误留下一个小空间(写入w会由于连接问题失败)，但它确保在发送第一个字节之前encoding/execution是成功的。然而，为每个请求分配一个byte slice的代价可能很高，所以通常[使用缓冲池](https://github.com/google/exposure-notifications-verification-server/blob/08797939a56463fe85f0d1b7325374821ee31448/pkg/render/html.go#L65-L91)。
 
-This approach is really verbose and pushes a lot of unnecessary complexity onto the implementer. Instead, it would be great if Go handled this buffer pool management automatically, potentially with functions like EncodePooled.
+这种方法非常冗长，给实现者带来了很多不必要的复杂性。相反，如果Go能够自动管理这个缓冲池将会很棒，可能可以使用EncodePooled这样的函数。
 
-## Wrapping up
-Go continues to be one of my favorite programming languages, which is why I feel comfortable highlighting these criticisms. As with any programming language, Go is constantly evolving. Do you think these are good ideas? Or are they terrible suggestions? Let me know [on Twitter](https://twitter.com/sethvargo)!
-
-## About Seth
-Seth Vargo is an engineer at Google. Previously he worked at HashiCorp, Chef Software, CustomInk, and some Pittsburgh-based startups. He is the author of [Learning Chef](https://www.amazon.com/Learning-Chef-Configuration-Management-Automation/dp/1491944935) and is passionate about reducing inequality in technology. When he is not writing, working on open source, teaching, or speaking at conferences, Seth advises non-profits.
+## 结束语
+Go仍然是我最喜欢的编程语言之一，这也是我乐于强调这些批评的原因。与任何编程语言一样，Go也在不断发展。你认为这些是好主意吗?或者它们是糟糕的建议?请在[Twitter](https://twitter.com/sethvargo)上告诉我!
 
 Copyright © 2022 Seth Vargo • Licensed under the [CC BY-NC 4.0 license](https://www.sethvargo.com/license).
