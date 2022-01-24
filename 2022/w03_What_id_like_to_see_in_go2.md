@@ -4,7 +4,7 @@
 - 原文作者：Seth Vargo
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w03_What_id_like_to_see_in_go2
 - 译者：[1-st](https://github.com/1-st)
-- 校对：
+- 校对：[cuua](https://github.com/cuua)
  
 ![What id like to see in go2](https://github.com/gocn/translator/raw/master/static/images/2022/w03_What_id_like_to_see_in_go2/courses-app-screenshot.png) 
 
@@ -36,7 +36,7 @@ Go标准库有两个模板包: text/template 和 html/template. 他们几乎用�
 
   在我编写了[Consul Template](https://github.com/hashicorp/consul-template)之后，很明显，标准的Go模板功能不足以满足用户的需求。超过一半的问题是关于尝试使用Go的模板语言。今天，Consul Template拥有[超过50个“助手”函数](https://github.com/hashicorp/consul-template/blob/master/docs/templating-language.md)，其中绝大多数应该使用标准模板语言。
 
-  Consul Template并不是唯一这样做的。[Hugo](https://gohugo.io/)也有一个[非常广泛的助手函数列表](https://gohugo.io/functions/)，同样，其中绝大多数应该是在标准的模板语言中。甚至在我最近的项目[Exposure Notifications](https://g.co/ens)中，我们[无法逃避反射](https://github.com/google/exposure-notifications-verification-server/blob/0ec489ba95137d5be10e1617d1dcdc2d1ee6e5e9/pkg/render/renderer.go#L232-L280)。
+  Consul Template并不是唯一一个这样做的。[Hugo](https://gohugo.io/)也有一个[非常广泛的助手函数列表](https://gohugo.io/functions/)，同样，其中绝大多数应该是在标准的模板语言中。甚至在我最近的项目[Exposure Notifications](https://g.co/ens)中，我们[无法逃避反射](https://github.com/google/exposure-notifications-verification-server/blob/0ec489ba95137d5be10e1617d1dcdc2d1ee6e5e9/pkg/render/renderer.go#L232-L280)。
 
   Go的模板语言确实需要更大的函数表。
 
