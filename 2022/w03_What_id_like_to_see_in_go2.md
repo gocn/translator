@@ -6,7 +6,7 @@
 - 译者：[1-st](https://github.com/1-st)
 - 校对：[cuua](https://github.com/cuua)
  
-![What id like to see in go2](https://github.com/gocn/translator/blob/master/static/images/2022/w03_Waht_id_like_to_see_in_go2/what-id-like-to-see-in-go-2.jpg) 
+![What id like to see in go2](https://raw.githubusercontent.com/gocn/translator/master/static/images/2022/w03_Waht_id_like_to_see_in_go2/what-id-like-to-see-in-go-2.jpg) 
 
 Go是我最喜欢的编程语言之一，但它离完美还很远。在过去的10年里，我使用Go来构建小项目和大规模应用程序。虽然从2009年的最初版本开始，Go已经有了很大的发展，但本文仍然要强调一些我认为Go语言可以改进的地方。
 
