@@ -1,8 +1,14 @@
 ## Parallelism and Concurrency; What's the Difference?
 
+- 原文地址：https://benjiv.com/parallelism-vs-concurrency/
+- 原文作者：Benjamin Vesterby
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w05_Parallelism_and_Concurrency_What's_the_Difference.md
+- 译者：[zxmfke](https://github.com/zxmfke)
+- 校对：[ ]( )
+
 Parallelism in software is the execution of instructions simultaneously. Each programming language either implements their own libraries, or provide native support as part of the language, like Go. Parallelism allows software engineers to side-step the physical limitations of the hardware by executing tasks in parallel on multiple processors.[1](https://benjiv.com/parallelism-vs-concurrency/#fn:1)
 
-The parallelism of an application is dependent on the skill of the engineer building the software due to the complexity in properly utilizing the [building blocks of parallelism](https://benjiv.com/parallelism-vs-concurrency/#building-blocks-of-parallelism) .
+The parallelism of an application is dependent on the skill of the engineer building the software due to the complexity in properly utilizing the. [building blocks of parallelism](https://benjiv.com/parallelism-vs-concurrency/#building-blocks-of-parallelism).
 
 **Examples of parallel tasks:**
 
@@ -27,7 +33,7 @@ Table Of Content
 - [Critical Sections](#cs)
 - [Complications of Parallelism](#cop)
   - [Race Conditions](#rc)
-  - [DeadLocks](#deadlocks)
+  - [DeadLocks](#deadlock)
 - [Barriers](#barriers)
   - [Mutual Exclusions Locks(Mutexes)](#mutexes)
   - [Semaphores](#semaphores)
@@ -39,14 +45,17 @@ Table Of Content
 
 
 <h3 id="bbop" >Building Blocks of Parallelism</h3>
-Application developers utilize abstractions to describe the parallelism of an application. These abstractions are generally different in every language where parallelism is implemented but the concepts are the same. In C, for example, parallelism is defined by the use of [pthreads](https://en.wikipedia.org/wiki/Pthreads) and in Go, parallelism is defined by the use of [goroutines](https://en.wikipedia.org/wiki/Goroutine) .
+
+Application developers utilize abstractions to describe the parallelism of an application. These abstractions are generally different in every language where parallelism is implemented but the concepts are the same. In C, for example, parallelism is defined by the use of [pthreads](https://en.wikipedia.org/wiki/Pthreads)  and in Go, parallelism is defined by the use of [goroutines](https://en.wikipedia.org/wiki/Goroutine).
 
 <h4 id="processes" >Processes</h4>
+
 A process is a single unit of execution which includes its own “program counter, registers and variables. Conceptually, each process has it’s own virtual CPU”[2](https://benjiv.com/parallelism-vs-concurrency/#fn:2) This is important to understand because of the overhead incurred by the creation and management of a process. Along with the overhead of creating a process, each process *only* has access to it’s own memory. This means that the process can’t access other processes' memory.
 
 This is a problem if there are multiple threads of execution (parallel tasks) which need access to some shared resource.
 
 <h4 id="threads" >Threads</h4>
+
 Threads were introduced as a means of granting access to shared memory within the same process but on different parallel execution units. Threads are almost their own process but have access to the shared address space of the parent process.
 
 Threads have far less overhead than processes because of the fact that they do not have to create a new process for each thread and resources can be shared or reused.
@@ -88,11 +97,13 @@ Minimum start-up time for processes takes 33.41x longer than for threads.
 ```
 
 <h4 id="cs" >Critical Sections</h4>
-Critical sections are shared memory sections which are needed by various parallel tasks within a process. These sections may be shared data, types, or other resources. (See example to the right[4](https://benjiv.com/parallelism-vs-concurrency/#fn:4))
+
+Critical sections are shared memory sections which are needed by various parallel tasks within a process. These sections may be shared data, types, or other resources. (See example to the right [4](https://benjiv.com/parallelism-vs-concurrency/#fn:4))
 
 <img src="https://github.com/gocn/translator/blob/master/static/images/2022/w05_Parallelism_and_Concurrency_What's_the_Difference%3F/1.png?raw=true" style="zoom:50%"/>
 
 <h4 id="cop" >Complications of Parallelism</h4>
+
 Since a processes threads execute in the same memory space, there is a risk of critical sections being accessed by multiple threads at the same time. This can cause data corruption or other unexpected behavior in the application.
 
 There are two primary problems that occur when multiple threads access shared memory at the same time.
@@ -100,6 +111,7 @@ There are two primary problems that occur when multiple threads access shared me
 
 
 <h5 id="rc" > Race Conditions</h5>
+
 A race condition is where multiple parallel threads of execution are directly reading or writing to a shared resource without any protections. This can lead to situations where the data stored within the resource can be corrupted or lead to other unexpected behavior.
 
 For example, imagine a process where a single thread is reading a value from a shared memory location and another thread is writing a new value to the same location. If the first thread reads the value before the second thread writes the value, the first thread will read the old value.
@@ -107,6 +119,7 @@ For example, imagine a process where a single thread is reading a value from a s
 This leads to a situation where the application is not behaving as expected.
 
 <h5 id="deadlock" > Deadlocks</h5>
+
 A deadlock occurs when two or more threads are waiting for each other to do something. This can lead to the application hanging or crashing.
 
 An example is a situation where one thread executes against a critical section waiting for a condition to be met and another thread is executing against the same critical section and is waiting for a condition from the other thread to be met. If the first thread is waiting for a condition to be met and the second thread is waiting for the first thread, both threads will wait forever.
