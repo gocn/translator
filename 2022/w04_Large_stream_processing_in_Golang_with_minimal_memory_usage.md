@@ -4,7 +4,7 @@
 - 原文作者：Tài Chí
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w04_Large_stream_processing_in_Golang_with_minimal_memory_usage.md
 - 译者：[haoheipi](https://github.com/haoheipi)
-- 校对：[ ]( )
+- 校对：[watermelo](https://github.com/watermelo)
 
 作为公司平台团队的一员，我接触了很多文件处理的场景，比如管理一个通用文件上传中心服务，处理邮件附件，处理和导出大文件。在过去，这项工作要容易得多，因为我们可以完全支配整个服务器。我们可以写入一个文件让它持久化在服务器磁盘上，尽管这个作业所需的资源是非常多的。而现在，你的代码库是在更小的处理单元上发布的，比如 pods 。它的资源是虚拟分配的，并且在许多情况下是有限的，所以你需要知道如何有效地使用它们。实现优雅的处理和解决 OOM 退出问题也许对于那些已经熟悉自由地使用内存的人来说是一个大麻烦。
 
