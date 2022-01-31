@@ -4,7 +4,7 @@
 - 原文作者：Benjamin Vesterby
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w05_Parallelism_and_Concurrency_What's_the_Difference.md
 - 译者：[zxmfke](https://github.com/zxmfke)
-- 校对：[ ]( )
+- 校对：[Cluas](https://github.com/Cluas)
 
 在软件内并行是指多条指令同时执行。每个编程语言都有各自实现并行，或者像Go，将并行作为语言的一部分，提供原生支持。并行让软件工程师能够同时在多核处理器上并行执行任务，从而抛开硬件的物理限制。[1](https://benjiv.com/parallelism-vs-concurrency/#fn:1)
 
@@ -22,23 +22,23 @@
 
 
 
-Table Of Content
+目录
 
-[Building Blocks of Parallelism](#bbop)
+[构建并行](#bbop)
 
-- [Processes](#processes)
-- [Threads](#threads)
-- [Critical Sections](#cs)
-- [Complications of Parallelism](#cop)
-  - [Race Conditions](#rc)
-  - [DeadLocks](#deadlock)
-- [Barriers](#barriers)
-  - [Mutual Exclusions Locks(Mutexes)](#mutexes)
-  - [Semaphores](#semaphores)
-  - [Busy Waiting](#bw)
-  - [Wait Groups](#wg)
+- [进程](#processes)
+- [线程](#threads)
+- [临界区](#cs)
+- [并行的复杂性](#cop)
+  - [竞态条件](#rc)
+  - [死锁](#deadlock)
+- [屏障](#barriers)
+  - [互斥锁(Mutexes)](#mutexes)
+  - [信号量](#semaphores)
+  - [忙等待](#bw)
+  - [等待组](#wg)
 
-[What is Concurrency](#wic)
+[什么是并发？](#wic)
 
 
 <h3 id="bbop" >构建并行</h3>
@@ -105,15 +105,15 @@ Minimum start-up time for processes takes 33.41x longer than for threads.
 
 这里有2个主要问题当多个线程同一时间访问共享内存的时候。
 
-<h5 id="rc" >竞态</h5>
+<h5 id="rc" >竞态条件</h5>
 
 举个例子，想象一个进程的线程正在从一个共享内存地址读取一个数值，同时其他线程正在往同一个地址写一个新的数值。如果第一个线程在第二个线程写数值之前读取了数值，第一个线程就会读取到旧的数值。
 
-这个导致应用程序出现不符合预期的情况。
+这会导致应用程序出现不符合预期的情况。
 
 <h5 id="deadlock" >死锁</h5>
 
-当两个或多个线程在等待对方做某事时，就会出现死锁。这个会导致应用程序挂起或者崩溃。
+当两个或多个线程在互相等待对方做某事时，就会出现死锁。这会导致应用程序挂起或者崩溃。
 
 有一个例子是这样的，当一个线程等待一个时机去执行临界区的同时，另一个线程也正在等待其他线程满足条件后去执行相同的临界区。如果第一个线程正在等待满足时机，然后第二个线程也正在等待第一个线程，那这两个线程将一直等待下去。
 
@@ -175,7 +175,7 @@ func read() {
 }
 ```
 
-如果我们看上面的例子，我们可以看到`共享`变量被互斥锁保护着。这意味着只有一个线程在一个时间点可以访问`共享`变量。这个保证了`共享`变量不被损坏，并且是一个可预计的行为。
+如果我们看上面的例子，我们可以看到`shared`变量被互斥锁保护着。这意味着只有一个线程在一个时间点可以访问`shared`变量。这个保证了`shared`变量不被损坏，并且是一个可预计的行为。
 
 > **注意**: 在使用互斥锁时，需要注意的一个点是，要在函数返回的时候释放互斥锁。在Go，举个例子，这个操作可以通过关键字`defer`实现。这个保证了其他线程可以访问到共享资源。
 
