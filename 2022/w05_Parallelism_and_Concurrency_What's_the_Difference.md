@@ -1,66 +1,63 @@
-## Parallelism and Concurrency; What's the Difference?
+## 以Go为例-探究并行与并发的区别
 
 - 原文地址：https://benjiv.com/parallelism-vs-concurrency/
 - 原文作者：Benjamin Vesterby
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w05_Parallelism_and_Concurrency_What's_the_Difference.md
 - 译者：[zxmfke](https://github.com/zxmfke)
-- 校对：[ ]( )
+- 校对：[Cluas](https://github.com/Cluas)
 
-Parallelism in software is the execution of instructions simultaneously. Each programming language either implements their own libraries, or provide native support as part of the language, like Go. Parallelism allows software engineers to side-step the physical limitations of the hardware by executing tasks in parallel on multiple processors.[1](https://benjiv.com/parallelism-vs-concurrency/#fn:1)
+在软件内并行是指多条指令同时执行。每个编程语言都有各自实现并行，或者像Go，将并行作为语言的一部分，提供原生支持。并行让软件工程师能够同时在多核处理器上并行执行任务，从而抛开硬件的物理限制。[1](https://benjiv.com/parallelism-vs-concurrency/#fn:1)
 
-The parallelism of an application is dependent on the skill of the engineer building the software due to the complexity in properly utilizing the. [building blocks of parallelism](https://benjiv.com/parallelism-vs-concurrency/#building-blocks-of-parallelism).
+通常情况下，由于[构建并行模块](https://benjiv.com/parallelism-vs-concurrency/#building-blocks-of-parallelism)的复杂性，一个应用程序的并行程度取决于工程师编写软件的能力。
 
-**Examples of parallel tasks:**
+**并行任务的例子：**
 
-- Multiple people taking orders at a restaurant
-- Multiple cashiers at a grocery store
-- [Multi-Core CPUs](https://benjiv.com/quick-recap-single-multi-core/#multi-core-and-multiple-cpu-processing)
+- 多人同时在餐厅点单
+- 多个收银员在杂货铺
+- [多核CPU](https://benjiv.com/quick-recap-single-multi-core/#multi-core-and-multiple-cpu-processing)
 
-In reality there are multiple layers of parallelism in any application. There is the parallelism of the application itself, which is defined by the application developer, and there is the parallelism (or multiplexing) of the instructions executed by the CPU on the physical hardware orchestrated by the operating system.
+事实上，在任何一个应用程序中都有多层含义的并行。有应用程序本身的并行，这是由应用程序开发人员定义的，还有由操作系统协调的物理硬件上的CPU执行的指令的并行（或复用）。
 
-
-
- **NOTE:** In general applications *must* be explicitly written such that they perform actions in parallel. This requires engineers to have skills in writing “correct” parallelizable code.
+> **注意**：一般情况下，应用程序必须明确写出他们使用并行。这个需要工程师需要有技能写出"正确"的可并行的代码。
 
 
 
-Table Of Content
+目录
 
-[Building Blocks of Parallelism](#bbop)
+[构建并行](#bbop)
 
-- [Processes](#processes)
-- [Threads](#threads)
-- [Critical Sections](#cs)
-- [Complications of Parallelism](#cop)
-  - [Race Conditions](#rc)
-  - [DeadLocks](#deadlock)
-- [Barriers](#barriers)
-  - [Mutual Exclusions Locks(Mutexes)](#mutexes)
-  - [Semaphores](#semaphores)
-  - [Busy Waiting](#bw)
-  - [Wait Groups](#wg)
+- [进程](#processes)
+- [线程](#threads)
+- [临界区](#cs)
+- [并行的复杂性](#cop)
+  - [竞态条件](#rc)
+  - [死锁](#deadlock)
+- [屏障](#barriers)
+  - [互斥锁(Mutexes)](#mutexes)
+  - [信号量](#semaphores)
+  - [忙等待](#bw)
+  - [等待组](#wg)
 
-[What is Concurrency](#wic)
+[什么是并发？](#wic)
 
 
+<h3 id="bbop" >构建并行</h3>
 
-<h3 id="bbop" >Building Blocks of Parallelism</h3>
+应用程序开发人员利用抽象概念来描述一个应用程序的并行。这些抽象概念通常在每个实现并行的编程语言上会有所不同，但是概念是一样的。举个例子，在C语言，并行是通过[pthread](https://en.wikipedia.org/wiki/Pthreads)来定义的。在Go，并行是通过[goroutines](https://en.wikipedia.org/wiki/Goroutine)来定义的。
 
-Application developers utilize abstractions to describe the parallelism of an application. These abstractions are generally different in every language where parallelism is implemented but the concepts are the same. In C, for example, parallelism is defined by the use of [pthreads](https://en.wikipedia.org/wiki/Pthreads)  and in Go, parallelism is defined by the use of [goroutines](https://en.wikipedia.org/wiki/Goroutine).
+<h4 id="processes" >进程</h4>
 
-<h4 id="processes" >Processes</h4>
+一个进程是一个单一的执行单元，包含它自己的"程序计数器，寄存器和变量"。从概念上来讲，每个进程有它自己的虚拟CPU"[2](https://benjiv.com/parallelism-vs-concurrency/#fn:2)。这一点很重要，因为涉及到进程在创建和管理过程中的开销。除了创建进程时的开销，每个进程只允许访问自己的内存。这表示进程不能访问其他进程的内存。
 
-A process is a single unit of execution which includes its own “program counter, registers and variables. Conceptually, each process has it’s own virtual CPU”[2](https://benjiv.com/parallelism-vs-concurrency/#fn:2) This is important to understand because of the overhead incurred by the creation and management of a process. Along with the overhead of creating a process, each process *only* has access to it’s own memory. This means that the process can’t access other processes' memory.
+如果多个执行线程(并行任务)需要访问一些共享资源时，这会是一个问题。
 
-This is a problem if there are multiple threads of execution (parallel tasks) which need access to some shared resource.
+<h4 id="threads" >线程</h4>
 
-<h4 id="threads" >Threads</h4>
+线程是作为一种方法被引入的，它允许在同一进程中访问共享内存，但在不同的并行执行单元上。线程基本上是自己的进程，但是可以访问父进程的共享地址空间。
 
-Threads were introduced as a means of granting access to shared memory within the same process but on different parallel execution units. Threads are almost their own process but have access to the shared address space of the parent process.
+线程相较于进程只需要更少的开销，因为它们不需要为了每个线程创建新进程，并且资源可以被共享或者复用。
 
-Threads have far less overhead than processes because of the fact that they do not have to create a new process for each thread and resources can be shared or reused.
-
-Here is an example for Ubuntu 18.04 comparing the overhead of forking a process and a creating a thread:[3](https://benjiv.com/parallelism-vs-concurrency/#fn:3)
+这里有一个在Ubuntu 18.04下，克隆进程和创建线程的开销比较:[3](https://benjiv.com/parallelism-vs-concurrency/#fn:3)
 
 ```shell
 # Borrowed from https://stackoverflow.com/a/52231151/834319
@@ -96,48 +93,44 @@ Minimum with 43.89 µs
 Minimum start-up time for processes takes 33.41x longer than for threads.
 ```
 
-<h4 id="cs" >Critical Sections</h4>
+<h4 id="cs" >临界区</h4>
 
-Critical sections are shared memory sections which are needed by various parallel tasks within a process. These sections may be shared data, types, or other resources. (See example to the right [4](https://benjiv.com/parallelism-vs-concurrency/#fn:4))
+临界区是共享的内存部分，它被进程中的各种并行任务所需要。这个部分可能是共享数据，类型或者资源。(见下方的范例[4](https://benjiv.com/parallelism-vs-concurrency/#fn:4))
 
 <img src="https://github.com/gocn/translator/blob/master/static/images/2022/w05_Parallelism_and_Concurrency_What's_the_Difference%3F/1.png?raw=true" style="zoom:50%"/>
 
-<h4 id="cop" >Complications of Parallelism</h4>
+<h4 id="cop" >并行的复杂性</h4>
 
-Since a processes threads execute in the same memory space, there is a risk of critical sections being accessed by multiple threads at the same time. This can cause data corruption or other unexpected behavior in the application.
+由于一个进程的线程在同一内存空间中执行，因此存在着临界区被多个线程同时访问的风险。在应用程序中这个可能导致数据损坏或其他无法预料的行为。
 
-There are two primary problems that occur when multiple threads access shared memory at the same time.
+这里有2个主要问题当多个线程同一时间访问共享内存的时候。
 
+<h5 id="rc" >竞态条件</h5>
 
+举个例子，想象一个进程的线程正在从一个共享内存地址读取一个数值，同时其他线程正在往同一个地址写一个新的数值。如果第一个线程在第二个线程写数值之前读取了数值，第一个线程就会读取到旧的数值。
 
-<h5 id="rc" > Race Conditions</h5>
+这会导致应用程序出现不符合预期的情况。
 
-A race condition is where multiple parallel threads of execution are directly reading or writing to a shared resource without any protections. This can lead to situations where the data stored within the resource can be corrupted or lead to other unexpected behavior.
+<h5 id="deadlock" >死锁</h5>
 
-For example, imagine a process where a single thread is reading a value from a shared memory location and another thread is writing a new value to the same location. If the first thread reads the value before the second thread writes the value, the first thread will read the old value.
+当两个或多个线程在互相等待对方做某事时，就会出现死锁。这会导致应用程序挂起或者崩溃。
 
-This leads to a situation where the application is not behaving as expected.
+有一个例子是这样的，当一个线程等待一个时机去执行临界区的同时，另一个线程也正在等待其他线程满足条件后去执行相同的临界区。如果第一个线程正在等待满足时机，然后第二个线程也正在等待第一个线程，那这两个线程将一直等待下去。
 
-<h5 id="deadlock" > Deadlocks</h5>
-
-A deadlock occurs when two or more threads are waiting for each other to do something. This can lead to the application hanging or crashing.
-
-An example is a situation where one thread executes against a critical section waiting for a condition to be met and another thread is executing against the same critical section and is waiting for a condition from the other thread to be met. If the first thread is waiting for a condition to be met and the second thread is waiting for the first thread, both threads will wait forever.
-
-A second form of deadlock can occur when attempting to protect against race conditions by using [mutual exclusion locks](https://benjiv.com/parallelism-vs-concurrency/#mutual-exclusions-locks-mutexes)
+第二种形式的死锁会发生在尝试使用[互斥锁](https://benjiv.com/parallelism-vs-concurrency/#mutual-exclusions-locks-mutexes)保护竞态。
 
 ![1643206061070](https://github.com/gocn/translator/blob/master/static/images/2022/w05_Parallelism_and_Concurrency_What's_the_Difference%3F/2.png?raw=true)
 
-<h4 id="barriers" > Barriers</h4>
-Barriers are synchronization points which manage access to shared resources or critical regions from multiple threads within a process.
+<h4 id="barriers" >屏障</h4>
 
-These barriers allow the application developer to control parallel access to ensure that the resources are not accessed in an unsafe manner.
+屏障可以称为一个同步点，它管理一个进程中多个线程对共享资源或临界区的访问。
+
+这些屏障允许应用程序开发者去控制并行访问，从而保证资源不会在不安全的情况下被访问。
 
 
+<h5 id="mutexes" >互斥锁(Mutexes)</h5>
 
-<h5 id="mutexes" > Mutual Exclusions Locks (Mutexes)</h5>
-Mutexes are a type of barrier that allow only one thread to access a shared resource at a time. This is useful for preventing race conditions through the locking an unlocking when reading or writing to a shared resource.
-
+互斥锁是屏障的一个类型，它只允许一个线程在同一时间访问共享资源。这对于防止在读取或写入共享资源时通过锁定和解锁出现竞态的情况非常有用。
 
 
 ```go
@@ -182,17 +175,19 @@ func read() {
 }
 ```
 
-If we look at the above example, we can see that the `shared` variable is protected by a mutex. This means that only one thread can access the `shared` variable at a time. This ensures that the `shared` variable is not corrupted and that there is predictable behavior.
+如果我们看上面的例子，我们可以看到`shared`变量被互斥锁保护着。这意味着只有一个线程在一个时间点可以访问`shared`变量。这个保证了`shared`变量不被损坏，并且是一个可预计的行为。
 
-> **NOTE:** When using Mutexes it is critical to ensure that the mutex is released when the function returns. In Go, for example, this is done by using the `defer` keyword. This ensures that other threads can access the shared resource.
+> **注意**: 在使用互斥锁时，需要注意的一个点是，要在函数返回的时候释放互斥锁。在Go，举个例子，这个操作可以通过关键字`defer`实现。这个保证了其他线程可以访问到共享资源。
 
-<h5 id="semaphores" > Semaphores</h5>
-Semaphores are a type of barrier that allow only a certain number of threads to access a shared resource at a time. This is different from a mutex in that the number of threads that can access the resource are not limited to one.
+<h5 id="semaphores" >信号量</h5>
 
-There is not a semaphore implementation in the Go standard library. However, it can be implemented using channels.[5](https://benjiv.com/parallelism-vs-concurrency/#fn:5)
+信号量是一种类型的屏障，允许一个时间点一定数量的线程访问共享资源。这个和互斥锁的区别在于，访问资源的线程数量不会被限制为1个。
 
-<h5 id="bw" >  Busy Waiting</h5>
-Busy waiting is a technique where a thread is waiting for a condition to be met. Generally this is used to wait for a counter to reach a certain value.
+在Go标准库没有信号的实现，但是可以通过channels[5](https://benjiv.com/parallelism-vs-concurrency/#fn:5)来实现。
+
+<h5 id="bw" >忙等待</h5>
+
+忙等待是一个技术用于线程等待一个满足的条件。通常用于等待一个计数器达到某个数值。
 
 ```go
 // Example of Busy Waiting in Go
@@ -212,11 +207,11 @@ func main() {
 }
 ```
 
-So busy waiting entails a loop that is waiting for a condition to be met which reads or writes to a shared resource and *must* be guarded by a mutex to ensure correct behavior.
+因此，忙等待需要一个等待条件满足的循环，该循环对共享资源进行读取或写入，必须由一个互斥锁来保护以确保正确的行为。
 
-The problem with the above example is that the loop is accessing a critical section which is not protected by a mutex. This can lead to race conditions where the loop may access the value but it may have been changed by another thread of the process. In fact, the above example is a good example of a race condition as well. It’s possible this application will **NEVER** exit because there is no guarantee that the loop will be fast enough to read the value of `x` while it is still `1` which means that the loop will never exit.
+上面例子的问题是那个循环在访问一个没有被互斥锁保护的临界区。这可能导致竞态，这个循环读取的数值可能已经被另一个进程里的线程修改了。事实上，上面的例子是一个很好的竞态例子。很有可能这个应用程序永远都不会退出，因为无法保证这个循环是否会足够快地读取到`x`的数值，同时读取出来的数值都是`1`，这就意味着循环永远不会退出。
 
-If we were to guard the variable `x` with a mutex, the loop would be guarded and the application would exit, but this is still not perfect and the loop setting `x` could still be fast enough to hit the mutex twice before the loop reading the value could execute (though unlikely).
+如果我们要用互斥锁保护变量`x`，那么循环就会被保护并且应用程序会退出，但这仍然不完美，设置`x`的循环仍然可以快到在读取值的循环执行之前击中互斥锁两次（尽管不太可能）。
 
 ```go
 import "sync"
@@ -242,10 +237,11 @@ func main() {
 }
 ```
 
-In general busy waiting is not a good idea. It is better to use a semaphore or a mutex to ensure that the critical section is protected. We’ll cover better ways to handle this in Go but it illustrates the complexities of writing “correct” parallelizable code.
+通常情况下忙等待不是一个好的想法。最好的办法是使用信号或者一个互斥锁去确保临界区是受保护的。 我们将介绍在Go中处理这个问题的更好方法，但它说明了编写 "正确的"可并行代码的复杂性。
 
-<h5 id="wg" >  Wait Groups</h5>
-Wait groups are method for ensuring that all parallel code paths have completed processing prior to continuing. In Go, this is done by using a `sync.WaitGroup` which is provided in the `sync` package of the standard library.
+<h5 id="wg" >等待组(Wait Groups)</h5>
+
+等待组是一个用来保证所有并行代码路径在继续之前完成处理的方法。在Go里，这个用标准库中的`sync`包中提供的`sync.WaitGroup`来实现。
 
 ```go
 // Example of a `sync.WaitGroup` in Go
@@ -271,30 +267,31 @@ func main() {
 }
 ```
 
-In the example above the `wg.Wait()` is a blocking call. This means that the main thread will not continue until all of the goroutines have finished and their cooresponding `defer wg.Done()` has been called. Internally, the WaitGroup is a counter that is incremented by one for each goroutine that is added to the WaitGroup where `wg.Add(N)` is called. When the counter reaches zero, the main thread will continue processing or in this case the application will exit.
+在上面这个例子的`wg.Wait()`是一个阻塞调用。这个表示主线程会等到所有协程完成后再继续执行，并且对应的`defer wg.Done()`已经被调用。WaitGroup的内部实现是一个计数器，当每个协程在调用`wg.Add(N)`后会加1，同时协程被加到WaitGroup内。当计数器计到0，主线程会继续执行或者在这个例子中会退出。
 
-<h3 id="wic" >  What is Concurrency?</h3>
-Concurrency and Parallelism are often conflated. To better understand the difference between concurrency and parallelism, let’s look at an example of concurrency in the real world.
+<h3 id="wic" >什么是并发？</h3>
 
-If we use a restaurant as an example there are several different groups of work types (or replicable procedures) that that take place in a restaurant.
+并发和并行经常混为一谈。为了更好地理解并发和并行的区别，让我们看一个现实生活中的并发例子。
 
-1. Host (responsible for seating guests)
-2. Wait Staff (responsible for taking orders, and serving food)
-3. Kitchen (responsible for cooking food)
-4. Bussers (responsible for clearing tables)
-5. Dishwasher (responsible for cleaning up dishes)
+如果我们用餐厅来当做例子，餐厅里面会有几种不同工作类型(或可复制的程序)的组别。
 
-Each of these groups are responsible for a different tasks, all of which culminate in a customer receiving a meal. **This is called concurrency.** Dedicated work centers that can focus on individual tasks that when combined produce a result.
+1. 接待（负责为客人安排座位）
+2. 服务员（负责接单，并提供食物）
+3. 厨房（负责烹饪食物）
+4. 售货员（负责清理桌子
+5. 洗碗工（负责清理餐具）
 
-There is a limitation on the effectiveness of a restaurant if the restaurant only employs one person for each task. This is called serialization. If there is only a single server in a restaurant, then only one order can be taken at a time.
+每个组别负责不同的任务，所有这些任务的最终结果都是让顾客吃到一顿饭。**这称之为并发**，专门的工作中心，可以专注于单独的任务，这些任务结合起来就会产生一个结果。
 
-Parallelism is the ability to take the concurrent tasks and distribute them across multiple resources. In a restaurant, this would include servers, food prep, and cleaning. If there are multiple servers, then multiple orders can be taken at a time.
+如果餐厅只雇佣一个员工来做所有的任务，这对于一个高效率的餐厅是一个限制。这称之为序列化。如果在餐厅里只有一个服务员，那么在一个时间只能够处理一个订单。
 
-Each group is able to focus on their specific work center without having to worry about context switching, maximizing throughput, or minimizing latency.
+并行性是指将并发的任务分配到多个资源上的能力。在餐厅中，这可能会包含服务，食物准备和清理。如果有多个服务员，那么同一时间就可以处理多个订单。
 
-Other examples of industries with concurrent work centers include factory workser, and assembly line workers. Essentially, any process that can be broken down into smaller repeatable tasks can be considered concurrent, and therefore can be parallelized *when using proper concurrent design*.
+每个组可以专注在他们自己的工作中心，不需要担心上下文切换，最大吞吐量，或最小延迟。
 
-**TL;DR:** Concurrency enables *correct* parallelism, but parallelism is not necessary for concurrent code.[6](https://benjiv.com/parallelism-vs-concurrency/#fn:6)
+其他有同时进行的工作中心的行业例子包括工厂工人和装配线工人。从本质上讲，任何可以被分解成较小的可重复任务的过程都可以被认为是并发的，因此*当使用合适的并发设计*的时候可以被并行处理。
+
+**TL:DR**：并发实现正确的并行，但是并行对并发代码不是必要的。[6](https://benjiv.com/parallelism-vs-concurrency/#fn:6)
 
 ---
 
