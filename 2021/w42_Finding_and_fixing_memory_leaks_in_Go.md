@@ -4,7 +4,7 @@
 - 原文作者：Tyler Bui-Palsulich
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w42_Finding_and_fixing_memory_leaks_in_Go.md
 - 译者：[Fivezh](https://github.com/fivezh)
-- 校对：[]()
+- 校对：[](.)
 
 这篇文章回顾了我是如何发现内存泄漏、如何修复它、如何修复 `Google` 中的 `Go` 示例代码中的类似问题，以及我们是如何改进我们的基础库防止未来再次发生这种情况。
 
@@ -22,7 +22,7 @@ defer client.Close()
 
 ------
 
-`Google` 有一堆的 `GitHub` 自动化机器人，帮助管理数以百计的 `GitHub` 仓库。我们的一些机器人通过[云上运行的](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/go)上的[Go服务](https://github.com/googleapis/repo-automation-bots/tree/main/serverless-scheduler-proxy)代理它们的请求。我们的内存使用情况看起来就是典型的锯齿状内存泄漏情况。
+`Google` 有一堆的 `GitHub` 自动化机器人，帮助管理数以百计的 `GitHub` 仓库。我们的一些机器人通过[云上运行的](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/go)上的[Go 服务](https://github.com/googleapis/repo-automation-bots/tree/main/serverless-scheduler-proxy)代理它们的请求。我们的内存使用情况看起来就是典型的锯齿状内存泄漏情况。
 
 !["容器内存使用率" 显示先稳定增长、继而下跌至0](../static/images/2021_w42/1dmpo6x8cky6t9dsqsex.png)
 
@@ -151,7 +151,7 @@ defer client.Close()
 $ grep -L Close $(grep -El 'New[^(]*Client' **/*.go) | grep -v test
 ```
 
-> 译者注：列出包含`New[^(]*Client`，但不包含`Close`的所有go文件
+> 译者注：列出包含`New[^(]*Client`，但不包含`Close`的所有 go 文件
 
 哇呜! 总共有 207 个文件，而整个 [GoogleCloudPlatform/golang-samples](https://github.com/GoogleCloudPlatform/golang-samples) 仓库中有大约 1300 个 `.go` 文件.
 
@@ -212,7 +212,7 @@ sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 - 客户端的名字实际上是 `client`，还是别的什么？
 - 是否有更多的客户端需要 `Close`？
 
-一旦完成这些，我留下了[180个编辑的文件](https://github.com/GoogleCloudPlatform/golang-samples/pull/2080)
+一旦完成这些，我留下了[180 个编辑的文件](https://github.com/GoogleCloudPlatform/golang-samples/pull/2080)
 
 ------
 
@@ -220,6 +220,6 @@ sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 
 1. 更好的示例程序。
 2. 更好的 `GoDoc`。我们更新了我们的库生成器，在生成的库中加入了一个注释，说当你用完后要 `Close` 客户端。参见https://github.com/googleapis/google-cloud-go/issues/3031。
-3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Finalizer方法？有什么想法我们可以做得更好吗？请在https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
+3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Finalizer 方法？有什么想法我们可以做得更好吗？请在https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
 
 希望你能学到一些关于 `Go`、内存泄漏、`pprof`、 `gRPC` 和 `Bash` 的知识。我很想听听你关于你所发现的内存泄露的故事，以及你是如何解决这些问题的! 如果你对我们的[代码库](https://github.com/googleapis/google-cloud-go)或[示例程序](https://github.com/GoogleCloudPlatform/golang-samples)有什么想法，欢迎提交问题让我们知道。

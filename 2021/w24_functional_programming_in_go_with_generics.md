@@ -5,7 +5,7 @@
 * 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w24_functional_programming_in_go_with_generics.md
 
 - 译者：[cvley](https:/github.com/cvley)
-- 校对：[]()
+- 校对：[](.)
 
 
 时间：[2021 年 5 月 25 日](#)
@@ -18,7 +18,7 @@ Go 缺失的一个关键特性是泛型。缺少这个特性，Go 的函数库�
 
 ## 背景
 
-### 什么是函数式编程？
+### 什么是函数式编程
 
 [维基百科](https://en.wikipedia.org/wiki/Functional_programming)中定义的函数式编程是：
 
@@ -33,7 +33,7 @@ Go 缺失的一个关键特性是泛型。缺少这个特性，Go 的函数库�
 
 对于函数式编程更详细的信息，可以参考这两篇有详细描述例子的文章：[函数式编程是什么？](https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0)和[函数式的 Go](https://medium.com/@geisonfgfg/functional-go-bc116f4c96a4)
 
-### 函数式编程的优势是什么？
+### 函数式编程的优势是什么
 
 函数式编程是让开发者提升代码质量的一些模式。这些质量提升的模式并非函数式编程独有，而是一些“免费”的优势。
 
@@ -43,7 +43,7 @@ Go 缺失的一个关键特性是泛型。缺少这个特性，Go 的函数库�
 
 正如多数开发者从经验中学到的，如 Robert C. Martin 在[_代码整洁之道_](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)中所说：
 
-> 确实，相对于写代码，花费在读代码上的时间超过 10 倍。为了写出新代码，我们一直在读旧代码。…\[因此，\]让代码更易读，可以让代码更易写。
+> 确实，相对于写代码，花费在读代码上的时间超过 10 倍。为了写出新代码，我们一直在读旧代码。……\[因此，\]让代码更易读，可以让代码更易写。
 
 根据团队的经验或学习函数式编程的意愿，这些优势会产生很大的影响。相反，对于缺乏经验和足够时间投入学习的团队，或维护大型的代码仓库时，函数式编程将会产生相反的作用，上下文切换的引入或显著的重构工作将无法产生相应的价值。
 
@@ -66,7 +66,7 @@ Go 不是一门函数语言，但确实提供了一些允许函数式编程的�
 | [可变参数函数](https://gobyexample.com/variadic-functions) + [可变类型参数](https://en.wikipedia.org/wiki/Variadic_template) | ✗       |
 | [柯里化](https://blog.bitsrc.io/understanding-currying-in-javascript-ceb2188c339) | ✗       |
 
-† 将在 Go 1.18 中可用（2022年初）
+† 将在 Go 1.18 中可用（2022 年初）
 
 ### 现有的库
 
@@ -99,7 +99,7 @@ Go 开发组发布了一个 [go 1.18 游乐场](https://go2goplay.golang.org/)�
 
 考虑下这个从 API 返回用户、得分和朋友信息的响应：
 
-```
+```plain
 [
   {
     "id": "6096abc445dbb831decde62f",

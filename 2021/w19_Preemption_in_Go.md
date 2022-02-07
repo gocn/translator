@@ -12,7 +12,7 @@ Go1.14 版本中的抢占行为已经发生了变化。在 Go1.14 中，goroutin
 
 首先，让我们看一个简单的例子。思考下面的 Go 程序。
 
-```
+```plain
 package main
 
 import (
@@ -35,7 +35,7 @@ func main() {
 
 当我在本地计算机上尝试时，它的工作方式如下。
 
-```
+```plain
 $ GOMAXPROCS=1 GODEBUG=asyncpreemptoff=1 go run main.go
 # it blocks here
 ```
@@ -43,7 +43,7 @@ $ GOMAXPROCS=1 GODEBUG=asyncpreemptoff=1 go run main.go
 程序没有输出 “hi” 。在描述为什么会发生这种情况之前，让我先说明几种使该程序按预期方式运行的方法。
 
 一种方法是在循环中添加以下代码。
-```
+```plain
 
 
 *************** package main
@@ -93,13 +93,13 @@ $ GOMAXPROCS=1 GODEBUG=asyncpreemptoff=1 go run main.go
 
 是的，随着 Go1.14 中引入“非协作式抢占”（异步抢占），这种行为已经改变。
 
-## “异步抢占”是什么意思？
+## “异步抢占”是什么意思
 
 让我们总结到目前为止的要点；Go 具有一种称为“sysmon”的机制，可以监视运行 10ms 以上的 goroutine 并在必要时强制抢占。但是，由于它的工作方式，在 `for{}` 的情况下并不会发生抢占。
 
 Go1.14 引入非协作式抢占，即抢占式调度，是一种使用信号的简单有效的算法。
 
-首先，sysmon 仍然会检测到运行了 10ms 以上的 G（goroutine）。然后，sysmon 向运行 G 的 P 发送信号（`SIGURG`）。Go 的信号处理程序会调用P上的一个叫作 `gsignal` 的 goroutine 来处理该信号，将其映射到 M 而不是 G，并使其检查该信号。gsignal 看到抢占信号，停止正在运行的 G。
+首先，sysmon 仍然会检测到运行了 10ms 以上的 G（goroutine）。然后，sysmon 向运行 G 的 P 发送信号（`SIGURG`）。Go 的信号处理程序会调用 P 上的一个叫作 `gsignal` 的 goroutine 来处理该信号，将其映射到 M 而不是 G，并使其检查该信号。gsignal 看到抢占信号，停止正在运行的 G。
 
 由于此机制会显式发出信号，因此无需调用函数，就能将正在运行死循环的 goroutine 切换到另一个 goroutine。
 

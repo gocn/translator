@@ -21,7 +21,7 @@ All Go profilers work by collecting samples of stack traces and putting them int
 
 Let's zoom in on the first stack trace in the table above: `main;foo`. A Go developer will usually be more familiar with seeing a stack trace like this as rendered by `panic()` or  [`runtime.Stack()`](https://golang.org/pkg/runtime/#Stack) as shown below:
 
-```
+```plain
 goroutine 1 [running]:
 main.foo(...)
 	/path/to/go-profiler-notes/examples/stack-trace/main.go:9
@@ -57,7 +57,7 @@ Looking at pretty pictures can be a good way to get a high level understanding o
 
 To take a look at the stack, we'll use [delve](https://github.com/go-delve/delve) which is a wonderful debugger for Go. In order to inspect the stack, I wrote a script called [stackannotate.star](./delve/stackannotate.star) that can used to print the annotated stack for a simple [example program](./examples/stackannotate/main.go):
 
-```
+```plain
 $ dlv debug ./examples/stackannotate/main.go 
 Type 'help' for list of commands.
 (dlv) source delve/stackannotate.star
@@ -177,7 +177,7 @@ The Go compiler always emits DWARF (v4) information for the binaries it produces
 
 Unlike `gopclntab`, DWARF information can easily be stripped from binaries at build time like this:
 
-```
+```plain
 go build -ldflags=-w <pkg>
 ```
 
@@ -189,14 +189,14 @@ As far as the inner workings of DWARF are concerned, the [official spec](http://
 
 Symbolization is the process of taking one or more program counter (`pc`) address and turning them into human readable symbols such a function names, file names and line numbers. For example if you have two `pc` values like this:
 
-```
+```plain
 0x1064ac1
 0x1035683
 ```
 
 You may use symbolization to turn them into a human readable stack trace like shown below:
 
-```
+```plain
 main.foo()
 	/path/to/go-profiler-notes/examples/stack-trace/main.go:9
 main.main()

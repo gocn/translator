@@ -43,7 +43,7 @@ go build -workfile=off
 
 你可以在[这里](https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md)阅读 Katie Hockman 的设计文档。 还有[Go Time 播客集](https://changelog.com/gotime/187)，与 Katie 一起讨论的这个话题。
 ## 新的软件包 net/netip
-新包`net/netip`增加了一个新的 IP 地址类型，与`net.IP`类型相比，它有很多优点。 简单来说：它很小，可比较，而且没有内存分配操作。 已经有一篇来自 Brad Fitzpatrick 的[详细博文](https://tailscale.com/blog/netaddr-new-ip-type-for-go/)介绍了所有的细节。如果你喜欢视频，在[Brad在 FOSDEM 2021 的演讲](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) 中也有一段介绍，从时间 18:45 开始观看。
+新包`net/netip`增加了一个新的 IP 地址类型，与`net.IP`类型相比，它有很多优点。 简单来说：它很小，可比较，而且没有内存分配操作。 已经有一篇来自 Brad Fitzpatrick 的[详细博文](https://tailscale.com/blog/netaddr-new-ip-type-for-go/)介绍了所有的细节。如果你喜欢视频，在[Brad 在 FOSDEM 2021 的演讲](https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s) 中也有一段介绍，从时间 18:45 开始观看。
 
 ## 更快的（？）go fmt 运行
 `go fmt`命令现在以并行方式运行格式化。正如[Github issue](https://github.com/golang/go/issues/43566)中描述的那样，格式化大型代码库的速度应该会快很多。
@@ -53,7 +53,7 @@ go build -workfile=off
 ```sh
 time go test ./pkg/...
 ```
-使用 Go 1.17，花了**56 秒**来格式化所有文件。使用最新的`gotip`版本，花了**1分 20 秒**。我还不得不提高我机器上的 ulimit，以防止崩溃。让我们看看这个功能在稳定版之前是如何发展的。
+使用 Go 1.17，花了**56 秒**来格式化所有文件。使用最新的`gotip`版本，花了**1 分 20 秒**。我还不得不提高我机器上的 ulimit，以防止崩溃。让我们看看这个功能在稳定版之前是如何发展的。
 
 ## 试用即将推出的特性功能
 你也可以直接在你的机器上玩最新的实验性 Go 版本`gotip`。当你已经安装了稳定版本的 Go，你只需要运行：
@@ -71,7 +71,7 @@ gotip download
 - 模糊测试 Katie Hockman 的设计文档 https://go.googlesource.com/proposal/+/master/design/draft-fuzzing.md
 - Go Time 播客集 https://changelog.com/gotime/187
 - net/netip Brad Fitzpatrick 的详细博文 https://tailscale.com/blog/netaddr-new-ip-type-for-go/
-- Brad在 FOSDEM 2021 的演讲 https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s
+- Brad 在 FOSDEM 2021 的演讲 https://www.youtube.com/watch?v=csbE6G9lZ-U&t=1125s
 - go fmt Github issue https://github.com/golang/go/issues/43566
 - CockroachDB 仓库 https://github.com/cockroachdb/cockroach
 - Go 1.18 release issues (https://dev.golang.org/release#Go1.18)

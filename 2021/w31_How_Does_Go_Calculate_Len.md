@@ -1,4 +1,4 @@
-# Go语言是如何计算len()的?
+# Go 语言是如何计算 len()的
 - 原文地址：https://tpaschalis.github.io/golang-len/
 - 原文作者：Paschalis Tsilias
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w31_How_Does_Go_Calculate_Len.md
@@ -13,7 +13,7 @@
 
 > It doesn’t. Len is compiler magic, not an actual function call. (Len 是编译器魔术，而不是一个实际的函数调用。)
 
-> … all the types len works on have the same header format, the compiler just treats the object like a header and returns the integer representing the length of elements (所有 len 处理的类型都有相同的头部格式，编译器只是将对象当作头部对待，并返回表示元素长度的整数)
+> …… all the types len works on have the same header format, the compiler just treats the object like a header and returns the integer representing the length of elements (所有 len 处理的类型都有相同的头部格式，编译器只是将对象当作头部对待，并返回表示元素长度的整数)
 
 虽然这些答案在技术上是正确的，但我认为用简洁的语言展开构成这个"魔法"的层次结构会很棒！这也是一个很好的小练习，可以让你更深入地了解 Go 编译器的内部工作原理。
 
@@ -26,7 +26,7 @@ Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org
 
 * **解析**; 对源文件进行词法分析和语法分析，并为每个源文件构建一个语法树
 * **AST 抽象语法树转换和类型检查**; 将语法树转换为编译器的 AST 表示形式，并对 AST 树进行类型检查
-* **生成 SSA 静态单赋值**; AST 树被转换为 Static Single Assignment (SSA静态单赋值)形式，这是一种可以实现优化的较低级别的中间表示形式
+* **生成 SSA 静态单赋值**; AST 树被转换为 Static Single Assignment (SSA 静态单赋值)形式，这是一种可以实现优化的较低级别的中间表示形式
 * **生成机器码**; SSA 经过另一个特定于机器的优化过程，然后传递给汇编程序，转换为机器代码并写入最终的二进制文件
 
 
@@ -39,7 +39,7 @@ Go 编译器的入口点(毫不奇怪)是 *compile/internal/gc* 包中的 main()
 
 最初发生的事情之一就是类型检查。[typecheck.InitUniverse()](https://github.com/golang/go/blob/release-branch.go1.17/src/go/types/universe.go) ，它定义了基本类型、内置函数和操作数。
 
-在这里，我们可以看到所有内置函数是如何被匹配到一个“操作”的，我们可以使用 ir.OLEN 来跟踪len()调用的步骤。
+在这里，我们可以看到所有内置函数是如何被匹配到一个“操作”的，我们可以使用 ir.OLEN 来跟踪 len()调用的步骤。
 
 ```go
 var builtinFuncs = [...]struct {
@@ -81,7 +81,7 @@ var builtinFuncs = [...]struct {
 		...
 	}
 ```
-同样，我们可以看到所有的类型将成为len()的有效输入
+同样，我们可以看到所有的类型将成为 len()的有效输入
 ```go
 	okforlen[types.TARRAY] = true
 	okforlen[types.TCHAN] = true
@@ -94,7 +94,7 @@ var builtinFuncs = [...]struct {
 
 再深入一些，我们可以看到每个文件被单独解析，然后在五个不同的阶段进行类型检查。(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/noder/noder.go#L40-L64)
 
-```
+```plain
 Phase 1: const, type, and names and types of funcs. (常量，类型，标识符以及函数的类型)
 Phase 2: Variable assignments, interface assignments, alias declarations.（有效的赋值，接口赋值，别名声明）
 Phase 3: Type check function bodies.（函数体类型检查）
@@ -218,7 +218,7 @@ func (x *expandState) rewriteSelect(leaf *Value, selector *Value, offset int64, 
 	return locs
 ```
 ## Maps, Channels
-最后，对于Map和Channel，我们使用 *referenceTypeBuiltin* 辅助函数。它的内部工作方式有点神奇，但是它最终做的是获取 map/chan 参数的地址并使用零偏移量引用它的结构布局，很像 *unsafe.Pointer(uintptr(unsafe.Pointer(s)))* 那样最终返回第一个结构字段的值。
+最后，对于 Map 和 Channel，我们使用 *referenceTypeBuiltin* 辅助函数。它的内部工作方式有点神奇，但是它最终做的是获取 map/chan 参数的地址并使用零偏移量引用它的结构布局，很像 *unsafe.Pointer(uintptr(unsafe.Pointer(s)))* 那样最终返回第一个结构字段的值。
 ```go
 // referenceTypeBuiltin generates code for the len/cap builtins for maps and channels.
 func (s *state) referenceTypeBuiltin(n *ir.UnaryExpr, x *ssa.Value) *ssa.Value {
@@ -291,8 +291,8 @@ type hchan struct {
 
 我对于 Go 编译器的内部工作几乎没有经验，所以有些地方可能会有错。除此之外，随着泛型和新类型系统在接下来的几个 Go 版本中的出现，很多事情也都会发生改变。但我希望我至少提供了一种方法，可以让你接下来自己深入探索。
 
-请不要犹豫，向我提出意见、建议、新文章的想法，或者仅仅是谈一谈Go
+请不要犹豫，向我提出意见、建议、新文章的想法，或者仅仅是谈一谈 Go
 
 下次见!
 
-*于2021年7月31日撰写*
+*于 2021 年 7 月 31 日撰写*

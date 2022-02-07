@@ -3,7 +3,7 @@
 - 原文作者：Jeff Wendling
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w32_A_Tale_Of_Two_Copies
 - 译者：[haoheipi](https://github.com/haoheipi)
-- 校对：[]()
+- 校对：[](.)
 
 这是最好的时代，也是最坏的时代。最近，我遇到了一个性能方面的困惑，这让我进入了一场为期数天的探索中。我正在写部分代码来获取一些条目，然后将它们添加到一个固定大小的内存缓冲区中，最后在缓冲区满时将该缓冲区刷回到磁盘中。主代码看起来有点像这样:
 

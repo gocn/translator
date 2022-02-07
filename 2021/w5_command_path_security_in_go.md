@@ -1,4 +1,4 @@
-# Go语言命令行执行路径的安全性
+# Go 语言命令行执行路径的安全性
 
 - 原文地址：https://blog.golang.org/path-security
 - 原文作者：Russ Cox
@@ -6,19 +6,19 @@
 - 译者：[zhuyaguang](https://github.com/zhuyaguang)
 - 校对：[fivezh](https://github.com/fivezh)
 > Russ Cox
-> 2021年1月19日
+> 2021 年 1 月 19 日
 
-今天  [Go安全发布](https://groups.google.com/g/golang-announce/c/mperVMGa98w/m/yo5W5wnvAAAJ) 解决了一个涉及在不受信任的目录中查找路径的问题，该问题可能导致在运行 `go get` 命令时发生远程执行。我们希望大家能够了解这个问题到底意味着什么以及在你们自己的程序中是否也存在此类问题。这篇文章详细介绍了该 bug 、我们建议的解决办法、怎样判断你们自己的程序是否容易受到类似问题的攻击、以及如果遇到了，你可以做些什么。
+今天  [Go 安全发布](https://groups.google.com/g/golang-announce/c/mperVMGa98w/m/yo5W5wnvAAAJ) 解决了一个涉及在不受信任的目录中查找路径的问题，该问题可能导致在运行 `go get` 命令时发生远程执行。我们希望大家能够了解这个问题到底意味着什么以及在你们自己的程序中是否也存在此类问题。这篇文章详细介绍了该 bug 、我们建议的解决办法、怎样判断你们自己的程序是否容易受到类似问题的攻击、以及如果遇到了，你可以做些什么。
 
-## Go命令和远程执行
+## Go 命令和远程执行
 
 大多数 go 命令（包括 go build、go doc、go get、go install 和 go list）的设计目标之一就是不会运行从 internet 下载的任何代码。这里有几个明显的例外：很显然 go run，go test 和 go generate 会运行任意代码，（毕竟这是它们工作）。但是其他的命令就不行，因为各种各样的原因，包括可复制的构建和安全性。因此 go get 可以被诱骗执行任意代码，我们认为这是一个安全缺陷。
 
-如果 go get 不能运行任何代码，那么很不幸，这意味着它涉及的所有程序，比如编译器和版本控制系统，也都在安全范围内。例如，我们之前遇到过，版本控制系统使用晦涩难懂的编译器特性或存在远程执行缺陷时，就变成了Go中的远程执行缺陷。（关于这一点，go1.16 旨在通过引入一个 GOVCS 的设置来改善这种情况，通过该配置可以准确配置允许哪些版本控制系统以及何时允许。）
+如果 go get 不能运行任何代码，那么很不幸，这意味着它涉及的所有程序，比如编译器和版本控制系统，也都在安全范围内。例如，我们之前遇到过，版本控制系统使用晦涩难懂的编译器特性或存在远程执行缺陷时，就变成了 Go 中的远程执行缺陷。（关于这一点，go1.16 旨在通过引入一个 GOVCS 的设置来改善这种情况，通过该配置可以准确配置允许哪些版本控制系统以及何时允许。）
 
-然而，今天的 bug 完全是我们的错。不是 gcc 或 git 的bug或模糊特性。这个 bug 涉及到 Go 和其他程序如何找到其他的可执行文件。因为在了解细节之前，我们需要花一点时间来研究它。
+然而，今天的 bug 完全是我们的错。不是 gcc 或 git 的 bug 或模糊特性。这个 bug 涉及到 Go 和其他程序如何找到其他的可执行文件。因为在了解细节之前，我们需要花一点时间来研究它。
 
-## 命令、可执行路径和Go语言
+## 命令、可执行路径和 Go 语言
 
 所有操作系统都有一个可执行路径的概念（Unix 上是`$path`，Windows 上是 `%PATH%`，为简单起见，我们只用术语`PATH` ），这是一个目录列表。在 shell 提示符键入命令时，shell 会依次在每一个目录里面寻找你键入的可执行文件。它要么运行找到的第一个命令或者打印一条类似于 “command not found” 的消息。
 
@@ -28,7 +28,7 @@
 
 注意默认值：当前目录（这里用空字符串表示，但我们称之为`dot`）列在 /bin 和 /usr/bin 之前。MS-DOS 和 Windows 选择了硬编码这种行为：在这些系统上，总是首先自动搜索当前目录 ，然后再考虑 `%PATH%`中列出的目录。
 
-正如 Grampp 和 Morris 在他们的经典论文 [“UNIX操作系统安全性”](chrome-extension://ikhdkkncnoglghljlkmcimlnlhkeamad/pdf-viewer/web/viewer.html?file=https%3A%2F%2Fpeople.engr.ncsu.edu%2Fgjin2%2FClasses%2F246%2FSpring2019%2FSecurity.pdf)（1984）中指出的那样：`PATH`中将当前目录放在系统目录前面，意味着如果你 cd 进入某个目录并运行 ls ,那么你有可能得到的是该目录的恶意副本而不是系统实用程序。如果你可以欺骗系统管理员用 root 用户身份登录，在主目录运行 ls ，那么你可以运行任何你想要运行的代码。由于这个问题和其他类似的问题，基本上所有现代 Unix 发行版本都将新用户的默认 `PATH` 设置为排除当前目录，但 Windows系统仍然会先搜索当前目录，不管 `PATH` 怎么说。
+正如 Grampp 和 Morris 在他们的经典论文 [“UNIX 操作系统安全性”](chrome-extension://ikhdkkncnoglghljlkmcimlnlhkeamad/pdf-viewer/web/viewer.html?file=https%3A%2F%2Fpeople.engr.ncsu.edu%2Fgjin2%2FClasses%2F246%2FSpring2019%2FSecurity.pdf)（1984）中指出的那样：`PATH`中将当前目录放在系统目录前面，意味着如果你 cd 进入某个目录并运行 ls ,那么你有可能得到的是该目录的恶意副本而不是系统实用程序。如果你可以欺骗系统管理员用 root 用户身份登录，在主目录运行 ls ，那么你可以运行任何你想要运行的代码。由于这个问题和其他类似的问题，基本上所有现代 Unix 发行版本都将新用户的默认 `PATH` 设置为排除当前目录，但 Windows 系统仍然会先搜索当前目录，不管 `PATH` 怎么说。
 
 例如，你输入命令 
 
@@ -38,17 +38,17 @@ go version
 
 在典型配置 Unix 上，shell 从你的`PATH`中的系统目录运行 go 可执行文件。但当你在 Windows 输入命令时，`cmd.exe`会先检查当前目录。如果 .\go.exe（或者 .\go.bat 或者许多其他选择）存在，`cmd.exe`会直接运行一个可执行的，而不是从你的`PATH`找一个。
 
-对于 Go 语言来说，`PATH` 的搜索由 [exec.LookPath](https://pkg.go.dev/os/exec#LookPath) 处理，被[`exec.Command`](https://pkg.go.dev/os/exec#Command) 自动调用。为了更好地融入主机系统，Go语言的`exec.LookPath` 在Unix上实现了Unix规则并且在 Windows 上实现了 Windows 规则。比如下面这个命令
+对于 Go 语言来说，`PATH` 的搜索由 [exec.LookPath](https://pkg.go.dev/os/exec#LookPath) 处理，被[`exec.Command`](https://pkg.go.dev/os/exec#Command) 自动调用。为了更好地融入主机系统，Go 语言的`exec.LookPath` 在 Unix 上实现了 Unix 规则并且在 Windows 上实现了 Windows 规则。比如下面这个命令
 
 ```go
 out, err := exec.Command("go", "version").CombinedOutput()
 ```
 
-当在操作系统 shell命令窗口 键入 go version 时，大家行为都一样。在 Windows 上，如果 `.\go.exe` 存在的话，会直接运行。（值得注意的是，Windows PowerShell 改变了这种行为，删除了当前目录的隐式搜索，但是 `cmd.exe`和 Windows  C 库的 SearchPath 函数还是继续延续了这种行为。Go 继续匹配命令行程序）
+当在操作系统 shell 命令窗口 键入 go version 时，大家行为都一样。在 Windows 上，如果 `.\go.exe` 存在的话，会直接运行。（值得注意的是，Windows PowerShell 改变了这种行为，删除了当前目录的隐式搜索，但是 `cmd.exe`和 Windows  C 库的 SearchPath 函数还是继续延续了这种行为。Go 继续匹配命令行程序）
 
-## 关于这个Bug
+## 关于这个 Bug
 
-当 `go get` 下载并构建一个包含`import "C"`包时，它会运行一个名为`cgo`的程序来准备与相关 C 代码等价的 Go 代码 。go 命令在包含有包的源代码的目录下运行 `cgo` 。一旦 `cgo` 生成了它的Go语言的输出文件，Go 命令本身就会调用生成的 Go 文件上的 Go 编译器和宿主的 C 编译器（gcc 或 clang）来构建该包中所有 C 源文件。所有的这些运行良好，但是 Go 命令去哪里找宿主机上 C 编译器呢。当然，看起来像是在 `PATH` 里面。幸运的是，当它在包源文件目录下运行 C 编译器时，它从调用 go 命令的原始目录找到了 `PATH` ：
+当 `go get` 下载并构建一个包含`import "C"`包时，它会运行一个名为`cgo`的程序来准备与相关 C 代码等价的 Go 代码 。go 命令在包含有包的源代码的目录下运行 `cgo` 。一旦 `cgo` 生成了它的 Go 语言的输出文件，Go 命令本身就会调用生成的 Go 文件上的 Go 编译器和宿主的 C 编译器（gcc 或 clang）来构建该包中所有 C 源文件。所有的这些运行良好，但是 Go 命令去哪里找宿主机上 C 编译器呢。当然，看起来像是在 `PATH` 里面。幸运的是，当它在包源文件目录下运行 C 编译器时，它从调用 go 命令的原始目录找到了 `PATH` ：
 
 ```go
 cmd := exec.Command("gcc", "file.c")
@@ -76,7 +76,7 @@ cmd := exec.Command("gcc", "tmpfile.c")
 cmd.Run()
 ```
 
-现在，因为 cgo本身运行在 `badpkg`中，而不是 go 命令运行的目录。所以如果`badpkg\gcc.exe`文件存在的话，会直接运行`badpkg\gcc.exe`，而不是去找系统的 `gcc` 。
+现在，因为 cgo 本身运行在 `badpkg`中，而不是 go 命令运行的目录。所以如果`badpkg\gcc.exe`文件存在的话，会直接运行`badpkg\gcc.exe`，而不是去找系统的 `gcc` 。
 
 因此，攻击者可以创建一个使用 `cgo` 并包含 `gcc.exe`的恶意包。然后，任何 Windows 用户运行 go get  来下载并构建攻击者的包，会优先运行攻击者提供的 `gcc.exe` 而不是系统路径下的任何 `gcc` 。
 
@@ -110,7 +110,7 @@ GO111MODULE=on \
 go get golang.org/x/tools/cmd/goimports@v0.1.0
 ```
 
-你可以更新依赖于`golang.org/x/tools/go/packages`的程序，甚至在它们的作者之前，通过在go get中添加一个显式的依赖升级:
+你可以更新依赖于`golang.org/x/tools/go/packages`的程序，甚至在它们的作者之前，通过在 go get 中添加一个显式的依赖升级:
 
 ```go
 GO111MODULE=on \
@@ -123,7 +123,7 @@ go get example.com/cmd/thecmd golang.org/x/tools@v0.1.0
 
 ## 你的代码受影响了吗
 
-如果你的代码里使用了 `exec.LookPath` 或者 `exec.Command` 你只需要担心你（或者你的客户）是否在包含不可信内容的目录中运行程序。如果是这样，那么就可以使用当前目录 中的可执行文件启动子进程，而不是系统目录。（同样， 使用来自当前目录 的可执行文件通常发生在 Windows 上，和非常规`PATH`设置的Unix上。 ）
+如果你的代码里使用了 `exec.LookPath` 或者 `exec.Command` 你只需要担心你（或者你的客户）是否在包含不可信内容的目录中运行程序。如果是这样，那么就可以使用当前目录 中的可执行文件启动子进程，而不是系统目录。（同样， 使用来自当前目录 的可执行文件通常发生在 Windows 上，和非常规`PATH`设置的 Unix 上。 ）
 
 如果你担心的话，我们已经发布了更受限制的`os/exec`变体  [`golang.org/x/sys/execabs`](https://pkg.go.dev/golang.org/x/sys/execabs) 只需要简单替换
 

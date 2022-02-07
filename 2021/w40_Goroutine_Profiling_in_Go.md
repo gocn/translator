@@ -25,7 +25,7 @@ Go 有各种 API 来监测 `allgs `中活跃的 goroutine 和这些 goroutines �
 
 ## 开销
 
-Go 中 所有可用的 goroutine 分析都需要一个 `O(N)` **stop-the-world** 阶段。这里的 `N` 是指已分配 goroutine 的数量。一个简单的[基准测试](https://github.com/felixge/fgprof/blob/fe01e87ceec08ea5024e8168f88468af8f818b62/fgprof_test.go#L35-L78) [表明](https://github.com/felixge/fgprof/blob/master/BenchmarkProfilerGoroutines.txt)，当使用 [runtime.GoroutineProfile()](https://golang.org/pkg/runtime/#GoroutineProfile) API时，每个goroutine 的世界会停止约1个µs。但是这个数字可能会随着诸如程序的平均堆栈深度、死掉的 goroutines 数量等因素的变化而波动。
+Go 中 所有可用的 goroutine 分析都需要一个 `O(N)` **stop-the-world** 阶段。这里的 `N` 是指已分配 goroutine 的数量。一个简单的[基准测试](https://github.com/felixge/fgprof/blob/fe01e87ceec08ea5024e8168f88468af8f818b62/fgprof_test.go#L35-L78) [表明](https://github.com/felixge/fgprof/blob/master/BenchmarkProfilerGoroutines.txt)，当使用 [runtime.GoroutineProfile()](https://golang.org/pkg/runtime/#GoroutineProfile) API 时，每个 goroutine 的世界会停止约 1 个µs。但是这个数字可能会随着诸如程序的平均堆栈深度、死掉的 goroutines 数量等因素的变化而波动。
 
 根据经验，对于延迟非常敏感并使用数千个活跃 goroutine 的应用程序，在生产中使用 goroutine 分析可能需要谨慎一些。因此，对于包含大量的 goroutine ，甚至 Go 本身这样的应用程序来说，使用 goroutine 分析可能不是一个好主意。
 
@@ -45,7 +45,7 @@ Goroutines 有很多[属性](https://github.com/golang/go/blob/go1.15.6/src/runt
     -   `dead`: 刚刚退出或被重新初始化
     -   `copystack`: 堆栈当前正在移动
     -   `preempted`: 抢占
--   [`waitreason`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L996-L1024):goroutine 等待的原因，比如 sleep、channel 操作、i/o、gc等等。
+-   [`waitreason`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L996-L1024):goroutine 等待的原因，比如 sleep、channel 操作、i/o、gc 等等。
 -   [`waitsince`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L430): goroutine 进入 `waiting` 或者 `syscall` 状态的大约时间戳，由等待启动后第一个 GC 确定。
 -   [`labels`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L472): 可以附加到 goroutines 上的一系列 键/值[分析标签](https://rakyll.org/profiler-labels/)。
 -   `stack trace`: 当前正在执行的函数及其调用者。要么是文件名、函数名和行号的纯文本输出，要么是程序计数器地址的一个切片(pcs)。 你也可以进一步研究更多的细节比如： 文件名、函数名和行号的纯文本可以转换成pcs吗？
@@ -64,7 +64,7 @@ Goroutines 有很多[属性](https://github.com/golang/go/blob/go1.15.6/src/runt
 
 该 API 将返回非结构化文本输出，显示所有活动 goroutines 的堆栈信息以及上面特性矩阵中列出的属性。
 
-`waitsince`属性包含了以分钟为单位的`nanotime() - gp.waitsince()`，但当持续时间超过1分钟。
+`waitsince`属性包含了以分钟为单位的`nanotime() - gp.waitsince()`，但当持续时间超过 1 分钟。
 
 pprof.Lookup(debug=2) 是如何使用 profile 简单的别名。实际调用是下面这样：
 
@@ -190,14 +190,14 @@ Mappings
 
 ### [`runtime.GoroutineProfile()`](https://golang.org/pkg/runtime/#GoroutineProfile)
 
-该函数实际返回一个slice，包含了所有活跃 goroutines 和他们当前的堆栈跟踪信息。堆栈跟踪信息以函数地址的形式给出，可以使用[`runtime.CallersFrames()`](https://golang.org/pkg/runtime/#CallersFrames)将函数地址解析为函数名。
+该函数实际返回一个 slice，包含了所有活跃 goroutines 和他们当前的堆栈跟踪信息。堆栈跟踪信息以函数地址的形式给出，可以使用[`runtime.CallersFrames()`](https://golang.org/pkg/runtime/#CallersFrames)将函数地址解析为函数名。
 
 该方法被我的开源项目 [fgprof](https://github.com/felixge/fgprof) 用来实现挂钟分析。
 
 下面的特性是不可用的，但是很期待在未来的 Go 项目中可能会被加入进去。
 
 -   包含上面但是目前还不能使用的 goroutine 属性，特别是标签。
--   通过pprof标签过滤，这可以减少 stop-the-world ，但会需要额外的运行时内务。
+-   通过 pprof 标签过滤，这可以减少 stop-the-world ，但会需要额外的运行时内务。
 -   将返回的 goroutine 的数量限制为一个随机子集，也可以减少 stop-the-world，而且可能比按标签过滤更容易实现。
 
 下面是返回输出的截短示例，完整例子可以看 [2.runtime.goroutineprofile.json](https://github.com/DataDog/go-profiler-notes/blob/main/examples/goroutine/2.runtime.goroutineprofile.json) 。

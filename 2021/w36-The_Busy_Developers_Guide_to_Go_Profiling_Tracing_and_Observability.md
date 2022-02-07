@@ -50,7 +50,7 @@ func main() {
 
 <img src="../static/images/w36-The_Busy_Developers_Guide_to_Go_Profiling_Tracing_and_Observability/timeline.png" width=600/>
 
-从调度器的角度看，上面的程序的执行情况如下图所示。首先， `G1`在 `CPU 1` 上 `执行`。接下来 goroutine 在`等待 `网络时离开 CPU。一旦发现网络有响应（使用非阻塞 I/O，与 Node.js 相似），调度器将 goroutine 标记为 `可运行`。一旦 CPU 核可用，goroutine 会再次开始 `执行`。在我们的例子中，所有的 CPU 核都可用，所以 `G1` 不需要在`可运行`状态花费时间，就可以立即回到一个 CPU 上`执行` `fmt.Printf()` 函数。
+从调度器的角度看，上面的程序的执行情况如下图所示。首先， `G1`在 `CPU 1` 上 `执行`。接下来 goroutine 在`等待`网络时离开 CPU。一旦发现网络有响应（使用非阻塞 I/O，与 Node.js 相似），调度器将 goroutine 标记为 `可运行`。一旦 CPU 核可用，goroutine 会再次开始 `执行`。在我们的例子中，所有的 CPU 核都可用，所以 `G1` 不需要在`可运行`状态花费时间，就可以立即回到一个 CPU 上`执行` `fmt.Printf()` 函数。
 
 <img src="../static/images/w36-The_Busy_Developers_Guide_to_Go_Profiling_Tracing_and_Observability/scheduler.gif" width=400/>
 
@@ -136,7 +136,7 @@ GC 操作包括大量耗时的图遍历和缓存命中。它甚至包括了停�
 
 # 免责声明
 
-我是 [felixge](https://github.com/felixge)，就职于 [Datadog](https://www.datadoghq.com/) ，主要工作内容为Go 的 [持续性能优化](https://www.datadoghq.com/product/code-profiling/)。你应该了解下。我们也在[招聘](https://www.datadoghq.com/jobs-engineering/#all&all_locations) : ).
+我是 [felixge](https://github.com/felixge)，就职于 [Datadog](https://www.datadoghq.com/) ，主要工作内容为 Go 的 [持续性能优化](https://www.datadoghq.com/product/code-profiling/)。你应该了解下。我们也在[招聘](https://www.datadoghq.com/jobs-engineering/#all&all_locations) : ).
 
 本页面的信息可认为正确，但不提供任何保证。欢迎反馈！
 

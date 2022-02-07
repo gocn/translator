@@ -1,4 +1,4 @@
-## 以Go为例-探究并行与并发的区别
+## 以 Go 为例-探究并行与并发的区别
 
 - 原文地址：https://benjiv.com/parallelism-vs-concurrency/
 - 原文作者：Benjamin Vesterby
@@ -6,7 +6,7 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：[Cluas](https://github.com/Cluas)
 
-在软件内并行是指多条指令同时执行。每个编程语言都有各自实现并行，或者像Go，将并行作为语言的一部分，提供原生支持。并行让软件工程师能够同时在多核处理器上并行执行任务，从而抛开硬件的物理限制。[1](https://benjiv.com/parallelism-vs-concurrency/#fn:1)
+在软件内并行是指多条指令同时执行。每个编程语言都有各自实现并行，或者像 Go，将并行作为语言的一部分，提供原生支持。并行让软件工程师能够同时在多核处理器上并行执行任务，从而抛开硬件的物理限制。[1](https://benjiv.com/parallelism-vs-concurrency/#fn:1)
 
 通常情况下，由于[构建并行模块](https://benjiv.com/parallelism-vs-concurrency/#building-blocks-of-parallelism)的复杂性，一个应用程序的并行程度取决于工程师编写软件的能力。
 
@@ -14,9 +14,9 @@
 
 - 多人同时在餐厅点单
 - 多个收银员在杂货铺
-- [多核CPU](https://benjiv.com/quick-recap-single-multi-core/#multi-core-and-multiple-cpu-processing)
+- [多核 CPU](https://benjiv.com/quick-recap-single-multi-core/#multi-core-and-multiple-cpu-processing)
 
-事实上，在任何一个应用程序中都有多层含义的并行。有应用程序本身的并行，这是由应用程序开发人员定义的，还有由操作系统协调的物理硬件上的CPU执行的指令的并行（或复用）。
+事实上，在任何一个应用程序中都有多层含义的并行。有应用程序本身的并行，这是由应用程序开发人员定义的，还有由操作系统协调的物理硬件上的 CPU 执行的指令的并行（或复用）。
 
 > **注意**：一般情况下，应用程序必须明确写出他们使用并行。这个需要工程师需要有技能写出"正确"的可并行的代码。
 
@@ -43,11 +43,11 @@
 
 <h3 id="bbop" >构建并行</h3>
 
-应用程序开发人员利用抽象概念来描述一个应用程序的并行。这些抽象概念通常在每个实现并行的编程语言上会有所不同，但是概念是一样的。举个例子，在C语言，并行是通过[pthread](https://en.wikipedia.org/wiki/Pthreads)来定义的。在Go，并行是通过[goroutines](https://en.wikipedia.org/wiki/Goroutine)来定义的。
+应用程序开发人员利用抽象概念来描述一个应用程序的并行。这些抽象概念通常在每个实现并行的编程语言上会有所不同，但是概念是一样的。举个例子，在 C 语言，并行是通过[pthread](https://en.wikipedia.org/wiki/Pthreads)来定义的。在 Go，并行是通过[goroutines](https://en.wikipedia.org/wiki/Goroutine)来定义的。
 
 <h4 id="processes" >进程</h4>
 
-一个进程是一个单一的执行单元，包含它自己的"程序计数器，寄存器和变量"。从概念上来讲，每个进程有它自己的虚拟CPU"[2](https://benjiv.com/parallelism-vs-concurrency/#fn:2)。这一点很重要，因为涉及到进程在创建和管理过程中的开销。除了创建进程时的开销，每个进程只允许访问自己的内存。这表示进程不能访问其他进程的内存。
+一个进程是一个单一的执行单元，包含它自己的"程序计数器，寄存器和变量"。从概念上来讲，每个进程有它自己的虚拟 CPU"[2](https://benjiv.com/parallelism-vs-concurrency/#fn:2)。这一点很重要，因为涉及到进程在创建和管理过程中的开销。除了创建进程时的开销，每个进程只允许访问自己的内存。这表示进程不能访问其他进程的内存。
 
 如果多个执行线程(并行任务)需要访问一些共享资源时，这会是一个问题。
 
@@ -57,7 +57,7 @@
 
 线程相较于进程只需要更少的开销，因为它们不需要为了每个线程创建新进程，并且资源可以被共享或者复用。
 
-这里有一个在Ubuntu 18.04下，克隆进程和创建线程的开销比较:[3](https://benjiv.com/parallelism-vs-concurrency/#fn:3)
+这里有一个在 Ubuntu 18.04 下，克隆进程和创建线程的开销比较:[3](https://benjiv.com/parallelism-vs-concurrency/#fn:3)
 
 ```shell
 # Borrowed from https://stackoverflow.com/a/52231151/834319
@@ -103,7 +103,7 @@ Minimum start-up time for processes takes 33.41x longer than for threads.
 
 由于一个进程的线程在同一内存空间中执行，因此存在着临界区被多个线程同时访问的风险。在应用程序中这个可能导致数据损坏或其他无法预料的行为。
 
-这里有2个主要问题当多个线程同一时间访问共享内存的时候。
+这里有 2 个主要问题当多个线程同一时间访问共享内存的时候。
 
 <h5 id="rc" >竞态条件</h5>
 
@@ -177,13 +177,13 @@ func read() {
 
 如果我们看上面的例子，我们可以看到`shared`变量被互斥锁保护着。这意味着只有一个线程在一个时间点可以访问`shared`变量。这个保证了`shared`变量不被损坏，并且是一个可预计的行为。
 
-> **注意**: 在使用互斥锁时，需要注意的一个点是，要在函数返回的时候释放互斥锁。在Go，举个例子，这个操作可以通过关键字`defer`实现。这个保证了其他线程可以访问到共享资源。
+> **注意**: 在使用互斥锁时，需要注意的一个点是，要在函数返回的时候释放互斥锁。在 Go，举个例子，这个操作可以通过关键字`defer`实现。这个保证了其他线程可以访问到共享资源。
 
 <h5 id="semaphores" >信号量</h5>
 
-信号量是一种类型的屏障，允许一个时间点一定数量的线程访问共享资源。这个和互斥锁的区别在于，访问资源的线程数量不会被限制为1个。
+信号量是一种类型的屏障，允许一个时间点一定数量的线程访问共享资源。这个和互斥锁的区别在于，访问资源的线程数量不会被限制为 1 个。
 
-在Go标准库没有信号的实现，但是可以通过channels[5](https://benjiv.com/parallelism-vs-concurrency/#fn:5)来实现。
+在 Go 标准库没有信号的实现，但是可以通过 channels[5](https://benjiv.com/parallelism-vs-concurrency/#fn:5)来实现。
 
 <h5 id="bw" >忙等待</h5>
 
@@ -237,11 +237,11 @@ func main() {
 }
 ```
 
-通常情况下忙等待不是一个好的想法。最好的办法是使用信号或者一个互斥锁去确保临界区是受保护的。 我们将介绍在Go中处理这个问题的更好方法，但它说明了编写 "正确的"可并行代码的复杂性。
+通常情况下忙等待不是一个好的想法。最好的办法是使用信号或者一个互斥锁去确保临界区是受保护的。 我们将介绍在 Go 中处理这个问题的更好方法，但它说明了编写 "正确的"可并行代码的复杂性。
 
 <h5 id="wg" >等待组(Wait Groups)</h5>
 
-等待组是一个用来保证所有并行代码路径在继续之前完成处理的方法。在Go里，这个用标准库中的`sync`包中提供的`sync.WaitGroup`来实现。
+等待组是一个用来保证所有并行代码路径在继续之前完成处理的方法。在 Go 里，这个用标准库中的`sync`包中提供的`sync.WaitGroup`来实现。
 
 ```go
 // Example of a `sync.WaitGroup` in Go
@@ -267,7 +267,7 @@ func main() {
 }
 ```
 
-在上面这个例子的`wg.Wait()`是一个阻塞调用。这个表示主线程会等到所有协程完成后再继续执行，并且对应的`defer wg.Done()`已经被调用。WaitGroup的内部实现是一个计数器，当每个协程在调用`wg.Add(N)`后会加1，同时协程被加到WaitGroup内。当计数器计到0，主线程会继续执行或者在这个例子中会退出。
+在上面这个例子的`wg.Wait()`是一个阻塞调用。这个表示主线程会等到所有协程完成后再继续执行，并且对应的`defer wg.Done()`已经被调用。WaitGroup 的内部实现是一个计数器，当每个协程在调用`wg.Add(N)`后会加 1，同时协程被加到 WaitGroup 内。当计数器计到 0，主线程会继续执行或者在这个例子中会退出。
 
 <h3 id="wic" >什么是并发？</h3>
 

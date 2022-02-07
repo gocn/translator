@@ -6,7 +6,7 @@
 - 译者：[fivezh](https://github.com/fivezh)
 - 校对：[zxmfke](https://github.com/zxmfke)
 
-从 Go 1.18版本开始，标准工具集开始支持模糊测试。
+从 Go 1.18 版本开始，标准工具集开始支持模糊测试。
 
 ## 概述
 
@@ -38,15 +38,15 @@
 
 下面的建议将帮助你从模糊处理中获得最大收益。
 
-- 模糊测试应该在支持覆盖检测的平台上运行（目前是AMD64和ARM64），如此语料库可以在运行过程中进行有意义的增长，并且在模糊测试时可以覆盖更多代码
+- 模糊测试应该在支持覆盖检测的平台上运行（目前是 AMD64 和 ARM64），如此语料库可以在运行过程中进行有意义的增长，并且在模糊测试时可以覆盖更多代码
 - 模糊目标应该是快速和确定的，这样模糊引擎就能有效地工作，新的失败和代码覆盖率就能轻易地重现
-- 由于模糊目标是以非确定性的顺序在多个worker间并行调用，所以模糊目标的状态不应该在每次调用结束后持续存在，而且模糊目标的行为不应该依赖于全局状态
+- 由于模糊目标是以非确定性的顺序在多个 worker 间并行调用，所以模糊目标的状态不应该在每次调用结束后持续存在，而且模糊目标的行为不应该依赖于全局状态
 
 ### 自定义设置
 
 默认的 go 命令设置适用于大多数模糊测试的情况。通常情况下，在命令行上执行的模糊测试应该是这样的
 
-```
+```plain
 $ go test -fuzz={FuzzTestName}
 ```
 
@@ -55,7 +55,7 @@ $ go test -fuzz={FuzzTestName}
 其中几个:
 
 - `-fuzztime`: 在退出前执行模糊目标的总时间或迭代次数，默认为无限期地
-- `-fuzzminimizetime`: 在每次最小化尝试中，模糊目标将被执行的时间或迭代次数，默认为60秒。你可以通过 `-fuzzminimizetime 0` 完全禁用最小化设置
+- `-fuzzminimizetime`: 在每次最小化尝试中，模糊目标将被执行的时间或迭代次数，默认为 60 秒。你可以通过 `-fuzzminimizetime 0` 完全禁用最小化设置
 - `-parallel`: 同时运行的模糊处理进程的数量，默认为`$GOMAXPROCS`。目前，在模糊摸索过程中设置 `-cpu` 没有作用
 
 ### 语料库文件格式
@@ -64,7 +64,7 @@ $ go test -fuzz={FuzzTestName}
 
 下面是一个语料库文件的例子：
 
-```
+```plain
 go test fuzz v1
 []byte("hello\\xbd\\xb2=\\xbc ⌘")
 int64(572293)
@@ -72,17 +72,17 @@ int64(572293)
 
 第一行是用来通知模糊测试引擎文件的编码版本。虽然目前没有计划未来的编码格式版本，但设计上必须支持这种可能性。
 
-下面的每一行都是构成语料库条目的值，如果需要，可以直接复制到Go代码中。
+下面的每一行都是构成语料库条目的值，如果需要，可以直接复制到 Go 代码中。
 
 在上面的例子中，我们有一个`[]byte`，后面是一个`int64`。这些类型必须与模糊处理的参数完全类型匹配、顺序一致。这些类型的模糊测试目标会是这样的：
 
-```
+```plain
 f.Fuzz(func(*testing.T, []byte, int64) {})
 ```
 
 指定自定义种子语料库的最简单方法是使用`(*testing.F).Add`方法。在上面的例子中，可以这样操作：
 
-```
+```plain
 f.Add([]byte("hello\\xbd\\xb2=\\xbc ⌘"), int64(572293))
 ```
 
@@ -90,7 +90,7 @@ f.Add([]byte("hello\\xbd\\xb2=\\xbc ⌘"), int64(572293))
 
 如此使用该工具:
 
-```
+```plain
 $ go install golang.org/x/tools/cmd/file2fuzz@latest
 $ file2fuzz
 ```
@@ -99,7 +99,7 @@ $ file2fuzz
 
 - 教程:
 
-    - 关于用Go进行模糊测试的介绍性教程，请参见[博文](https://go.dev/blog/fuzz-beta)
+    - 关于用 Go 进行模糊测试的介绍性教程，请参见[博文](https://go.dev/blog/fuzz-beta)
     - 更多内容即将来临!
 
 - 文档:
@@ -136,7 +136,7 @@ $ file2fuzz
 
 **种子语料库（seed corpus）:** 用户为模糊测试提供的语料库，可用于指导模糊测试引擎。它由模糊测试中`f.Add`调用添加的语料库条目，以及软件包中`testdata/fuzz/{FuzzTestName}`目录下的文件组成
 
-**测试文件（test file）:** 一个格式为xxx_test.go的文件，可以包含测试、基准、例子和模糊测试
+**测试文件（test file）:** 一个格式为 xxx_test.go 的文件，可以包含测试、基准、例子和模糊测试
 
 **漏洞（vulnerability）:** 一种代码中安全敏感的弱点，可被攻击者所利用
 
@@ -144,4 +144,4 @@ $ file2fuzz
 
 如果你遇到任何问题或有一个关于功能的想法，欢迎[提交问题](https://github.com/golang/go/issues/new?&labels=fuzz)
 
-关于该功能的讨论和一般反馈，也可以参与Gophers Slack的[#fuzzing频道](https://gophers.slack.com/archives/CH5KV1AKE)
+关于该功能的讨论和一般反馈，也可以参与 Gophers Slack 的[#fuzzing 频道](https://gophers.slack.com/archives/CH5KV1AKE)

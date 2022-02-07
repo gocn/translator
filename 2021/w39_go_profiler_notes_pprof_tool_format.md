@@ -15,7 +15,7 @@ Go 项目本身[捆绑了](https://github.com/golang/go/tree/master/src/cmd/ppro
 ## 特点
 
 
-pprof 工具提供一个交互式命令行界面，一个Web UI，还包括各种其他输出格式选项。
+pprof 工具提供一个交互式命令行界面，一个 Web UI，还包括各种其他输出格式选项。
 
 ## 文件格式
 
@@ -32,7 +32,7 @@ pprof 文件包含采集的堆栈列表，这些堆栈信息具有一个或多�
 
 
 
-性能分析还包括记录性能分析的时间（UTC格式）以及记录的持续时间。
+性能分析还包括记录性能分析的时间（UTC 格式）以及记录的持续时间。
 
 
 另外，这个格式允许删除/保留正则表达式以排除/包括某些堆栈跟踪信息，但 Go [不使用](https://github.com/golang/go/blob/go1.15.6/src/runtime/pprof/proto.go#L375-L376) 它们。 还有一个注释列表（也[没有使用](https://github.com/golang/go/search?q=tagProfile_Comment)），以及描述采样的周期间隔时间。
@@ -63,7 +63,7 @@ runtime.mstart;runtime.mstart1;runtime.sysmon;runtime.usleep 3
 
 `pprof` 本身有一个名为 `-raw` 的输出模式，它将向您显示 pprof 文件的内容。但是，应该注意的是，这并不像它得到的那样原始，签出协议如下所示
 
-```
+```plain
 $ go tool pprof -raw examples/cpu/pprof.samples.cpu.001.pb.gz
 
 PeriodType: cpu nanoseconds
@@ -92,13 +92,13 @@ Mappings
 #### Using `protoc`
 ### 使用 `protoc`
 
-对于有兴趣研究更接近原始二进制存储的数据开发者，则需要借助 protocol buffer 的编译器。在macOS 上，您可以使用 `brew install protobuf` 来安装它，对于其他平台，请查看[protocol buffer 安装部分的内容](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation) 。
+对于有兴趣研究更接近原始二进制存储的数据开发者，则需要借助 protocol buffer 的编译器。在 macOS 上，您可以使用 `brew install protobuf` 来安装它，对于其他平台，请查看[protocol buffer 安装部分的内容](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation) 。
 
 
 现在让我们来分析上面的 CPU 的性能分析数据:
 
 
-```
+```plain
 $ gzcat examples/cpu/pprof.samples.cpu.001.pb.gz | protoc --decode perftools.profiles.Profile ./profile.proto
 
 sample_type {
@@ -184,12 +184,12 @@ period: 10000000
 
 
 
-[最初的 pprof工具](https://github.com/gperftools/gperftools/blob/master/src/pprof) 是谷歌内部使用 perl 开发的脚本。根据版权标题，开发可能要追溯到1998年。它于2005年作为 [gperftools ](https://github.com/google/tcmalloc/blob/master/docs/gperftools.md) 的一部分首次发布，并于2010年 [添加](https://github.com/golang/go/commit/c72fb37425f6ee6297371e0053d6d1f958d49a41) 到Go项目中。
+[最初的 pprof 工具](https://github.com/gperftools/gperftools/blob/master/src/pprof) 是谷歌内部使用 perl 开发的脚本。根据版权标题，开发可能要追溯到 1998 年。它于 2005 年作为 [gperftools](https://github.com/google/tcmalloc/blob/master/docs/gperftools.md) 的一部分首次发布，并于 2010 年 [添加](https://github.com/golang/go/commit/c72fb37425f6ee6297371e0053d6d1f958d49a41) 到 Go 项目中。
 
-2014年，Go项目用 [Raul Silvera](https://www.linkedin.com/in/raul-silvera-a0521b55/) 的Go实现[取代了](https://github.com/golang/go/commit/8b5221a57b41a19abcb4e3dde20014af494048c2) 基于perl的pprof工具，目前谷歌已经使用了这个实现的工具。这个实现在2016年作为[一个独立的项目](https://github.com/google/pprof) 进行重新发布。从那时起，Go项目一直在提供上游项目的 pprof，并定期对其进行 [更新](https://github.com/golang/go/commits/master/src/cmd/vendor/github.com/google/pprof) 。
+2014 年，Go 项目用 [Raul Silvera](https://www.linkedin.com/in/raul-silvera-a0521b55/) 的 Go 实现[取代了](https://github.com/golang/go/commit/8b5221a57b41a19abcb4e3dde20014af494048c2) 基于 perl 的 pprof 工具，目前谷歌已经使用了这个实现的工具。这个实现在 2016 年作为[一个独立的项目](https://github.com/google/pprof) 进行重新发布。从那时起，Go 项目一直在提供上游项目的 pprof，并定期对其进行 [更新](https://github.com/golang/go/commits/master/src/cmd/vendor/github.com/google/pprof) 。
 
 
-Go 1.9(2017-08-24)增加了对pprof标签的支持。它还开始在默认情况下将符号信息包含到pprof文件中，这允许在不访问二进制文件的情况下查看程序性能。
+Go 1.9(2017-08-24)增加了对 pprof 标签的支持。它还开始在默认情况下将符号信息包含到 pprof 文件中，这允许在不访问二进制文件的情况下查看程序性能。
 
 ## Todo
 
