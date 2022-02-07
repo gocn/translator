@@ -35,10 +35,10 @@ func main() {
 
 ```go
 go func() {
-	C.doWork() // Cgo: 调用一个C函数，并在C代码侧做一些事情
+	C.doWork() // Cgo: 调用一个 C 函数，并在 C 代码侧做一些事情情
 }()
 
-// .. 在Go代码侧做点事 ..
+// .. 在 Go 代码侧做点事 ..
 ```
 
 然而，在某些情况下，我们需要一种机制来了解 C 代码的执行进度，这就带来了 Go 和 C 之间通信和同步的需要。例如，如果我们需要我们的 Go 代码等待 C 代码完成一些初始化工作，直到某个执行点执行，我们将需要这种类型的通信来精确的了解 C 函数的执行进度。
@@ -48,7 +48,7 @@ go func() {
 这种设计被认为是自然的，经常需要应用程序进行合作。如果另一个应用程序`B`试图提出请求，成为剪贴板的下一个所有者，那么`A`将失去其所有权。之后，来自应用程序`C`、`D`等的复制请求将被转发给应用程序`B`而不是`A`。类似于一个共享的内存区域被别人覆盖了，而原来的所有者失去了访问权。
 
 根据以上的上下文信息，我们可以理解，在一个应用程序开始 "粘贴"（服务）剪贴板信息之前，它首先要获得剪贴板的所有权。在我们获得所有权之前，剪贴板信息将不能用于访问目的。
-换句话说，如果一个剪贴板 API 被设计成如下方式:
+换句话说，如果一个剪贴板 API 被设计成如下方式：
 
 ```go
 clipboard.Write("某些信息")
@@ -61,7 +61,7 @@ clipboard.Write("某些信息")
 
 下一个想法是传递一个函数回调，然后让它在 C 代码侧被调用。该函数的执行将使用所需的`channel`向等待的 goroutine 发送一个通知。
 
-经过几次尝试，我们发现唯一可能的方法是附加一个全局函数指针，并通过一个函数包装器使其被调用:
+经过几次尝试，我们发现唯一可能的方法是附加一个全局函数指针，并通过一个函数包装器使其被调用：
 
 
 ```go
@@ -70,8 +70,8 @@ int myfunc(void* go_value);
 */
 import "C"
 
-// 这个funcCallback试图避免在运行时直接出现恐慌错误。
-// 传递给Cgo，因为它违反了指针传递规则:
+// 这个 funcCallback 试图避免在运行时直接出现恐慌错误。
+// 传递给 Cgo，因为它违反了指针传递规则：
 //
 //   panic: runtime error: cgo argument has Go pointer to Go pointer
 var (
@@ -95,11 +95,11 @@ func main() {
 }
 ```
 
-在上面的例子中，Go 一方的`gocallback`指针是通过 C 函数`myfunc`传递的。在 C 代码侧，将有一个使用`go_func_callback`的调用，通过传递结构`gocallback`作为参数，在 C 代码侧被调用:
+在上面的例子中，Go 一方的`gocallback`指针是通过 C 函数`myfunc`传递的。在 C 代码侧，将有一个使用`go_func_callback`的调用，通过传递结构`gocallback`作为参数，在 C 代码侧被调用：
 
 ```c
-// myfunc将在需要时触发一个回调，c_func，并通过void*参数传递
-// gocallback的数据通过void*参数。
+// myfunc 将在需要时触发一个回调，c_func，并通过 void*参数传递
+// gocallback 的数据通过 void*参数。
 void c_func(void *data) {
 	void *gocallback = userData;
 	// the gocallback is received as a pointer, we pass it as an argument
@@ -108,7 +108,7 @@ void c_func(void *data) {
 }
 ```
 
-`go_func_callback`知道它的参数被打造成`gocallback`。因此，一个类型转换是安全的，可以做调用:
+`go_func_callback`知道它的参数被打造成`gocallback`。因此，一个类型转换是安全的，可以做调用：
 
 ```go
 //go:export go_func_callback
@@ -119,7 +119,7 @@ func go_func_callback(c unsafe.Pointer) {
 func (c *gocallback) call() { c.f() }
 ```
 
-在 "gocallback "中的函数 "f "正是我们想要调用的东西:
+在 "gocallback "中的函数 "f "正是我们想要调用的东西：
 
 ```go
 func() {
@@ -139,7 +139,7 @@ func() {
 ## 什么是`runtime/cgo.Handle`
 
 
-新的[runtime/cgo.Handle](https://tip.golang.org/pkg/runtime/cgo/#Handle)提供了一种在 Go 和 C 之间传递包含 Go 指针（由 Go 分配的内存指针）的值的方法，而不违反 cgo 的指针传递规则。`Handle`是一个整数值，可以代表任何 Go 值。`Handle`可以通过 C 语言传递并返回到 Go，Go 代码可以使用`Handle`来检索原始 Go 值。最终的 API 设计建议如下:
+新的[runtime/cgo.Handle](https://tip.golang.org/pkg/runtime/cgo/#Handle)提供了一种在 Go 和 C 之间传递包含 Go 指针（由 Go 分配的内存指针）的值的方法，而不违反 cgo 的指针传递规则。`Handle`是一个整数值，可以代表任何 Go 值。`Handle`可以通过 C 语言传递并返回到 Go，Go 代码可以使用`Handle`来检索原始 Go 值。最终的 API 设计建议如下：
 
 ```go
 package cgo
@@ -149,30 +149,30 @@ type Handle uintptr
 
 // NewHandle 返回一个给定值的句柄。
 //
-// 该句柄在程序对其调用Delete之前一直有效。该句柄
-// 使用资源，而且这个包假定C代码可能会保留这个句柄。
-// 所以当句柄不再需要时，程序必须明确地调用Delete。
+// 该句柄在程序对其调用 Delete 之前一直有效。该句柄
+// 使用资源，而且这个包假定 C 代码可能会保留这个句柄。
+// 所以当句柄不再需要时，程序必须明确地调用 Delete。
 //
-// 预期的用途是将返回的句柄传递给C代码，由C代码
-// 将其传回给Go，由Go调用Value。
+// 预期的用途是将返回的句柄传递给 C 代码，由 C 代码
+// 将其传回给 Go，由 Go 调用 Value。
 func NewHandle(v interface{}) Handle
 
-// Value返回一个有效句柄的相关Go值。
+// Value 返回一个有效句柄的相关 Go 值。
 //
 // 如果句柄是无效的，该方法就会陷入恐慌。
 func (h Handle) Value() interface{}
 
 // Delete 会使一个句柄失效。这个方法应该只被调用一次
-// 程序不再需要将句柄传递给C，并且C代码
+// 程序不再需要将句柄传递给 C，并且 C 代码
 // 不再有一个句柄值的拷贝。
 //
 // 如果句柄是无效的，该方法就会慌乱
 func (h Handle) Delete()
 ```
 
-我们可以看到:`cgo.NewHandle`为任何给定的值返回一个句柄；方法`cgo.(Handle).Value`返回该句柄对应的 Go 值；每当我们需要删除该值时，可以调用`cgo.(Handle).Delete`。
+我们可以看到：`cgo.NewHandle`为任何给定的值返回一个句柄；方法`cgo.(Handle).Value`返回该句柄对应的 Go 值；每当我们需要删除该值时，可以调用`cgo.(Handle).Delete`。
 
-最直接的例子是使用`Handle`在 Go 和 C 之间传递一个字符串。在 Go 的一方:
+最直接的例子是使用`Handle`在 Go 和 C 之间传递一个字符串。在 Go 的一方：
 
 ```go
 package main
@@ -192,7 +192,7 @@ func main() {
 }
 ```
 
-字符串`s`通过一个创建的句柄传递给 C 函数`myprint`，在 C 代码侧:
+字符串`s`通过一个创建的句柄传递给 C 函数`myprint`，在 C 代码侧：
 
 ```c
 #include <stdint.h> // for uintptr_t
@@ -219,7 +219,7 @@ func MyGoPrint(handle C.uintptr_t) {
 
 `MyGoPrint`使用`cgo.(Handle).Value()`查询该值并打印出来。然后使用`cgo.(Handle).Delete()`删除该值。
 
-有了这个新设施，我们可以更好地简化之前提到的函数回调模式:
+有了这个新设施，我们可以更好地简化之前提到的函数回调模式：
 
 ```go
 /*
@@ -234,11 +234,11 @@ func main() {
 	ch := make(chan struct{})
 	handle := cgo.NewHandle(ch)
 	go func() {
-		C.myfunc(C.uintptr_t(handle)) // myfunc将在需要时调用goCallback。
+		C.myfunc(C.uintptr_t(handle)) // myfunc 将在需要时调用 goCallback。
 		...
 	}()
 
-	<-ch // 我们从myfunc得到了通知。
+	<-ch // 我们从 myfunc 得到了通知。
 	handle.Delete() // 因此需要删除手柄。
 	...
 }
@@ -252,7 +252,7 @@ func goCallback(h C.uintptr_t) {
 
 更重要的是，`cgo.Handle`是一个并发安全的机制，这意味着一旦我们有了句柄号码，我们就可以在任何地方获取这个值（如果仍然可用的话），而不会受到数据竞赛的影响。
 
-下一个问题: 如何实现`cgo.Handle`？
+下一个问题：如何实现`cgo.Handle`？
 
 ## 第一次尝试
 
@@ -264,12 +264,12 @@ package cgo
 var m = &sync.Map{}
 ```
 
-然而，我们必须考虑到核心的挑战:
+然而，我们必须考虑到核心的挑战：
 如何分配一个运行时级别的唯一 ID？在 Go 和 C 之间传递一个整数是相对容易的，那么对于一个给定的值，什么才是唯一的表示呢？
 
 第一个想法是内存地址。因为每个指针或值都存储在内存的某个地方，如果我们能得到这些信息，就可以很容易地将其作为值的 ID，因为每个值都有唯一的内存地址，所以很容易被用作值的 ID。
 
-为了完成这个想法，我们需要谨慎一点：一个活生生的值的内存地址会不会在某个时候被改变？这个问题又引出了两个问题:
+为了完成这个想法，我们需要谨慎一点：一个活生生的值的内存地址会不会在某个时候被改变？这个问题又引出了两个问题：
 
 1. 如果一个值在 goroutine 堆栈上怎么办？如果是这样，当 goroutine 死亡时，该值将被释放。
 2. 2.Go 是一种垃圾回收的语言。如果垃圾收集器将该值移动并压缩到一个不同的地方怎么办？那么该值的内存地址也会被改变。
@@ -280,7 +280,7 @@ var m = &sync.Map{}
 
 自然得，我们可能会问：是否有可能确保一个值总是被分配在堆上而不是堆上？答案是：可以！如果我们把它变成一个`interface{}`。在 1.17 之前，Go 编译器的逃逸分析总是标记应该逃逸到堆的值，如果它被转换为`interface{}`。
 
-有了上面的所有分析，我们可以写出利用逃逸值的内存地址的以下部分实现:
+有了上面的所有分析，我们可以写出利用逃逸值的内存地址的以下部分实现：
 
 ```go
 // wrap wraps a Go value.
@@ -302,7 +302,7 @@ func NewHandle(v interface{}) Handle {
 	    // 包裹并将一个值参数变成一个指针。这使得
 		// 我们总是将传递的对象存储为指针，并有助于
 		// 识别哪些对象最初是指针或值
-		// 当Value被调用时。
+		// 当 Value 被调用时。
 		v = &wrap{v}
 		k = reflect.ValueOf(v).Pointer()
 	}
@@ -311,30 +311,30 @@ func NewHandle(v interface{}) Handle {
 }
 ```
 
-请注意，上面的实现对这些值的处理是不同的。对于`reflect.Ptr`, `reflect.UnsafePointer`, `reflect.Slice`, `reflect.Map`, `reflect.Chan`, `reflect.Func`类型，它们已经是逃逸到堆的指针，我们可以安全地从它们那里得到地址。对于其他类型，我们需要把它们从一个值变成一个指针，并确保它们总是逃逸到堆上。这就是以下部分:
+请注意，上面的实现对这些值的处理是不同的。对于`reflect.Ptr`, `reflect.UnsafePointer`, `reflect.Slice`, `reflect.Map`, `reflect.Chan`, `reflect.Func`类型，它们已经是逃逸到堆的指针，我们可以安全地从它们那里得到地址。对于其他类型，我们需要把它们从一个值变成一个指针，并确保它们总是逃逸到堆上。这就是以下部分：
 
 ```go
 	    // 包裹并将一个值参数变成一个指针。这使得
 		// 我们总是将传递的对象存储为指针，并有助于
 		// 识别哪些对象最初是指针或值
-		// 当Value被调用时。
+		// 当 Value 被调用时。
 		v = &wrap{v}
 		k = reflect.ValueOf(v).Pointer()
 ```
 
 现在我们已经把一切都变成了堆上的一个逃逸值。接下来我们要问的是：如果这两个值是一样的呢？这意味着传递给`cgo.NewHandle(v)'的`v'是同一个对象。那么此时我们将在`k`中得到相同的内存地址。
 
-当然，简单的情况是，如果地址不在全局 map 上，那么我们就不必考虑，而是将地址作为值的句柄返回:
+当然，简单的情况是，如果地址不在全局 map 上，那么我们就不必考虑，而是将地址作为值的句柄返回：
 
 
 ```go
 func NewHandle(v interface{}) Handle {
 	...
 
-    // 由于反射的原因，v被逃逸到了堆里。
-    // 由于Go没有一个移动的GC（而且可能在未来很长一段时间内都是如此），
+    // 由于反射的原因，v 被逃逸到了堆里。
+    // 由于 Go 没有一个移动的 GC（而且可能在未来很长一段时间内都是如此），
     // 在这个时候使用它的指针地址作为全局地图的键是安全的。
-    // 如果在运行时内部引入移动GC，则必须重新考虑实现。
+    // 如果在运行时内部引入移动 GC，则必须重新考虑实现。
 
 	actual, loaded := m.LoadOrStore(k, v)
 	if !loaded {
@@ -345,7 +345,7 @@ func NewHandle(v interface{}) Handle {
 }
 ```
 
-否则，我们必须检查全局 map 中的旧值，如果它是相同的值，那么我们就返回预期的相同地址:
+否则，我们必须检查全局 map 中的旧值，如果它是相同的值，那么我们就返回预期的相同地址：
 
 ```go
 func NewHandle(v interface{}) Handle {
@@ -355,14 +355,14 @@ func NewHandle(v interface{}) Handle {
 	switch arv.Kind() {
 	case reflect.Ptr, reflect.UnsafePointer, reflect.Slice,
 		reflect.Map, reflect.Chan, reflect.Func:
-		// 给定的Go值的底层对象已经有其现有的句柄。
+		// 给定的 Go 值的底层对象已经有其现有的句柄。
 		if arv.Pointer() == k {
 			return Handle(k)
 		}
 
-        // 如果加载的指针与新的指针不一致，说明由于GC的原因，
+        // 如果加载的指针与新的指针不一致，说明由于 GC 的原因，
         // 该地址被用于不同的对象，其地址被重新用于新的围棋对象，
-        // 也就是说，当不需要旧的Go值时，Handle没有明确调用Delete。
+        // 也就是说，当不需要旧的 Go 值时，Handle 没有明确调用 Delete。
         // 认为这是对句柄的误用，做恐慌。
 		panic("cgo: misuse of a Handle")
 	default:
@@ -371,11 +371,11 @@ func NewHandle(v interface{}) Handle {
 }
 ```
 
-如果现有的值与新请求的值有相同的地址, 这一定是对处理程序的误用。
+如果现有的值与新请求的值有相同的地址，这一定是对处理程序的误用。
 
 因为我们用`wrap`结构把所有东西都变成了`reflect.Ptr`类型，所以不可能有其他种类的值从全局 map 中获取。如果发生这种情况，这是句柄实现中的一个内部错误。
 
-在实现`Value()`方法时，我们看到为什么一个`wrap`结构有利:
+在实现`Value()`方法时，我们看到为什么一个`wrap`结构有利：
 
 ```go
 func (h Handle) Value() interface{} {
@@ -392,7 +392,7 @@ func (h Handle) Value() interface{} {
 
 因为我们可以检查当存储的对象是一个`*wrap`指针，这意味着它是一个指针以外的值。我们返回该值而不是存储的对象。
 
-最后，`Delete`方法变得微不足道:
+最后，`Delete`方法变得微不足道：
 
 ```go
 func (h Handle) Delete() {
@@ -413,7 +413,7 @@ func (h Handle) Delete() {
 
 值得注意的是，以前的`NewHandle`实际上表现为当提供的 Go 值指的是同一个对象时，会返回一个唯一的手柄。这就是带来实现复杂性的核心。然而，我们还有另一种可能：`NewHandle`总是返回一个不同的句柄，而一个 Go 值可以有多个句柄。
 
-我们真的需要句柄是唯一的并保持它满足[幂等性](https://en.wikipedia.org/wiki/Idempotence)吗？经过与 Go 团队的简短讨论，我们达成共识，对于句柄的目的，似乎没有必要保持其唯一性，原因如下:
+我们真的需要句柄是唯一的并保持它满足[幂等性](https://en.wikipedia.org/wiki/Idempotence)吗？经过与 Go 团队的简短讨论，我们达成共识，对于句柄的目的，似乎没有必要保持其唯一性，原因如下：
 
 1. `NewHandle`的语义是返回一个*新的*句柄，而不是一个唯一的句柄。
 2. 句柄不过是一个整数，保证它的唯一性可以防止句柄的误用，但它不能总是避免滥用，直到为时已晚。
@@ -423,7 +423,7 @@ func (h Handle) Delete() {
 
 在现实中，这种方法更容易管理：我们只需要增加一个数字，而且永远不会停止。这是最常用的唯一 ID 生成方法。例如，在数据库应用中，表行的唯一 ID 总是递增的；在 Unix 时间戳中，时间总是递增的，等等。
 
-如果我们使用同样的方法，可能的并发安全实现会是什么？使用`sync.Map`和`atomic`，我们可以产生这样的代码:
+如果我们使用同样的方法，可能的并发安全实现会是什么？使用`sync.Map`和`atomic`，我们可以产生这样的代码：
 
 ```go
 func NewHandle(v interface{}) Handle {
@@ -456,7 +456,7 @@ func (h Handle) Value() interface{} {
 }
 ```
 
-此外，如果我们完成了对句柄的处理，可以从值 map 中删除它:
+此外，如果我们完成了对句柄的处理，可以从值 map 中删除它：
 
 ```go
 func (h Handle) Delete() {
@@ -508,18 +508,18 @@ Handle/concurrent-8      768ns ±0%    759ns ±1%   -1.21%  (p=0.003 n=9+9)
 
 作为一个现实世界的示范，我们已经在我们发布的两个包[golang.design/x/clipboard](https://github.com/golang-design/clipboard)和[golang.design/x/hotkey](https://github.com/golang-design/hotkey)中使用上述两种方法很长时间了。 之前在其`internal/cgo`包中，我们期待着在 Go 1.17 版本中切换到官方发布的`runtime/cgo`包。
 
-对于未来的工作，可以预见，在已接受的实现中可能存在的限制是，在 32 位或更低的操作系统中，句柄数可能会很快耗尽句柄空间（类似于[2038 年
+对于未来的工作，可以预见，在已接受的实现中可能存在的限制是，在 32 位或更低的操作系统中，句柄数可能会很快耗尽句柄空间（类似于 [2038 年
 当我们每秒分配 100 个句柄时，句柄空间可以在以下时间用完
 0xFFFFFFF / (24 * 60 * 60 * 100) = 31 天。
 
-*_如果你有兴趣并认为这是一个严重的问题，请在发送 CL 时[抄送我们](mailto:hi[at]golang.design)，我们也有兴趣阅读你的优秀做法。_
+*_如果你有兴趣并认为这是一个严重的问题，请在发送 CL 时 [抄送我们](mailto:hi[at]golang.design)，我们也有兴趣阅读你的优秀做法。_
 
 
 ## 进一步阅读建议
 
-- Alex Dubov. runtime: 为管理(c)go 指针句柄提供集中的设施。 2020 年 2 月 5 日。 https://golang.org/issue/37033
-- Changkun Ou. runtime/cgo: 添加用于管理(c)go 指针的句柄。 2021 年 2 月 21 日。 https://golang.org/cl/294670
-- Changkun Ou. runtime/cgo: 添加用于管理(c)go 指针的句柄。 2021 年 2 月 23 日。https://golang.org/cl/295369
+- Alex Dubov. runtime: 为管理 (c)go 指针句柄提供集中的设施。 2020 年 2 月 5 日。 https://golang.org/issue/37033
+- Changkun Ou. runtime/cgo: 添加用于管理 (c)go 指针的句柄。 2021 年 2 月 21 日。 https://golang.org/cl/294670
+- Changkun Ou. runtime/cgo: 添加用于管理 (c)go 指针的句柄。 2021 年 2 月 23 日。https://golang.org/cl/295369
 - Ian Lance Taylor. cmd/cgo: 指定 Go 和 C 之间传递指针的规则。 2015 年 8 月 31 日。 https://golang.org/issue/12416
 - Ian Lance Taylor. Proposal:  Go 和 C 之间传递指针的规则。 2015 年 10 月。 https://golang.org/design/12416-cgo-pointers
 - Go Contributors. cgo。 2019 年 3 月 12 日。 https://github.com/golang/go/wiki/cgo
