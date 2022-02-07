@@ -39,13 +39,13 @@
 
 在组织我的 Serverless 项目时，我试图遵循 Bob 那本臭名昭著的《干净的架构》一书中列出的方法。当然，这不是必须的，但它确实概括了一些好的核心原则，我发现这些原则可以使我的代码更容易测试，更容易本地运行，更有弹性地进行更改。
 
-关键是要把诸如“http”、“lambda”、你的缓存、你的数据库等元素当作次要的细节，从你的业务逻辑中屏蔽掉。你的代码被分解成一组定义良好的概念:
+关键是要把诸如“http”、“lambda”、你的缓存、你的数据库等元素当作次要的细节，从你的业务逻辑中屏蔽掉。你的代码被分解成一组定义良好的概念：
 
 ## 实例
 
 业务示例在 go 中会被定义为结构体，它表达业务问题具象。例如，comment 类型可能有一个用户 id、一个时间戳和一个文本字段。然后，该实体用于表示存储在数据存储中的数据，往返于此实例结构中的数据存储查询。
 
-用户示例:
+用户示例：
 
 ```go
 // User -
@@ -145,13 +145,13 @@ func (h *handler) Create(ctx context.Context, body []byte) (helpers.Response, er
 https://github.com/stretchr/testify
 https://github.com/golang/mock
 
-很多人不赞成使用工具进行测试，并使用外部库等，但我认为值得是务实的，最后我发现我手工做的工作去模拟，证明当我试着使用标准库实现 100%的测试覆盖所花的时间和精力是不值得的。我建议仔细评估和使用那些真正节省时间和高质量的工具。
+很多人不赞成使用工具进行测试，并使用外部库等，但我认为值得是务实的，最后我发现我手工做的工作去模拟，证明当我试着使用标准库实现 100% 的测试覆盖所花的时间和精力是不值得的。我建议仔细评估和使用那些真正节省时间和高质量的工具。
 
 ### 集成测试
 
 有时我喜欢编写一些能够在 CI 环境中运行的轻量级集成测试，这些测试与业务逻辑无关，而更多地关注的是如何获得正确的访问和连接等问题。在我的示例中，我编写了一些集成测试作为 Lambda 交付的一部分。在我的 Cloudformation 脚本中，我还包含了一个集成 DynamoDB 表。
 
-集成测试实例:
+集成测试实例：
 
 ```go
 func TestCanCreate(t *testing.T) {
@@ -176,9 +176,9 @@ func TestCanCreate(t *testing.T) {
 
 ## 路由
 
-如下我正在编写 RESTful 端点，利用机器上的 HTTP verbs，你可以将资源合并到单个端点中，使用 HTTP verbs 路由到正确的用例。如下所示:
+如下我正在编写 RESTful 端点，利用机器上的 HTTP verbs，你可以将资源合并到单个端点中，使用 HTTP verbs 路由到正确的用例。如下所示：
 
-示例:
+示例：
 
 ```go
 func Router(handler handler) func(context.Context, Request) (Response, error) {
@@ -232,7 +232,7 @@ func Router(handler handler) func(context.Context, Request) (Response, error) {
 
 市面上有很多很棒的跟踪工具，特别是 go，如:Jaeger， Zipkin 等。然而，当我们在这些例子中使用 AWS 时，我们将看一下 AWS X-Ray。X-Ray 直接集成到大多数主要的 AWS 服务，基本服务，如 API Gateway、Lambda、SQS 等。这意味着它非常适合 serverless 的用例。
 
-serverless 框架本身使得这个过程非常容易，你只需在 serverless.yml 文件中添加 tracing 配置:
+serverless 框架本身使得这个过程非常容易，你只需在 serverless.yml 文件中添加 tracing 配置：
 
 ```yaml
 provider:
@@ -241,7 +241,7 @@ provider:
     lambda: true
 ```
 
-它支持对 API 网关和 Lambdas 函数的跟踪,同时你可以使用 X-Ray SDK 向其他服务添加进一步的跟踪，使用它们的工具。
+它支持对 API 网关和 Lambdas 函数的跟踪，同时你可以使用 X-Ray SDK 向其他服务添加进一步的跟踪，使用它们的工具。
 
 要添加跟踪其他 AWS 服务的检测，只需将该服务的客户端包装在 X-Ray 检测中。
 
@@ -250,7 +250,7 @@ xray.Configure(xray.Config{LogLevel: "trace"})
 xray.AWS(ddb.Client)
 ```
 
-然后，在与支持的 AWS 服务交互时，确保使用“with context”，例如:
+然后，在与支持的 AWS 服务交互时，确保使用“with context”，例如：
 
 ```go
 result, err := r.session.GetItemWithContext(ctx, input)
@@ -262,7 +262,7 @@ result, err := r.session.GetItemWithContext(ctx, input)
 
 ## 本地运行
 
-在其他语言中，比如 nodejs，有一些插件可以模拟 serverless 网关(serverless 离线)的行为，但由于 go 的编译特性，这变得很棘手，据我所知，目前还不存在这样的替代方案。如果有……请告诉我!
+在其他语言中，比如 nodejs，有一些插件可以模拟 serverless 网关 (serverless 离线) 的行为，但由于 go 的编译特性，这变得很棘手，据我所知，目前还不存在这样的替代方案。如果有……请告诉我！
 
 但是，因为我们已经将服务的架构设计为将运行时与业务逻辑解耦，所以我们可以很容易地编写新的交付类型，我们可以使用它在本地启动。
 
@@ -300,7 +300,7 @@ result, err := r.session.GetItemWithContext(ctx, input)
 
 服务发现允许你用用户友好的名称注册服务的位置，这样你就可以通过名称找到其他服务。AWS 为此提供了一个名为 Cloudmap 的 serverless 产品。我使用 Cloudmap 注册我的函数的 arn。我还编写了一系列库来抽象调用其他函数和定位其他服务的过程。
 
-使用我们的服务发现框架调用 Lambda 函数的示例:
+使用我们的服务发现框架调用 Lambda 函数的示例：
 
 ```go
 d := discover.NewDiscovery(

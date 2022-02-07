@@ -8,13 +8,13 @@
 
 ⬅ [完整的 Go 性能分析和采集系列笔记戳这儿](https://github.com/DataDog/go-profiler-notes/blob/main/README.md)
 
-本文档最后一次更新时所用的 Go版本是 1.15.6，但是大多数情况下，新老版本都适用。
+本文档最后一次更新时所用的 Go 版本是 1.15.6，但是大多数情况下，新老版本都适用。
 
 ## 描述
 
 Go 运行时在一个称为 [allgs](https://github.com/golang/go/blob/3a778ff50f7091b8a64875c8ed95bfaacf3d334c/src/runtime/proc.go#L500) 简单切片追踪所有的 goroutines。这里面包含了活跃的和死亡的 goroutine 。死亡的 goroutine 保留下来，等到生成新的 goroutine 时重用。
 
-Go 有各种 API 来监测 `allgs `中活跃的 goroutine 和这些 goroutines 当前的堆栈跟踪信息，以及各种其他属性。一些 API 将这些信息公开为统计摘要，而另外一些 API 则给每个单独的 goroutine 信息提供查询接口。
+Go 有各种 API 来监测 `allgs`中活跃的 goroutine 和这些 goroutines 当前的堆栈跟踪信息，以及各种其他属性。一些 API 将这些信息公开为统计摘要，而另外一些 API 则给每个单独的 goroutine 信息提供查询接口。
 
 尽管 API 之间有差异，但是活跃的 goroutine 都有如下[共同](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/mprof.go#L729) [定义](https://github.com/golang/go/blob/9b955d2d3fcff6a5bc8bce7bafdc4c634a28e95b/src/runtime/traceback.go#L931)
 
@@ -48,7 +48,7 @@ Goroutines 有很多[属性](https://github.com/golang/go/blob/go1.15.6/src/runt
 -   [`waitreason`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L996-L1024):goroutine 等待的原因，比如 sleep、channel 操作、i/o、gc 等等。
 -   [`waitsince`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L430): goroutine 进入 `waiting` 或者 `syscall` 状态的大约时间戳，由等待启动后第一个 GC 确定。
 -   [`labels`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L472): 可以附加到 goroutines 上的一系列 键/值[分析标签](https://rakyll.org/profiler-labels/)。
--   `stack trace`: 当前正在执行的函数及其调用者。要么是文件名、函数名和行号的纯文本输出，要么是程序计数器地址的一个切片(pcs)。 你也可以进一步研究更多的细节比如： 文件名、函数名和行号的纯文本可以转换成pcs吗？
+-   `stack trace`: 当前正在执行的函数及其调用者。要么是文件名、函数名和行号的纯文本输出，要么是程序计数器地址的一个切片 (pcs)。 你也可以进一步研究更多的细节比如： 文件名、函数名和行号的纯文本可以转换成 pcs 吗？
 -   [`gopc`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L466):  `go ...` 调用程序计数地址 (pc) 导致 goroutine 的创建。可以转换为文件、函数名和行号。
 -   [`lockedm`](https://github.com/golang/go/blob/go1.15.6/src/runtime/runtime2.go#L460): 该 goroutine 的锁定的线程，如果有的话。
 
@@ -236,7 +236,7 @@ Mappings
 
 ## 历史
 
-Goroutine 性能分析是由 [Russ Cox](https://github.com/rsc) [实现](https://codereview.appspot.com/5687076/) ，第一次出现在 [2012-2-22的周例会上](https://golang.org/doc/devel/weekly.html#2012-02-22)，在 go1 之前发布。
+Goroutine 性能分析是由 [Russ Cox](https://github.com/rsc) [实现](https://codereview.appspot.com/5687076/) ，第一次出现在 [2012-2-22 的周例会上](https://golang.org/doc/devel/weekly.html#2012-02-22)，在 go1 之前发布。
 
 ## 免责声明
 

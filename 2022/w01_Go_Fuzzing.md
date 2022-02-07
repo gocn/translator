@@ -14,7 +14,7 @@
 
 下面是 [模糊测试](https://tip.golang.org/doc/fuzz/#glos-fuzz-test) 的一个例子，标注了其中主要组成部分。
 
-![示例代码中展示了整个模糊测试的情况，其中有一个模糊目标。用f.Add在模糊目标之前添加测试种子语料库，模糊目标的参数作为模糊参数被突出显示。](../static/images/2022/w1_Go_Fuzzing/example.png)
+![示例代码中展示了整个模糊测试的情况，其中有一个模糊目标。用 f.Add 在模糊目标之前添加测试种子语料库，模糊目标的参数作为模糊参数被突出显示。](../static/images/2022/w1_Go_Fuzzing/example.png)
 
 ## 编写和运行模糊测试
 
@@ -52,7 +52,7 @@ $ go test -fuzz={FuzzTestName}
 
 然而，`go`命令在运行模糊测试时也提供了一些设置，这些设置在 [`cmd/go`包文档](https://pkg.go.dev/cmd/go) 中。
 
-其中几个:
+其中几个：
 
 - `-fuzztime`: 在退出前执行模糊目标的总时间或迭代次数，默认为无限期地
 - `-fuzzminimizetime`: 在每次最小化尝试中，模糊目标将被执行的时间或迭代次数，默认为 60 秒。你可以通过 `-fuzzminimizetime 0` 完全禁用最小化设置
@@ -88,7 +88,7 @@ f.Add([]byte("hello\\xbd\\xb2=\\xbc ⌘"), int64(572293))
 
 然而，可能有一些大的二进制文件，你不希望将其作为代码复制到你的测试中，而是作为单独的种子语料库条目保留在 `testdata/fuzz/{FuzzTestName}` 目录下。[`file2fuzz`](https://pkg.go.dev/golang.org/x/tools/cmd/file2fuzz)工具可以用来将这些二进制文件转换成以 `[]byte` 编码的语料库文件。
 
-如此使用该工具:
+如此使用该工具：
 
 ```plain
 $ go install golang.org/x/tools/cmd/file2fuzz@latest
@@ -97,17 +97,17 @@ $ file2fuzz
 
 ## 相关资源
 
-- 教程:
+- 教程：
 
     - 关于用 Go 进行模糊测试的介绍性教程，请参见[博文](https://go.dev/blog/fuzz-beta)
-    - 更多内容即将来临!
+    - 更多内容即将来临！
 
-- 文档:
+- 文档：
 
     - [`testing`](https://pkg.go.dev//testing#hdr-Fuzzing)包文档描述了在编写模糊测试时使用的`testing.F`类型
     - [`cmd/go`](https://pkg.go.dev/cmd/go) 包文档描述了与模糊处理相关的标志
 
-- 技术细节:
+- 技术细节：
 
     - [设计初稿](https://golang.org/s/draft-fuzzing-design)
     - [提案](https://golang.org/issue/44551)

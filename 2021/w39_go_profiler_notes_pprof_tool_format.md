@@ -21,13 +21,13 @@ pprof 工具提供一个交互式命令行界面，一个 Web UI，还包括各�
 
 ### 描述
 
-pprof 相关的格式定义在 [profile.proto](https://github.com/google/pprof/blob/master/proto/profile.proto) 文件中, 这是一个使用 protocol buffer 协议定义的文件，并且这个文件带有比较全面的注释。另外，还有一个官方的[说明](https://github.com/google/pprof/blob/master/proto/README.md) 。pprof 保存在磁盘的文件使用的是 gzip 格式压缩的。
+pprof 相关的格式定义在 [profile.proto](https://github.com/google/pprof/blob/master/proto/profile.proto)文件中，这是一个使用 protocol buffer 协议定义的文件，并且这个文件带有比较全面的注释。另外，还有一个官方的的[说明](https://github.com/google/pprof/blob/master/proto/README.md) 。pprof 保存在磁盘的文件使用的是 gzip 格式压缩的。
 
 俗话说，一张图胜过千言万语，下面是 pprof 工具的可视化格式，这张图片是使用[protodot](https://github.com/seamia/protodot) 工具自动生成的。
 
 [![profile.proto visualized](https://github.com/gocn/translator/raw/master/static/images/2021_w39/profile.png)](https://github.com/gocn/translator/raw/master/static/images/2021_w39/profile.png)
 
-pprof 的数据格式似乎是为效率、多语言(编程语言)和不同的性能分析类型(CPU、堆等)而设计的，但正因为如此，它非常抽象，显得不直观。如果你想了解所有细节，请点击[这里](https://github.com/google/pprof/blob/master/proto/profile.proto) 。继续向下阅读也能知道这么设计的原因。
+pprof 的数据格式似乎是为效率、多语言 (编程语言) 和不同的性能分析类型 (CPU、堆等) 而设计的，但正因为如此，它非常抽象，显得不直观。如果你想了解所有细节，请点击[这里](https://github.com/google/pprof/blob/master/proto/profile.proto) 。继续向下阅读也能知道这么设计的原因。
 pprof 文件包含采集的堆栈列表，这些堆栈信息具有一个或多个与之关联的数值。 比如对于 CPU 性能分析，该值可能是在性能分析期间观察到堆栈的 CPU 持续时间（以纳秒为单位）。 对于堆性能分析，它可能是分配的字节数。 值类型本身在文件的开头进行了描述，并用于填充 pprof UI 中的“SAMPLE”下拉列表。 除了值之外，每个堆栈跟踪还可以包括一组标签。 标签是键值对，甚至可以包含一个单元。 在 Go 中，这些标签应用在[分析器标签](https://rakyll.org/profiler-labels/) 上 。
 
 
@@ -47,7 +47,7 @@ pprof 文件包含采集的堆栈列表，这些堆栈信息具有一个或多�
 ### 使用 pprofutils 来进行辅助分析
 [pprofutils](https://github.com/felixge/pprofutils) 是一个用于在 pprof 文件和 Brendan Gregg 的[折叠文本](https://github.com/brendangregg/FlameGraph#2-fold-stacks) 格式之间转换的小工具。你可以这样使用它
 
-```
+```bash
 $ pprof2text < examples/cpu/pprof.samples.cpu.001.pb.gz
 
 golang.org/x/sync/errgroup.(*Group).Go.func1;main.run.func2;main.computeSum 19
@@ -95,7 +95,7 @@ Mappings
 对于有兴趣研究更接近原始二进制存储的数据开发者，则需要借助 protocol buffer 的编译器。在 macOS 上，您可以使用 `brew install protobuf` 来安装它，对于其他平台，请查看[protocol buffer 安装部分的内容](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation) 。
 
 
-现在让我们来分析上面的 CPU 的性能分析数据:
+现在让我们来分析上面的 CPU 的性能分析数据：
 
 
 ```plain
@@ -189,13 +189,13 @@ period: 10000000
 2014 年，Go 项目用 [Raul Silvera](https://www.linkedin.com/in/raul-silvera-a0521b55/) 的 Go 实现[取代了](https://github.com/golang/go/commit/8b5221a57b41a19abcb4e3dde20014af494048c2) 基于 perl 的 pprof 工具，目前谷歌已经使用了这个实现的工具。这个实现在 2016 年作为[一个独立的项目](https://github.com/google/pprof) 进行重新发布。从那时起，Go 项目一直在提供上游项目的 pprof，并定期对其进行 [更新](https://github.com/golang/go/commits/master/src/cmd/vendor/github.com/google/pprof) 。
 
 
-Go 1.9(2017-08-24)增加了对 pprof 标签的支持。它还开始在默认情况下将符号信息包含到 pprof 文件中，这允许在不访问二进制文件的情况下查看程序性能。
+Go 1.9(2017-08-24) 增加了对 pprof 标签的支持。它还开始在默认情况下将符号信息包含到 pprof 文件中，这允许在不访问二进制文件的情况下查看程序性能。
 
 ## Todo
 
-- 更多的篇幅应该专注于 `go tool pprof` 工具本身.
+- 更多的篇幅应该专注于 `go tool pprof` 工具本身。
 
-- 解释为什么可以给 pprof一个路径到概要文件所属的二进制文件。
+- 解释为什么可以给 pprof 一个路径到概要文件所属的二进制文件。
   
 - 更加多关于行号和地址的细节信息
 - 讨论 go 的二进制文件有多个版本时的关联映射问题

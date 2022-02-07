@@ -1,4 +1,4 @@
-# Go 语言是如何计算 len()的
+# Go 语言是如何计算 len() 的
 - 原文地址：https://tpaschalis.github.io/golang-len/
 - 原文作者：Paschalis Tsilias
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w31_How_Does_Go_Calculate_Len.md
@@ -17,29 +17,29 @@
 
 虽然这些答案在技术上是正确的，但我认为用简洁的语言展开构成这个"魔法"的层次结构会很棒！这也是一个很好的小练习，可以让你更深入地了解 Go 编译器的内部工作原理。
 
-仅供参考，本帖中的所有链接都指向即将发布的 Go 1.17 分支(https://github.com/golang/go/tree/release-branch.go1.17).
+仅供参考，本帖中的所有链接都指向即将发布的 Go 1.17 分支 (https://github.com/golang/go/tree/release-branch.go1.17).
 
 ## 小插曲
 一些背景信息可能有助于理解这篇文章。
 
-Go 编译器由四个主要阶段组成。你可以从 这里(https://golang.org/src/cmd/compile/README) 开始阅读。前两个一般称为编译器"前端"，而后两个也称为编译器"后端"。
+Go 编译器由四个主要阶段组成。你可以从 这里 (https://golang.org/src/cmd/compile/README) 开始阅读。前两个一般称为编译器"前端"，而后两个也称为编译器"后端"。
 
 * **解析**; 对源文件进行词法分析和语法分析，并为每个源文件构建一个语法树
 * **AST 抽象语法树转换和类型检查**; 将语法树转换为编译器的 AST 表示形式，并对 AST 树进行类型检查
-* **生成 SSA 静态单赋值**; AST 树被转换为 Static Single Assignment (SSA 静态单赋值)形式，这是一种可以实现优化的较低级别的中间表示形式
+* **生成 SSA 静态单赋值**; AST 树被转换为 Static Single Assignment (SSA 静态单赋值) 形式，这是一种可以实现优化的较低级别的中间表示形式
 * **生成机器码**; SSA 经过另一个特定于机器的优化过程，然后传递给汇编程序，转换为机器代码并写入最终的二进制文件
 
 
 让我们开始深入吧！
 
 ## 入口
-Go 编译器的入口点(毫不奇怪)是 *compile/internal/gc* 包中的 main() 函数(https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go)
+Go 编译器的入口点 (毫不奇怪) 是 *compile/internal/gc* 包中的 main() 函数 (https://github.com/golang/go/blob/release-branch.go1.17/src/cmd/compile/internal/gc/main.go)
 
-如注释所示，这个函数负责解析 Go 源文件,对解析后的 Go 包进行类型检查,将所有内容编译为机器代码并为编译过的包编写定义。
+如注释所示，这个函数负责解析 Go 源文件，对解析后的 Go 包进行类型检查，将所有内容编译为机器代码并为编译过的包编写定义。
 
 最初发生的事情之一就是类型检查。[typecheck.InitUniverse()](https://github.com/golang/go/blob/release-branch.go1.17/src/go/types/universe.go) ，它定义了基本类型、内置函数和操作数。
 
-在这里，我们可以看到所有内置函数是如何被匹配到一个“操作”的，我们可以使用 ir.OLEN 来跟踪 len()调用的步骤。
+在这里，我们可以看到所有内置函数是如何被匹配到一个“操作”的，我们可以使用 ir.OLEN 来跟踪 len() 调用的步骤。
 
 ```go
 var builtinFuncs = [...]struct {
@@ -81,7 +81,7 @@ var builtinFuncs = [...]struct {
 		...
 	}
 ```
-同样，我们可以看到所有的类型将成为 len()的有效输入
+同样，我们可以看到所有的类型将成为 len() 的有效输入
 ```go
 	okforlen[types.TARRAY] = true
 	okforlen[types.TCHAN] = true
@@ -98,8 +98,8 @@ var builtinFuncs = [...]struct {
 Phase 1: const, type, and names and types of funcs. (常量，类型，标识符以及函数的类型)
 Phase 2: Variable assignments, interface assignments, alias declarations.（有效的赋值，接口赋值，别名声明）
 Phase 3: Type check function bodies.（函数体类型检查）
-Phase 4: Check external declarations. （检查外部声明）
-Phase 5: Verify map keys, unused dot imports.（检验Map的键和未使用的点引入）
+Phase 4: Check external declarations.（检查外部声明）
+Phase 5: Verify map keys, unused dot imports.（检验 Map 的键和未使用的点引入）
 ```
 一旦在最后的类型检查阶段遇到 len 语句，它就会被转换为 *UnaryExpr*，因为它实际上不会最终成为一个函数调用。
 
@@ -159,7 +159,7 @@ func tcLenCap(n *ir.UnaryExpr) ir.Node {
 	...
 	compile(compilequeue)
 ```
-在 *buildssa* 和 *genssa* 之后，再深入几层,我们终于可以将 AST 树中的 len 表达式转换为 SSA。
+在 *buildssa* 和 *genssa* 之后，再深入几层，我们终于可以将 AST 树中的 len 表达式转换为 SSA。
 
 现在很容易看到每个可用类型是如何处理的！
 ```go
@@ -254,7 +254,7 @@ func (s *state) referenceTypeBuiltin(n *ir.UnaryExpr, x *ssa.Value) *ssa.Value {
 	return s.variable(n, lenType)
 }
 ```
-*hmap* 和 *hchan* 结构的定义表明，它们的第一个字段确实包含 *Len()* 所需要的东西，分别是 *count int // # live cells == size of map* (Map 的大小)和 *qcount uint // total data in the queue* (队列里所有的数据)。
+*hmap* 和 *hchan* 结构的定义表明，它们的第一个字段确实包含 *Len()* 所需要的东西，分别是 *count int // # live cells == size of map* (Map 的大小) 和 *qcount uint // total data in the queue* (队列里所有的数据)。
 
 ```go
 type hmap struct {
@@ -293,6 +293,6 @@ type hchan struct {
 
 请不要犹豫，向我提出意见、建议、新文章的想法，或者仅仅是谈一谈 Go
 
-下次见!
+下次见！
 
 *于 2021 年 7 月 31 日撰写*

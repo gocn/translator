@@ -32,7 +32,7 @@
 
 ![网络课程应用的截图](../static/images/w20_Thoughts_on_how_to_structure_Go_code/courses-app-screenshot.png)
 
-*背景信息：这个 `Go` 课程应用程序是一个网站，学生在这里注册课程并查看课程内容。大多数课程都有视频、链接（课程中使用的代码）、以及其他相关信息。如果你曾经使用过任何视频课程网站，你应该对它的外观有一个大致的了解，但如果你想进一步挖掘，你可以免费注册[Gophercises](https://gophercises.com/)。*。
+*背景信息：这个 `Go` 课程应用程序是一个网站，学生在这里注册课程并查看课程内容。大多数课程都有视频、链接（课程中使用的代码）、以及其他相关信息。如果你曾经使用过任何视频课程网站，你应该对它的外观有一个大致的了解，但如果你想进一步挖掘，你可以免费注册 [Gophercises](https://gophercises.com/)。*。
 
 在这一点上，我对应用程序的需求相当熟悉，但我要试着带领你了解最初开始创建程序时的思考过程，因为那是经常要开始的状态。
 
@@ -61,9 +61,9 @@ student/
 package student
 
 type Lesson struct {
-  Name         string // 课程名, 比如: "如何写测试"
-  Video        string // 课程视频url，空则用户无权访问
-  SourceCode   string // 课程源码url
+  Name         string // 课程名，比如: "如何写测试"
+  Video        string // 课程视频 url，空则用户无权访问
+  SourceCode   string // 课程源码 url
   CompletedAt  *time.Time // 表示该用户是否完成课程的布尔值或完成时间
   // + 更多字段
 }
@@ -81,14 +81,14 @@ package admin
 // 为了简洁起见，本例使用内联结构
 type Lesson struct {
   Name string
-  // 视频URL可以使用这些信息动态构建（在某些情况下，使用时间限制的访问令牌）
+  // 视频 URL 可以使用这些信息动态构建（在某些情况下，使用时间限制的访问令牌）
   Video struct {
-    Provider string // Youtube, Vimeo, 等
+    Provider string // Youtube, Vimeo，等
     ExternalID string
   }
-  // 决定源码资源URL的有关信息，如 `repo/branch`
+  // 决定源码资源 URL 的有关信息，如 `repo/branch`
   SourceCode struct {
-    Provider string // Github, Gitlab, 等
+    Provider string // Github, Gitlab，等
     Repo     string // 比如 "gophercises/quiz"
     Branch   string // 比如 "solution-p1"
   }
@@ -103,7 +103,7 @@ type Lesson struct {
 
 我可以用不同的方式组织这些代码吗？当然可以。
 
-我可能改变结构的一个方法是进一步分离它。例如， `admin` 包的一些代码与管理用户有关，而另一些代码与管理课程有关。把它分成两个部分是很容易的。另外，可以把所有与认证有关的代码(注册、修改密码等)放到一个 `auth` 包中。
+我可能改变结构的一个方法是进一步分离它。例如， `admin`包的一些代码与管理用户有关，而另一些代码与管理课程有关。把它分成两个部分是很容易的。另外，可以把所有与认证有关的代码 (注册、修改密码等) 放到一个个 `auth` 包中。
 
 与其过度思考，挑选看起来合适的方案并按需进行调整更有意义。
 

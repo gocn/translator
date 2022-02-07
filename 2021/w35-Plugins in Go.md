@@ -24,7 +24,7 @@
 
 ## 两种类型插件
 
-和其他静态编译编程语言一样，Go 中通常会讨论两种一般类型的插件:编译时插件和运行时插件。这两种我们都会讲到。
+和其他静态编译编程语言一样，Go 中通常会讨论两种一般类型的插件：编译时插件和运行时插件。这两种我们都会讲到。
 
 ## 编译时插件
 
@@ -37,9 +37,9 @@
 关于基本插件的概念， 下面有一个编译时插件如何运作的例子（以`database/sql`为例）
 
 2.  发现：这点很明确，`import`一个插件包。插件可以在它们`init`函数自动执行注册。
-4.  注册：由于插件被编译到主应用程序之中，它可以直接从插件中调用一个注册函数(例如 sql.Register)。
+4.  注册：由于插件被编译到主应用程序之中，它可以直接从插件中调用一个注册函数 (例如 sql.Register)。
 6.  应用程序钩子：通常，插件将实现应用程序提供的接口，注册过程将连接接口实现。插件使用`database/sql`实现驱动程序。驱动程序接口和实现该接口的值将使用 sql.Register 注册。
-7.  将应用程序能力暴露给插件:对于编译时插件，这很简单;由于插件被编译成二进制文件，它可以从主应用程序中导入实用程序包，并根据需要在代码中使用它们。
+7.  将应用程序能力暴露给插件：对于编译时插件，这很简单;由于插件被编译成二进制文件，它可以从主应用程序中导入实用程序包，并根据需要在代码中使用它们。
 
 ## 运行时插件
 
@@ -47,7 +47,7 @@
 
 Go 自带一个内置在标准库中的插件包。这个包让我们可以写出编译进共享库，而不是可执行二进制文件的 Go 程序。另外，它还提供了简单函数来从插件包里面加载共享库和获取符号。
 
-在这篇文章中，我开发了一个完整的运行时插件系统示例；它复制了之前关于[插件基础设施](https://eli.thegreenplace.net/2012/08/07/fundamental-concepts-of-plugin-infrastructures)的文章中的`htmlize`源码，并且它的设计和后面那篇[C 语言中的插件](https://eli.thegreenplace.net/2012/08/24/plugins-in-c)文章类似。这个示例程序很简单，就是把一些标记语言（比如 [reStructuredText](https://en.wikipedia.org/wiki/ReStructuredText) 或者 Markdown）转换成 HTML，并支持插件，使得我们能够调整某些标记元素的处理方式。完整的示例代码在[这篇文章](https://github.com/eliben/code-for-blog/tree/master/2021/go-htmlize-plugin)里(https://github.com/eliben/code-for-blog/tree/master/2021/go-htmlize-plugin)。
+在这篇文章中，我开发了一个完整的运行时插件系统示例；它复制了之前关于[插件基础设施](https://eli.thegreenplace.net/2012/08/07/fundamental-concepts-of-plugin-infrastructures)的文章中的`htmlize`源码，并且它的设计和后面那篇[C 语言中的插件](https://eli.thegreenplace.net/2012/08/24/plugins-in-c)文章类似。这个示例程序很简单，就是把一些标记语言（比如 [reStructuredText](https://en.wikipedia.org/wiki/ReStructuredText) 或者 Markdown）转换成 HTML，并支持插件，使得我们能够调整某些标记元素的处理方式。完整的示例代码在[这篇文章](https://github.com/eliben/code-for-blog/tree/master/2021/go-htmlize-plugin)里 (https://github.com/eliben/code-for-blog/tree/master/2021/go-htmlize-plugin)。
 
 ![Directory contents of the plugin sample](https://eli.thegreenplace.net/images/2021/plugin-dir-contents.png)
 
@@ -57,7 +57,7 @@ Go 自带一个内置在标准库中的插件包。这个包让我们可以写�
 
 插件最开始是怎么变成`.so`文件的呢？通过 命令 `-buildmode=plugin` 构建。具体更多的细节，可以看[示例源码](https://github.com/eliben/code-for-blog/blob/master/2021/go-htmlize-plugin/) 中的`buildplugins.sh`脚本和 README 文件。
 
-**应用程序勾子**：现在是描述`PluginManager`类型的好时机。这是插件和主应用程序之间通信的主要类型。流程如下:
+**应用程序勾子**：现在是描述`PluginManager`类型的好时机。这是插件和主应用程序之间通信的主要类型。流程如下：
 
 -   应用程序在 LoadPlugins 新建一个 PluginManager，并将其传给它找到的所有插件。
 -   每个插件使用`PluginManager`来给各种勾子注册自己的处理程序。

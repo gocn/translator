@@ -11,7 +11,7 @@
 
 在[context 的文档](https://golang.org/pkg/context/)中写道。
 
-    上下文不应该存储在结构类型里面，而是传递给每个需要它的函数。plainplainplainplainplainplainplainplainplainplainplain
+  >上下文不应该存储在结构类型里面，而是传递给每个需要它的函数。
 
 本文对这一建议进行了扩展，用具体例子解析为什么传递上下文而不是将其存储在其他类型中很重要。它还强调了一种罕见的情况，即在结构类型中存储上下文可能是有意义的，以及如何安全地这样做。
 
@@ -29,11 +29,11 @@ func New() *Worker {
 }
 
 func (w *Worker) Fetch(ctx context.Context) (*Work, error) {
-  _ = ctx // 每次调用中ctx用于取消操作，截止时间和元数据。
+  _ = ctx // 每次调用中 ctx 用于取消操作，截止时间和元数据。
 }
 
 func (w *Worker) Process(ctx context.Context, w *Work) error {
-  _ = ctx // A每次调用中ctx用于取消操作，截止时间和元数据。
+  _ = ctx // A 每次调用中 ctx 用于取消操作，截止时间和元数据。
 }
 ```
 
@@ -53,11 +53,11 @@ func New(ctx context.Context) *Worker {
 }
 
 func (w *Worker) Fetch() (*Work, error) {
-  _ = w.ctx // 共享的w.ctx用于取消操作，截止时间和元数据。
+  _ = w.ctx // 共享的 w.ctx 用于取消操作，截止时间和元数据。
 }
 
 func (w *Worker) Process(w *Work) error {
-  _ = w.ctx // 共享的w.ctx用于取消操作，截止时间和元数据。
+  _ = w.ctx // 共享的 w.ctx 用于取消操作，截止时间和元数据。
 }
 ```
 

@@ -11,7 +11,7 @@
 
 本文的问题是：你应该给出租车司机多少（按百分比）小费？
 
-为了回答这个问题，我们将使用[纽约市出租车数据集](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page)的一部分,使用的数据文件是[taxi-01-2020-sample.csv.bz2](https://github.com/353words/taxi/raw/master/taxi-01-2020-sample.csv.bz2)
+为了回答这个问题，我们将使用[纽约市出租车数据集](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page)的一部分，使用的数据文件是[taxi-01-2020-sample.csv.bz2](https://github.com/353words/taxi/raw/master/taxi-01-2020-sample.csv.bz2)
 
 _注意： CSV 是一种十分令人讨厌的格式。它没有标准，没有模式，所有内容都被解释为文本（与 JSON 不同）。如果可以，请选择其他格式。我首选的数据存储格式是 SQLite 。_
 
@@ -21,7 +21,7 @@ _注意： CSV 是一种十分令人讨厌的格式。它没有标准，没有�
 
 为了简化输入的工作，我们将在标准输入中传递输入文件。我们将有几个探索数据的阶段，每个阶段都有一个相应的命令行开关。在 `main` 函数中，我们有以下行：
 
-```plain
+```go
 r := bzip2.NewReader(os.Stdin)
 ```
 
@@ -33,7 +33,7 @@ r := bzip2.NewReader(os.Stdin)
 
 **步骤 1：初次查看**
 
-```plain
+```go
 19 func firstLook(r io.Reader) error {
 20     var numLines, numBytes int
 21     s := bufio.NewScanner(r)
@@ -59,7 +59,7 @@ r := bzip2.NewReader(os.Stdin)
 
 **步骤 2: 运行代码**
 
-```plain
+```bash
 $ go run taxi.go -first_look < taxi-01-2020-sample.csv.bz2
 VendorID,tpep_pickup_datetime,tpep_dropoff_datetime,passenger_count,trip_distance,RatecodeID,store_and_fwd_flag,PULocationID,DOLocationID,payment_type,fare_amount,extra,mta_tax,tip_amount,tolls_amount,improvement_surcharge,total_amount,congestion_surcharge
 2,2003-01-01 00:07:17,2003-01-01 14:16:59,1.0,0.0,1.0,N,193,193,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
@@ -80,7 +80,7 @@ lines: 1000001
 
 **步骤 3: 依赖引入**
 
-```plain
+```go
 14     "github.com/jszwec/csvutil"
 15     "gonum.org/v1/gonum/floats"
 16     "gonum.org/v1/gonum/stat"
@@ -90,7 +90,7 @@ lines: 1000001
 
 **步骤 4: 加载数据**
 
-```plain
+```go
 62 type Row struct {
 63     Tip   float64 `csv:"tip_amount"`
 64     Total float64 `csv:"total_amount"`
@@ -127,7 +127,7 @@ lines: 1000001
 
 **步骤 5: 统计**
 
-```plain
+```go
 39 func statistics(r io.Reader) error {
 40     tip, total, err := loadData(r)
 41     if err != nil {
@@ -156,7 +156,7 @@ lines: 1000001
 
 **步骤 6: 运行统计代码**
 
-```plain
+```bash
 $ go run taxi.go -stats < taxi-01-2020-sample.csv.bz2 
 tip: min=-11.80, mean=2.21, max=333.50
 total: min=-333.30, mean=18.47, max=4268.30
@@ -170,7 +170,7 @@ total: min=-333.30, mean=18.47, max=4268.30
 
 **步骤 7: 加载过滤数据**
 
-```plain
+```go
 114 func loadDataFiltered(r io.Reader) ([]float64, []float64, error) {
 115     var tip, total []float64
 116     dec, err := csvutil.NewDecoder(csv.NewReader(r))
@@ -208,7 +208,7 @@ total: min=-333.30, mean=18.47, max=4268.30
 
 **步骤 8: 期待支出的小费**
 
-```plain
+```go
 93  func desiredTip(r io.Reader) error {
 94      tip, total, err := loadDataFiltered(r)
 95      if err != nil {
@@ -235,7 +235,7 @@ total: min=-333.30, mean=18.47, max=4268.30
 
 **步骤 9: 运行代码**
 
-```plain
+```bash
 $ go run taxi.go -tip < taxi-01-2020-sample.csv.bz2 
 716422 filtered values
 0.75 quantile tip: 0.20
@@ -247,7 +247,7 @@ $ go run taxi.go -tip < taxi-01-2020-sample.csv.bz2
 
 **步骤 10: 加载携带时间的数据**
 
-```plain
+```go
 145 func unmarshalTime(data []byte, t *time.Time) error {
 146     var err error
 147     *t, err = time.Parse("2006-01-02 15:04:05", string(data))
@@ -298,7 +298,7 @@ $ go run taxi.go -tip < taxi-01-2020-sample.csv.bz2
 
 **步骤 11: 按工作日计算小费**
 
-```plain
+```go
 190 func weekdayTip(r io.Reader) error {
 191     times, tip, total, err := loadDataWithTime(r)
 192     if err != nil {
@@ -331,7 +331,7 @@ $ go run taxi.go -tip < taxi-01-2020-sample.csv.bz2
 
 **步骤 12: 运行代码**
 
-```plain
+```bash
 $ go run taxi.go -daily < taxi-01-2020-sample.csv.bz2
 Sunday    : 0.75 quantile tip: 0.20 ( 77942 samples)
 Monday    : 0.75 quantile tip: 0.20 ( 82561 samples)

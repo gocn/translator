@@ -7,7 +7,7 @@
 - 译者：[朱亚光](https://github.com/zhuyaguang)
 - 校对：
 
-Go 国际社区从一开始就拥抱 GitHub ( GitHub 即是 Go 代码协作的地方也是发布包的地方)使得 Go 成为 如今 GitHub 上排名前 15 的编程语言。我们很高兴地宣布 GitHub 的供应链安全功能可以用于 Go modules 了，这个功能可以帮助 Go 社区发现、报告和预防安全漏洞。
+Go 国际社区从一开始就拥抱 GitHub ( GitHub 即是 Go 代码协作的地方也是发布包的地方) 使得 Go 成为 如今 GitHub 上排名前 15 的编程语言。我们很高兴地宣布 GitHub 的供应链安全功能可以用于 Go modules 了，这个功能可以帮助 Go 社区发现、报告和预防安全漏洞。
 
 > Go 语言创建的初衷之一就是为了解决大型软件依赖管理的问题。GitHub 是开源的 Go modules 最受欢迎的托管主机。今天发布的这个功能不仅仅会帮助 GitHub 用户，还会帮助任何依赖 GitHub 托管 Go modules 的人。我们很高兴 GitHub 正在投资有益于整个 Go 生态的改进，我们期待在未来能与他们进行更多的合作。
 >

@@ -9,7 +9,7 @@
 - 译者：[guzzsek](https://github.com/laxiaohong)
 - 校对：[lsj1342](https://github.com/lsj1342)
 
-提示: 这篇文章有点长
+提示：这篇文章有点长
 
 
 ## 目录
@@ -55,24 +55,25 @@
 
 在理想情况下，我们希望应用程序处理数据的能力随着计算机核心数增加而增强。即使程序一开始的设计是多个 goroutines 处理多个任务，也并不一定能够很好地扩展算力。
 
-某些代码块可能需要锁或 atomic 指令进行同步，将这部分 (译者注:临界区) 变成强制同步执行的代码块。比如每个 goroutine 都可以访问的中央缓存。这些会导致锁争用，从而阻止应用程序通过增加内核来提高性能。甚至更糟的是，这些可能会导致性能下降。atomic 指令也会带来开销，但它比锁引起的开销小得多。
+某些代码块可能需要锁或 atomic 指令进行同步，将这部分 (译者注：临界区) 变成强制同步执行的代码块。比如每个 goroutine 都可以访问的中央缓存。这些会导致锁争用，从而阻止应用程序通过增加内核来提高性能。甚至更糟的是，这些可能会导致性能下降。atomic 指令也会带来开销，但它比锁引起的开销小得多。
 
-硬件级原子指令对于内存的访问并不总是保证读取最新值。原因是，每个处理器内核都维护一个可能失效的本地缓存。为了避免这个问题，原子写操作通常跟在指令之后强制每个缓存更新。最重要的是，为了提升（在硬件和软件级别）的性能，它还必须防止 [内存重新排序(就是我们常说的指令重排，cpu 的一种优化手段)](https://en.cppreference.com/w/cpp/atomic/memory_order)。
-
-
-`map` 结构被广泛使用，以至于几乎每个应用程序都在其代码中依赖它。并且要在并发应用程序中使用它，读取和写入它必须与 Go 中的 `_sync.RWMutex_` 同步。这样做会导致对 `atomic.AddInt32(...)` 的过度使用，从而导致频繁的缓存争用，强制刷新缓存和内存(指令)排序。这会降低性能(译者注: 这里说的缓存是 CPU 中的缓存)。
+硬件级原子指令对于内存的访问并不总是保证读取最新值。原因是，每个处理器内核都维护一个可能失效的本地缓存。为了避免这个问题，原子写操作通常跟在指令之后强制每个缓存更新。最重要的是，为了提升（在硬件和软件级别）的性能，它还必须防止 [内存重新排序 (就是我们常说的指令重排，cpu 的一种优化手段)](https://en.cppreference.com/w/cpp/atomic/memory_order)。
 
 
-`sync.Map` 使用 atomic 指令和锁的组合，但确保读取操作的路径尽可能短，大多数情况下，每次调用 `Load(...)` 只需一个原子加载操作案件。atomic 存储指令通常是强制更新（每个内核的）缓存的指令，而 atomic 加载可能只需要强制执行内存排序并确保其原子性。只有 `atomic.AddInt32(...)` 最糟糕，因为它与对同一变量的其他原子更新的争用将导致它忙于等待，直到依赖于比较和交换(译者注:这里便是 CAS 指令，在汇编中一个指令完成两个操作)指令的更新成功。
+`map` 结构被广泛使用，以至于几乎每个应用程序都在其代码中依赖它。并且要在并发应用程序中使用它，读取和写入它必须与 Go 中的 `_sync.RWMutex_` 同步。这样做会导致对 `atomic.AddInt32(...)` 的过度使用，从而导致频繁的缓存争用，强制刷新缓存和内存 (指令) 排序。这会降低性能 (译者注：这里说的缓存是 CPU 中的缓存)。
+
+
+`sync.Map` 使用 atomic 指令和锁的组合，但确保读取操作的路径尽可能短，大多数情况下，每次调用 `Load(...)` 只需一个原子加载操作案件。atomic 存储指令通常是强制更新（每个内核的）缓存的指令，而 atomic 加载可能只需要强制执行内存排序并确保其原子性。只有 `atomic.AddInt32(...)` 最糟糕，因为它与对同一变量的其他原子更新的争用将导致它忙于等待，直到依赖于比较和交换 (译者注：这里便是 CAS 指令，在汇编中一个指令完成两个操作) 指令的更新成功。
 
 
 ## sync.RWMutex 和 map 一起使用的问题
 
 
-使用 `sync.RWMutex` 来同步访问 map 的一个例子: [https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/map\_reference\_test.go#L25](https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/map_reference_test.go#L25)
+使用 `sync.RWMutex` 来同步访问 map 的一个例子：[https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/map\_reference\_test.go#L25](https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/map_reference_test.go#L25)
 
-为方便起见，将上面的代码镜像到这里:
+为方便起见，将上面的代码镜像到这里：
 > 源代码 1
+
 ```go
 // Taken from here: https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/map_reference_test.go#L25
 // RWMutexMap is an implementation of mapInterface using a sync.RWMutex.
@@ -137,7 +138,7 @@ func (m *RWMutexMap) Range(f func(key, value interface{}) (shouldContinue bool))
 	}
 	m.mu.RUnlock()
 
-	for _, k := range keys {plainplainplain
+	for _, k := range keys {
 		v, ok := m.Load(k)
 		if !ok {
 			continue
@@ -147,8 +148,7 @@ func (m *RWMutexMap) Range(f func(key, value interface{}) (shouldContinue bool))
 		}
 	}
 }
-
-```plain
+```
 
 
 
@@ -160,11 +160,12 @@ func (m *RWMutexMap) Range(f func(key, value interface{}) (shouldContinue bool))
 `[sync.RWMutex](https://github.com/golang/go/blob/912f0750472dd4f674b69ca1616bfaf377af1805/src/sync/rwmutex.go#L28)` 使用信号量的组合以及两个附加变量 `readerCount` 和 `readerWait` 来记录正在读取和等待读取的数量。
 
 
-要理解在多核环境中我们需要使用 `sync.Map`，而不是使用由 `sync.RWMutex` 保护的内置 `map`，那么，我们必须深入研究 [how](https://sreramk.medium.com/go-sync-rwmutex-internals-and-usage-explained-9eb15865bba) `[sync.RWMutex](https://sreramk.medium.com/go-sync-rwmutex-internals-and-usage-explained-9eb15865bba)` 的[内部工作。](https://sreramk.medium.com/go-sync-rwmutex-internals-and-usage-explained-9eb15865bba)
+要理解在多核环境中我们需要使用 `sync.Map`，而不是使用由 `sync.RWMutex` 保护的内置 `map`，那么，我们必须深入研究 [how](https://sreramk.medium.com/go-sync-rwmutex-internals-and-usage-exed-9eb15865bba) `[sync.RWMutex](https://sreramk.medium.com/go-sync-rwmutex-internals-and-usage-exed-9eb15865bba)` 的[内部工作。](https://sreramk.medium.com/go-sync-rwmutex-internals-and-usage-exed-9eb15865bba)
 
 `sync.Map` 有下面这些一看就懂的方法（取自 [这里](https://golang.org/pkg/sync/#Map)）
 
 > 源代码 2
+
 ```go
 //Delete deletes the value for a key.
 func (m *Map) Delete(key interface{})
@@ -241,12 +242,13 @@ func (m *Map) Store(key, value interface{})
 方便起见，这里给出 `[sync.map](https://github.com/golang/go/blob/21a04e33353316635b5f3351e807916f3bb1e844/src/sync/map.go#L12)` 的结构。
 
 > 源代码 3
+
 ```go
 // Map is like a Go map[interface{}]interface{} but is safe for concurrent use
 // by multiple goroutines without additional locking or coordination.
 // Loads, stores, and deletes run in amortized constant time.
 //
-// The Map type is specialized. Most code should use a plain Go map instead,
+// The Map type is specialized. Most code should use a  Go map instead,
 // with separate locking or coordination, for better type safety and to make it
 // easier to maintain other invariants along with the map content.
 //
@@ -291,7 +293,7 @@ type Map struct {
 	// state) and the next store to the map will make a new dirty copy.
 	misses int
 }
-```plain
+```
 
 
 正如我们所见，`sync.Map` 有一个 `dirty` map 存储和一个用于存储 “clean” 的 `read` map 的 `atomic.Value` 字段。所有对 `dirty` 的访问总是由 `mu` 保护。在我们查看每个独立的方法如何工作之前，我们必须对 `sync.Map` 的工作原理和设计思想有一个宏观的了解。
@@ -299,6 +301,7 @@ type Map struct {
 The `[键值对构成的 entry ](https://github.com/golang/go/blob/c1cc9f9c3d5ed789a080ef9f8dd9c11eca7e2026/src/sync/map.go#L73)` 结构对于`sync.Map`的功能至关重要
 
 > 源代码 4
+
 ```go
 
 type entry struct {
@@ -366,13 +369,13 @@ type readOnly struct {
 如果它不存在，那么它很可能是最近添加的。在这种情况下，需要检查 `dirty` 字段（需要 `mu` 字段的保护）。如果键存在于 `dirty` 字段中，则将其作为结果进行检索。
 
 
-在此实现中(译者注: dirty map)，读操作会比较慢。随着 `readOnly` 对象中的每次未命中，字段 `misses` 的值自动递增。当 `misses` 计数大于 `dirty` 的大小时，通过创建一个新的 `readOnly` 对象来包含它，它会被提升（直接移动它的指针）到 `read` 字段。发生这种情况时，会丢弃 `read` 字段的先前值。
+在此实现中 (译者注: dirty map)，读操作会比较慢。随着 `readOnly` 对象中的每次未命中，字段 `misses` 的值自动递增。当 `misses` 计数大于 `dirty` 的大小时，通过创建一个新的 `readOnly` 对象来包含它，它会被提升（直接移动它的指针）到 `read` 字段。发生这种情况时，会丢弃 `read` 字段的先前值。
 
 
 所有涉及 `dirty` map 的操作都在互斥锁 `mu` 保护的区域内执行。
 
 
-当记录被存储到 `sync.Map` 中时，它会通过以下三种方式之一进行处理:
+当记录被存储到 `sync.Map` 中时，它会通过以下三种方式之一进行处理：
 
 1、修改 `(read.Load().(readOnly))[key]` 返回的 `entry` 实例，如果检索成功。修改是通过将值添加到 `entry` 字段来完成的。
 
@@ -417,7 +420,7 @@ type readOnly struct {
 
 
 
-有两个独立的未导出方法，为 `sync.Map` 定义的 `missLocked()` 和 `dirtyLocked()`。他们的责任如下:
+有两个独立的未导出方法，为 `sync.Map` 定义的 `missLocked()` 和 `dirtyLocked()`。他们的责任如下：
 
 1. 传播 `dirty` 映射（同时将`sync.Map`中的`dirty`字段设置为`nil`）
 2. 将 `readOnly` 对象（其 `amended` 字段设置为 `false`）中的键值对复制到新创建的 `dirty` map 对象（通过忽略与 `entry` 对象关联的键）设置为 `nil` 并使它们`expunged`；因为它们没有被复制到`dirty` map 中）。
@@ -430,11 +433,12 @@ type readOnly struct {
 ## `Store(key, value interface{})` 接口
 
 > 源代码 6: Store 方法
+
 ```go
 // Store sets the value for a key.
 func (m *Map) Store(key, value interface{}) {
 	
-	/// PART 1plain
+	/// PART 1
 	read, _ := m.read.Load().(readOnly)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
@@ -473,7 +477,7 @@ func (m *Map) Store(key, value interface{}) {
 	m.mu.Unlock()
 	/// --------------------------------------------------------------
 }
-```plain
+```
 
 
 让我们将上面的代码分成四部分（上面标记了包含每个部分的区域）。第一部分尝试从 `read` 中检索值，这是一个包含 `readOnly` 对象的 `sync.Value` 字段。如果读取成功，它会尝试将值以原子方式存储到 `entry` 对象中。源代码 7 显示了它是如何完成的。
@@ -495,6 +499,7 @@ func (m *Map) Store(key, value interface{}) {
 
 
 > 源代码 7：tryStore 方法
+
 ```go
 // tryStore stores a value if the entry has not been expunged.
 //
@@ -525,7 +530,7 @@ func (e *entry) tryStore(i *interface{}) bool {
 1. 如果它是 `nil` 或其他任何东西，则表示在 `dirty` 映射中也必须存在相同的键。
 2. 但如果它是 `expunged`，则表示该键不存在于 `dirty` 映射中，并且必须将其添加到其中。因此，由 `read.m[key]` 检索到的 `entry` 对象的指针被存储到与其适当的键相关联的`dirty` 中。因为使用了相同的指针，对底层 `entry` 对象的任何更改都会反映在 “干净” map 和 “dirty” map 中。
 
-对 `unexpungeLocked()` 的调用会执行语句 `return atomic.CompareAndSwapPointer(&e.p, expunged, nil)` （这是其定义中唯一的语句）。这确保了 `e.p` 仅在它被 `expunged` 时更新。您不必在这里忙着等待以允许更新发生。这是因为 `CompareAndSwapPointer(...)` 的 “旧指针” 参数是一个常量（`expunged`）并且它永远不会改变。
+对 `unexpungeLocked()` 的调用会执行语句 `return atomic.CompareAndSwapPointer(&e.p, expunged, nil)`（这是其定义中唯一的语句）。这确保了 `e.p` 仅在它被 `expunged` 时更新。您不必在这里忙着等待以允许更新发生。这是因为 `CompareAndSwapPointer(...)` 的 “旧指针” 参数是一个常量（`expunged`）并且它永远不会改变。
 
 `tryStore()` 和 `unexpungeLocked()` 都可以更新 `e.p`，尽管它们不是由同一个互斥锁相互保护的。因此，他们可能会尝试从不同的 goroutines 同时更新 `e.p`。但这不会成为竞争条件，因为 `unexpungeLocked()` 应该仅在其指针（入口 entry 的 p 字段）设置为 `expunged` 时修改入口 entry。
 
@@ -557,13 +562,14 @@ func (e *entry) tryStore(i *interface{}) bool {
 
 
 > 源码 8：dirtyLocked() — 通过复制可读 map 的内容创建一个新 map 并将其存储在 `dirty` 中
+
 ```go
 func (m *Map) dirtyLocked() {
 	if m.dirty != nil {
 		return
 	}
 
-	read, _ := m.read.Load().(readOnly)plain
+	read, _ := m.read.Load().(readOnly)
 	m.dirty = make(map[interface{}]*entry, len(read.m))
 	for k, e := range read.m {
 		if !e.tryExpungeLocked() {
@@ -571,11 +577,12 @@ func (m *Map) dirtyLocked() {
 		}
 	}
 }
-```plain
+```
 
 `tryExpungeLocked()` 定义如下：
 
-> 源码 9：`tryExpungeLocked()`——如果它是 `nil`，则用 expunged 更新entry的指针
+> 源码 9：`tryExpungeLocked()`——如果它是 `nil`，则用 expunged 更新 entry 的指针
+
 ```go
 
 func (e *entry) tryExpungeLocked() (isExpunged bool) {
@@ -663,7 +670,7 @@ The key is not removed at this point. It is just set to `nil`.
 
 1. 首先尝试从 `readOnly` 对象中检索密钥
 2. 如果成功，则立即使用返回的对象计算范围循环（从 [源码](https://github.com/golang/go/blob/aa4e0f528e1e018e2847decb549cfc5ac07ecf20/src/sync/map.go#L341)) 中的第 341 行到 349 行）。
-3. 如果失败，则在 [line 325](https://github.com/golang/go/blob/aa4e0f528e1e018e2847decb549cfc5ac07ecf20/src/sync/map.go#L325) 处检查, 查看 `sync.Map` 对象是否通过在最近的`dirty` map 升级后使用附加键对其进行扩展来 “修改”。
+3. 如果失败，则在 [line 325](https://github.com/golang/go/blob/aa4e0f528e1e018e2847decb549cfc5ac07ecf20/src/sync/map.go#L325) 处检查，查看 `sync.Map` 对象是否通过在最近的`dirty` map 升级后使用附加键对其进行扩展来 “修改”。
 4.如果在[line 325](https:github.comgolanggoblobaa4e0f528e1e018e2847decb549cfc5ac07ecf20srcsyncmap.goL325)处检查成功，则立即提升`dirty`map。这样做是因为，假设访问了所有键，范围操作最有可能是 O(N)。因此，在提升 `dirty` 映射并将 `dirty` 设置为 `nil` 之后，我们可以期待接下来的存储操作（引入新键的 `Store(...)` 或 `LoadOrStore(...)`）遵循创建新的 `dirty` map 的缓慢路径，这是一个 O(N) 操作。但是调用 `Range(...)` 本身就是一个 O(N) 操作，在 O(N) 操作创建一个新的 `dirty` map 之前确保 O(N) 操作（创建一个新的`dirty` map）只跟在另一个 O(N) 操作之后。因此我们可以将它们摊销为一个 O(N) 操作
 5. 在步骤 4 之后，执行范围操作。
 
