@@ -1,4 +1,4 @@
-# **浅谈如何组织Go代码结构**
+# **浅谈如何组织 Go 代码结构**
 
 * 原文地址：https://changelog.com/posts/on-go-application-structure
 * 原文作者：`Jon Calhoun`
@@ -22,7 +22,7 @@
 在过去的 `Q&A` 中，我们被问及 `Go` 应用的结构问题，Peter Bourgon 的回答是这样的：
 
 > 很多语言都有这样的惯例（我猜），对于同一类型的项目，所有项目的结构都大致相同...如果你用 `Ruby` 做一个 `web` 服务，你会有这样的布局，程序包会以你使用的架构模式来命名。以 `MVC` 为例，控制器等等。但是在 `Go` 中，这并不是我们真正要做的。我们的程序包和项目结构基本能反映出我们正在实施事务所在的领域。不是所使用的模式，也不是脚手架，而是取决于当前项目所在领域中的特定类型和实体。
-> **因此，从定义上讲，不同项目在习惯上总是有所不同。**在一个项目中有意义的，在另一个项目中可能就没有意义。不是说这里是唯一的方法，但这是我们倾向于的一种选择......因此，是的，这个问题没有答案，那种关于语言中约定俗成让很多人非常困惑，但结果可能是错误的选择......我不知道，但我想这是主要的一点。
+> **因此，从定义上讲，不同项目在习惯上总是有所不同。**在一个项目中有意义的，在另一个项目中可能就没有意义。不是说这里是唯一的方法，但这是我们倾向于的一种选择……因此，是的，这个问题没有答案，那种关于语言中约定俗成让很多人非常困惑，但结果可能是错误的选择……我不知道，但我想这是主要的一点。
 >
 > [Peter Bourgon](https://twitter.com/peterbourgon) 在 [Go Time #147](https://changelog.com/gotime/147#transcript-185) 中的回答。其中的加粗是我标注的。
 
@@ -71,7 +71,7 @@ type Lesson struct {
 
 同时，管理员的 `Lesson` 类型没有 `CompletedAt` 字段，因为在这种上下文情况下是没有意义。这些信息只对登录用户查看课程有关，而不是管理员管理课程的内容。
 
-相反，管理员 `Lesson` 类型将提供对 `Requirement` 等字段的访问，这些字段被用来确定用户是否可以访问此内容。其他字段看起来也会有些不同；`Video` 字段不是视频的URL，而是视频托管地点的信息，因为这是管理员更新内容的方式。
+相反，管理员 `Lesson` 类型将提供对 `Requirement` 等字段的访问，这些字段被用来确定用户是否可以访问此内容。其他字段看起来也会有些不同；`Video` 字段不是视频的 URL，而是视频托管地点的信息，因为这是管理员更新内容的方式。
 
 Instead, the admin Lesson type will provide access to fields like `Requirement`, which will be used to determine if a user has access to content. Other fields will look a bit different as well; rather than a URL to the video, the `Video` field might instead be information about where the video is hosted, as this is how admins will update the content.
 
@@ -109,7 +109,7 @@ type Lesson struct {
 
 ### 以层的方式组织包结构
 
-另一种分割程序的方法是通过依赖关系。Ben Johnson在[gobeyond.dev](https://www.gobeyond.dev/)，特别是在[Packages as layers, not groups](https://www.gobeyond.dev/packages-as-layers/)一文中对此进行了很好的讨论。这个概念与Kat Zien在 `GopherCon` 演讲中提到的[六边形架构](https://www.youtube.com/watch?v=oL6JBUk6tj0&t=1614s)非常相似，"你如何组织Go应用程序的结构"。
+另一种分割程序的方法是通过依赖关系。Ben Johnson 在[gobeyond.dev](https://www.gobeyond.dev/)，特别是在[Packages as layers, not groups](https://www.gobeyond.dev/packages-as-layers/)一文中对此进行了很好的讨论。这个概念与 Kat Zien 在 `GopherCon` 演讲中提到的[六边形架构](https://www.youtube.com/watch?v=oL6JBUk6tj0&t=1614s)非常相似，"你如何组织 Go 应用程序的结构"。
 
 从较高的角度来看，我们的想法是我们拥有一个核心域，在其中定义资源和与之交互所使用的服务。
 
@@ -186,14 +186,14 @@ func (ls *AdminLessonStore) Create(lesson *admin.Lesson) error { ... }
 
 除了以上这些结构之外，还有无数种（或无结构）组织代码的方法，根据不同的上下文这些方法也是有意义的。我曾在一些项目中尝试扁平结构（单一的包），我仍然对这种方式的效果感到震惊。当刚开始写 `Go` 代码时，我几乎只使用 `MVC`。这不仅比整个社区引导的更好，而且摆脱了因不知道如何布局程序结构的困境，避免了不知道从哪里开始的难题。 
 
-在同一 `Q&A` 中，我们被问到如何组织 `Go` 代码，Mat Ryer表达了没有一个固定方式来组织代码的好处：
+在同一 `Q&A` 中，我们被问到如何组织 `Go` 代码，Mat Ryer 表达了没有一个固定方式来组织代码的好处：
 
 > 我认为，这里是非常自由的，虽然说没有真正的方法，但这也意味着你不会做错。适合你的情况才是好的选择。
 > [Mat Ryer](https://twitter.com/matryer) 在 [Go Time #147](https://changelog.com/gotime/147#transcript-186) 中发表的观点
 
 现在我有很多使用 `Go` 的经验，我完全同意 Mat 的观点。决定一个应用适合什么样的结构，这是一种自有。我喜欢没有一个固定的方法，也没有一个错误的方法。尽管现在有这种感觉，但也记得在我经验不足的时候，因为没有具体的例子可以参考而感到非常沮丧。
 
-事实是，如果没有一些经验，决定什么结构适合你的情况几乎是不可能的，但现实往往迫使我们在获得任何经验之前就得选择。这是一个《第22条军规》陷阱，在还没有开始的时候就阻止了我们。
+事实是，如果没有一些经验，决定什么结构适合你的情况几乎是不可能的，但现实往往迫使我们在获得任何经验之前就得选择。这是一个《第 22 条军规》陷阱，在还没有开始的时候就阻止了我们。
 
 然而我并没有放弃，而是选择了使用所知道的东西：`MVC`。这使我能够编写代码，获得一些工作，并从这些错误中学习。随着时间的推移，开始理解其他的代码结构方式，我的应用程序与 `MVC` 的相似度越来越低，但这是一个渐进的过程。我甚至怀疑，如果一开始就强迫自己立即弄好程序的结构，这根本就不会成功。最多只能在经历了大量的挫折之后获得成功。
 

@@ -6,7 +6,7 @@
 - 校对：[laxiaohong](https://github.com/laxiaohong)
 ***
 
-# Go中的阻塞分析
+# Go 中的阻塞分析
 
 ## 描述
 
@@ -22,7 +22,7 @@ Go 中的阻塞分析有助于您分析程序在等待下列阻塞操作上的�
 
 上面的操作是 Go 运行时使用的[等待状态](https://github.com/golang/go/blob/go1.15.7/src/runtime/runtime2.go#L996-L1024)的子集，下面的操作**将不会**出现在分析文件中：
 
-- [`time.Sleep`](https://golang.org/pkg/time/#Sleep)（但是 [`time.After`](https://golang.org/pkg/time/#After), [`time.Tick`](https://golang.org/pkg/time/#Tick) 和其他封装了channel的操作会显示出来）
+- [`time.Sleep`](https://golang.org/pkg/time/#Sleep)（但是 [`time.After`](https://golang.org/pkg/time/#After), [`time.Tick`](https://golang.org/pkg/time/#Tick) 和其他封装了 channel 的操作会显示出来）
 - 垃圾回收
 - 系统调用（例如[网络 I/O](https://github.com/DataDog/go-profiler-notes/tree/main/examples/block-net/)，文件 I/O 等）
 - 运行时内部锁（例如 [stopTheWorld](https://github.com/golang/go/blob/go1.15.7/src/runtime/proc.go#L900)）
@@ -36,7 +36,7 @@ Go 中的阻塞分析有助于您分析程序在等待下列阻塞操作上的�
 
 阻塞分析器默认是被禁用的。您可以通过按下面方式通过传递 `rate > 0` 来启用它。
 
-```
+```plain
 runtime.SetBlockProfileRate(rate)
 ```
 
@@ -88,7 +88,7 @@ func chansend(...) {
 
 这意味着如果您未启用阻塞分析，由于 CPU 分支预测，开销实际上是 0。
 
-当开启阻塞分析时，每一个阻塞操作都会有两个 `cputicks()` 调用的开销。在 `amd64` 上，这是通过使用了 [RDTSC指令](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 优化后的汇编来完成的，并且[在我的机器](https://github.com/felixge/dump/tree/master/cputicks)上花费了可忽略不计的 `~10ns/op` 。
+当开启阻塞分析时，每一个阻塞操作都会有两个 `cputicks()` 调用的开销。在 `amd64` 上，这是通过使用了 [RDTSC 指令](https://en.wikipedia.org/wiki/Time_Stamp_Counter) 优化后的汇编来完成的，并且[在我的机器](https://github.com/felixge/dump/tree/master/cputicks)上花费了可忽略不计的 `~10ns/op` 。
 
 根据设置的 `blockprofilerate`（在[精度](#精度)一节有更多相关内容），阻塞事件最终可能会被保存。这意味着堆栈跟踪信息被收集，此动作在[我的机器](https://github.com/felixge/dump/tree/master/go-callers-bench) 上耗时`~1µs`（堆栈深度=16）。通过增加相关 [`blockRecord`](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L133-L138) 计数和周期的方式，堆栈会作为键更新一个[内部哈希表](https://github.com/golang/go/blob/go1.15.7/src/runtime/mprof.go#L144)。
 
@@ -168,7 +168,7 @@ Go 中的[互斥](https://github.com/DataDog/go-profiler-notes/blob/main/mutex.m
 
 用于创建分析文件的`blockprofilerate` 没有包括在这里，也不属于[分析器标签](https://rakyll.org/profiler-labels/)。
 
-```
+```plain
 $ go tool pprof -raw block.pb.gz 
 PeriodType: contentions count
 Period: 1

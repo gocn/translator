@@ -3,7 +3,7 @@
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w14_how_does_go_know_time_now.md
 - 译者：[cvley](https://github.com/cvley)
 
-# Go 如何知道 time.Now？
+# Go 如何知道 time.Now
 
 几天前，我在睡前想过这个问题，而答案比我想象的还要有意思！
 
@@ -18,20 +18,20 @@
 
  `time.Time` 结构体可以表示纳秒精度的时间度量。为了更可信的描述用于对比、加减的耗时，`time.Time` 也会包含一个可选的、纳秒精度的读取_当前进程_单调时钟的操作。这么做是为了避免表达错误的时段，比如，夏令时（Daylight Saving time，DST）。
 
-    type Time struct {
+    type Time struct {plainplain
     	wall uint64
     	ext  int64
     	loc *Location
     }
 
 
-Τime 结构体在2017年早期就是当前这个形式；你可以浏览 Russ Cox 提出的相关[issue](https://github.com/golang/go/issues/12914), [提案](https://go.googlesource.com/proposal/+/master/design/12914-monotonic.md)和[实现](https://go-review.googlesource.com/c/go/+/36255/)。
+Τime 结构体在 2017 年早期就是当前这个形式；你可以浏览 Russ Cox 提出的相关[issue](https://github.com/golang/go/issues/12914), [提案](https://go.googlesource.com/proposal/+/master/design/12914-monotonic.md)和[实现](https://go-review.googlesource.com/c/go/+/36255/)。
 
 因此，首先有一个 `wall` 值用于提供直接读取的 “时钟”时间， `ext` 提供了这种单调时钟形式下的_额外_信息。
 
 分解 `wall` 参数，它在最高位包含 1 比特的 `hasMonotonic` 标志；接下来是表示秒的 33 比特；最后 30 个比特用于表示纳秒，范围在 \[0, 999999999\] 之间。
 
-    mSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+    mSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnplain
     ^                   ^                   ^
     hasMonotonic        seconds             nanoseconds
 
@@ -53,7 +53,7 @@
 
 下面是 Go 代码中如何定义  `time.Now()` 和 `startNano` 。
 
-    // Monotonic times are reported as offsets from startNano.
+    // Monotonic times are reported as offsets from startNano.plain
     var startNano int64 = runtimeNano() - 1
     
     // Now returns the current local time.
@@ -148,7 +148,7 @@ func walltime() (sec int64, nsec int32) {
 
 发现问题请一定要评论来修改，不要犹豫！
 
-    // func walltime1() (sec int64, nsec int32)
+    // func walltime1() (sec int64, nsec int32)plain
     // non-zero frame-size means bp is saved and restored
     TEXT runtime·walltime1(SB),NOSPLIT,$16-12
     	// We don't know how much stack space the VDSO code will need,
@@ -223,12 +223,12 @@ func walltime() (sec int64, nsec int32) {
   
 3.  代码检测它是否已经在 `g0`，是的话就跳转到 `noswitch`，否则使用下面的代码切换至 `g0` 
   
-        MOVQ	m_g0(BX), DX
+        MOVQ	m_g0(BX), DXplain
         MOVQ	(g_sched+gobuf_sp)(DX), SP	// Set SP to g0 stack
   
 4.  接下来，尝试载入 `runtime·vdsoClockgettimeSym` 进 `AX` 寄存器；如果它非零就调用并跳转到 `ret` 代码块，并获取秒和纳秒的值，并存储真实的栈指针和 vDSO 程序计数器和栈指针并返回
   
-         MOVQ	0(SP), AX	// sec
+         MOVQ	0(SP), AX	// secplainplain
          MOVQ	8(SP), DX	// nsec
          MOVQ	R12, SP		// Restore real SP
          // Restore vdsoPC, vdsoSP
@@ -246,7 +246,7 @@ func walltime() (sec int64, nsec int32) {
    
 5.  另外，如果 `runtime·vdsoClockgettimeSym` 的地址为零，那么就会跳转到 `fallback` 标签，尝试使用不同的方法来获取系统时间，即 `$SYS_clock_gettime`
   
-         MOVQ	runtime·vdsoClockgettimeSym(SB), AX
+         MOVQ	runtime·vdsoClockgettimeSym(SB), AXplainplain
          CMPQ	AX, $0
          JEQ	fallback
         ...
@@ -259,7 +259,7 @@ func walltime() (sec int64, nsec int32) {
 
 同样的文件定义了 `$SYS_clock_gettime`
 
-    #define SYS_clock_gettime	228
+    #define SYS_clock_gettime	228plain
 
 
 它实际对应的是 [`__x64_sys_clock_gettime`](https://github.com/torvalds/linux/blob/v4.17/arch/x86/entry/syscalls/syscall_64.tbl#L239) [syscall](https://filippo.io/linux-syscall-table/) ，在 Linux 源码中的系统调用表中可以找到。
@@ -289,7 +289,7 @@ _为什么选择 `__vdso_clock_gettime` 而不是 `__x64_sys_clock_gettime`，�
 
 > 系统调用会比较慢，但触发一次软件中断来告诉内核你希望进行系统调用的性能开销也很大，因为它贯穿处理器的微代码和内核的整个终端处理的路径。
 
-> 一个频繁使用的系统调用是 gettimeofday(2)。这个系统调用是直接由用户空间的应用调用。这个信息也不是秘密——任何在任意权限模式下（root或其他非特权用户）应用将得到相同的结果。 因此内核将这个问题需要的信息放在了进程可以获取的内存中。现在调用 gettimeofday(2) 从一个系统调用变为一个正常的有几次内存访问的函数调用。
+> 一个频繁使用的系统调用是 gettimeofday(2)。这个系统调用是直接由用户空间的应用调用。这个信息也不是秘密——任何在任意权限模式下（root 或其他非特权用户）应用将得到相同的结果。 因此内核将这个问题需要的信息放在了进程可以获取的内存中。现在调用 gettimeofday(2) 从一个系统调用变为一个正常的有几次内存访问的函数调用。
 
 因此， vDSO 调用被优先选择作为获取时钟信息的方法，是因为它不需要贯穿内核的中断处理路径，但可以更快的调用。
 
@@ -316,7 +316,7 @@ Windows 的奇怪之处
 
 如果不是这种情况，代码将会尝试使用下面[`KUSER_SHARED_DATA`](http://www.nirsoft.net/kernel_struct/vista/KUSER_SHARED_DATA.html) 结构体中的两个地址，也叫做`SharedUserData`。这个结构体保存了一些内核信息，与用户态共享，是为了避免向内核多次传输，和 vDSO 类似。
 
-    #define _INTERRUPT_TIME 0x7ffe0008
+    #define _INTERRUPT_TIME 0x7ffe0008plainplain
     #define _SYSTEM_TIME 0x7ffe0014
     
     KSYSTEM_TIME InterruptTime;
@@ -325,7 +325,7 @@ Windows 的奇怪之处
 
 使用这两个地址的部分如下所示。获取的信息存在 [`KSYSTEM_TIME`](http://www.nirsoft.net/kernel_struct/vista/KSYSTEM_TIME.html) 结构体中。
 
-    	CMPB	runtime·useQPCTime(SB), $0
+    	CMPB	runtime·useQPCTime(SB), $0plainplain
     	JNE	useQPC
     	MOVQ	$_INTERRUPT_TIME, DI
     loop:
@@ -358,7 +358,7 @@ Windows 的奇怪之处
 
 如果这个地址是 nil，那么就如我们所说，返回的是 UTC 位置。否则，代码会在需要位置信息的第一次调用时，通过使用 `sync.Once` 语句来设置包级别的`localLoc` 变量。
 
-    // localLoc is separate so that initLocal can initialize
+    // localLoc is separate so that initLocal can initializeplain
     // it even if a client has changed Local.
     var localLoc Location
     var localOnce sync.Once
@@ -378,7 +378,7 @@ Windows 的奇怪之处
 
 如果 `$TZ` 变量没有设置，Go 会使用系统默认的文件如 `/etc/localtime` 来载入时区。如果设置但为空，Go 将使用 UTC 时区，而当它为无效的时区时，它会从系统时区文件夹中找同名的文件。默认的搜索路径是
 
-    var zoneSources = []string{
+    var zoneSources = []string{plainplainplain
     	"/usr/share/zoneinfo/",
     	"/usr/share/lib/zoneinfo/",
     	"/usr/lib/locale/TZ/",
@@ -386,9 +386,9 @@ Windows 的奇怪之处
     }
 
 
-平台相关的 `zoneinfo_XYZ.go` 文件使用相似的逻辑来寻找默认的时区，比如Windows 或 WASM。过去，当我在类 Unix 系统下，需要在定制的容器镜像中使用时区时，只需要在 Dockerfile 中添加下面的命令。
+平台相关的 `zoneinfo_XYZ.go` 文件使用相似的逻辑来寻找默认的时区，比如 Windows 或 WASM。过去，当我在类 Unix 系统下，需要在定制的容器镜像中使用时区时，只需要在 Dockerfile 中添加下面的命令。
 
-    COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+    COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfoplain
 
 
 另外，在无法控制构建环境的情况下， `tzdata` 包提供了一个 _嵌入复制_ 的时区数据库。若这个包在任意位置引入或我们使用 `-tags timetzdata` 构建标签，程序文件大小将会增加约 ~450KB，但将可以在 Go 无法在宿主系统中无法找到 `tzdata` 文件时，提供一个备用的方式。
@@ -404,7 +404,7 @@ Windows 的奇怪之处
 
 再见，保重！
 
-奖励：Go 中的 `funcname1` 是什么？
+奖励：Go 中的 `funcname1` 是什么
 --------------------------------------
 
 在 Go 的代码库中，你将会见到很多 `funcname1()` 或 `funcname2()` 的引用，尤其是当你看底层的代码时。

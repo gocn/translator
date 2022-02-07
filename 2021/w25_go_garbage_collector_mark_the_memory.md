@@ -1,4 +1,4 @@
-# golang垃圾回收器如何标记内存？
+# golang 垃圾回收器如何标记内存
 
 *原文地址：https://medium.com/a-journey-with-go/go-how-does-the-garbage-collector-mark-the-memory-72cfc12c6976
 
@@ -11,27 +11,27 @@
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_F1iSZOqbbHKM29IvZi0sNQ.png)
 
-本文基于Go 1.13。这里讨论的关于内存管理的概念在我的文章[Go:内存管理和分配](https://medium.com/a-journey-with-go/go-memory-management-and-allocation-a7396d430f44) 中有解释
+本文基于 Go 1.13。这里讨论的关于内存管理的概念在我的文章[Go:内存管理和分配](https://medium.com/a-journey-with-go/go-memory-management-and-allocation-a7396d430f44) 中有解释
 
-Go垃圾回收器负责回收不再使用的内存。实现的算法是一个并行的三色标记扫描采集器。在本文中，我们将详细了解标记阶段，以及不同颜色的用法。
+Go 垃圾回收器负责回收不再使用的内存。实现的算法是一个并行的三色标记扫描采集器。在本文中，我们将详细了解标记阶段，以及不同颜色的用法。
 
-您可以在kenfox的[可视化垃圾回收算法](https://spin.atomicobject.com/2014/09/03/visualizing-garbage-collection-algorithms/) 中找到关于不同类型垃圾回收器的更多信息。
+您可以在 kenfox 的[可视化垃圾回收算法](https://spin.atomicobject.com/2014/09/03/visualizing-garbage-collection-algorithms/) 中找到关于不同类型垃圾回收器的更多信息。
 
 ##标记阶段
 
 此阶段执行内存扫描，以了解代码仍在使用哪些块，以及应该回收哪些块。
 
-但是，由于垃圾回收器可以与我们的Go程序同时运行，因此它需要一种在扫描时检测内存中潜在变化的方法。为了解决这个潜在的问题，实现了一个写屏障算法，允许Go跟踪任何指针的变化。启用写屏障的唯一条件是短时间停止程序，也称为“STW”：
+但是，由于垃圾回收器可以与我们的 Go 程序同时运行，因此它需要一种在扫描时检测内存中潜在变化的方法。为了解决这个潜在的问题，实现了一个写屏障算法，允许 Go 跟踪任何指针的变化。启用写屏障的唯一条件是短时间停止程序，也称为“STW”：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_T16GKkEkxfswmCiHTNpwhQ.png)
 
-在进程开始时，Go还会为每个处理器启动一个标记辅助进程，以帮助标记内存。
+在进程开始时，Go 还会为每个处理器启动一个标记辅助进程，以帮助标记内存。
 
 然后，一旦根节点被排队等待处理，标记阶段就可以开始遍历内存并为其着色。
 
 现在让我们以一个简单的程序为例，该程序允许我们遵循标记阶段所做的步骤
 
-```
+```plain
 Type struct1 struct {
 	a, b int64
 	c, d float64
@@ -69,7 +69,7 @@ func allocStruct2() *struct2 {
 }
 ```
 
-由于struct subStruct不包含任何指针，因此它存储在一个专用于对象的范围中，而不引用其他对象：
+由于 struct subStruct 不包含任何指针，因此它存储在一个专用于对象的范围中，而不引用其他对象：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_YDuAROmG-ELCTT0YbjPd0A.png)
 
@@ -115,22 +115,22 @@ func allocStruct2() *struct2 {
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_V_xSuGZ892V7NT5aG3KiZQ.png)
 
-在进程结束时，黑色对象是内存中正在使用的对象，而白色对象是要回收的对象。如我们所见，由于struct2的实例是在匿名函数中创建的，并且无法从堆栈访问，因此它保持为白色，可以清除。
+在进程结束时，黑色对象是内存中正在使用的对象，而白色对象是要回收的对象。如我们所见，由于 struct2 的实例是在匿名函数中创建的，并且无法从堆栈访问，因此它保持为白色，可以清除。
 
-由于每个跨度中有一个名为gcmarkBits的位图属性，颜色在内部实现，该属性跟踪扫描，并将相应的位设置为1：
+由于每个跨度中有一个名为 gcmarkBits 的位图属性，颜色在内部实现，该属性跟踪扫描，并将相应的位设置为 1：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_dMVV5LIt3QpczR7ULsp5CQ.png)
 
 正如我们所见，黑色和灰色的工作原理是一样的。这一过程的不同之处在于，当黑色对象结束扫描链时，灰色对象排队等待扫描。
 
-垃圾回收器最终会stops the world，将每个写屏障上所做的更改刷新到工作池，并执行剩余的标记。
+垃圾回收器最终会 stops the world，将每个写屏障上所做的更改刷新到工作池，并执行剩余的标记。
 
 您可以在我的文章[Go:垃圾回收器如何监视您的应用程序](https://medium.com/a-journey-with-go/go-how-does-the-garbage-collector-watch-your-application-dbef99be2c35) 中找到有关并发进程和垃圾回收器中标记阶段的更多详细信息
 ## 运行时分析器
-Go提供的工具允许我们可视化所有这些步骤，并在程序中查看垃圾回收器的影响。在启用跟踪的情况下运行我们的代码提供了前面步骤的一个大图。以下是traces：
+Go 提供的工具允许我们可视化所有这些步骤，并在程序中查看垃圾回收器的影响。在启用跟踪的情况下运行我们的代码提供了前面步骤的一个大图。以下是 traces：
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_es-yln-MfQUwW1_F2zSWFw.png)
 
-标记线程的生命周期也可以在goroutine级别的tracer中可视化。下面是goroutine#33的示例，它在开始标记内存之前先在后台等待。
+标记线程的生命周期也可以在 goroutine 级别的 tracer 中可视化。下面是 goroutine#33 的示例，它在开始标记内存之前先在后台等待。
 
 ![profile](../static/images/w25_go_garbage_collector_mark_the_memory/1_iBWfZ3HZP_R6PAtQMt4wVA.png)

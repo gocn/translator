@@ -44,7 +44,7 @@ Go 1.17 发布说明中，有一部分引用了上面这段话，实际上也是
 
 为了对比 Go 编译器在 1.16 和 1.17 生成代码的不同，我们需要一段简单的测试程序。这段程序无需太复杂，仅仅调用一个接受一些参数的函数，然后返回一个值就可以。下面这个是我想到的一个简单的程序：
 
-    package main
+    package mainplainplainplain
     
     import "fmt"
     
@@ -79,12 +79,12 @@ Go 的编译流程有些不寻常之处，在将代码转换成真正的机器�
 
 很棒！现在我们进行反编译，看下生成的指令：
 
-    $ objdump -d prog-116 > prog-116.asm
+    $ objdump -d prog-116 > prog-116.asmplainplainplainplain
 
 
 我首先注意到的是，代码真多：
 
-    $ wc -l prog-116.asm
+    $ wc -l prog-116.asmplain
     164670 prog-116.asm
 
 
@@ -92,7 +92,7 @@ Go 的编译流程有些不寻常之处，在将代码转换成真正的机器�
 
 （为了简单，我省略了 objdump 一般会提供的偏移量和 raw 字节；同时也省略一些 Go 设置的代码）
 
-    0000000000497640 <main.main>:
+    0000000000497640 <main.main>:plain
       ...
       movq   $0x37,(%rsp)
       call   40a3e0 <runtime.convT64>
@@ -149,7 +149,7 @@ main 函数以基址指针和栈指针的初始化开始：
 
 这里我们看到 `add` 的参数已经被放到栈上，用于准备函数调用。0x16 (22) 移动到栈指针指向的地方。0x21 (33) 复制了栈指针指向位置后的 8 个字节（也就是之前栈上的内容）。8 这个偏移量很重要，因为我们处理的是 64 位（8 字节）的整数。一个 8 字节的偏移表示的是 33 被直接放在 22 后面的栈中。
 
-        call   4976e0 <main.add>
+        call   4976e0 <main.add>plainplainplain
         mov    0x10(%rsp),%rax
         mov    %rax,0x30(%rsp)
 
@@ -188,7 +188,7 @@ main 函数以基址指针和栈指针的初始化开始：
 
 主要的反汇编代码和 Go 1.16 下开始的地方是一样的——符合预期——但在 `add` 调用的地方不同：
 
-        mov    $0x16,%eax
+        mov    $0x16,%eaxplainplain
         mov    $0x21,%ebx
         xchg   %ax,%ax
         call   47e260 <main.add>
@@ -204,7 +204,7 @@ main 函数以基址指针和栈指针的初始化开始：
 
 现在我们看下 `add`:
 
-    000000000047e260 <main.add>:
+    000000000047e260 <main.add>:plain
         add    %rbx,%rax
         ret    
 
@@ -217,7 +217,7 @@ main 函数以基址指针和栈指针的初始化开始：
 
 那么基于寄存器的调用可以快多少呢？我创建了一个简单的 Go 基准程序来验证：
 
-    package main
+    package mainplainplain
     
     import "testing"
     
@@ -248,12 +248,12 @@ main 函数以基址指针和栈指针的初始化开始：
 
 在我这个有些年头的笔记本上，在 Go 1.16 下能得到的最好结果是：
 
-    BenchmarkIt-4   	512385438	         2.292 ns/op
+    BenchmarkIt-4   	512385438	         2.292 ns/opplainplain
 
 
 Go 1.17 的结果：
 
-    BenchmarkIt-4   	613585278	         1.915 ns/op
+    BenchmarkIt-4   	613585278	         1.915 ns/opplain
 
 
 提升很显著——我们的例子执行时间下降了 16%。效果不错，尤其是这个提升对于所有的 Go 程序都很容易，仅仅需要使用编译器的新版本就可以了。

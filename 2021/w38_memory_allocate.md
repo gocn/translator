@@ -9,7 +9,7 @@
 
 Today’s post comes from a recent Go pop quiz. Consider this benchmark fragment.[1](#easy-footnote-bottom-1-4231)
 
-```
+```plain
 func BenchmarkSortStrings(b *testing.B) {
         s := []string{"heart", "lungs", "brain", "kidneys", "pancreas"}
         b.ReportAllocs()
@@ -25,7 +25,7 @@ Interfaces, as all Go programmers should know, are implemented as a [two word st
 
 In pseudo Go code, an interface might look something like this:
 
-```
+```plain
 type interface struct {
         // the ordinal number for the type of the value
         // assigned to the interface 
@@ -43,7 +43,7 @@ type interface struct {
 
 To make the example a little more explicit, here’s the benchmark rewritten without the `sort.Strings` helper function:
 
-```
+```plain
 func BenchmarkSortStrings(b *testing.B) {
         s := []string{"heart", "lungs", "brain", "kidneys", "pancreas"}
         b.ReportAllocs()
@@ -59,7 +59,7 @@ To make the interface magic work, the compiler rewrites the assignment as `var s
 
 It appears that `ss` is moved to the heap, causing the allocation that the benchmark reports.
 
-```
+```plain
   Total:    296.01MB   296.01MB (flat, cum) 99.66%
       8            .          .           func BenchmarkSortStrings(b *testing.B) { 
       9            .          .           	s := []string{"heart", "lungs", "brain", "kidneys", "pancreas"} 
@@ -74,7 +74,7 @@ It appears that `ss` is moved to the heap, causing the allocation that the bench
 
 The allocation occurs because the compiler currently cannot convince itself that `ss` outlives `si`. The general attitude amongst Go compiler hackers seems to be that [this could be improved](https://github.com/golang/go/issues/23676), but that’s a discussion for another time. As it stands, `ss` is allocated on the heap. Thus the question becomes, how many bytes are allocated per iteration? Why don’t we ask the `testing` package.
 
-```
+```plain
 % go test -bench=. sort_test.go 
 goos: darwin
 goarch: amd64 
@@ -86,7 +86,7 @@ ok command-line-arguments 1.260s
 
 Using Go 1.16beta1, on amd64, 24 bytes are allocated per operation.[4](#easy-footnote-bottom-4-4231) However, the previous Go version, on the same platform, consumes 32 bytes per operation
 
-```
+```plain
 % go1.15 test -bench=. sort_test.go 
 goos: darwin 
 goarch: amd64 BenchmarkSortStrings-4 11453016 96.4 ns/op 32 B/op 1 allocs/op 

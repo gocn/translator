@@ -64,7 +64,7 @@ with
   }
 ```
 
-…
+……
 
 Looking in my public Go corpus, I found 88,230 calls to strings.SplitN. Of these, 77,176 (87%) use a fixed count 2. I expect that essentially all of them would be more clearly written using Cut.
 

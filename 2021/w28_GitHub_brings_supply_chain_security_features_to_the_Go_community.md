@@ -7,13 +7,13 @@
 - 译者：[朱亚光](https://github.com/zhuyaguang)
 - 校对：
 
-Go国际社区从一开始就拥抱 GitHub ( GitHub 即是 Go 代码协作的地方也是发布包的地方)使得 Go 成为 如今 GitHub 上排名前15的编程语言。我们很高兴地宣布 GitHub 的供应链安全功能可以用于 Go modules 了，这个功能可以帮助 Go 社区发现、报告和预防安全漏洞。
+Go 国际社区从一开始就拥抱 GitHub ( GitHub 即是 Go 代码协作的地方也是发布包的地方)使得 Go 成为 如今 GitHub 上排名前 15 的编程语言。我们很高兴地宣布 GitHub 的供应链安全功能可以用于 Go modules 了，这个功能可以帮助 Go 社区发现、报告和预防安全漏洞。
 
-> Go 语言创建的初衷之一就是为了解决大型软件依赖管理的问题。GitHub是开源的 Go modules 最受欢迎的托管主机。今天发布的这个功能不仅仅会帮助 GitHub 用户，还会帮助任何依赖 GitHub 托管 Go modules 的人。我们很高兴 GitHub 正在投资有益于整个 Go 生态的改进，我们期待在未来能与他们进行更多的合作。
+> Go 语言创建的初衷之一就是为了解决大型软件依赖管理的问题。GitHub 是开源的 Go modules 最受欢迎的托管主机。今天发布的这个功能不仅仅会帮助 GitHub 用户，还会帮助任何依赖 GitHub 托管 Go modules 的人。我们很高兴 GitHub 正在投资有益于整个 Go 生态的改进，我们期待在未来能与他们进行更多的合作。
 >
-> – Steve Francia, Google Go语言PL
+> – Steve Francia, Google Go 语言 PL
 
-Go modules 于2019年引入，目的是使依赖管理更容易和版本信息更明确，根据 [Go2020开发者调查](https://blog.golang.org/survey2020-results)  Go models 获得了几乎普遍的采用。下面，我将向您一一介绍下 GitHub 的供应链安全功能如何与Go modules配合使用，来提高Go 社区的安全性。
+Go modules 于 2019 年引入，目的是使依赖管理更容易和版本信息更明确，根据 [Go2020 开发者调查](https://blog.golang.org/survey2020-results)  Go models 获得了几乎普遍的采用。下面，我将向您一一介绍下 GitHub 的供应链安全功能如何与 Go modules 配合使用，来提高 Go 社区的安全性。
 
 ## [咨询](https://github.blog/2021-07-22-github-supply-chain-security-features-go-community/#advisories)
 
@@ -35,7 +35,7 @@ GitHub 的依赖图分析了代码库中的 `go.mod` 文件来理解代码库的
 
 依赖关系图是公共仓库的默认功能，但是[私有仓库](https://docs.github.com/en/code-security/getting-started/securing-your-repository#managing-the-dependency-graph)您必须手动开启。如果你的公共仓库的依赖关系图还没填充，稍等下马上就会填充了。如果你迫不及待，可以通过推送下更改的`go.mod`文件来触发更新。
 
-为了防止引入新的漏洞，你可以使用[依赖审查](https://docs.github.com/en/github/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/reviewing-dependency-changes-in-a-pull-request#about-dependency-review)来查看某个PR 对 `go.mod` 更改而带来的影响。
+为了防止引入新的漏洞，你可以使用[依赖审查](https://docs.github.com/en/github/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/reviewing-dependency-changes-in-a-pull-request#about-dependency-review)来查看某个 PR 对 `go.mod` 更改而带来的影响。
 
 ![Screenshot of dependency review](../static/images/w28_GitHub_brings_supply_chain_security_features_to_the_Go_community/4.png)
 
@@ -49,7 +49,7 @@ GitHub 的依赖图分析了代码库中的 `go.mod` 文件来理解代码库的
 
 有什么比易受攻击的依赖发出告警更好的策略呢？当然是提交一个 PR 的时候，能自动将易受攻击的 Go modules 升级到没有漏洞的版本！ 这正是 Dependabot 安全更新所做的。
 
-我们发现，通过自动生成的PR来升级易受攻击的依赖项，从而来修复软件的代码库，比那些没有的要[快40%](https://octoverse.github.com/static/github-octoverse-2020-security-report.pdf)。
+我们发现，通过自动生成的 PR 来升级易受攻击的依赖项，从而来修复软件的代码库，比那些没有的要[快 40%](https://octoverse.github.com/static/github-octoverse-2020-security-report.pdf)。
 
 ![Screenshot of an automated Dependabot pull request for a security update](../static/images/w28_GitHub_brings_supply_chain_security_features_to_the_Go_community/6.png)
 

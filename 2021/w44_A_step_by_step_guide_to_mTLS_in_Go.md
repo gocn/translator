@@ -6,7 +6,7 @@
 
 # 手把手教你用 Go 实现一个 mTLS
 
-想知道什么是 mTLS（双向TLS）？来吧，让我们用 Golang 和 OpenSSL 实现一个 mTLS。
+想知道什么是 mTLS（双向 TLS）？来吧，让我们用 Golang 和 OpenSSL 实现一个 mTLS。
 
 ## 介绍
 
@@ -80,19 +80,19 @@ go run -v server.go
 
 打开另外一个终端运行客户端：
 
-~~~
+~~~plain
 go run -v client.go
 ~~~
 
 你可以从客户端看到以下输出：
 
-~~~
+~~~plain
 Hello, world!
 ~~~
 
 ### 第二步 - 生成和使用服务端证书
 
-使用以下命令生成证书。该命令将创建一个有效期为10年的2048位密钥证书。此外，`CN=localhost` 说明该证书对 `localhost` 域是有效的。
+使用以下命令生成证书。该命令将创建一个有效期为 10 年的 2048 位密钥证书。此外，`CN=localhost` 说明该证书对 `localhost` 域是有效的。
 
 ```shell
 openssl req -newkey rsa:2048 \
@@ -135,7 +135,7 @@ http: TLS handshake error from [::1]:59436: remote error: tls: bad certificate
 
 在客户端，你需要注意以下几点：
 
-```
+```plain
 x509: certificate is not valid for any names, but wanted to match localhost
 ```
 
@@ -170,7 +170,7 @@ x509: certificate is not valid for any names, but wanted to match localhost
 
 这里，我们读取 `cert.pem` 文件并在创建客户端时提供根 CA 。运行客户端现在应该可以成功显示以下内容：
 
-~~~
+~~~plain
 Hello, world!
 ~~~
 
@@ -178,7 +178,7 @@ Hello, world!
 
 在客户端，读取并提供密钥对作为客户端证书。
 
-```
+```plain
 +// Read the key pair to create certificate
 +cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
 +if err != nil {
@@ -201,7 +201,7 @@ RootCAs: caCertPool,
 
 在服务端，我们创建一个类似于 CA 池 ，并将其提供给 TLS 配置，来作为验证客户端证书的权威。我们还对服务器证书使用相同的密钥对。
 
-```
+```plain
 -// Listen to HTTPS connections on port 8443 and wait
 -log.Fatal(http.ListenAndServeTLS(":8443", "cert.pem", "key.pem", nil))
 
@@ -232,7 +232,7 @@ RootCAs: caCertPool,
 
 先 运行 `server.go` 然后运行 `client.go`，然后你可以在客户端上看到如下一条成功的消息：
 
-~~~
+~~~plain
 Hello, world!
 ~~~
 
@@ -346,7 +346,7 @@ fmt.Printf("%s\n", body)
 
 ## 结论
 
-Golang 让实现 mTLS 变得非常容易，而且不到100行代码。
+Golang 让实现 mTLS 变得非常容易，而且不到 100 行代码。
 
 ___
 

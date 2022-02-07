@@ -12,7 +12,7 @@
 
 上个月我写了一篇关于为什么在 Go 中在切片上编写泛型函数是困难的文章。为了庆祝这个提案被接受的里程碑，本篇博文展示了一旦这个泛型提案进入 Go，这将是一个不存在的问题。
 
-## 切片的泛型函数？
+## 切片的泛型函数
 
 让我们从定义问题开始；Ian Lance Taylor 有一篇非常棒的演讲和博客文章叫做[“为什么需要泛型?”]((https://blog.golang.org/why-generics))，我建议你先看看。
 
@@ -133,7 +133,7 @@ func Map[T, U any](s []T, f func(T) U) []U {
 }
 ```
 
-它由两种类型参数化 —— 一种用于 slice 元素，另一种用于返回的 slice元 素。下面是一个假设的使用场景:
+它由两种类型参数化 —— 一种用于 slice 元素，另一种用于返回的 slice 元 素。下面是一个假设的使用场景:
 
 ```go
 s := []int{2, 4, 8, 11}
@@ -191,7 +191,7 @@ product := Reduce(s, 1, func(a, b int) int {return a*b})
 
 虽然泛型在 1.18 之前无法在 Go 中使用，但你今天就可以尝试我贴在这篇文章中的所有代码(以及任何你喜欢的代码)，有几种方法。
 
-尝试小片段的最简单的方法是在[go2go版本的Go Playground](https://go2goplay.golang.org/)。它与 Go 工具链的类型参数开发分支保持了合理的同步。
+尝试小片段的最简单的方法是在[go2go 版本的 Go Playground](https://go2goplay.golang.org/)。它与 Go 工具链的类型参数开发分支保持了合理的同步。
 
 要想尝新或编写更实质性的代码，你可以:
 
@@ -200,6 +200,6 @@ product := Reduce(s, 1, func(a, b int) int {return a*b})
 3. 构建工具链（在步骤 1 的链接中也有详细描述）
 4. 使用工具 go2go 运行代码示例。
 
-在[本文附带的代码仓库](https://github.com/eliben/code-for-blog/tree/master/2021/go-generic-slice)中，你可以找到一个简单的 bash 脚本，它可以正确地设置e nv vars 以执行步骤4。你可按需使用。
+在[本文附带的代码仓库](https://github.com/eliben/code-for-blog/tree/master/2021/go-generic-slice)中，你可以找到一个简单的 bash 脚本，它可以正确地设置 e nv vars 以执行步骤 4。你可按需使用。
 
 当你克隆 repo 并切换至 dev.go2go 分支后，建议查看 `src/cmd/go2go/testdata/go2path/src` 目录。它包含了许多使用类型参数的泛型 Go 代码示例，这些示例非常值得研究。
