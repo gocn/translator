@@ -1,6 +1,6 @@
 name: Lint Markdown
 
-on: [ pull_request, push ]
+on: [pull_request, push]
 
 jobs:
   lint-markdown:
@@ -12,4 +12,4 @@ jobs:
       - name: lint-md-github-action
         uses: lint-md/github-action@v0.0.2
         with:
-          configFile: '.github/workflows/config.json'
+          configFile: ".github/workflows/config.json"
