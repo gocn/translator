@@ -125,7 +125,7 @@ Go1.14 引入非协作式抢占，即抢占式调度，是一种使用信号的�
 -   [At which point a goroutine can yield?](https://stackoverflow.com/questions/64113394/at-which-point-a-goroutine-can-yield)
 -   [Go: Asynchronous Preemption](https://medium.com/a-journey-with-go/go-asynchronous-preemption-b5194227371c)
 -   [go routine blocking the others one [duplicate]](https://stackoverflow.com/questions/17953269/go-routine-blocking-the-others-one)
--   [(Ja) Golangのスケジューラあたりの話](https://qiita.com/takc923/items/de68671ea889d8df6904)
--   [(Ja) goroutineがスイッチされるタイミング](https://qiita.com/umisama/items/93333ffe4d9fc7e4ba1f)
+-   [(Ja) Golang のスケジューラあたりの話](https://qiita.com/takc923/items/de68671ea889d8df6904)
+-   [(Ja) goroutine がスイッチされるタイミング](https://qiita.com/umisama/items/93333ffe4d9fc7e4ba1f)
 
 

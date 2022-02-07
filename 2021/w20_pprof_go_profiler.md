@@ -62,7 +62,7 @@ Golang 是数百万 CPU 核心上运行的成千上万 Uber 后端服务的命�
 
 准确度和精度是一个好的测量工具的基本属性。
 
-如果概要分析数据与事实相近，则称其为准确的。例如，如果 API_A()消耗了总执行时间的 25％，而分析器将其测量为总执行时间的 24％，则测量的准确度为 96％
+如果概要分析数据与事实相近，则称其为准确的。例如，如果 API_A() 消耗了总执行时间的 25％，而分析器将其测量为总执行时间的 24％，则测量的准确度为 96％
 
 如果多次测量之间的差异性很低，则分析数据被认为是精确的。一组相同变量的测量精度通常表示为样本平均值的最小值和最大值，或者表示为样本的标准误差或差异系数。
 
@@ -72,7 +72,7 @@ Golang 是数百万 CPU 核心上运行的成千上万 Uber 后端服务的命�
 
 profile 的不准确性有两个来源：采样频率和采样偏差。
 
-**采样频率**: 基于样本的 profile 准确度与[奈奎斯特采样定理(Nyquist Sampling Theorem)](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem)紧紧相关. 为了忠实地恢复输入信号，采样频率应大于信号中包含的最高频率的两倍。如果微服务需要 10 毫秒来处理请求，则我们应该至少每 5 毫秒采样一次，以对请求中发生的事情有所了解。但是，OS 定时器不能慢到每 10ms 进行一次采样。事实上，为了函数级别的准确采样，我们需要微妙级别的粒度。
+**采样频率**: 基于样本的 profile 准确度与[奈奎斯特采样定理 (Nyquist Sampling Theorem)](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem)紧紧相关。为了忠实地恢复输入信号，采样频率应大于信号中包含的最高频率的两倍。如果微服务需要 10 毫秒来处理请求，则我们应该至少每 5 毫秒采样一次，以对请求中发生的事情有所了解。但是，OS 定时器不能慢到每 10ms 进行一次采样。事实上，为了函数级别的准确采样，我们需要微妙级别的粒度。
 
 [大量样本](https://en.wikipedia.org/wiki/Law_of_large_numbers)可以使 profiles 更接近实际，并且可以通过增加测量窗口的长度来获取更多样本。如果需要更多的样本来纠正小样本问题，线性缩放测量时间以收集更多样本是不切实际的。因此，迫切需要在测量窗口内收集更多样本并获得亚毫秒级执行的细粒度样本。
 
@@ -87,7 +87,7 @@ profile 的不准确性有两个来源：采样频率和采样偏差。
 **测量滑移**: 测量误差的第二个来源是任何给定测量设备中固有的随机误差。配置为在 N 毫秒后过期的 OS 计时器设备只能保证在 N 毫秒后的某个时间生成中断，而不是精确地在 N 毫秒。这种随机性导致测量中出现较大的“滑移”。假设一个定时器设置为每 10 毫秒触发一次。当具有 4ms 分辨率的 OS 调度程序对其进行检查时，它还有 1ms 的到期时间。这意味着计时器将在 4ms 之后触发，而这将会比本该测量的时间慢 3ms。对于 10ms 的周期性定时器，这将导致高达 30％的不精确性。尽管可能无法完全消除随机误差，但高级的测量设备可以减少随机误差的影响。
 
 ## 示范
-考虑以下这个 Go 程序: [goroutine.go](https://github.com/chabbimilind/GoPprofDemo/blob/master/goroutine.go), 它具有 10 个完全相似的 goroutines main.f1-main.f10，其中每个函数占用的 CPU 时间完全相同（即，占总执行时间的 10％）。表 1 总结了在此程序上使用默认 pprof cpu 配置文件的结果，该配置文件在具有 Linux OS 的 12 核 Intel Skylake 架构服务器上运行
+考虑以下这个 Go 程序： [goroutine.go](https://github.com/chabbimilind/GoPprofDemo/blob/master/goroutine.go), 它具有 10 个完全相似的 goroutines main.f1-main.f10，其中每个函数占用的 CPU 时间完全相同（即，占总执行时间的 10％）。表 1 总结了在此程序上使用默认 pprof cpu 配置文件的结果，该配置文件在具有 Linux OS 的 12 核 Intel Skylake 架构服务器上运行
 
 ![profile](../static/images/w20_pprof_go_profiler/Screen-Shot-2021-05-06-at-10.56.18-PM.png) 
 
@@ -97,7 +97,7 @@ profile 的不准确性有两个来源：采样频率和采样偏差。
 
 现在将注意力集中在 RUN 1，RUN2 和 RUN 3 的 3 次运行上。赋予任何例程的时间每次运行都不同。例程的排序在每次运行之间都发生显着变化。在 RUN 1 中，显示 main.f7 以排位 1 运行了 4210ms，而在 RUN 2 中，仅以排位 10 运行了 520ms。main.f1 例程的 3 次运行之间的差异系数为 71％，所有函数的平均差异系数为 28％。这表明基于 pprof 计时器的配置文件不精确。将此程序的运行时间增加 10 倍甚至 100 倍并不能解决此分析错误。
 
-其他详细信息出现在[Golang 提案中]中(https://go.googlesource.com/proposal/+/refs/changes/08/219508/2/design/36821-perf-counter-pprof.md).
+其他详细信息出现在 [Golang 提案中] 中 (https://go.googlesource.com/proposal/+/refs/changes/08/219508/2/design/36821-perf-counter-pprof.md).
 
 ## 超过代码热点
 
@@ -112,7 +112,7 @@ profiler 的第二个方面是，它提供了不仅仅是热点的更多详细�
 2. **洞察多种 CPU 事件，以更好地诊断性能问题**: 诊断复杂的性能问题时，仅凭时间是不够的。例如，如果将大量时间赋予数据结构遍历，那么原因可能并不明显。硬件性能监视揭示了 CPU 和内存子系统的许多内部功能，这些功能可以诊断性能问题的根本原因。例如，如果在再次访问以前访问的数据之前获取了许多新数据，则从 CPU 高速缓存中逐出这些数据，如果要分析 CPU 高速缓存未命中，这将拥有可见性。同样，如果 2 个相邻的数据项被 2 个独立的线程访问，而它们恰好位于同一 CPU 高速缓存行上，则会导致 2 个 CPU 的专用高速缓存之间共享高速缓存行 ping-poning，通常称为错误共享，可以通过现代英特尔 CPU 中称为 HITM 的计数器进行诊断。 
 3. **高频测量**: 由于 PMU 可以配置为任意低的采样阈值，因此可以以极高的频率（大约 10 s 或 100 s 微秒）监视事件，这对于延迟敏感的服务很有必要，在这些服务中，单个请求仅持续数十毫秒。
 
-PMU 在现代 CPU 中无处不在，被 Linux 之类的 OS 所暴露，并且可以通过编程控制它们，以在事件的阈值累积时传递中断。  例如，Intel 公布了他们的[性能监控事件](https://software.intel.com/content/dam/develop/public/us/en/documents/335279-performance-monitoring-events-guide.pdf)针对其处理器系列的每个成员，Linux 通过 perf_event 子系统公开 PMU。. pprof++对 Go 运行时进行更改，订阅这些硬件事件，并获得定期中断。这种机制通常称为基于硬件事件的采样。事件的选择使硬件性能监控变得丰富而可见。像 OS 计时器分析一样，pprof++在每个 PMU 中断上执行调用栈退卷，并将事件归因于调用栈样本。这使 pprof++配置文件可以突出显示哪些函数和源代码行会导致不同的体系结构瓶颈，例如 CPU 高速缓存未命中。
+PMU 在现代 CPU 中无处不在，被 Linux 之类的 OS 所暴露，并且可以通过编程控制它们，以在事件的阈值累积时传递中断。  例如，Intel 公布了他们的[性能监控事件](https://software.intel.com/content/dam/develop/public/us/en/documents/335279-performance-monitoring-events-guide.pdf)针对其处理器系列的每个成员，Linux 通过 perf_event 子系统公开 PMU。. pprof++ 对 Go 运行时进行更改，订阅这些硬件事件，并获得定期中断。这种机制通常称为基于硬件事件的采样。事件的选择使硬件性能监控变得丰富而可见。像 OS 计时器分析一样，pprof++ 在每个 PMU 中断上执行调用栈退卷，并将事件归因于调用栈样本。这使 pprof++ 配置文件可以突出显示哪些函数和源代码行会导致不同的体系结构瓶颈，例如 CPU 高速缓存未命中。
 
 对于初学者而言，确定要监视的硬件性能事件可能会令人生畏。因此，我们简化了流程并公开了以下最常见的事件。这些事件拥有一个可重写的[预设](https://github.com/uber-dev/go/blob/release-branch.go1.16_pmu_pprof/src/runtime/pprof/pprof.go#L911) 分析阶段。
 
@@ -122,27 +122,25 @@ PMU 在现代 CPU 中无处不在，被 Linux 之类的 OS 所暴露，并且可
 
 ![sample3](../static/images/w20_pprof_go_profiler/cacheMissFlameGraphLock-1536x645.png) 
 
-pprof++的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，可以使用 pprof 工具将其视为调用图（图 1）或火焰图（图 2），也可以馈送至其他下游 profile 处理工作流程。如果使用 PMU 周期事件获取配置文件，则 pprof 调用图和火焰图将查明并量化哪些代码区域（上下文）占 CPU 周期的数量；如果使用 PMU cacheMisses 事件获取 profile，则 pprof 调用图和 Flame-graph 将查明并量化代码区域（上下文）占 CPU 上一级缓存未命中的数量，依此类推。 
+pprof++ 的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，可以使用 pprof 工具将其视为调用图（图 1）或火焰图（图 2），也可以馈送至其他下游 profile 处理工作流程。如果使用 PMU 周期事件获取配置文件，则 pprof 调用图和火焰图将查明并量化哪些代码区域（上下文）占 CPU 周期的数量；如果使用 PMU cacheMisses 事件获取 profile，则 pprof 调用图和 Flame-graph 将查明并量化代码区域（上下文）占 CPU 上一级缓存未命中的数量，依此类推。 
 
 ## 入手使用 pprof++ 
 
 为了利用 pprof++，请使用我们的自定义 Go 编译器重新编译您的 Go 程序，并添加 PMU 分析功能；详见下方的[可用性](https://eng.uber.com/pprof-go-profiler/#CA)部分.。
 
-[背景](https://eng.uber.com/pprof-go-profiler/#BG)部分介绍的三种使用方式与使用 pprof++基本一样:
+[背景](https://eng.uber.com/pprof-go-profiler/#BG)部分介绍的三种使用方式与使用 pprof++ 基本一样：
 
 1. **通过公开的 http 端口获取 CPU profile**
 
     与 pprof 一样，包括相同的代码片段以公开性能分析端点；无需更改应用程序代码。开发人员现在可以获取多种配置文件。我们在/debug /pprof /profile endpoin 中引入了 2 个新参数
 
-    1.
-        ```shell 
+    1. ```bash 
         event=<timer|cycles|instructions|cacheMisses|cacheReferences|branches|branchMisses|rHexValue>
         ```
-    2.
-        ```shellplainplainplainplainplain
+    2. ```bash
         period=<Int64Value>
         ```
-    这是一些使用例子:
+    这是一些使用例子：
 
     a. 通过在 500 万个 CPU 周期中对调用堆栈进行一次采样来使用 CPU 周期收集 profile，并收集 25 秒钟。
     ```shell
@@ -166,12 +164,10 @@ pprof++的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，
 
     我们在命令行中引入了两个新参数： 
 
-    1. 
-        ```shell
+    1. ```shell
         cpuevent=<timer|cycles|instructions|cacheMisses|cacheReferences|branches|branchMisses|rHexValue>
         ```
-    2. 
-        ```shellplainplainplainplainplain
+    2. ```shell
         cpuperiod=<Int64Value>
         ```
     以下是一些用法示例：
@@ -190,7 +186,7 @@ pprof++的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，
     ```
 3. **从代码检测获取 CPU profile**
 
-    pprof++ 向 runtime/pprof 包引入了新的 API。pprof.StartCPUProfileWithConfig（opt ProfilingOption，moreOpts…ProfilingOption）错误，其中 ProfilingOption 可以是以下之一 
+    pprof++ 向 runtime/pprof 包引入了新的 API。`pprof.StartCPUProfileWithConfig（opt ProfilingOption，moreOpts…ProfilingOption）error`，其中 ProfilingOption 可以是以下之一 
 
     ```golang
     func OSTimer(w io.Writer) ProfilingOption
@@ -213,7 +209,7 @@ pprof++的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，
     MyCodeToProfile() 
     pprof.StopCPUProfile()
     ```
-    我们允许高级用户在一次运行中同时收集多个事件。此功能受环境变量 GO_PPROF_ENABLE_MULTIPLE_CPU_PROFILES = <true | false>的保护。每个事件都需要自己的 io.writer。下面的示例显示了同时收集 4 个配置文件：CPU 周期（每 10M 中的一个），退出的指令（每 1M 中的一个），最后一级的高速缓存未命中（每 10K 中的一个）以及在第二级 TLB 中丢失的退休的加载指令（一个） （1K 中的值）），可用于事件 MEM_INST_RETIRED.STLB_MISS_LOADS，掩码= 0x11，事件代码= 0xd0。
+    我们允许高级用户在一次运行中同时收集多个事件。此功能受环境变量 GO_PPROF_ENABLE_MULTIPLE_CPU_PROFILES = <true | false>的保护。每个事件都需要自己的 io.writer。下面的示例显示了同时收集 4 个配置文件：CPU 周期（每 10M 中的一个），退出的指令（每 1M 中的一个），最后一级的高速缓存未命中（每 10K 中的一个）以及在第二级 TLB 中丢失的退休的加载指令（一个）（1K 中的值）），可用于事件 MEM_INST_RETIRED.STLB_MISS_LOADS，掩码= 0x11，事件代码= 0xd0。
     ```golang
     cyc, _ := os.Create("cycprof.prof")
     defer cyc.Close()
@@ -229,7 +225,7 @@ pprof++的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，
     ```
 ## 视频演示
 
-以下视频演示了 pprof++的下载，初始设置和用法。
+以下视频演示了 pprof++ 的下载，初始设置和用法。
 
 <video id="video" controls="" preload="none" poster="">
 <source id="mp4" src="../static/images/w20_pprof_go_profiler/demoPprof.mp4" type="video/mp4">
@@ -239,14 +235,14 @@ pprof++的输出是相同的，熟悉的 pprof 协议缓冲区 profile 文件，
 
 任何编程语言都必须具有准确而精确的 profile，这些 profile 可以提供对程序执行的更深层次的可见性和可操作性。Uber 将 Go 广泛用于其微服务，这导致我们将这些功能引入 Golang 的 Pprof 分析器中。尽管存在许多其他具有类似功能的第三方 profile，但 Go 运行时中 PMU profile 的集成提供了与众多执行环境和下游后处理工具的无缝集成。 
 
-我们已经在[GitHub](https://github.com/uber-research/go/tree/pmu_pprof_feb_12_2021_fe028e)上发布了一个当前实现的 pprof++原型. 我们已经让它在[Go 1.15.8](https://github.com/uber-research/go/commits/release-branch.go1.15_pmu_pprof) 和 [Go 1.16](https://github.com/uber-research/go/commits/release-branch.go1.16_pmu_pprof) 的发布列表内。
+我们已经在[GitHub](https://github.com/uber-research/go/tree/pmu_pprof_feb_12_2021_fe028e)上发布了一个当前实现的 pprof++ 原型。我们已经让它在[Go 1.15.8](https://github.com/uber-research/go/commits/release-branch.go1.15_pmu_pprof) 和 [Go 1.16](https://github.com/uber-research/go/commits/release-branch.go1.16_pmu_pprof) 的发布列表内。
 
-pprof ++当前仅在 Linux OS 上可用。为了快速下载，我们提供了 Go 二进制文件的 x86_64（即 AMD64）版本：
+pprof ++ 当前仅在 Linux OS 上可用。为了快速下载，我们提供了 Go 二进制文件的 x86_64（即 AMD64）版本：
 
 1. [go1.15.8.linux-amd64.tar.gz](https://github.com/uber-research/go/releases/download/v1.15.8/go1.15.8.linux-amd64.tar.gz)
 2. [go1.16.linux-amd64.tar.gz](https://github.com/uber-research/go/releases/download/v1.16/go1.16.linux-amd64.tar.gz) 
 
-src/net/http/pprof/examples/ 和 src/runtime/pprof/examples/下有几个使用 pprof++的示例程序。 
+src/net/http/pprof/examples/ 和 src/runtime/pprof/examples/下有几个使用 pprof++ 的示例程序。 
 
 ## 致谢
 

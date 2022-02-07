@@ -20,7 +20,7 @@
 
 这篇文章主要介绍我们选择 `Clickhouse` 而不是 `ElasticSearch`（或 `MySQL` ）作为基础数据（服务请求日志）存储解决方案的主要原因（说明：出于 `OLTP` 的目的，我们仍会处使用 `MySQL` ）。
 
-## 1. SQL 支持, JSON 和 数组作为一等公民
+## 1. SQL 支持，JSON 和 数组作为一等公民
 
 `SQL`是用于数据分析的理想语言。我喜欢`SQL`查询语言，`SQL schema`是无趣技术的完美示例，我建议在 99％ 项目中使用它从数据中发掘真相：项目代码不完美，而如果你的数据库是结构化 schema 存储的，就可以相对轻松地进行改造。反言之，如果数据库数据是一个巨大的 `JSON` 块（`NoSQL`），没有人可以完全掌握数据的清晰结构，那么重构将会遇到更多麻烦。
 
@@ -34,7 +34,7 @@
 
 一些基本的例子：
 
-在 `MySQL` 中，你可以提取 `JSON` 字段，但是复杂的 JSON 处理仅在最新版本（[具有 JSON_TABLE 函数的版本 8](https://mysqlserverteam.com/json_table-the-best-of-both-worlds/)）中可用。在 `PosgreSQL` 中，情况甚至更糟-在 PostgreSQL 12 之前还没有直接的 JSON_TABLE 替代方案！
+在 `MySQL` 中，你可以提取 `JSON` 字段，但是复杂的 JSON 处理仅在最新版本（[具有 JSON_TABLE 函数的版本 8](https://mysqlserverteam.com/json_table-the-best-of-both-worlds/)）中可用。在 `PosgreSQL` 中，情况甚至更糟 - 在 PostgreSQL 12 之前还没有直接的 JSON_TABLE 替代方案！
 
 而这与 `Clickhouse` 的 JSON 及相关数组功能相比，也仅仅领先一小步。数组功能相关链接：
 
@@ -123,7 +123,7 @@ MySQL 和 Clickhouse 有多种级别的相互集成，这使它们最小化数�
 - [MySQL 表引擎](https://clickhouse.tech/docs/en/engines/table-engines/integrations/mysql/) 在 CREATE TABLE 语句中静态描述特定表
 - [Clickhouse 使用 MySQL 协议](https://clickhouse.tech/docs/en/interfaces/mysql/)
 
-我不能肯定地说动态数据库和表引擎在 `JOIN` 上有多么快速和稳定，这肯定是需要基准测试的。但这个概念非常吸引人-你已经可以在 Clickhouse 数据库上完整地复制 MySQL 表 ，而不必处理缓存失效和重新设置索引。
+我不能肯定地说动态数据库和表引擎在 `JOIN` 上有多么快速和稳定，这肯定是需要基准测试的。但这个概念非常吸引人 - 你已经可以在 Clickhouse 数据库上完整地复制 MySQL 表 ，而不必处理缓存失效和重新设置索引。
 
 关于将 MySQL 与 Elasticsearch 结合使用，我的有限经验表明，这两种技术有太多不同。我的印象是他们彼此各说各话，并不会组合出现。所以我通常只需要把 ElasticSearch 需要索引的数据 JSON 化，然后发送到 ElasticSearch 。之后，MySQL 数据一些迁移或任何变更操作（ `UPDATE/REPLACE` ）之后，在 Elasticseach 端找出需要重新索引的部分。关于 MySQL 和 ElasticSearch 的数据同步，这是一篇[基于 Logstash 实现的文章](https://www.elastic.co/blog/how-to-keep-elasticsearch-synchronized-with-a-relational-database-using-logstash)。我不太喜欢 Logstash ，因为它的性能一般，对内存要求也很高，同时它也会成为系统中不稳定因素。对于使用 MySQL 的简单项目中，数据同步和索引往往是阻止我们使用 Elasticsearch 的因素。
 
@@ -153,6 +153,6 @@ ALTER TABLE [db.]table [ON CLUSTER cluster] DELETE WHERE filter_expr
 
 ## 总结
 
-ElasticSearch 是一个非常强大的解决方案，但我认为它最强的方面仍然是超过 10+ 节点的支持，用于大型全文检索和 facets ，复杂的索引和分值计算-这是 ElasticSearch 的亮点。当我们提及时间序列和日志存储时，似乎有更好的解决方案，而 Clickhouse 就是其中之一。ElasticSearch API 的功能非常强大，但在很多情况下，如果不从文档中复制具体 HTTP 请求，就很难记住如何做一件事，它有更多的“企业化”和“ Java 风格”。Clickhouse 和 lasticSearch 都是占用内存很大的程序， Clickhouse 内存要求为 4GB，而 ElasticSearch 的内存要求为 16GB 。我还认为 Elastic 团队关注的重点是他们新的[机器学习功能](https://www.elastic.co/what-is/elasticsearch-machine-learning)，我的愚见是，尽管这些功能听起来非常新潮，但不论你拥有多少开发人员和金钱，这些庞大的功能集很难持续支持和改进。对我来说，ElasticSearch 在不断的进入“博而不精”的状态。或许，是我错了。
+ElasticSearch 是一个非常强大的解决方案，但我认为它最强的方面仍然是超过 10+ 节点的支持，用于大型全文检索和 facets ，复杂的索引和分值计算 - 这是 ElasticSearch 的亮点。当我们提及时间序列和日志存储时，似乎有更好的解决方案，而 Clickhouse 就是其中之一。ElasticSearch API 的功能非常强大，但在很多情况下，如果不从文档中复制具体 HTTP 请求，就很难记住如何做一件事，它有更多的“企业化”和“ Java 风格”。Clickhouse 和 lasticSearch 都是占用内存很大的程序， Clickhouse 内存要求为 4GB，而 ElasticSearch 的内存要求为 16GB 。我还认为 Elastic 团队关注的重点是他们新的[机器学习功能](https://www.elastic.co/what-is/elasticsearch-machine-learning)，我的愚见是，尽管这些功能听起来非常新潮，但不论你拥有多少开发人员和金钱，这些庞大的功能集很难持续支持和改进。对我来说，ElasticSearch 在不断的进入“博而不精”的状态。或许，是我错了。
 
 Clickhouse 则与众不同。设置简单、`SQL` 也简单、控制台客户端也很棒。通过少量配置，就可以让一切简单有效的工作起来，但是当有需要时，也可以在 `TB` 级数据上使用丰富的特性、副本和分片能力。

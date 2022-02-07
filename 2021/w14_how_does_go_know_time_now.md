@@ -17,24 +17,24 @@
 首先，理解 Go 中_如何_嵌入时间非常有用。
 
  `time.Time` 结构体可以表示纳秒精度的时间度量。为了更可信的描述用于对比、加减的耗时，`time.Time` 也会包含一个可选的、纳秒精度的读取_当前进程_单调时钟的操作。这么做是为了避免表达错误的时段，比如，夏令时（Daylight Saving time，DST）。
-
-    type Time struct {plainplain
+```go
+    type Time struct {
     	wall uint64
     	ext  int64
     	loc *Location
     }
-
+```
 
 Τime 结构体在 2017 年早期就是当前这个形式；你可以浏览 Russ Cox 提出的相关[issue](https://github.com/golang/go/issues/12914), [提案](https://go.googlesource.com/proposal/+/master/design/12914-monotonic.md)和[实现](https://go-review.googlesource.com/c/go/+/36255/)。
 
 因此，首先有一个 `wall` 值用于提供直接读取的 “时钟”时间， `ext` 提供了这种单调时钟形式下的_额外_信息。
 
 分解 `wall` 参数，它在最高位包含 1 比特的 `hasMonotonic` 标志；接下来是表示秒的 33 比特；最后 30 个比特用于表示纳秒，范围在 \[0, 999999999\] 之间。
-
-    mSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnplain
+```plain
+    mSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
     ^                   ^                   ^
     hasMonotonic        seconds             nanoseconds
-
+```
 
 在 Go >= 1.9 的版本中，`hasMonotonic` 标志都是开启的，日期是在 1885 到 2157 之间，但由于兼容性考虑和一些极端情况，Go 可以保证这些时间内的值都可以被正确处理。
 
@@ -52,8 +52,8 @@
 ------------------------------------------------
 
 下面是 Go 代码中如何定义  `time.Now()` 和 `startNano` 。
-
-    // Monotonic times are reported as offsets from startNano.plain
+```go
+    // Monotonic times are reported as offsets from startNano.
     var startNano int64 = runtimeNano() - 1
     
     // Now returns the current local time.
@@ -66,16 +66,16 @@
     	}
     	return Time{hasMonotonic | uint64(sec)<<nsecShift | uint64(nsec), mono, Local}
     }
-
+```
 
 如果我们了解了一些常量后，代码就非常明确易懂
-
+```go
     hasMonotonic         = 1 << 63
     unixToInternal int64 = (1969*365 + 1969/4 - 1969/100 + 1969/400) * secondsPerDay
     wallToInternal int64 = (1884*365 + 1884/4 - 1884/100 + 1884/400) * secondsPerDay
     minWall              = wallToInternal               // year 1885
     nsecShift            = 30
-
+```
 
 if 分支检查秒的值是否可以存储在 33 比特内，否则就需要设置 `hasMonotonic=off`。因为单调的粗略计算， 2^33 秒是 272 年，所以我们可以通过确定是否在 (1885+272=) 2157 年之后就可以高效快速得到结果。
 
@@ -86,7 +86,7 @@ if 分支检查秒的值是否可以存储在 33 比特内，否则就需要设�
 
 我当然同意！但即使有了这些信息，还有两个未知的情况；
 
-_定义的未引出的 `now()` 和 `runtimeNano()` 在哪里?_ 以及
+_定义的未引出的 `now()` 和 `runtimeNano()` 在哪里？_ 以及
 
 _Local 又是从何而来？_
 
@@ -98,19 +98,19 @@ _Local 又是从何而来？_
 我们先来看第一个问题。按约定的逻辑，我们应该在相同的包内查看，但可能什么也找不到！
 
 这两个函数是从 runtime 包中通过[_链接名字_](https://tpaschalis.github.io/golang-linknames/) 的方式获取的。
-
+```go
     // Provided by package runtime.
     func now() (sec int64, nsec int32, mono int64)
     
     // runtimeNano returns the current value of the runtime clock in nanoseconds.
     //go:linkname runtimeNano runtime.nanotime
     func runtimeNano() int64
-
+```
 
 正如链接名字所示，要找到 `runtimeNano()` ，就必须找到 `runtime.nanotime()`，而我们会发现它出现了两次。
 
 相似的，如果我们继续在 `runtime` 包中寻找，我们将会遇到 [`timestub.go`](https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/timestub.go) 中包含 time.Now() 定义的链接名字使用了 `walltime()`。
-
+```go
     // Declarations for operating systems implementing time.now
     // indirectly, in terms of walltime and nanotime assembly.
     
@@ -121,7 +121,7 @@ _Local 又是从何而来？_
     	sec, nsec = walltime()
     	return sec, nsec, nanotime()
     }
-
+```
 
 啊哈！现在我们有了一些进展！
 
@@ -147,8 +147,8 @@ func walltime() (sec int64, nsec int32) {
 我先为任何错误的表达道歉；在遇到汇编语言时，我有时就像一只在车灯前的小鹿一样迷茫，但我们可以尝试理解在 [amd64 Linux 下](https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/sys_linux_amd64.s#L206-L270)是如何计算 walltime。
 
 发现问题请一定要评论来修改，不要犹豫！
-
-    // func walltime1() (sec int64, nsec int32)plain
+```plain
+    // func walltime1() (sec int64, nsec int32)
     // non-zero frame-size means bp is saved and restored
     TEXT runtime·walltime1(SB),NOSPLIT,$16-12
     	// We don't know how much stack space the VDSO code will need,
@@ -213,7 +213,7 @@ func walltime() (sec int64, nsec int32) {
     	MOVQ	$SYS_clock_gettime, AX
     	SYSCALL
     	JMP ret
-
+```
 
 从我的理解来看，这个计算过程如下。
 
@@ -222,13 +222,13 @@ func walltime() (sec int64, nsec int32) {
 2.  接下来代码存储 `vdsoPC` 和 `vdsoSP` (程序计数器和栈指针 ) 的值，用于在退出前存储它们，这样程序就可以 _重新进入_。
   
 3.  代码检测它是否已经在 `g0`，是的话就跳转到 `noswitch`，否则使用下面的代码切换至 `g0` 
-  
-        MOVQ	m_g0(BX), DXplain
+```plain  
+        MOVQ	m_g0(BX), DX
         MOVQ	(g_sched+gobuf_sp)(DX), SP	// Set SP to g0 stack
-  
+``` 
 4.  接下来，尝试载入 `runtime·vdsoClockgettimeSym` 进 `AX` 寄存器；如果它非零就调用并跳转到 `ret` 代码块，并获取秒和纳秒的值，并存储真实的栈指针和 vDSO 程序计数器和栈指针并返回
-  
-         MOVQ	0(SP), AX	// secplainplain
+  ```plain
+         MOVQ	0(SP), AX	// sec
          MOVQ	8(SP), DX	// nsec
          MOVQ	R12, SP		// Restore real SP
          // Restore vdsoPC, vdsoSP
@@ -243,10 +243,10 @@ func walltime() (sec int64, nsec int32) {
          MOVQ	AX, sec+0(FP)
          MOVL	DX, nsec+8(FP)
          RET
-   
+   ```
 5.  另外，如果 `runtime·vdsoClockgettimeSym` 的地址为零，那么就会跳转到 `fallback` 标签，尝试使用不同的方法来获取系统时间，即 `$SYS_clock_gettime`
-  
-         MOVQ	runtime·vdsoClockgettimeSym(SB), AXplainplain
+  ```plain
+         MOVQ	runtime·vdsoClockgettimeSym(SB), AX
          CMPQ	AX, $0
          JEQ	fallback
         ...
@@ -255,12 +255,12 @@ func walltime() (sec int64, nsec int32) {
          MOVQ	$SYS_clock_gettime, AX
          SYSCALL
          JMP ret
-   
+  ``` 
 
 同样的文件定义了 `$SYS_clock_gettime`
-
-    #define SYS_clock_gettime	228plain
-
+``` plain
+    #define SYS_clock_gettime	228
+```
 
 它实际对应的是 [`__x64_sys_clock_gettime`](https://github.com/torvalds/linux/blob/v4.17/arch/x86/entry/syscalls/syscall_64.tbl#L239) [syscall](https://filippo.io/linux-syscall-table/) ，在 Linux 源码中的系统调用表中可以找到。
 
@@ -268,12 +268,12 @@ func walltime() (sec int64, nsec int32) {
 ----------------------------------------
 
  “优选”的 `vdsoClockgettimeSym` 模式定义在 `vdsoSymbolKeys`
-
+```go
     var vdsoSymbolKeys = []vdsoSymbolKey{
     	{"__vdso_gettimeofday", 0x315ca59, 0xb01bca00, &vdsoGettimeofdaySym},
     	{"__vdso_clock_gettime", 0xd35ec75, 0x6e43a318, &vdsoClockgettimeSym},
     }
-
+```
 
 与从 [文档](https://man7.org/linux/man-pages/man7/vdso.7.html) 中找到 vDSO 符号匹配。
 
@@ -305,27 +305,27 @@ Windows 的奇怪之处
 我们可以在 [`sys_windows_amd64.s`](https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/sys_windows_amd64.s) 中看到相关的汇编代码。
 
 据我所知，这里的代码路径和 Linux 下的有些相似。 `time·now` 汇编首先做的也是检查是否使用 [QPC](https://docs.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps) 来获取 [`nowQPC`](https://github.com/golang/go/blob/1d967ab95c43b6b8810ca53d6a18aff85e59a3b6/src/runtime/os_windows.go#L514-L526) 函数的时间。
-
+```plain
     	CMPB	runtime·useQPCTime(SB), $0
     	JNE	useQPC
     
     useQPC:
     	JMP	runtime·nowQPC(SB)
     	RET
-
+```
 
 如果不是这种情况，代码将会尝试使用下面[`KUSER_SHARED_DATA`](http://www.nirsoft.net/kernel_struct/vista/KUSER_SHARED_DATA.html) 结构体中的两个地址，也叫做`SharedUserData`。这个结构体保存了一些内核信息，与用户态共享，是为了避免向内核多次传输，和 vDSO 类似。
-
-    #define _INTERRUPT_TIME 0x7ffe0008plainplain
+```plain
+    #define _INTERRUPT_TIME 0x7ffe0008
     #define _SYSTEM_TIME 0x7ffe0014
     
     KSYSTEM_TIME InterruptTime;
     KSYSTEM_TIME SystemTime;
-
+```
 
 使用这两个地址的部分如下所示。获取的信息存在 [`KSYSTEM_TIME`](http://www.nirsoft.net/kernel_struct/vista/KSYSTEM_TIME.html) 结构体中。
-
-    	CMPB	runtime·useQPCTime(SB), $0plainplain
+```plain
+    	CMPB	runtime·useQPCTime(SB), $0
     	JNE	useQPC
     	MOVQ	$_INTERRUPT_TIME, DI
     loop:
@@ -338,10 +338,9 @@ Windows 的奇怪之处
     	ORQ	BX, AX
     	IMULQ	$100, AX
     	MOVQ	AX, mono+16(FP)
-    
     	MOVQ	$_SYSTEM_TIME, DI
 
-
+```
  `_SYSTEM_TIME` 的问题是更低的解析度，更新周期为 100 纳秒；这也可能是优先选择 QPC 的原因。
 
 在 Windows 部分我花费了很长的时间，[若](https://gist.github.com/m-schwenk/d312c02ec6b230c19dc2) [你](https://docs.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter) [感兴趣](https://docs.microsoft.com/en-us/uwp/api/windows.perception.perceptiontimestamp.systemrelativetargettime?view=winrt-19041)，[这里](https://www.matteomalvica.com/minutes/windows_kernel/#kuser-shared-data) [有一些](moz-extension://3b9164ce-6b20-1541-a720-5d6cc82dcebd/www.uninformed.org/?v=3&a=4&t=pdf) [更详细的](https://gist.github.com/alastorid/ecaeba6b3f2a521c25b28efd81ac0a2d) [信息](http://uninformed.org/index.cgi?v=2&a=2&p=20) 
@@ -352,13 +351,13 @@ Windows 的奇怪之处
 这个问题是什么来着？噢，我们还没弄清楚 _ Local 从何而来？_
 
 导出的 `Local *Location` 符号首先指向了 `localLoc` 的地址。
-
+```go
     var Local *Location = &localLoc
-
+```
 
 如果这个地址是 nil，那么就如我们所说，返回的是 UTC 位置。否则，代码会在需要位置信息的第一次调用时，通过使用 `sync.Once` 语句来设置包级别的`localLoc` 变量。
-
-    // localLoc is separate so that initLocal can initializeplain
+```go
+    // localLoc is separate so that initLocal can initialize
     // it even if a client has changed Local.
     var localLoc Location
     var localOnce sync.Once
@@ -372,24 +371,23 @@ Windows 的奇怪之处
     	}
     	return l
     }
-
-
+``
  [`initLocal()`](https://github.com/golang/go/blob/release-branch.go1.16/src/time/zoneinfo_unix.go#L28-L69) 函数使用 `$TZ` 的内容来找到使用的时区。
 
 如果 `$TZ` 变量没有设置，Go 会使用系统默认的文件如 `/etc/localtime` 来载入时区。如果设置但为空，Go 将使用 UTC 时区，而当它为无效的时区时，它会从系统时区文件夹中找同名的文件。默认的搜索路径是
-
-    var zoneSources = []string{plainplainplain
+```go
+    var zoneSources = []string{
     	"/usr/share/zoneinfo/",
     	"/usr/share/lib/zoneinfo/",
     	"/usr/lib/locale/TZ/",
     	runtime.GOROOT() + "/lib/time/zoneinfo.zip",
     }
-
+```
 
 平台相关的 `zoneinfo_XYZ.go` 文件使用相似的逻辑来寻找默认的时区，比如 Windows 或 WASM。过去，当我在类 Unix 系统下，需要在定制的容器镜像中使用时区时，只需要在 Dockerfile 中添加下面的命令。
-
-    COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfoplain
-
+```Dockerfile
+    COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+```
 
 另外，在无法控制构建环境的情况下， `tzdata` 包提供了一个 _嵌入复制_ 的时区数据库。若这个包在任意位置引入或我们使用 `-tags timetzdata` 构建标签，程序文件大小将会增加约 ~450KB，但将可以在 Go 无法在宿主系统中无法找到 `tzdata` 文件时，提供一个备用的方式。
 

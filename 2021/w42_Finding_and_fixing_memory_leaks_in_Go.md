@@ -24,7 +24,7 @@ defer client.Close()
 
 `Google` 有一堆的 `GitHub` 自动化机器人，帮助管理数以百计的 `GitHub` 仓库。我们的一些机器人通过[云上运行的](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/go)上的[Go 服务](https://github.com/googleapis/repo-automation-bots/tree/main/serverless-scheduler-proxy)代理它们的请求。我们的内存使用情况看起来就是典型的锯齿状内存泄漏情况。
 
-!["容器内存使用率" 显示先稳定增长、继而下跌至0](../static/images/2021_w42/1dmpo6x8cky6t9dsqsex.png)
+!["容器内存使用率" 显示先稳定增长、继而下跌至 0](../static/images/2021_w42/1dmpo6x8cky6t9dsqsex.png)
 
 我通过在程序中添加 `pprof.Index` 开始调试：
 
@@ -32,7 +32,7 @@ defer client.Close()
 mux.HandleFunc("/debug/pprof/", pprof.Index)
 ```
 
-[`pprof`](https://pkg.go.dev/net/http/pprof) 提供运行时的分析数据，比如内存使用量。访问 `Go` 官方博客中的 [分析 `Go` 程序](https://blog.golang.org/pprof) 获取更多信息.
+[`pprof`](https://pkg.go.dev/net/http/pprof) 提供运行时的分析数据，比如内存使用量。访问 `Go` 官方博客中的 [分析 `Go` 程序](https://blog.golang.org/pprof) 获取更多信息。
 
 然后，我在本地构建并启动了该服务：
 
@@ -118,7 +118,7 @@ Showing top 10 nodes out of 101
        1MB     1% 94.49%        1MB     1%  encoding/json.(*decodeState).literalStore
 ```
 
-`google.golang.org/grpc/internal/transport.newBufWriter`很明显占用了大量的内存! 这就是内存泄漏与什么有关的第一个迹象：gRPC。结合源码，我们唯一使用 `gRPC` 的地方是[Google 云秘钥管理部分](https://cloud.google.com/secret-manager/docs/quickstart)。
+`google.golang.org/grpc/internal/transport.newBufWriter`很明显占用了大量的内存！这就是内存泄漏与什么有关的第一个迹象：gRPC。结合源码，我们唯一使用 `gRPC` 的地方是[Google 云秘钥管理部分](https://cloud.google.com/secret-manager/docs/quickstart)。
 
 ```golang
 client, err := secretmanager.NewClient(ctx) 
@@ -133,15 +133,15 @@ if err != nil {
 defer client.Close()
 ```
 
-我提交了这个修复, 它 [自动部署完成后](https://cloud.google.com/build/docs/deploying-builds/deploy-cloud-run), 毛刺显现立即消失了!
+我提交了这个修复，它 [自动部署完成后](https://cloud.google.com/build/docs/deploying-builds/deploy-cloud-run), 毛刺显现立即消失了！
 
 !["Container memory utilization" showing the sawtooth pattern at the start then dropping to a consistently flat line near 0.](../static/images/2021_w42/z46xksxzus3aluo3cu4k.png)
 
-哇呜! 🎉🎉🎉
+哇呜！🎉🎉🎉
 
 ------
 
-大约在同一时间，一个用户在我们的[云上的 Go 实例代码库](https://github.com/GoogleCloudPlatform/golang-samples)上提出了一个问题，其中包含了[cloud.google.com](https://cloud.google.com/)上文档的大部分 `Go` 示例程序。该用户注意到我们在其中一个程序中忘记了 `client.Close()` 关闭客户端!
+大约在同一时间，一个用户在我们的[云上的 Go 实例代码库](https://github.com/GoogleCloudPlatform/golang-samples)上提出了一个问题，其中包含了[cloud.google.com](https://cloud.google.com/)上文档的大部分 `Go` 示例程序。该用户注意到我们在其中一个程序中忘记了 `client.Close()` 关闭客户端！
 
 我看到同样的事情出现过几次，所以我决定调查整个仓库。
 
@@ -153,7 +153,7 @@ $ grep -L Close $(grep -El 'New[^(]*Client' **/*.go) | grep -v test
 
 > 译者注：列出包含`New[^(]*Client`，但不包含`Close`的所有 go 文件
 
-哇呜! 总共有 207 个文件，而整个 [GoogleCloudPlatform/golang-samples](https://github.com/GoogleCloudPlatform/golang-samples) 仓库中有大约 1300 个 `.go` 文件.
+哇呜！总共有 207 个文件，而整个 [GoogleCloudPlatform/golang-samples](https://github.com/GoogleCloudPlatform/golang-samples) 仓库中有大约 1300 个 `.go` 文件。
 
 鉴于问题的规模，我认为一些简单的自动化会[很值得](https://xkcd.com/1205/)。我不想写一个完整的 `Go` 程序来编辑这些文件，所以我选择用 `Bash` 脚本。
 
@@ -161,7 +161,7 @@ $ grep -L Close $(grep -El 'New[^(]*Client' **/*.go) | grep -v test
 $ grep -L Close $(grep -El 'New[^(]*Client' **/*.go) | grep -v test | xargs sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 ```
 
-它是完美的吗？不，但它在工作量上能给我省好多事？是的!
+它是完美的吗？不，但它在工作量上能给我省好多事？是的！
 
 第一部分（直到 `test`）与上面完全一样 -- 获得所有可能受影响的文件的列表（那些创建了 `Client` 但从未调用 `Close` 的文件）。
 
@@ -198,7 +198,7 @@ sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 
 接下来，我使用 `s` 命令在检查错误时的关闭大括号（`}`）之后插入 `defer client.Close()`。
 
-但是，我不想替换*每一个`}`，我只想替换调用 `NewClient` *后的*第一个。要做到这一点，你可以给一个让 `sed` 去搜索[*地址范围*](https://www.gnu.org/software/sed/manual/html_node/Addresses.html)。
+但是，我不想替换*每一个`}`，我只想替换调用 `NewClient` *后的*第一个。要做到这一点，你可以给一个让 `sed` 去搜索 [*地址范围*](https://www.gnu.org/software/sed/manual/html_node/Addresses.html)。
 
 地址范围可以包括开始和结束模式，以便在应用接下来的任何命令之前进行匹配。在这个例子中，开始是 `/New[^(]*Client/`，匹配 `NewClient` 类型的调用，结束（用`,`分隔）是`/}/`，匹配下一个大括号。这意味着我们的搜索和替换将只适用于对 `NewClient` 的调用和结尾的大括号之间。
 
@@ -219,7 +219,7 @@ sed -i '/New[^(]*Client/,/}/s/}/}\ndefer client.Close()/'
 最后的任务是努力使用户不再发生这种情况。我们想到了几种方法：
 
 1. 更好的示例程序。
-2. 更好的 `GoDoc`。我们更新了我们的库生成器，在生成的库中加入了一个注释，说当你用完后要 `Close` 客户端。参见https://github.com/googleapis/google-cloud-go/issues/3031。
-3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Finalizer 方法？有什么想法我们可以做得更好吗？请在https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
+2. 更好的 `GoDoc`。我们更新了我们的库生成器，在生成的库中加入了一个注释，说当你用完后要 `Close` 客户端。参见 https://github.com/googleapis/google-cloud-go/issues/3031。
+3. 更好的基础库。有什么办法可以让我们自动 `Close` 客户？Finalizer 方法？有什么想法我们可以做得更好吗？请在 https://github.com/googleapis/google-cloud-go/issues/4498 上告诉我们。
 
-希望你能学到一些关于 `Go`、内存泄漏、`pprof`、 `gRPC` 和 `Bash` 的知识。我很想听听你关于你所发现的内存泄露的故事，以及你是如何解决这些问题的! 如果你对我们的[代码库](https://github.com/googleapis/google-cloud-go)或[示例程序](https://github.com/GoogleCloudPlatform/golang-samples)有什么想法，欢迎提交问题让我们知道。
+希望你能学到一些关于 `Go`、内存泄漏、`pprof`、 `gRPC` 和 `Bash` 的知识。我很想听听你关于你所发现的内存泄露的故事，以及你是如何解决这些问题的！如果你对我们的[代码库](https://github.com/googleapis/google-cloud-go)或[示例程序](https://github.com/GoogleCloudPlatform/golang-samples)有什么想法，欢迎提交问题让我们知道。
