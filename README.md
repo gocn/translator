@@ -21,7 +21,7 @@
 
 ### Go 新特性速览
 
-* [Go2.0展望](https://gocn.vip/topics/20982) （[1-st](https://github.com/1-st) 翻译）
+* [Go 2.0 展望](https://gocn.vip/topics/20982) （[1-st](https://github.com/1-st) 翻译）
 * [Go 快速指南：go1.18 特性](https://gocn.vip/topics/20849) （[cuua](https://github.com/cuua) 翻译）
 * [基于寄存器调用的软件加速](https://gocn.vip/topics/20835) （[cvley](https://github.com/cvley) 翻译）
 * [Go 1.18 中即将出现的功能特性](https://gocn.vip/topics/17460) （[Cluas](https://github.com/Cluas) 翻译）
@@ -56,7 +56,7 @@
 
 ### Go 并发
 
-* [以Go为例-探究并行与并发的区别](https://gocn.vip/topics/20993) （[zxmfke](https://github.com/zxmfke) 翻译）
+* [以 Go 为例-探究并行与并发的区别](https://gocn.vip/topics/20993) （[zxmfke](https://github.com/zxmfke) 翻译）
 * [Go sync.Once 的妙用](https://gocn.vip/topics/12514) （[张宇](https://github.com/pseudoyu) 翻译）
 
 ### 错误处理
@@ -83,10 +83,10 @@
 
 ### Go VS Rust
 
-* [Rust与Go: 为何相得益彰](https://gocn.vip/topics/20929) （[xkkhy](https://github.com/github.com/xkkhy) 翻译）
+* [Rust 与 Go: 为何相得益彰](https://gocn.vip/topics/20929) （[xkkhy](https://github.com/github.com/xkkhy) 翻译）
 *  [何时使用 Rust, 何时使用 Go](https://github.com/gocn/translator/blob/master/2021/w12_When_to_use_Rust_and_when_to_use_Go.md)（[tt](https://github.com/1-st) 翻译）
 
-### Go泛型
+### Go 泛型
 
 * [Go 官方出品泛型教程：如何开始使用泛型](https://gocn.vip/topics/20885) （[zxmfke](https://github.com/zxmfke) 翻译）
 
@@ -99,7 +99,7 @@
 
 * [手把手教你用 Go 实现一个 mTLS](https://gocn.vip/topics/17472) （[朱亚光](https://github.com/zhuyaguang) 翻译）
 * [Go 安全性备忘单：Go 开发者的 8 个安全性最佳实践](https://github.com/gocn/translator/blob/master/2021/w10_Go_Security_cheatsheet.md)（[guzzsek](https://github.com/guzzsek) 翻译）
-* [Go语言命令行执行路径的安全性](https://gocn.vip/topics/11648) （[朱亚光](https://github.com/zhuyaguang) 翻译）
+* [Go 语言命令行执行路径的安全性](https://gocn.vip/topics/11648) （[朱亚光](https://github.com/zhuyaguang) 翻译）
 
 ### 最佳实践
 
