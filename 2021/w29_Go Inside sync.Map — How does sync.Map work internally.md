@@ -1,10 +1,8 @@
-# Go: Inside sync.Map — How does sync.Map work internally
-
 # Go sync map 的内部实现
 
 * 原文地址：https://sreramk.medium.com/go-inside-sync-map-how-does-sync-map-work-internally-97e87b8e6bf
 * 原文作者：`Sreram K`
-* 本文永久链接：[https:/github.com/gocn/translator/blob/master/2021/w29_Go Inside sync.Map — How does sync.Map work internally.md](https:/github.com/gocn/translator/blob/master/2021/w29_Go Inside sync.Map — How does sync.Map work internally.md)
+* 本文永久链接：https://github.com/gocn/translator/blob/master/2021/w29_Go%20Inside%20sync.Map%E2%80%8A%E2%80%94%E2%80%8AHow%20does%20sync.Map%20work%20internally.md
 
 - 译者：[guzzsek](https://github.com/laxiaohong)
 - 校对：[lsj1342](https://github.com/lsj1342)

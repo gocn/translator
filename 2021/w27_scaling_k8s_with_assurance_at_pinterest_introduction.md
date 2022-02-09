@@ -1,4 +1,4 @@
-# Pinterest 如何保障扩展 Kubernete
+# Pinterest 如何保障扩展 Kubernetes
 
 * 原文地址：https://medium.com/pinterest-engineering/scaling-kubernetes-with-assurance-at-pinterest-a23f821168da
 * 原文作者：`pinterest-engineering`
