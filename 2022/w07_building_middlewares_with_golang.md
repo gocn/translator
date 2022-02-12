@@ -213,7 +213,7 @@ go run loggingMiddleware.go
 
 Navigating to localhost:8080 in the browser will show the following output:
 
-```
+```bash
 2022/01/05 10:51:44 Processing request!
 2022/01/01 10:51:44 Finished processing request
 127.0.0.1 - - [05/January/2022:10:51:44 +0530] "GET / HTTP/1.1" 
