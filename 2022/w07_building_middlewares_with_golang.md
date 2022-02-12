@@ -1,4 +1,4 @@
-# Understanding and Crafting HTTP Middlewares in Go
+# 从零到一实现一个 Go 语言 HTTP 中间件
 
 - 原文地址：https://ghostmac.hashnode.dev/understanding-and-crafting-http-middlewares-in-go
 - 原文作者：MacBobby Chibuzor
@@ -6,42 +6,44 @@
 - 译者：[张宇](https://github.com/pseudoyu)
 - 校对：
 
-## Introduction
+## 简介
 
-When communication is needed between a client and a server running on different computers, a middleware is implemented. In this article, the reader will be introduced to Middlewares, their use cases, and how they are crafted in the Go Programming Language.
+当运行在不同计算机上的客户端与服务器进行通信时，就需要使用中间件。通过本文，读者将会了解什么是中间件、中间件用例以及它们是如何在 Go 语言中构建的。
 
-What Are HTTP Middlewares? To better understand what HTTP Middlewares are, some underlying concepts must be explained. Assuming a programmer wants two computers to communicate, where one would provide the other with a resource or service. The programmer would quickly build a client/server system to make this happen. The server waits for the client to request for a resource or service, then forwards the requested resource to the client in response. The requested resource or service may be:
+### 什么是 HTTP 中间件
 
-- Authentication—verifying that the client is who it claims to be
-- Authorization—determining whether the given client is permitted to access any of the services the server supplies
-- Providing services
-- Data security—guaranteeing that a client is not able to access data that the client is not permitted to access, preventing data from being stolen
+为了更好理解 HTTP 中间件是什么，先要解释一些基本概念。假如一个开发者想要建立两台计算机之间的通信（其中一台计算机为另一台提供资源或服务），他将会构建一个 client/server 系统来实现。服务器等待客户端请求资源或服务，并将请求的资源转发给客户端作为响应。请求的资源或服务可能为：
 
-Servers are built to be stateless or stateful. Stateless servers do not concern themselves with the status of client communication, while stateful servers do.
+- 客户端身份校验
+- 确认客户端对服务器提供的特定服务是否有访问权限
+- 提供服务
+- 保障数据安全，确保客户端无法访问未授权数据，防止数据被窃取
 
-Middleware is a software entity that hooks one software or enterprise application to another, forming a distributed system. An HTTP request is sent to an API server, which returns an HTTP response to the client.
+服务器分为无状态和有状态两类，无状态服务器不关心客户机通信状态，而有状态服务器则关心。
 
-Middlewares have a request receiver function to process requests before they reach the handler function. It then processes the handler function, before processing a response and sending it out to the client.
+中间件是一种将软件或企业应用连接到另一个软件应用，并构成分布式系统的软件实体。HTTP 请求被发送到 API 服务器，而服务器向客户端返回 HTTP 响应。
 
-## Middleware Use Cases
+中间件具备接收请求功能，可以在请求到达处理方法之前对其进行预处理。然后，它将处理具体方法，并将其响应结果发送给客户端。
 
-The most common use cases are:
+## 中间件用例
 
-- Loggers for logging each and every request hitting the REST API
-- Validation of user session, and keeping the communication alive
-- User authentication
-- Writing custom logic to scrape request data
-- Attach properties to responses while serving the client
+最常见的用例为：
 
-## Middleware Handlers
+- 日志记录器，用于记录每个 REST API 访问请求
+- 验证用户 session，并保持通信存活 
+- 用户鉴权
+- 编写自定义逻辑以抽取请求数据
+- 为客户端提供服务时将属性附在响应信息
 
-In Go, a middleware handler is an `http.Handler` that wraps another http.Handler to do some pre- and/or post-processing of the request. It's called "middleware" because it sits in the middle between the Go web server and the actual handler.
+## 中间件 Handlers
+
+在 Go 语言中，中间件 Handler 是封装另一个 `http.Handler` 以对请求进行预处理或后续处理的 `http.Handler`。它介于 Go Web 服务器与实际的处理程序之间，因此被称为“中间件”。
 
 [Middleware Handlers]: ../static/images/2022/w07_building_middlewares_with_golang/middleware_handlers.png
 ![Middleware Handlers][Middleware Handlers]
-<center style="font-size:14px;color:#C0C0C0;text-decoration">Middlerware Handlers</center> 
+<center style="font-size:14px;color:#C0C0C0;text-decoration">中间件 Handler</center> 
 
-A basic middleware handler is written below:
+下面是一个基本的中间件 Handler：
 
 ```go
 package main 
@@ -53,22 +55,23 @@ import (
 func middleware(handler http.Handler) http.Handler {
      return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
          fmt.Println("Executing middleware before request phase!")
-         // Pass control back to the handler
-         handler.ServeHTTP(w, r)         fmt.Println("Executing middleware after response phase!")
+         // 将控制权交回 Handler
+         handler.ServeHTTP(w, r)         
+         fmt.Println("Executing middleware after response phase!")
      })
  }
  func mainLogic(w http.ResponseWriter, r *http.Request) {
-     // Business logic goes here
+     // 业务逻辑
      fmt.Println("Executing mainHandler...")
      w.Write([]byte("OK")) } func main() {
-     // HandlerFunc returns a HTTP Handler
+     // HandlerFunc 返回 HTTP Handler 
      mainLogicHandler := http.HandlerFunc(mainLogic)
      http.Handle("/", middleware(mainLogicHandler))
      http.ListenAndServe(":8000", nil)
 }
 ```
 
-Running the code above in the terminal gives the following output:
+在终端运行代码，得到以下输出结果：
 
 ```bash
 go run middleware.go
@@ -78,7 +81,9 @@ Executing mainHandler...
 Executing middleware after response phase!
 ```
 
-Logging Middleware Handler To explain how a logging middleware handler works in example use cases, we will build one to execute some functions. This example creates two middleware handlers: `middlewareGreetingsHandler` and `middlewareTimeHandler`. The Gorilla Mux router has a `HandleFunc( )` method for handling the middleware functions.
+### 日志中间件 Handler
+
+为了更好讲解日志中间件 Handler 是如何工作的，我们将实际构建一个并执行一些方法。以下示例创建了两个中间件 Handler：`middlewareGreetingsHandler` 和 `middlewareTimeHandler`。Gorilla Mux 路由的 `HandleFunc()` 方法用于处理中间件方法。
 
 ```go
 package main
@@ -112,35 +117,36 @@ func main() {
 }
 ```
 
-To run this server, set the ADDR environment variable to a free port, and use go run main.go:
+先设置 ADDR 环境变量为空闲端口，并执行 `go run main.go` 命令来运行服务：
 
 ```bash
 export ADDR=localhost:8080
 go run main.go
 ```
 
-When the server is live, visit localhost:8080/v1/greetings in your browser to see the `middlewareGreetingsHandler` response, and localhost:8080/v1/time to see the `middlewareTimeHandler` response. With this achieved, creating the logging middleware to log all requests made to this server, list the request method, resource path, and how long it took to handle, comes next. To do so, we will initialize a new struct that implements the `ServeHTTP()` method of the `http.Handler` interface. The struct will have a field to track the real `http.Handler` for process calls.
+服务运行成功后，在浏览器中访问 `localhost:8080/v1/greetings` 查看 `middlewareGreetingsHandler` 的响应信息，访问 `localhost:8080/v1/time` 查看 `middlewareTimeHandler` 的响应信息。完成后，我们需要创建日志中间件来记录所有服务访问请求信息，列举请求方法、资源路径以及处理时间。首先我们要初始化一个新的结构体来实现 `http.Handler` 接口的 `ServeHTTP()` 方法。这个结构体将会有一个字段来追溯进程调用中的 `http.Handler`。
 
 ```go
-//Create a request logging middleware handler called Logger
+// 创建一个名为 Logger 的请求日志中间件 Handler 结构体 
 type Logger struct {
     handler http.Handler
 }
 
-//ServeHTTP handles the request by passing it to the real handler and logging the request details
+// ServeHTTP 将请求传递给真正的 Handler 并记录请求细节
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     start := time.Now()
     l.handler.ServeHTTP(w, r)
     log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
 }
 
-//NewLogger constructs a new Logger middleware handler
+// NewLogger 构造了一个新的日志中间件 Handler
 func NewLogger(handlerToWrap http.Handler) *Logger {
     return &Logger{handlerToWrap}
 }
 ```
 
-`NewLogger()` takes an `http.Handler` to wrap. It then returns a new `Logger` instance wrapped around it. Since an `http.ServeMux` satisfies the `http.Handler` interface, it is possible to wrap an entire mux with the logger middleware. Further, since `Logger` implements the `ServeHTTP()` method, it also satisfies the `http.Handler` interface, so it can be passed to the `http.ListenAndServe()` function instead of the mux wrapped. Finally, change the `main()` function to look like this:
+`NewLogger()` 接收 `http.Handler`，并返回一个新的封装后的 `Logger` 实例。由于 `http.ServeMux` 满足 `http.Handler` 接口，可以使用日志中间件封装整个 mux。除此之外，由于 `Logger` 实现了 `ServeHTTP()` 方法并满足 `http.Handler` 接口，它也可以被传递至 `http.ListenAndServe()` 方法而非封装 mux。最后，修改 `main()` 方法：
+
 
 ```go
 func main() {
@@ -149,32 +155,32 @@ func main() {
     mux := http.NewServeMux()
     mux.HandleFunc("/v1/greetings", middlewareGreetingsHandler)
     mux.HandleFunc("/v1/time", middlewareTimeHandler)
-    //wrap entire mux with logger middleware
+    // 使用日志中间件封装 mux
     wrappedMux := NewLogger(mux)
 
     log.Printf("server is listening at %s", addr)
-    //use wrappedMux instead of mux as root handler
+    // 使用 wrappedMux 而不是 mux 作为根 handler
     log.Fatal(http.ListenAndServe(addr, wrappedMux))
 }
 ```
 
-After starting the server and requesting for the APIs again, all requests will be logged to the terminal, despite the resource path requested.
+重新启动服务并请求 API，不论请求路径是什么，所有的请求日志都会展示在终端。
 
-## Using Gorilla's `Handlers` middleware for Logging
+## 使用 Gorilla's `Handlers` 中间件进行日志记录
 
-The Gorilla Mux router has a `Handlers` package that provides various kinds of middleware for common tasks including:
+Gorilla Mux 路由有一个 `Handlers` 包，为常见任务提供各种中间件，包括：
 
-- `LoggingHandler`: For logging in Apache Common Log Format
-- `CompressionHandler`: For zipping the responses
-- `RecoveryHandler`: For recovering from unexpected panics
+- `LoggingHandler`：以 Apache 通用日志格式进行记录
+- `CompressionHandler`：压缩响应信息
+- `RecoveryHandler`: 从 panic 错误中恢复
 
-Below, we use the `LoggingHandler` to perform API-wide logging. First, install this library using `go get`:
+在以下示例中，我们使用 `LoggingHandler` 来实现 API 日志记录。首先，使用 `go get` 命令安装包：
 
 ```bash
 go get "github.com/gorilla/handlers"
 ```
 
-Next, import and use it in a go file `loggingMiddleware.go`:
+导入包，并在 `loggingMiddleware.go` 程序中使用：
 
 ```go
 package main 
@@ -196,18 +202,19 @@ func mainLogic(w http.ResponseWriter, r *http.Request) {
 
 func main() {
      r := mux.NewRouter()
-     r.HandleFunc("/", mainLogic)     loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+     r.HandleFunc("/", mainLogic)     
+     loggedRouter := handlers.LoggingHandler(os.Stdout, r)
      http.ListenAndServe(":8080", loggedRouter)
 }
 ```
 
-Run the server:
+运行服务：
 
 ```bash
 go run loggingMiddleware.go
 ```
 
-Navigating to localhost:8080 in the browser will show the following output:
+在浏览器中访问 `localhost:8080`，会显示以下输出结果：
 
 ```bash
 2022/01/05 10:51:44 Processing request!
@@ -216,10 +223,8 @@ Navigating to localhost:8080 in the browser will show the following output:
 200 2 127.0.0.1 - - [05/January/2017:10:51:44 +0530] "GET /favicon.ico HTTP/1.1" 404 19
 ```
 
-This example introduces the use of Gorilla Mux `Handlers` package and nothing more.
+本示例仅介绍了 Gorilla Mux `Handlers` 包的用法。
 
-## Conclusion
+## 总结
 
-In this article, the reader is introduced to Middlewares. A logging middleware was built from scratch for easy understanding. Next, a use case was implemented in an API. Afterwards, a simpler solution to crafting Middlewares in Go (i.e. the Gorilla Mux Handlers) was introduced and implemented in an example. In a future article, Crafting RPC Servers and Clients in Go will be explained.
-
-My name is MacBobby Chibuzor and I am a Contract Technical Writer for Wevolver.com, and ReachExt K. K. I have over 7 years experience in writing commercially, with 2 years in Software. I write about Software Development, Security, ML, IoT, and more recently, Blockchain. Leave me a message if you need my services: theghostmac@gmail.com.
+本文向读者介绍了什么是中间件。为了便于理解，从零开始构建了一个日志中间件程序，并通过 API 实现了一个用例。此外，还介绍并实践了一种在 Go 程序中构造中间件更简单的解决方案（即使用 Gorilla Mux Handler）。在未来的文章中，我将讲解如何在 Go 中构建 RPC 服务与客户端。
