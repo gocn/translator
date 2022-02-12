@@ -6,10 +6,6 @@
 - 译者：[张宇](https://github.com/pseudoyu)
 - 校对：
 
-Go 中的错误处理与其他主流编程语言如 Java、JavaScript 或 Python 有些不同。Go 的内置错误不包含堆栈痕迹，也不支持传统的`try/catch`方法来处理它们。相反，Go 中的错误只是由函数返回的值，它们的处理方式与其他数据类型基本相同 - 这带来了令人惊叹的轻量级和简单设计。
-
-在这篇文章中，我将展示 Go 中处理错误的基础知识，以及一些你可以在代码中遵循的简单策略，以确保你的程序健壮且易于调试。
-
 ## Introduction
 
 When communication is needed between a client and a server running on different computers, a middleware is implemented. In this article, the reader will be introduced to Middlewares, their use cases, and how they are crafted in the Go Programming Language.
