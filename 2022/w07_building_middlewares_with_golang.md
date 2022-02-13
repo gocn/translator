@@ -1,10 +1,10 @@
-# 从零到一实现一个 Go 语言 HTTP 中间件
+# 理解并用 Go 语言实现一个 HTTP 中间件
 
 - 原文地址：https://ghostmac.hashnode.dev/understanding-and-crafting-http-middlewares-in-go
 - 原文作者：MacBobby Chibuzor
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w07_building_middlewares_with_golang.md
 - 译者：[张宇](https://github.com/pseudoyu)
-- 校对：
+- 校对：[小超人](https://github.com/xkkhy)
 
 ## 简介
 
