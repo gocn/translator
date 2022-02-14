@@ -6,6 +6,8 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
+<h5 id="top"></top>
+
 The Go programming language was created with concurrency as a first class citizen. It is a language that allows you to write programs that are highly parallel with ease by abstracting away the details of parallelism behind concurrency primitives[1](https://benjiv.com/go-native-concurrency-primitives/#fn:1) within the language.
 
 Most languages focus on parallelization as part of the standard library or expect the developer ecosystem to provide a parallelization library. By including the concurrency primitives in the language, Go, allows you to write programs that leverage parallelism without needing to understand the ins and outs of writing parallel code.
@@ -16,8 +18,8 @@ Table Of Contents
   - [Communicating Sequential Processes (CSP)](#csp)
   - [Concurrency through Communication](#ctc)
     - [Blocking vs Communicating](#bvc)
-- [Go’s Native Concurrency Primitives](#cncp)
-  - [Go Routines](#go)
+- [Go’s Native Concurrency Primitives](#gncp)
+  - [Go Routines](#gr)
     - [What are Go Routines?](#wagr)
     - [Leaking Go Routines](#lgr)
     - [Panicking in Go Routines](#pigr)
@@ -28,7 +30,7 @@ Table Of Contents
     - [Types of Channels](#toc)
       - [Unbuffered Channels](#uc)
       - [Buffered Channels](#bc)
-      - [Read-Only & Write-Only Channels](#rwc)
+      - [Read-Only & Write-Only Channels](#rowoc)
     - [Design Considerations for Channels](#dcfc)
       - [Owner Pattern](#op)
     - [Looping over Channels](#loc)
@@ -38,6 +40,7 @@ Table Of Contents
     - [Work Cancellation with Context](#wcwc)
 
 <h2 id="cd">Concurrent Design</h2>
+
 The designers of Go put heavy emphasis on concurrent design as a methodology which is based on the idea of communicating[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2) critical information rather than blocking and sharing that information.[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)
 
 The emphasis on concurrent design allows for application code to be executed in sequence or in parallel *correctly* without designing and implementing for parallelization, which is the norm.[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4) The idea of concurrent design is not new and in fact a good example is the move from waterfall to agile development which is actually a move to concurrent engineering practices (early iteration, repeatable process).[5](https://benjiv.com/go-native-concurrency-primitives/#fn:5)
@@ -52,26 +55,28 @@ Questions to ask when building concurrent programs in Go:
 
 If any of these are Yes, then you should consider rethinking your design to use Go best practices.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 
 <h3 id="csp">Communicating Sequential Processes (CSP)</h3>
+
 The basis for part of the Go language[6](https://benjiv.com/go-native-concurrency-primitives/#fn:6) comes from a paper by Hoare[7](https://benjiv.com/go-native-concurrency-primitives/#fn:7) that discusses the need for languages to treat concurrency as a part of the language rather than an afterthought. The paper proposes a threadsafe queue of sorts which allows for data communication between different processes in an application.
 
 If you read through the paper you will see that the `channel` primitive in Go is very similar to the description of the primitives in the paper and in fact comes from previous work on building languages based on CSP by Rob Pike.[8](https://benjiv.com/go-native-concurrency-primitives/#fn:8)
 
 In one of Pike’s lectures he identifies the real problem as the “need [for] an approach to writing concurrent software that guides our design and implementation."[9](https://benjiv.com/go-native-concurrency-primitives/#fn:9) He goes on to say concurrent programming is not about parallelizing programs to run faster but instead “using the power of processes and communication to design elegant, responsive, reliable systems."[9](https://benjiv.com/go-native-concurrency-primitives/#fn:9)
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="ctc">Concurrency through Communication</h3>
+
 One of the most common phrases we hear from the creators of Go is:[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2) [3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)
 
 > Don’t communicate by sharing memory, share memory by communicating.
 >
 > \- Rob Pike
 
-This sentiment is a reflection of the fact that Go is based on [CSP](https://benjiv.com/go-native-concurrency-primitives/#communicating-sequential-processes-csp) and the language has native primitives for communicating[10](https://benjiv.com/go-native-concurrency-primitives/#fn:10) between threads (go routines).
+This sentiment is a reflection of the fact that Go is based on [CSP](#cspc) and the language has native primitives for communicating[10](https://benjiv.com/go-native-concurrency-primitives/#fn:10) between threads (go routines).
 
 An example of communicating rather than using a mutex to manage access to a shared resource is the following code:[11](https://benjiv.com/go-native-concurrency-primitives/#fn:11)
 
@@ -128,11 +133,12 @@ Let’s take a look at the code and see what it does.
 6. A channel read from the incoming channel updates the value. (Line 24)
 7. A channel read from outside the routine executes a channel write to the outgoing channel with the current value of the shared resource. (Line 34)
 
-Since there is no parallelism within the go routine itself the shared resource is safe to access via the returned [read-only channel](https://benjiv.com/go-native-concurrency-primitives/#read-only--write-only-channels) . In fact, the use of the `select` statement here provides a number of benefits. The [select primitive](https://benjiv.com/go-native-concurrency-primitives/#select-statements) section goes into more detail on this.
+Since there is no parallelism within the go routine itself the shared resource is safe to access via the returned [read-only channel](#rowoc) . In fact, the use of the `select` statement here provides a number of benefits. The [select primitive](#ss) section goes into more detail on this.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h4 id="bvc"> Blocking vs Communicating</h4>
+
 Blocking[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
 
 - Stops process on critical section read / write
@@ -146,20 +152,22 @@ Communicating[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
 - Processes work when there is something to do
 - Memory elements are communicated, not shared directly
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h1 id="gncp"> Go’s Native Concurrency Primitives</h1>
 <h2 id="gr">Go Routines</h2>
 <h3 id="wagr">What are Go Routines?</h3>
+
 Go routines are lightweight *threadlike* processes which enable logical process splitting similar to the `&` after a bash command[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4). Once the go routine is split from the parent routine it is handed off to the Go runtime for execution. Unlike the `&` in `bash` however these processes are scheduled for execution in the Go runtime and not necessarily executed in parallel.[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4)
 
-![1643795792968](./1.png)
+![1643795792968](https://github.com/gocn/translator/blob/165bb76d803daf69b5f2fe256733dfc42f49c75d/static/images/2022/w08_Go_Native_Concurrency_Primitives_&_Best_Practices.md/1.png)
 
 **Figure 1: Example of a Go Routine Process Split**
 
 >  **NOTE:** The distinction here of “scheduled” is important because the Go runtime multiplexes the execution of go routines to improve performance on top of the operating system’s scheduling. This means that no assumptions can be made as to *when* the routine will execute.
 
 <h3 id="lgr"> Leaking Go Routines</h3>
+
 Created by the `go` primitive, go routines are cheap, but its important to know that they are **not** free.[13](https://benjiv.com/go-native-concurrency-primitives/#fn:13) Cleaning up routines is important to ensure proper garbage collection of resources in the Go runtime.
 
 Time should be spent on designing with cleanup in mind. Ensuring that long running routines properly exit in the event of failure. It is also important to not create an unbounded number of go routines.
@@ -172,9 +180,10 @@ When a stack overflow occurs, the runtime will panic and the program will exit a
 
 TL;DR: Design go routines with the end in mind so that they properly stop when completed.[13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="pigr"> Panicking in Go Routines</h3>
+
 In general, panicking in a Go application is against best practices[15](https://benjiv.com/go-native-concurrency-primitives/#fn:15) and should be avoided. In lieu of panicking, you should return and handle errors from your functions. However, in the event that using `panic` is necessary it is important to know that panicking in a Go routine without a `defer` recover (directly in that routine) will crash your application *EVERY TIME*.
 
 > **BEST PRACTICE:**
@@ -192,11 +201,13 @@ defer func() {
 }()
 ```
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h2 id="channels"> Channels</h2>
+
 <h3 id="wacig"> What are Channels in Go?</h3>
-What is a channel?
+
+<h4 id="wiac">What is a channel?</h4>
 
 Derived from the Communicating Sequential Processes paper by Hoare (1977)[7](https://benjiv.com/go-native-concurrency-primitives/#fn:7) a channel is a communication mechanism in Go which supports data transfer in a threadsafe manner. It can be used to communicate between parallel go routines safely and efficiently without the need for a mutex.
 
@@ -205,6 +216,7 @@ Channels abstract away the difficulties of building parallel code to the Go runt
 In the words of Rob Pike: “Channels orchestrate; mutexes serialize."[17](https://benjiv.com/go-native-concurrency-primitives/#fn:17)
 
 <h3 id="hdcwig"> How do Channels work in Go?</h3>
+
 Channels are block by default. This means that if you try to read from a channel it will block processing of that go routine until there is something to read (i.e. data being sent to the channel). Similarly, if you try to write to a channel and there is no consumer for the data (i.e. reading from the channel) it will block processing of that go routine until there is a consumer.
 
 There are some very important behaviors surrounding channels in Go. The Go runtime is designed to be very efficient and because of that if there is a Go routine which is blocked on a channel read or write the runtime will sleep the routine while it waits for something to do. Once the channel has a producer or consumer it will wake up the blocked routine and continue processing.
@@ -214,6 +226,7 @@ This is very important to understand because it allows you to explicitly leverag
 >  **NOTE:** A `nil` channel will **ALWAYS** block.
 
 <h4 id="cac"> Closing a Channel</h4>
+
 When you are done with a channel it is best practice to close it. This is done using the `close` function on the channel.
 
 Sometimes it may not be possible to close a channel because it will cause a panic elsewhere in your application (due to a channel write on a closed channel). In that situation when the channel goes out of scope it will be garbage collected.
@@ -262,12 +275,14 @@ The `ok` parameter will be `false` if the channel is closed in the example above
 
 >  **NOTE:** Only standard and [write-only](https://benjiv.com/go-native-concurrency-primitives/#read-only--write-only-channels) channels can be closed using the `close` function.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="toc"> Types of Channels</h3>
+
 There are a few different types of channels in Go. Each of them have different benefits and drawbacks.
 
 <h4 id="uc"> Unbuffered Channels</h4>
+
 ```go
   // Unbuffered channels are the simplest type of channel.
   ch := make(chan int)
@@ -275,9 +290,10 @@ There are a few different types of channels in Go. Each of them have different b
 
 To create an unbuffered channel you call the `make` function, supplying the channel type. Do **not** provide a size value in the second argument as seen in the example above and voila! You have an unbuffered channel.
 
-As described in [the previous section](https://benjiv.com/go-native-concurrency-primitives/#how-do-channels-work-in-go) , unbuffered channels are block by default, and will block the go routine until there is something to read or write.
+As described in [the previous section](#hdcwig) , unbuffered channels are block by default, and will block the go routine until there is something to read or write.
 
 <h4  id="bc"> Buffered Channels</h4>
+
 ```go
   // Buffered channels are the other primary type of channel.
   ch := make(chan int, 10)
@@ -290,6 +306,7 @@ To create a buffered channel you call the `make` function, supplying the channel
 >  **NOTE:** In general, only use buffered channels when you *absolutely* need to. **Best practice is to use unbuffered channels.**
 
 <h4 id="rowoc"> Read-Only & Write-Only Channels</h4>
+
 One interesting use case for channels is to have a channel that is only used for reading or writing. This is useful for when you have a go routine that needs to read from a channel but you do not want the routine write to it, or vice versa. This is particularly useful for the [Owner Pattern](https://benjiv.com/go-native-concurrency-primitives/#owner-pattern) described below.
 
 This is the syntax for creating a read-only or write-only channel.
@@ -318,11 +335,12 @@ An example of a read-only channel is the `time.Tick` method:
 
 This method returns a read-only channel which the `time` package writes to internally at the specified interval. This pattern ensures that the implementation logic of ticking the clock is isolated to the `time` package since the user does not need to be able to write to the channel.
 
-Write-only channels are useful for when you need to write to a channel but you know the routine does not need to read from it. A great example of this is the [Owner Pattern](https://benjiv.com/go-native-concurrency-primitives/#owner-pattern) described below.
+Write-only channels are useful for when you need to write to a channel but you know the routine does not need to read from it. A great example of this is the [Owner Pattern](#op) described below.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="dcfc"> Design Considerations for Channels</h3>
+
 It is important to think about the use of channels in your application.
 
 Design Considerations include:
@@ -336,6 +354,7 @@ Design Considerations include:
 4. Which go routine is responsible for cleaning up the channel?
 
 <h4 id="op"> Owner Pattern</h4>
+
 The Owner Pattern is a common design pattern in Go and is used to ensure that ownership of a channel is correctly managed by the creating or owning routine. This allows for a routine to manage the full lifecycle of a channel and ensure that the channel is properly closed and the routine is cleaned up.
 
 Here is an example of the Owner Pattern in Go:
@@ -372,9 +391,10 @@ When passed to the internal Go routine, the `tchan` channel is passed as a write
 
 With the use of the `select` statement the `time.Now()` call is executed only on a read from the channel. This ensures that the execution of the `time.Now()` call is synchronized with the read from the channel. This type of pattern helps minimize CPU cycles pre-emptively.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="loc"> Looping over Channels</h3>
+
 One method of reading from a channel is to use a `for` loop. This can be useful in some cases.
 
 ```go
@@ -405,11 +425,12 @@ Instead of looping over the channel I recommend the following pattern where you 
   }
 ```
 
-I discuss this method and the `select` statement in more detail in the [Select Statement](https://benjiv.com/go-native-concurrency-primitives/#select-statements) section.
+I discuss this method and the `select` statement in more detail in the [Select Statement](#ss) section.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="fc"> Forwarding Channels</h3>
+
 Forwarding channels from one to another can also be a useful pattern in the right circumstances. This is done using the `<- <-` operator.
 
 Here is an example of forwarding one channel into another:
@@ -436,9 +457,10 @@ func forward(ctx context.Context, from <-chan int) <-chan int {
 
 Depending on your use case this could be desirable, however, it is important to note that this pattern is not a good idea when you need to detect a closed channel.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h2 id="ss"> Select Statements</h2>
+
 The `select` statement allows for the management of multiple channels in a Go application and can be used to trigger actions, manage data, or otherwise create logical concurrent flow.
 
 ```go
@@ -461,6 +483,7 @@ default: // Non-blocking default action
 > One important caveat to the `select` statement is that it is *stochastic* in nature. Meaning that if there are multiple channels that are ready to be read from or written to at the same time, the `select` statement will randomly choose one of the case statement to execute.[18](https://benjiv.com/go-native-concurrency-primitives/#fn:18)
 
 <h3 id="tss"> Testing Select Statements</h3>
+
 The stochastic nature of the select statement can make testing select statements a bit tricky, especially when testing to ensure that a context cancellation properly exits the routine.
 
 [Here is an example](https://github.com/devnw/plex/blob/2d4f8fe223ab71f488d2d6f5e3dcfad77250d28d/plex_test.go#L202) of how to test the select statement using a statistical test where the number of times the test executes ensures that there is a low statistical likelihood of the test failing. This allows for additional coverage and ensures that the test is not flaky.
@@ -469,9 +492,10 @@ This test works by running the same cancelled context through a parallel routine
 
 By running 100 times with a 50% chance of the select tripping the context case there is a very, very low chance that the test will fail to detect the context cancellation for *all* of the 100 tests.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 <h3 id="wcwc"> Work Cancellation with Context</h3>
+
 In the early days of building Go applications users were building out applications with a `done` channel where they would create a channel that looked like this: `done := make(chan struct{})`. This was a very simple way to signal to a routine that it should exit because all you have to do is close the channel and use that as a signal to exit.
 
 ```go
@@ -534,7 +558,7 @@ Along with this they provided a few methods for creating hierarchical contexts, 
 > **BEST PRACTICE:**
 > The first parameter of a function that accepts a context should ***always*** be the context, and it should be named `ctx`.
 
-[*Back To Top*](https://benjiv.com/go-native-concurrency-primitives/#top)
+[*Back To Top*](#top)
 
 ---
 
