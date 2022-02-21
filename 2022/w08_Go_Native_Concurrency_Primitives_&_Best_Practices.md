@@ -39,7 +39,7 @@ Go语言在创立之初就将并发定为第一公民。 Go语言是一种通过
 
 <h2 id="cd">并发设计</h2>
 
-Go的设计者们着重强调并发设计，将其作为一个方法论，其思想是重要信息之间是通过沟通[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2)而不是阻塞和共享[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)。
+Go的设计者们着重强调并发设计，将其作为一个方法论，其思基础是沟通关键信息[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2)而不是阻塞和共享信息[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)。
 
 重视并发设计使得应用程序代码可以按顺序或者在并行下*正确地*执行，而不需要设计和实现并行，这是一个标准[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4)。并发设计的思想并不新鲜，事实上，从瀑布式开发到敏捷开发就是一个很好的例子，这实际上是向并发工程实现的转变(早期迭代，可重复的过程)[5](https://benjiv.com/go-native-concurrency-primitives/#fn:5)。
 
@@ -140,7 +140,7 @@ func readwriteloop(
 - 在临界区读和写时暂停进程
 - 需要了解阻塞的必要性
 - 需要了解如何避免竞态和死锁
-- 内存元素被多个进程或携程共享
+- 内存元素被多个进程或线程共享
 
 通信[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
 
@@ -148,7 +148,7 @@ func readwriteloop(
 - 当有数据可以操作的时候才执行逻辑
 - 记忆体元件之间是通信沟通的，而不是直接共享的
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
 <h1 id="gncp"> Go原生并发原理</h1>
 <h2 id="gr">Go Routines</h2>
@@ -166,7 +166,7 @@ Go routines是轻量级的线程，可以实现逻辑上的进程分割，类似
 
 基于原语`go`创建的go routines消耗是低的，但要知道的是它们**不是**免费的 [13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)。清理routines对于确保Go runtime资源的正确垃圾回收是非常重要。
 
-应该花时间在设计清扫的问题上。确保长期运行的程序在发生故障时正确退出。同样重要的是，不要创建无限制数量的go rountines。
+在设计时应该花时间考虑清理问题。确保长期运行的程序在发生故障时正确退出。同样重要的是，不要创建无限制数量的go rountines。
 
 可以很简单地创建一个go routine，因为在任何时候你想要并行时，只需要使用原语`go`就可以实现是很诱人的，但是每个routine生成的时候最小的开销是2kb [14](https://benjiv.com/go-native-concurrency-primitives/#fn:14)。如果你的代码创建了太多的go routine，而且每个都有很大的开销，你就堆栈就会爆掉。这在生产环境debug是无比困难的，因为很难说堆栈在哪里溢出和在哪里泄漏。
 
@@ -174,7 +174,7 @@ Go routines是轻量级的线程，可以实现逻辑上的进程分割，类似
 
 > **注意**：平心而论，我只在生产环境中见过这种情况，当时应用程序正在使用超过400,000个大型go routines。这对于大部分应用程序来说是不常见的，也不会是个问题。
 
-TL;DR: 在设计go routines时，要考虑到目的，以便在完成后适当停止 [13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)。
+TL;DR: 在设计go routines时要考虑到何时结束，以便在完成后适当停止。 [13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)。
 
 [*返回顶部*](#top)
 
@@ -207,7 +207,7 @@ defer func() {
 
 源自Hoare的CSP论文(1977) [7](https://benjiv.com/go-native-concurrency-primitives/#fn:7)，在Go里channel是一个通信机制，支持以线程安全的方式下传输数据。它可以用于两个并行的go routines之间安全且有效地通信，并且不需要互斥锁。
 
-channels将构建并行代码的困难，抽象为Go runtime时的困难，并且提供一个简单的方式让go routines之间通信。从本质上讲，channel的最简单形式就是一个数据队列。
+channels将构建并行代码的困难抽象到Go runtime时中，并且提供一个简单的方式让go routines之间通信。从本质上讲，channel的最简单形式就是一个数据队列。
 
 用Rob Pike的话说:“channels是协作的；互斥锁是顺序的” [17](https://benjiv.com/go-native-concurrency-primitives/#fn:17)。
 
@@ -215,7 +215,7 @@ channels将构建并行代码的困难，抽象为Go runtime时的困难，并�
 
 channel默认是阻塞的。这意味着如果你尝试从channel中读取数据，它将阻塞该go routine的执行直到有数据可以读取(例如，数据被写到channel中)。同样的，如果你尝试写入一个数据到channel中，没有接收者读取整个数据(比如，从channel中读取)，它也会阻塞go routine的执行直到有一个接收者。
 
-在Go中channel有许多重要的特性。Go runtime被设计得十分高效，因为如果有一个Go routine在往channel读或者写时被阻塞了，runtime会将这个routine至于睡眠状态直到有事情可以做。一旦这个channel有生产者或者消费者，它会唤醒阻塞的routine，然后继续执行。
+在Go中channel有许多重要的特性。Go runtime被设计得十分高效，因为如果有一个Go routine在往channel读或者写时被阻塞了，runtime会将这个routine置于睡眠状态直到有事情可以做。一旦这个channel有生产者或者消费者，它会唤醒阻塞的routine，然后继续执行。
 
 了解这一点非常重要，因为它允许你通过使用channel，有效地利用系统CPU的资源。
 
@@ -225,7 +225,7 @@ channel默认是阻塞的。这意味着如果你尝试从channel中读取数据
 
 如果你用完一个channel，最好的做法的是关掉它。这个用`close`函数来关闭channel。
 
-有时候有可能不能关掉channel，因为它可能导致你应用程序在其他地方触发恐慌(因为有个channel在往关闭的channel写数据)。在这种情况下，当channel超出可触达的范围时，它将被垃圾回收。
+有时候有可能不能关掉channel，因为它可能导致你应用程序在其他地方触发恐慌(因为有个channel在往关闭的channel写数据)。在这种情况下，当channel超出可触达的作用域时，它将被垃圾回收。
 
 ```go
   // Create the channel
@@ -237,7 +237,7 @@ channel默认是阻塞的。这意味着如果你尝试从channel中读取数据
   close(ch)
 ```
 
-如果channel限制在同一个范围内(比如，函数)，你可以使用关键词`defer`来确保channel当函数返回时是关闭的。
+如果channel限制在同一个作用域内(比如，函数)，你可以使用关键词`defer`来确保channel当函数返回时是关闭的。
 
 ```go
   // Create the channel
@@ -267,7 +267,7 @@ channel默认是阻塞的。这意味着如果你尝试从channel中读取数据
   }
 ```
 
-在上面这个例子中，参数`ok`会是`false`，如果channel是关闭的。
+在上面这个例子中，如果channel是关闭的，参数ok会是false。
 
 >  **注意**：只有标准和[只写](#rowoc)的channels才可以通过`close`函数关闭。
 
@@ -341,7 +341,7 @@ channels的一个有趣的场景是有一个只用于读或写的channel。当�
 
 设计因素包含：
 
-1. 哪个范围拥有channel？
+1. 哪个作用域拥有channel？
 2. 非所有者有什么能力？
    - 全部
    - 只读
@@ -548,7 +548,7 @@ func doWork(done <-chan struct{}) {
 - `context.WithTimeout`
   - 与`WithCancel`的返回相同，但有一个背景超时，在指定的`time.Duration`过后将取消context。
 - `context.WithDeadline`
-  - 与`WithCancel`的返回相同，但有一个背景期限，在指定的`time.Time`过后，将取消context。
+  - 与`WithCancel`的返回相同，但有一个后台运行期限，在指定的`time.Time`过后，将取消context。
 
 > **最佳做法：**
 > 接收context的函数的第一个参数应该***始终是***context，而且应该命名为`ctx`。
