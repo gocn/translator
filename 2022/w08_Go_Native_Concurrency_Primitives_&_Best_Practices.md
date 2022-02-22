@@ -1,4 +1,4 @@
-# Go Native Concurrency Primitives & Best Practices
+<h1 id="top"> Go原生并发基本原理与最佳做法</h1>
 
 - 原文地址：https://benjiv.com/go-native-concurrency-primitives/
 - 原文作者：**Benjamin Vesterby**
@@ -6,79 +6,75 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
-<h5 id="top"></top>
+Go语言在创立之初就将并发定为第一公民。 Go语言是一种通过在语言中抽象出并发基本原理[[1](https://en.wikipedia.org/wiki/Language_primitive)]背后的并行细节，使开发者能够轻松地编写高度并行程序的编程语言。
 
-The Go programming language was created with concurrency as a first class citizen. It is a language that allows you to write programs that are highly parallel with ease by abstracting away the details of parallelism behind concurrency primitives[1](https://benjiv.com/go-native-concurrency-primitives/#fn:1) within the language.
+绝大多数语言专注在将并行作为标准库的一部分，或者期望开发者生态提供一个并行库。通过在Go语言内包含并发原理，允让你可以写出利用并行性的程序，而不需要了解编写并行代码的来龙去脉。
 
-Most languages focus on parallelization as part of the standard library or expect the developer ecosystem to provide a parallelization library. By including the concurrency primitives in the language, Go, allows you to write programs that leverage parallelism without needing to understand the ins and outs of writing parallel code.
+目录
 
-Table Of Contents
-
-- [Concurrent Design](#cd)
-  - [Communicating Sequential Processes (CSP)](#csp)
-  - [Concurrency through Communication](#ctc)
-    - [Blocking vs Communicating](#bvc)
-- [Go’s Native Concurrency Primitives](#gncp)
+- [并发设计](#cd)
+  - [通信顺序进程(CSP)](#csp)
+  - [通过通信实现并发](#ctc)
+    - [阻塞vs通信](#bvc)
+- [Go原生并发原理](#gncp)
   - [Go Routines](#gr)
-    - [What are Go Routines?](#wagr)
-    - [Leaking Go Routines](#lgr)
-    - [Panicking in Go Routines](#pigr)
+    - [什么是Go Routines?](#wagr)
+    - [Go Routines泄漏](#lgr)
+    - [Go Rouines的恐慌](#pigr)
   - [Channels](#channels)
-    - [What are Channels in Go?](#wacig)
-    - [How do Channels work in Go?](#hdcwig)
-      - [Closing a Channel](#cac)
-    - [Types of Channels](#toc)
-      - [Unbuffered Channels](#uc)
-      - [Buffered Channels](#bc)
-      - [Read-Only & Write-Only Channels](#rowoc)
-    - [Design Considerations for Channels](#dcfc)
+    - [在Go里什么是Channels？](#wacig)
+    - [在Go中channel如何运作？](#hdcwig)
+      - [关闭一个channel](#cac)
+    - [channels的类型](#toc)
+      - [无缓冲channels](#uc)
+      - [带缓冲的channels](#bc)
+      - [只读和只写channels](#rowoc)
+    - [设计channels的因素](#dcfc)
       - [Owner Pattern](#op)
-    - [Looping over Channels](#loc)
+    - [循环channels](#loc)
     - [Forwarding Channels](#fc)
   - [Select Statements](#ss)
     - [Testing Select Statements](#tss)
     - [Work Cancellation with Context](#wcwc)
 
-<h2 id="cd">Concurrent Design</h2>
+<h2 id="cd">并发设计</h2>
 
-The designers of Go put heavy emphasis on concurrent design as a methodology which is based on the idea of communicating[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2) critical information rather than blocking and sharing that information.[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)
+Go的设计者们着重强调并发设计，将其作为一个方法论，其思基础是沟通关键信息[[2](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=2m48s)]而不是阻塞和共享信息[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)。
 
-The emphasis on concurrent design allows for application code to be executed in sequence or in parallel *correctly* without designing and implementing for parallelization, which is the norm.[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4) The idea of concurrent design is not new and in fact a good example is the move from waterfall to agile development which is actually a move to concurrent engineering practices (early iteration, repeatable process).[5](https://benjiv.com/go-native-concurrency-primitives/#fn:5)
+重视并发设计使得应用程序代码可以按顺序或者在并行下*正确地*执行，而不需要设计和实现并行，这是一个标准[[4](https://youtu.be/oV9rvDllKEg)]。并发设计的思想并不新鲜，事实上，从瀑布式开发到敏捷开发就是一个很好的例子，这实际上是向并发工程实现的转变(早期迭代，可重复的过程)[[5](https://en.wikipedia.org/wiki/Concurrent_engineering)]。
 
-Concurrent design is about writing a “correct” program versus writing a “parallel” program.
+并发设计是关于编写一个"正确"的程序和编写一个"并行"的程序。
 
-Questions to ask when building concurrent programs in Go:
+在Go中构建并发程序时要问的问题：
 
-- Am I blocking on critical regions?
-- Is there a more *correct* (i.e. Go centric) way to write this code?
-- Can I improve the functionality and readability of my code by communicating?
+- 我是否阻塞了一个重要区域？
+- 是否有更正确的方法去写这个代码？
+- 我是否能通过通信来改善我的代码的功能性和可读性？
 
-If any of these are Yes, then you should consider rethinking your design to use Go best practices.
+如果其中有任何一项是肯定的，那么你应该考虑重新思考你的设计，以使用Go的最佳做法。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
 
-<h3 id="csp">Communicating Sequential Processes (CSP)</h3>
+<h3 id="csp">通信顺序进程(CSP)</h3>
 
-The basis for part of the Go language[6](https://benjiv.com/go-native-concurrency-primitives/#fn:6) comes from a paper by Hoare[7](https://benjiv.com/go-native-concurrency-primitives/#fn:7) that discusses the need for languages to treat concurrency as a part of the language rather than an afterthought. The paper proposes a threadsafe queue of sorts which allows for data communication between different processes in an application.
+Go语言[[6](https://swtch.com/~rsc/thread/)]的部分基础来自于Hoare[[7](https://www.cs.cmu.edu/~crary/819-f09/Hoare78.pdf)]的一篇论文，该论文讨论了语言需要将并发作为语言的一部分，而不是事后考虑。论文提出了一种线程安全的队列，允许应用程序中的不同进程之间进行数据通信。
 
-If you read through the paper you will see that the `channel` primitive in Go is very similar to the description of the primitives in the paper and in fact comes from previous work on building languages based on CSP by Rob Pike.[8](https://benjiv.com/go-native-concurrency-primitives/#fn:8)
+如果你通读了这篇论文，你会发现Go中的`channel`的基本原理与论文中原理的描述非常相似，事实上，它来自Rob Pike[[8](https://swtch.com/~rsc/thread/newsqueak.pdf)]之前基于CSP构建语言的工作。
 
-In one of Pike’s lectures he identifies the real problem as the “need [for] an approach to writing concurrent software that guides our design and implementation."[9](https://benjiv.com/go-native-concurrency-primitives/#fn:9) He goes on to say concurrent programming is not about parallelizing programs to run faster but instead “using the power of processes and communication to design elegant, responsive, reliable systems."[9](https://benjiv.com/go-native-concurrency-primitives/#fn:9)
+在Pike的一门课程中，他指出的实际问题是 "需要一种编写并发软件的方法来指导我们的设计和实施"[[9](http://herpolhode.com/rob/lec1.pdf)]。他继续说到并发编程不是为了让程序跑得更快而并行化，而是"用进程和通信的能力设计一个优雅的，反应灵敏的，高可用的系统"[[9](http://herpolhode.com/rob/lec1.pdf)]。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="ctc">Concurrency through Communication</h3>
+<h3 id="ctc">通过通信实现并发</h3>
 
-One of the most common phrases we hear from the creators of Go is:[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2) [3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)
+我们从Go的创作者那里听到的最常见的一句话是：[[2](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=2m48s)] [[3](https://go.dev/blog/codelab-share)]
 
-> Don’t communicate by sharing memory, share memory by communicating.
->
-> \- Rob Pike
+> 别用共享内存来通信，而是用通信来共享内存。 --- Rob Pike
 
-This sentiment is a reflection of the fact that Go is based on [CSP](#cspc) and the language has native primitives for communicating[10](https://benjiv.com/go-native-concurrency-primitives/#fn:10) between threads (go routines).
+这个观点反映了Go是基于[CSP](#csp)设计的，线程间(go runtines)也是基于通信[[10](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=2m48s)]的基本原理实现的。
 
-An example of communicating rather than using a mutex to manage access to a shared resource is the following code:[11](https://benjiv.com/go-native-concurrency-primitives/#fn:11)
+下面的代码是一个通信而不是使用mutex来管理共享资源访问的例子：[[11](https://github.com/devnw/ttl)]
 
 ```go
 // Adapted from https://github.com/devnw/ttl
@@ -123,75 +119,75 @@ func readwriteloop(
 }
 ```
 
-Let’s take a look at the code and see what it does.
+让我们看一下上面的代码，看看它做了什么。
 
-1. Notice that this is *not* using the `sync` package or *any* blocking functions.
-2. This code only uses the Go concurrency primitives `go`, `select`, and `chan`
-3. [Ownership](https://benjiv.com/go-native-concurrency-primitives/#owner-pattern) of the shared resource is managed by the go routine. (Line 17)
-4. Even though the method contains a go routine, access to the shared resources does *not* happen in parallel. (Lines 30, and 34)
-5. The [`select` statement](https://benjiv.com/go-native-concurrency-primitives/#select-statements) is used to check for read or write requests. (Lines 24, and 34)
-6. A channel read from the incoming channel updates the value. (Line 24)
-7. A channel read from outside the routine executes a channel write to the outgoing channel with the current value of the shared resource. (Line 34)
+1. 注意一下，此代码*没有*用`sync`包或者*任何*阻塞函数。
+2. 这个代码只用了Go原生并发关键字`go`，`select`和`chan`
+3. go routine管理着共享资源的[所有权](#op)。(第17行)
+4. 即使方法里面包含go routine，但是在并行的情况下*不会*出现同时访问共享资源。(第30和34行)
+5. [`select`语句](#ss)用来校验是读还是写的请求。(第24和34行)
+6. 一个channel从incoming channel读取数值，并更新。(第24行)
+7. 一个channel从go routine之外读取，go routine之外执行了一个channel写入当前共享资源的数值。(第34行)
 
-Since there is no parallelism within the go routine itself the shared resource is safe to access via the returned [read-only channel](#rowoc) . In fact, the use of the `select` statement here provides a number of benefits. The [select primitive](#ss) section goes into more detail on this.
+因为在go routine里面没有并行，所以共享资源可以安全地通过返回的[只读channel](#rowoc)访问。事实上，在这里使用`select`提供了很多的好处。[select基本原理](#ss)这个章节会详细描述。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h4 id="bvc"> Blocking vs Communicating</h4>
+<h4 id="bvc"> 阻塞和通信</h4>
 
-Blocking[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
+阻塞[[12](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=4m20s)]
 
-- Stops process on critical section read / write
-- Requires knowledge of the **need** for blocking
-- Requires an understanding of how to avoid races and deadlocks
-- Memory elements are shared directly by multiple processes/threads
+- 在临界区读和写时暂停进程
+- 需要了解阻塞的必要性
+- 需要了解如何避免竞态和死锁
+- 内存元素被多个进程或线程共享
 
-Communicating[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
+通信[[12](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=4m20s)]
 
-- Critical data is shared on request
-- Processes work when there is something to do
-- Memory elements are communicated, not shared directly
+- 重要数据在请求时被共享
+- 当有数据可以操作的时候才执行逻辑
+- 记忆体元件之间是通信沟通的，而不是直接共享的
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h1 id="gncp"> Go’s Native Concurrency Primitives</h1>
+<h1 id="gncp"> Go原生并发原理</h1>
 <h2 id="gr">Go Routines</h2>
-<h3 id="wagr">What are Go Routines?</h3>
+<h3 id="wagr">什么是Go Routines?</h3>
 
-Go routines are lightweight *threadlike* processes which enable logical process splitting similar to the `&` after a bash command[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4). Once the go routine is split from the parent routine it is handed off to the Go runtime for execution. Unlike the `&` in `bash` however these processes are scheduled for execution in the Go runtime and not necessarily executed in parallel.[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4)
+Go routines是轻量级的线程，可以实现逻辑上的进程分割，类似于bash命令后面的`&`[[4](https://youtu.be/oV9rvDllKEg)]。一旦go routines从父routine分离出来，它就被交给Go runtime执行。然而，与`bash`中的`&`不同的是，这些进程是在Go运行时安排执行的，不一定是并行执行的。[[4](https://youtu.be/oV9rvDllKEg)]
 
 ![1643795792968](https://github.com/gocn/translator/blob/165bb76d803daf69b5f2fe256733dfc42f49c75d/static/images/2022/w08_Go_Native_Concurrency_Primitives_&_Best_Practices.md/1.png)
 
-**Figure 1: Example of a Go Routine Process Split**
+**图1：Go Routine分离的例子**
 
->  **NOTE:** The distinction here of “scheduled” is important because the Go runtime multiplexes the execution of go routines to improve performance on top of the operating system’s scheduling. This means that no assumptions can be made as to *when* the routine will execute.
+>  **注意：** 在这里的"调度"的区别是很重要的，因为Go runtime运行时对go routines执行进行复用，以提高操作系统调度的性能。这意味着不能假设该routine*何时*执行。
 
-<h3 id="lgr"> Leaking Go Routines</h3>
+<h3 id="lgr"> Go Routines泄漏</h3>
 
-Created by the `go` primitive, go routines are cheap, but its important to know that they are **not** free.[13](https://benjiv.com/go-native-concurrency-primitives/#fn:13) Cleaning up routines is important to ensure proper garbage collection of resources in the Go runtime.
+基于原语`go`创建的go routines消耗是低的，但要知道的是它们**不是**免费的 [13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)。清理routines对于确保Go runtime资源的正确垃圾回收是非常重要。
 
-Time should be spent on designing with cleanup in mind. Ensuring that long running routines properly exit in the event of failure. It is also important to not create an unbounded number of go routines.
+在设计时应该花时间考虑清理问题。确保长期运行的程序在发生故障时正确退出。同样重要的是，不要创建无限制数量的go rountines。
 
-It is simple enough to spawn a go routine and because of that just using the `go` primitive any time you want parallelization is tempting, but each routine spawned has a minimum overhead of about 2kb.[14](https://benjiv.com/go-native-concurrency-primitives/#fn:14) If your code creates too many routines and they each have large overhead you can blow the stack. This is incredibly difficult to debug in production environments because it is hard to tell where the stack is overflowing and where the stack is leaking.
+可以很简单地创建一个go routine，因为在任何时候你想要并行时，只需要使用原语`go`就可以实现是很诱人的，但是每个routine生成的时候最小的开销是2kb [[14](https://github.com/golang/go/blob/8f2db14cd35bbd674cb2988a508306de6655e425/src/runtime/stack.go#L72)]。如果你的代码创建了太多的go routine，而且每个都有很大的开销，你就堆栈就会爆掉。这在生产环境debug是无比困难的，因为很难说堆栈在哪里溢出和在哪里泄漏。
 
-When a stack overflow occurs, the runtime will panic and the program will exit and each of the go routines will have stack information printed to standard error. This creates a great deal of noise in logs and is not very useful. Not only is the stack information not useful, but there is a huge amount of data that will be output (a log for every go routine, including it’s identifier and state). This is additionally difficult to debug because generally the log buffer on the operating system is likely too small to hold all of the stack information.
+当堆溢出时，runtime会恐慌，然后应用程序就会退出，同时每个go routines会打印堆信息到标准输出界面。这会往日志里面写入大量杂乱没有用的信息。不仅是堆信息没有用处，而且会有大量数据会输出(每个go routine的日志，包含标识和状态)。这给调试也带了一定难度，因为操作系统上的日志缓冲区可能太小，无法容纳所有的堆栈信息。
 
->  **NOTE:** In fairness, I have only seen this happen in production environments where the application was using **>400,000** large go routines. This is most likely very uncommon and is not a problem for most applications.
+> **注意**：平心而论，我只在生产环境中见过这种情况，当时应用程序正在使用超过400,000个大型go routines。这对于大部分应用程序来说是不常见的，也不会是个问题。
 
-TL;DR: Design go routines with the end in mind so that they properly stop when completed.[13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)
+TL;DR: 在设计go routines时要考虑到何时结束，以便在完成后适当停止。 [[13](https://github.com/golang/go/wiki/CodeReviewComments#goroutine-lifetimes)]。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="pigr"> Panicking in Go Routines</h3>
+<h3 id="pigr"> Go Rouines的恐慌</h3>
 
-In general, panicking in a Go application is against best practices[15](https://benjiv.com/go-native-concurrency-primitives/#fn:15) and should be avoided. In lieu of panicking, you should return and handle errors from your functions. However, in the event that using `panic` is necessary it is important to know that panicking in a Go routine without a `defer` recover (directly in that routine) will crash your application *EVERY TIME*.
+通常情况下，在Go应用程序中恐慌是违反最佳做法的 [[15](https://github.com/golang/go/wiki/CodeReviewComments#dont-panic)] 并且是需要避免的。取代恐慌的是，你应该返回并且处理从你函数返回的错误。然而， 如果有必要使用panic，重要的是要知道，在没有defer recover（直接在该routine中）的Go routine中恐慌，*每次* 都会使你的应用程序崩溃。
 
-> **BEST PRACTICE:**
-> Do NOT Panic!
+> **最佳做法：**
+> 不要恐慌！
 
-This is incredibly difficult to debug in a production environment because it requires the `stderr` to be redirected to a file because it is likely your application is running as a daemon. This is easier if you have a log aggregator and it is set to monitor stderr, or the flat-file log. With Docker this is a bit different, but it is still a problem.
+这在生产环境中调试是非常困难的，因为它需要`stderr`被重写到文件内，因为你的应用程序很可能是作为一个守护程序运行的。如果你有一个日志聚合器，并且它被设置为监视stderr，或平面文件日志，这就比较容易了。对于Docker来说，这有点不同，但它仍然是一个问题。
 
-> Each Go routine needs its own `defer`/`recover` code[16](https://benjiv.com/go-native-concurrency-primitives/#fn:16)
+> 每个Go routine需要自己的`defer/recover` [[16](https://go.dev/blog/defer-panic-and-recover)]
 
 ```go
 defer func() {
@@ -201,35 +197,35 @@ defer func() {
 }()
 ```
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
 <h2 id="channels"> Channels</h2>
 
-<h3 id="wacig"> What are Channels in Go?</h3>
+<h3 id="wacig"> 在Go里什么是Channels？</h3>
 
-<h4 id="wiac">What is a channel?</h4>
+什么是channel?
 
-Derived from the Communicating Sequential Processes paper by Hoare (1977)[7](https://benjiv.com/go-native-concurrency-primitives/#fn:7) a channel is a communication mechanism in Go which supports data transfer in a threadsafe manner. It can be used to communicate between parallel go routines safely and efficiently without the need for a mutex.
+源自Hoare的CSP论文(1977) [[7](https://www.cs.cmu.edu/~crary/819-f09/Hoare78.pdf)]，在Go里channel是一个通信机制，支持以线程安全的方式下传输数据。它可以用于两个并行的go routines之间安全且有效地通信，并且不需要互斥锁。
 
-Channels abstract away the difficulties of building parallel code to the Go runtime and provide a simple way to communicate between go routines. Essentially in it’s simplest form a channel is a queue of data.
+channels将构建并行代码的困难抽象到Go runtime时中，并且提供一个简单的方式让go routines之间通信。从本质上讲，channel的最简单形式就是一个数据队列。
 
-In the words of Rob Pike: “Channels orchestrate; mutexes serialize."[17](https://benjiv.com/go-native-concurrency-primitives/#fn:17)
+用Rob Pike的话说:“channels是协作的；互斥锁是顺序的” [[17](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=4m20s)]。
 
-<h3 id="hdcwig"> How do Channels work in Go?</h3>
+<h3 id="hdcwig"> 在Go中channel如何运作？</h3>
 
-Channels are block by default. This means that if you try to read from a channel it will block processing of that go routine until there is something to read (i.e. data being sent to the channel). Similarly, if you try to write to a channel and there is no consumer for the data (i.e. reading from the channel) it will block processing of that go routine until there is a consumer.
+channel默认是阻塞的。这意味着如果你尝试从channel中读取数据，它将阻塞该go routine的执行直到有数据可以读取(例如，数据被写到channel中)。同样的，如果你尝试写入一个数据到channel中，没有接收者读取整个数据(比如，从channel中读取)，它也会阻塞go routine的执行直到有一个接收者。
 
-There are some very important behaviors surrounding channels in Go. The Go runtime is designed to be very efficient and because of that if there is a Go routine which is blocked on a channel read or write the runtime will sleep the routine while it waits for something to do. Once the channel has a producer or consumer it will wake up the blocked routine and continue processing.
+在Go中channel有许多重要的特性。Go runtime被设计得十分高效，因为如果有一个Go routine在往channel读或者写时被阻塞了，runtime会将这个routine置于睡眠状态直到有事情可以做。一旦这个channel有生产者或者消费者，它会唤醒阻塞的routine，然后继续执行。
 
-This is very important to understand because it allows you to explicitly leverage the CPU contention of the system through the use of channels.
+了解这一点非常重要，因为它允许你通过使用channel，有效地利用系统CPU的资源。
 
->  **NOTE:** A `nil` channel will **ALWAYS** block.
+> **注意**：一个`nil`的channel会永久阻塞。
 
-<h4 id="cac"> Closing a Channel</h4>
+<h4 id="cac"> 关闭一个channel</h4>
 
-When you are done with a channel it is best practice to close it. This is done using the `close` function on the channel.
+如果你用完一个channel，最好的做法的是关掉它。这个用`close`函数来关闭channel。
 
-Sometimes it may not be possible to close a channel because it will cause a panic elsewhere in your application (due to a channel write on a closed channel). In that situation when the channel goes out of scope it will be garbage collected.
+有时候有可能不能关掉channel，因为它可能导致你应用程序在其他地方触发恐慌(因为有个channel在往关闭的channel写数据)。在这种情况下，当channel超出可触达的作用域时，它将被垃圾回收。
 
 ```go
   // Create the channel
@@ -241,7 +237,7 @@ Sometimes it may not be possible to close a channel because it will cause a pani
   close(ch)
 ```
 
-If the channel is limited to the same scope (i.e. function) you can use the `defer` keyword to ensure that the channel is closed when the function returns.
+如果channel限制在同一个作用域内(比如，函数)，你可以使用关键词`defer`来确保channel当函数返回时是关闭的。
 
 ```go
   // Create the channel
@@ -251,9 +247,9 @@ If the channel is limited to the same scope (i.e. function) you can use the `def
   // Do something with the channel
 ```
 
-When a channel is closed it will no longer be able to be written to. It is very important to be mindful of how you close channels because if you attempt to write to a closed channel the runtime will *panic*. So closing a channel prematurely can have unexpected side effects.
+当一个channel被关闭后，它将不再被允许写入。你需要对你如何关闭channel了如指掌，因为一旦你往一个关闭的channel写入数据，runtime就会*恐慌*。所以过早地关闭一个channel会产生意想不到的副作用。
 
-After a channel is closed it will no longer block on read. What this means is that all of the routines that are blocked on a channel will be woken up and continue processing. The values returned on the read will be the `zero` values of the type of the channel and the second read parameter will be `false`.
+在channel关闭之后，它永远不会在读取时阻塞。这意味着所有阻塞在读取这个channel的routines会被唤醒，然后继续执行。读取后返回的值是这个channel类型的`零值`，同时第二个参数会是`false`。
 
 ```go
   // Create the channel
@@ -271,45 +267,45 @@ After a channel is closed it will no longer block on read. What this means is th
   }
 ```
 
-The `ok` parameter will be `false` if the channel is closed in the example above.
+在上面这个例子中，如果channel是关闭的，参数ok会是false。
 
->  **NOTE:** Only standard and [write-only](https://benjiv.com/go-native-concurrency-primitives/#read-only--write-only-channels) channels can be closed using the `close` function.
+>  **注意**：只有标准和[只写](#rowoc)的channels才可以通过`close`函数关闭。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="toc"> Types of Channels</h3>
+<h3 id="toc"> channels的类型</h3>
 
-There are a few different types of channels in Go. Each of them have different benefits and drawbacks.
+在Go里面有不同类型的channels。每个类型都有不同的优点和缺点。
 
-<h4 id="uc"> Unbuffered Channels</h4>
+<h4 id="uc"> 无缓冲channels</h4>
 
 ```go
   // Unbuffered channels are the simplest type of channel.
   ch := make(chan int)
 ```
 
-To create an unbuffered channel you call the `make` function, supplying the channel type. Do **not** provide a size value in the second argument as seen in the example above and voila! You have an unbuffered channel.
+要创建一个无缓冲的channel，你可以通过`make`函数，提供channel的类型。不要在第二个参数中设置一个大小值，如上面的例子中所看到的那样，就可以了。你就有一个无缓存的channel。
 
-As described in [the previous section](#hdcwig) , unbuffered channels are block by default, and will block the go routine until there is something to read or write.
+正如[之前章节](#hdcwig)提到的，无缓冲channel默认是阻塞的，会一直阻塞直到有数据可以读或者写。
 
-<h4  id="bc"> Buffered Channels</h4>
+<h4 id="bc"> 带缓冲的channels</h4>
 
 ```go
   // Buffered channels are the other primary type of channel.
   ch := make(chan int, 10)
 ```
 
-To create a buffered channel you call the `make` function, supplying the channel type and the size of the buffer. The example above will create a channel with a buffer of size 10. If you attempt to write to a channel that is full it will block the go routine until there is room in the buffer. If you try to read from a channel that is empty it will block the go routine until there is something to read.
+要创建一个带缓冲的channel，你要调用`make`函数，提供channel类型和缓冲区的大小。上面的例子将创建一个缓冲区大小为10的channel。如果你尝试写入一个已满的channel，它会阻塞go routine，直到缓冲区有空间。 如果你尝试从一个空的channel中读数据，它会阻塞go routine，直到有东西可读。
 
-**If however you want to write to the channel and the buffer has space available it will NOT block the go routine.**
+**然而，如果你想往channel写，此时缓冲区也有可写的空间，它就不会阻塞go routine。**
 
->  **NOTE:** In general, only use buffered channels when you *absolutely* need to. **Best practice is to use unbuffered channels.**
+> **注意**：一般来说，只有在真的需要的时候才使用缓冲channel。**最佳做法是使用非缓冲channels**。
 
-<h4 id="rowoc"> Read-Only & Write-Only Channels</h4>
+<h4 id="rowoc"> 只读和只写channels</h4>
 
-One interesting use case for channels is to have a channel that is only used for reading or writing. This is useful for when you have a go routine that needs to read from a channel but you do not want the routine write to it, or vice versa. This is particularly useful for the [Owner Pattern](https://benjiv.com/go-native-concurrency-primitives/#owner-pattern) described below.
+channels的一个有趣的场景是有一个只用于读或写的channel。当你有一个go routine需要从一个channel中读取，但你不希望这个routine往里面写时，这就很有用，反之亦然。这对下面描述的[Owner Pattern](#op)特别有用。
 
-This is the syntax for creating a read-only or write-only channel.
+这是创建一个只读或只写channel的语法。
 
 ```go
   // Define the variable with var
@@ -323,9 +319,9 @@ This is the syntax for creating a read-only or write-only channel.
   writeOnly = mychan
 ```
 
-The arrows indicate the direction of the channel. The arrow before `chan` is meant to indicate the flow of data is *into* the channel whereas the arrow after `chan` is meant to indicate the flow of data is *out of* the channel.
+箭头表示channel的方向。在`chan`之前的箭头表明数据流是*进入*channel的，而`chan  `之后的箭头表明数据流是*流出*channel的。
 
-An example of a read-only channel is the `time.Tick` method:
+一个只读的例子是`time.Tick`的方法：
 
 ```go
   // Tick is a convenience wrapper for NewTicker providing access to the ticking
@@ -333,31 +329,31 @@ An example of a read-only channel is the `time.Tick` method:
   func Tick(d Duration) <-chan Time
 ```
 
-This method returns a read-only channel which the `time` package writes to internally at the specified interval. This pattern ensures that the implementation logic of ticking the clock is isolated to the `time` package since the user does not need to be able to write to the channel.
+该方法返回一个只读的channel，`time`包以指定的时间间隔在内部写入该channel。这种模式确保了时钟滴答的实现逻辑与`time`包相隔离，因为用户不需要能够向channel写入。
 
-Write-only channels are useful for when you need to write to a channel but you know the routine does not need to read from it. A great example of this is the [Owner Pattern](#op) described below.
+当你需要向一个channel写东西，但你知道这个routine不需要从它那里读东西时，只写的channel就很有用。这方面的一个很好的例子是下面描述的[Owner Pattern](#op)。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="dcfc"> Design Considerations for Channels</h3>
+<h3 id="dcfc"> 设计channels的因素</h3>
 
-It is important to think about the use of channels in your application.
+在你的应用程序中是很有必要思考channel的用法的。
 
-Design Considerations include:
+设计因素包含：
 
-1. Which scope *owns* the channel?
-2. What capabilities do non-owners have?
-   1. Full ownership
-   2. Read-Only
-   3. Write-Only
-3. How will the channel be cleaned up?
-4. Which go routine is responsible for cleaning up the channel?
+1. 哪个作用域拥有channel？
+2. 非所有者有什么能力？
+   - 全部
+   - 只读
+   - 只写
+3. channel如何被清理？
+4. 哪一个go routine负责清理channel？
 
 <h4 id="op"> Owner Pattern</h4>
 
-The Owner Pattern is a common design pattern in Go and is used to ensure that ownership of a channel is correctly managed by the creating or owning routine. This allows for a routine to manage the full lifecycle of a channel and ensure that the channel is properly closed and the routine is cleaned up.
+Owner Pattern是Go中常见的设计模式，用于确保channel的所有权由创建或拥有该channel的routine正确地管理。这使得一个routine可以管理一个channel的整个生命周期，并确保该channel被正确关闭，然后routines被清理。
 
-Here is an example of the Owner Pattern in Go:
+这是一个在Go中的Owner Pattern的例子：
 
 ```go
 func NewTime(ctx context.Context) <-chan time.Time {
@@ -379,23 +375,23 @@ func NewTime(ctx context.Context) <-chan time.Time {
 }
 ```
 
-**Benefits:**
+**优点：**
 
-- NewTime Controls the channel instantiation and cleanup (Lines 2, and 5)
-- Enforces good hygiene by defining read-only/write-only boundaries
-- Limits possibility of inconsistent behavior
+- NewTime控制了channel的常见和清理(第2和第5行)
+- 通过定义只读/只写的界限来确保创建的channel都有被清理
+- 限制了行为不一致的可能性
 
-Important notes about this example. The `ctx` context is passed to the function `NewTime` and is used to signal the routine to stop. The `tchan` channel is a normal unbuffered channel but is returned as read-only.
+关于这个例子的重要说明。`ctx`变量传递给`NewTime`函数，用于向routine发出停止信号。`tchan`是一个普遍的非缓冲channel，但作为只读返回。
 
-When passed to the internal Go routine, the `tchan` channel is passed as a write-only channel. Because the internal Go routine is supplied with a write-only channel it has the responsibility to close the channel when it is done.
+当传递到Go routine内部，`tchan`被当做只写channel传递。因为Go routine内部是一个只写channel，所以它有责任去关闭一个用完的channel。
 
-With the use of the `select` statement the `time.Now()` call is executed only on a read from the channel. This ensures that the execution of the `time.Now()` call is synchronized with the read from the channel. This type of pattern helps minimize CPU cycles pre-emptively.
+通过使用`select`语句，`time.Now()`的调用只在从channel中读取时执行。这确保了`time.Now()`调用的执行与从channel的读取同步。这种类型的模式有助于预先将CPU cycles降到最低。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="loc"> Looping over Channels</h3>
+<h3 id="loc"> 循环channels</h3>
 
-One method of reading from a channel is to use a `for` loop. This can be useful in some cases.
+从一个channel读取数据的一种方法是使用`for`循环。这在某些情况下是很有用的。
 
 ```go
   var tchan <-chan time.Time
@@ -405,9 +401,9 @@ One method of reading from a channel is to use a `for` loop. This can be useful 
   }
 ```
 
-There are a couple of reasons I do not recommend this approach. First, there is no guarantee that the channel will be closed (breaking the loop). Second, the loop does not adhere to the context meaning that if the context is canceled the loop will never exit. **This second point is especially important because there is no graceful way to exit the routine.**
+我不推荐这种做法的原因有几个。 首先，不能保证channel会被关闭（打破循环）。其次，循环不遵守上下文，这意味着如果上下文被取消，循环将永远不会退出。**这第二点特别重要，因为没有优雅的方式来退出routine。**
 
-Instead of looping over the channel I recommend the following pattern where you use a infinite loop with a `select` statement. This pattern ensures that the context is checked and if it is canceled the loop exits, while also allowing the loop to still read from the channel.
+我建议不要对channel循环，而是采用以下模式，即用一个带有`select`语句的无限循环。这种模式可以确保检查上下文，如果取消了，循环就退出，同时也允许循环仍然从channel中读取。
 
 ```go
   var tchan <-chan time.Time
@@ -425,15 +421,15 @@ Instead of looping over the channel I recommend the following pattern where you 
   }
 ```
 
-I discuss this method and the `select` statement in more detail in the [Select Statement](#ss) section.
+我在[select语句](#ss)一节中更详细地讨论了这种方法和`select`语句。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="fc"> Forwarding Channels</h3>
+<h3 id="fc"> 转发channels</h3>
 
-Forwarding channels from one to another can also be a useful pattern in the right circumstances. This is done using the `<- <-` operator.
+在适当的情况下，从一个channel转发到另一个channle也可以是一种有用的模式。这个用`<- <-`操作符来实现。
 
-Here is an example of forwarding one channel into another:
+这里有一个将channel转发到另一个channel的例子：
 
 ```go
 func forward(ctx context.Context, from <-chan int) <-chan int {
@@ -453,15 +449,15 @@ func forward(ctx context.Context, from <-chan int) <-chan int {
 }
 ```
 
->  **NOTE:** Using this pattern you are unable to detect when the `from` channel is closed. This means that the `from` channel will continually send data to the `to` channel and the internal routine will never exit causing a flood of zero value data and a leaking routine.
+> **注意：** 使用这种模式，你无法检测`from`channel何时关闭。这意味着`from`channel将不断向`to`channel发送数据，而内部程序将永远不会退出，导致零值数据泛滥和routine泄露。
 
-Depending on your use case this could be desirable, however, it is important to note that this pattern is not a good idea when you need to detect a closed channel.
+根据你的使用情况，这可能是可取的，然而，重要的是要注意，当你需要检测一个关闭的channel时，这种模式不是一个好主意。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h2 id="ss"> Select Statements</h2>
+<h2 id="ss"> select语句</h2>
 
-The `select` statement allows for the management of multiple channels in a Go application and can be used to trigger actions, manage data, or otherwise create logical concurrent flow.
+`select`语句允许在Go应用程序中管理多个channel，可用于触发动作、管理数据或以其他方式创建逻辑并发流。
 
 ```go
 select {
@@ -480,23 +476,23 @@ default: // Non-blocking default action
 }
 ```
 
-> One important caveat to the `select` statement is that it is *stochastic* in nature. Meaning that if there are multiple channels that are ready to be read from or written to at the same time, the `select` statement will randomly choose one of the case statement to execute.[18](https://benjiv.com/go-native-concurrency-primitives/#fn:18)
+> `select`语句的一个重要注意事项是，它在本质上是*随机*的。意思是说，如果有多个channel准备同时被读取或写入，`select`语句将随机选择其中一个case语句来执行 [[18](https://github.com/golang/go/blob/6178d25fc0b28724b1b5aec2b1b74fc06d9294c7/src/runtime/select.go#L177)]。
 
-<h3 id="tss"> Testing Select Statements</h3>
+<h3 id="tss"> 测试select语句</h3>
 
-The stochastic nature of the select statement can make testing select statements a bit tricky, especially when testing to ensure that a context cancellation properly exits the routine.
+select语句的随机性会使测试选择语句变得有点棘手，特别是在测试确保上下文取消正确退出routine时。
 
-[Here is an example](https://github.com/devnw/plex/blob/2d4f8fe223ab71f488d2d6f5e3dcfad77250d28d/plex_test.go#L202) of how to test the select statement using a statistical test where the number of times the test executes ensures that there is a low statistical likelihood of the test failing. This allows for additional coverage and ensures that the test is not flaky.
+有一个如何使用统计测试来测试select语句的[例子](https://github.com/devnw/plex/blob/2d4f8fe223ab71f488d2d6f5e3dcfad77250d28d/plex_test.go#L202)，测试的执行次数可以确保测试失败的低概率。
 
-This test works by running the same cancelled context through a parallel routine 100 times with only one of the two contexts having been cancelled. In this situation there is always a consumer of the channel so there is a 50% likelyhood each time the loop runs that the [context case](https://github.com/devnw/plex/blob/2d4f8fe223ab71f488d2d6f5e3dcfad77250d28d/plex.go#L239) will be executed.
+这个测试的工作原理是，在两个上下文中只有一个被取消的情况下，通过一个并行routine运行同一个被取消的上下文100次。在这种情况下，总是有一个channel的消费者，所以每次循环运行时，有50%的可能性会执行[context用例](https://github.com/devnw/plex/blob/2d4f8fe223ab71f488d2d6f5e3dcfad77250d28d/plex.go#L239)。
 
-By running 100 times with a 50% chance of the select tripping the context case there is a very, very low chance that the test will fail to detect the context cancellation for *all* of the 100 tests.
+在50%的机会没有执行上下文用例的情况下执行100次，*所有*100次测试中，测试不能检测到上下文取消的机会非常非常低。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
-<h3 id="wcwc"> Work Cancellation with Context</h3>
+<h3 id="wcwc">用context来实现取消</h3>
 
-In the early days of building Go applications users were building out applications with a `done` channel where they would create a channel that looked like this: `done := make(chan struct{})`. This was a very simple way to signal to a routine that it should exit because all you have to do is close the channel and use that as a signal to exit.
+在构建Go应用程序的早期，用户用一个`done` channel来构建应用程序，他们会创建一个看起来像这样的channel：`done := make(chan struct{})` 。这是一个非常简单的方法，向一个routine发出它应该退出的信号，因为你所要做的就是关闭channel并将其作为退出的信号。
 
 ```go
 // Example of a simple done channel
@@ -528,7 +524,7 @@ func doWork(done <-chan struct{}) {
 }
 ```
 
-This pattern became so ubiquitous that the Go team created the [context package](https://golang.org/pkg/context/) as a replacement. This package provides an interface `context.Context` that can be used to signal to a routine that it should exit when listening to the returned read-only channel of the `Done` method.
+这种模式变得很普遍，以至于Go团队创建了[context包](https://golang.org/pkg/context/)作为替代。这个包提供了一个`context.Context`的接口，可以用来向一个routine发出信号，告诉它在监听到`Done`方法返回的只读channel时应该退出。
 
 ```go
   import "context"
@@ -545,20 +541,19 @@ This pattern became so ubiquitous that the Go team created the [context package]
 }
 ```
 
-Along with this they provided a few methods for creating hierarchical contexts, timeout contexts, and a context that can be cancelled.
+除此之外，他们还提供了一些方法来创建嵌套式的context、超时的context和一个可以被取消的context。
 
 - `context.WithCancel`
-  - Returns a `context.Context` as well as a `context.CancelFunc` function literal that can be used to cancel the context.
+  - 返回一个`context.Context`以及`context.CancelFunc`函数字段，可以用来取消context。
 - `context.WithTimeout`
-  - Same returns as `WithCancel` but with a background timeout that will cancel the context after the specified `time.Duration` has elapsed.
+  - 与`WithCancel`的返回相同，但有一个背景超时，在指定的`time.Duration`过后将取消context。
 - `context.WithDeadline`
-  - Same returns as `WithCancel` but with a background deadline that will cancel the context after the specified `time.Time` has passed.
+  - 与`WithCancel`的返回相同，但有一个后台运行期限，在指定的`time.Time`过后，将取消context。
 
->
-> **BEST PRACTICE:**
-> The first parameter of a function that accepts a context should ***always*** be the context, and it should be named `ctx`.
+> **最佳做法：**
+> 接收context的函数的第一个参数应该***始终是***context，而且应该命名为`ctx`。
 
-[*Back To Top*](#top)
+[*返回顶部*](#top)
 
 ---
 
