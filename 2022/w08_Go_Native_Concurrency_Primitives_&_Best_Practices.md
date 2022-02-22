@@ -4,7 +4,7 @@
 - 原文作者：**Benjamin Vesterby**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w08_Go_Native_Concurrency_Primitives_&_Best_Practices.md
 - 译者：[zxmfke](https://github.com/zxmfke)
-- 校对：
+- 校对：[fivezh](https://github.com/fivezh)
 
 Go语言在创立之初就将并发定为第一公民。 Go语言是一种通过在语言中抽象出并发基本原理[[1](https://en.wikipedia.org/wiki/Language_primitive)]背后的并行细节，使开发者能够轻松地编写高度并行程序的编程语言。
 
