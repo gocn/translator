@@ -85,16 +85,15 @@
 ### Go VS Rust
 
 * [Rust 与 Go: 为何相得益彰](https://gocn.vip/topics/20929) （[xkkhy](https://github.com/github.com/xkkhy) 翻译）
-*  [何时使用 Rust, 何时使用 Go](https://github.com/gocn/translator/blob/master/2021/w12_When_to_use_Rust_and_when_to_use_Go.md)（[tt](https://github.com/1-st) 翻译）
+* [何时使用 Rust, 何时使用 Go](https://github.com/gocn/translator/blob/master/2021/w12_When_to_use_Rust_and_when_to_use_Go.md)（[tt](https://github.com/1-st) 翻译）
 
 ### Go 泛型
 
 * [Go 官方出品泛型教程：如何开始使用泛型](https://gocn.vip/topics/20885) （[zxmfke](https://github.com/zxmfke) 翻译）
-
 * [Go 1.18 泛型的一些技巧和困扰](https://gocn.vip/topics/17485) （[Cluas](https://github.com/Cluas) 翻译）
 * [使用 Go 泛型的函数式编程](https://gocn.vip/topics/12233) （[cvley](https://github.com/github.com/cvley) 翻译）
 * [泛型来了，看看如何应用到 slice](https://gocn.vip/topics/11725) （Jancd 翻译）
-*  [你想知道的 Go 泛型](https://github.com/gocn/translator/blob/master/2021/w13_Generics_in_Go.md)（[haoheipi](https://github.com/haoheipi) 翻译）
+* [你想知道的 Go 泛型](https://github.com/gocn/translator/blob/master/2021/w13_Generics_in_Go.md)（[haoheipi](https://github.com/haoheipi) 翻译）
 
 ### Go 安全
 
@@ -123,11 +122,8 @@
 ### 其他
 
 * [2021 年，Clickhouse 在日志存储与分析方面作为 ElasticSearch 和 MySQL 的替代方案](https://gocn.vip/topics/11814) （[Fivezh](https://github.com/fivezh) 翻译）
-
 * [用 golang 实现 Serverless 服务](https://github.com/gocn/translator/blob/master/2021/w26_How_I'm_writing_Serverless_Services_in_Golang_these_days.md) ([Jancd](https://github.com/Jancd) 翻译)
-
 * [Pinterest 如何保障扩展 Kubernetes](https://github.com/gocn/translator/blob/master/2021/w27_scaling_k8s_with_assurance_at_pinterest_introduction.md) ([咔叽咔叽](https://github.com/github.com/watermeloooo)  翻译)
-
 * [Kubernetes vs Docker:了解 2021 年的容器](https://github.com/gocn/translator/blob/master/2021/w3_kubernetes_vs_docker.md)  (zhangyang  翻译)
 
   
