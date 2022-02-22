@@ -56,6 +56,7 @@
 
 ### Go 并发
 
+* [Go原生并发基本原理与最佳做法](https://gocn.vip/topics/21927) （[zxmfke](https://github.com/zxmfke) 翻译）
 * [以 Go 为例-探究并行与并发的区别](https://gocn.vip/topics/20993) （[zxmfke](https://github.com/zxmfke) 翻译）
 * [Go sync.Once 的妙用](https://gocn.vip/topics/12514) （[张宇](https://github.com/pseudoyu) 翻译）
 
