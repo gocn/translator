@@ -2,7 +2,7 @@
 
 - 原文地址：https://benjiv.com/beginning-concurrency-patterns/
 - 原文作者：Benjamin Vesterby
-- 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w09_Beginning Concurrency Patterns.md
+- 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w09_Beginning_Concurrency_Patterns.md
 - 译者：[朱亚光](https://github.com/zhuyaguang)
 - 校对：
 
