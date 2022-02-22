@@ -6,7 +6,7 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
-Go语言在创立之初就将并发定为第一公民。 Go语言是一种通过在语言中抽象出并发基本原理[1](https://benjiv.com/go-native-concurrency-primitives/#fn:1)背后的并行细节，使开发者能够轻松地编写高度并行程序的编程语言。
+Go语言在创立之初就将并发定为第一公民。 Go语言是一种通过在语言中抽象出并发基本原理[[1](https://en.wikipedia.org/wiki/Language_primitive)]背后的并行细节，使开发者能够轻松地编写高度并行程序的编程语言。
 
 绝大多数语言专注在将并行作为标准库的一部分，或者期望开发者生态提供一个并行库。通过在Go语言内包含并发原理，允让你可以写出利用并行性的程序，而不需要了解编写并行代码的来龙去脉。
 
@@ -39,9 +39,9 @@ Go语言在创立之初就将并发定为第一公民。 Go语言是一种通过
 
 <h2 id="cd">并发设计</h2>
 
-Go的设计者们着重强调并发设计，将其作为一个方法论，其思基础是沟通关键信息[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2)而不是阻塞和共享信息[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)。
+Go的设计者们着重强调并发设计，将其作为一个方法论，其思基础是沟通关键信息[[2](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=2m48s)]而不是阻塞和共享信息[3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)。
 
-重视并发设计使得应用程序代码可以按顺序或者在并行下*正确地*执行，而不需要设计和实现并行，这是一个标准[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4)。并发设计的思想并不新鲜，事实上，从瀑布式开发到敏捷开发就是一个很好的例子，这实际上是向并发工程实现的转变(早期迭代，可重复的过程)[5](https://benjiv.com/go-native-concurrency-primitives/#fn:5)。
+重视并发设计使得应用程序代码可以按顺序或者在并行下*正确地*执行，而不需要设计和实现并行，这是一个标准[[4](https://youtu.be/oV9rvDllKEg)]。并发设计的思想并不新鲜，事实上，从瀑布式开发到敏捷开发就是一个很好的例子，这实际上是向并发工程实现的转变(早期迭代，可重复的过程)[[5](https://en.wikipedia.org/wiki/Concurrent_engineering)]。
 
 并发设计是关于编写一个"正确"的程序和编写一个"并行"的程序。
 
@@ -58,23 +58,23 @@ Go的设计者们着重强调并发设计，将其作为一个方法论，其思
 
 <h3 id="csp">通信顺序进程(CSP)</h3>
 
-Go语言[6](https://benjiv.com/go-native-concurrency-primitives/#fn:6)的部分基础来自于Hoare[7](https://benjiv.com/go-native-concurrency-primitives/#fn:7)的一篇论文，该论文讨论了语言需要将并发作为语言的一部分，而不是事后考虑。论文提出了一种线程安全的队列，允许应用程序中的不同进程之间进行数据通信。
+Go语言[[6](https://swtch.com/~rsc/thread/)]的部分基础来自于Hoare[[7](https://www.cs.cmu.edu/~crary/819-f09/Hoare78.pdf)]的一篇论文，该论文讨论了语言需要将并发作为语言的一部分，而不是事后考虑。论文提出了一种线程安全的队列，允许应用程序中的不同进程之间进行数据通信。
 
-如果你通读了这篇论文，你会发现Go中的`channel`的基本原理与论文中原理的描述非常相似，事实上，它来自Rob Pike[8](https://benjiv.com/go-native-concurrency-primitives/#fn:8)之前基于CSP构建语言的工作。
+如果你通读了这篇论文，你会发现Go中的`channel`的基本原理与论文中原理的描述非常相似，事实上，它来自Rob Pike[[8](https://swtch.com/~rsc/thread/newsqueak.pdf)]之前基于CSP构建语言的工作。
 
-在Pike的一门课程中，他指出的实际问题是 "需要一种编写并发软件的方法来指导我们的设计和实施"[9](https://benjiv.com/go-native-concurrency-primitives/#fn:9)。他继续说到并发编程不是为了让程序跑得更快而并行化，而是"用进程和通信的能力设计一个优雅的，反应灵敏的，高可用的系统"[9](https://benjiv.com/go-native-concurrency-primitives/#fn:9)。
+在Pike的一门课程中，他指出的实际问题是 "需要一种编写并发软件的方法来指导我们的设计和实施"[[9](http://herpolhode.com/rob/lec1.pdf)]。他继续说到并发编程不是为了让程序跑得更快而并行化，而是"用进程和通信的能力设计一个优雅的，反应灵敏的，高可用的系统"[[9](http://herpolhode.com/rob/lec1.pdf)]。
 
 [*返回顶部*](#top)
 
 <h3 id="ctc">通过通信实现并发</h3>
 
-我们从Go的创作者那里听到的最常见的一句话是：[2](https://benjiv.com/go-native-concurrency-primitives/#fn:2) [3](https://benjiv.com/go-native-concurrency-primitives/#fn:3)
+我们从Go的创作者那里听到的最常见的一句话是：[[2](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=2m48s)] [[3](https://go.dev/blog/codelab-share)]
 
 > 别用共享内存来通信，而是用通信来共享内存。 --- Rob Pike
 
-这个观点反映了Go是基于[CSP](#csp)设计的，线程间(go runtines)也是基于通信[10](https://benjiv.com/go-native-concurrency-primitives/#fn:10)的基本原理实现的。
+这个观点反映了Go是基于[CSP](#csp)设计的，线程间(go runtines)也是基于通信[[10](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=2m48s)]的基本原理实现的。
 
-下面的代码是一个通信而不是使用mutex来管理共享资源访问的例子：[11](https://benjiv.com/go-native-concurrency-primitives/#fn:11)
+下面的代码是一个通信而不是使用mutex来管理共享资源访问的例子：[[11](https://github.com/devnw/ttl)]
 
 ```go
 // Adapted from https://github.com/devnw/ttl
@@ -135,14 +135,14 @@ func readwriteloop(
 
 <h4 id="bvc"> 阻塞和通信</h4>
 
-阻塞[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
+阻塞[[12](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=4m20s)]
 
 - 在临界区读和写时暂停进程
 - 需要了解阻塞的必要性
 - 需要了解如何避免竞态和死锁
 - 内存元素被多个进程或线程共享
 
-通信[12](https://benjiv.com/go-native-concurrency-primitives/#fn:12)
+通信[[12](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=4m20s)]
 
 - 重要数据在请求时被共享
 - 当有数据可以操作的时候才执行逻辑
@@ -154,7 +154,7 @@ func readwriteloop(
 <h2 id="gr">Go Routines</h2>
 <h3 id="wagr">什么是Go Routines?</h3>
 
-Go routines是轻量级的线程，可以实现逻辑上的进程分割，类似于bash命令后面的`&`[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4)。一旦go routines从父routine分离出来，它就被交给Go runtime执行。然而，与`bash`中的`&`不同的是，这些进程是在Go运行时安排执行的，不一定是并行执行的。[4](https://benjiv.com/go-native-concurrency-primitives/#fn:4)
+Go routines是轻量级的线程，可以实现逻辑上的进程分割，类似于bash命令后面的`&`[[4](https://youtu.be/oV9rvDllKEg)]。一旦go routines从父routine分离出来，它就被交给Go runtime执行。然而，与`bash`中的`&`不同的是，这些进程是在Go运行时安排执行的，不一定是并行执行的。[[4](https://youtu.be/oV9rvDllKEg)]
 
 ![1643795792968](https://github.com/gocn/translator/blob/165bb76d803daf69b5f2fe256733dfc42f49c75d/static/images/2022/w08_Go_Native_Concurrency_Primitives_&_Best_Practices.md/1.png)
 
@@ -168,26 +168,26 @@ Go routines是轻量级的线程，可以实现逻辑上的进程分割，类似
 
 在设计时应该花时间考虑清理问题。确保长期运行的程序在发生故障时正确退出。同样重要的是，不要创建无限制数量的go rountines。
 
-可以很简单地创建一个go routine，因为在任何时候你想要并行时，只需要使用原语`go`就可以实现是很诱人的，但是每个routine生成的时候最小的开销是2kb [14](https://benjiv.com/go-native-concurrency-primitives/#fn:14)。如果你的代码创建了太多的go routine，而且每个都有很大的开销，你就堆栈就会爆掉。这在生产环境debug是无比困难的，因为很难说堆栈在哪里溢出和在哪里泄漏。
+可以很简单地创建一个go routine，因为在任何时候你想要并行时，只需要使用原语`go`就可以实现是很诱人的，但是每个routine生成的时候最小的开销是2kb [[14](https://github.com/golang/go/blob/8f2db14cd35bbd674cb2988a508306de6655e425/src/runtime/stack.go#L72)]。如果你的代码创建了太多的go routine，而且每个都有很大的开销，你就堆栈就会爆掉。这在生产环境debug是无比困难的，因为很难说堆栈在哪里溢出和在哪里泄漏。
 
 当堆溢出时，runtime会恐慌，然后应用程序就会退出，同时每个go routines会打印堆信息到标准输出界面。这会往日志里面写入大量杂乱没有用的信息。不仅是堆信息没有用处，而且会有大量数据会输出(每个go routine的日志，包含标识和状态)。这给调试也带了一定难度，因为操作系统上的日志缓冲区可能太小，无法容纳所有的堆栈信息。
 
 > **注意**：平心而论，我只在生产环境中见过这种情况，当时应用程序正在使用超过400,000个大型go routines。这对于大部分应用程序来说是不常见的，也不会是个问题。
 
-TL;DR: 在设计go routines时要考虑到何时结束，以便在完成后适当停止。 [13](https://benjiv.com/go-native-concurrency-primitives/#fn:13)。
+TL;DR: 在设计go routines时要考虑到何时结束，以便在完成后适当停止。 [[13](https://github.com/golang/go/wiki/CodeReviewComments#goroutine-lifetimes)]。
 
 [*返回顶部*](#top)
 
 <h3 id="pigr"> Go Rouines的恐慌</h3>
 
-通常情况下，在Go应用程序中恐慌是违反最佳做法的 [15](https://benjiv.com/go-native-concurrency-primitives/#fn:15) 并且是需要避免的。取代恐慌的是，你应该返回并且处理从你函数返回的错误。然而， 如果有必要使用panic，重要的是要知道，在没有defer recover（直接在该routine中）的Go routine中恐慌，*每次* 都会使你的应用程序崩溃。
+通常情况下，在Go应用程序中恐慌是违反最佳做法的 [[15](https://github.com/golang/go/wiki/CodeReviewComments#dont-panic)] 并且是需要避免的。取代恐慌的是，你应该返回并且处理从你函数返回的错误。然而， 如果有必要使用panic，重要的是要知道，在没有defer recover（直接在该routine中）的Go routine中恐慌，*每次* 都会使你的应用程序崩溃。
 
 > **最佳做法：**
 > 不要恐慌！
 
 这在生产环境中调试是非常困难的，因为它需要`stderr`被重写到文件内，因为你的应用程序很可能是作为一个守护程序运行的。如果你有一个日志聚合器，并且它被设置为监视stderr，或平面文件日志，这就比较容易了。对于Docker来说，这有点不同，但它仍然是一个问题。
 
-> 每个Go routine需要自己的`defer/recover` [16](https://benjiv.com/go-native-concurrency-primitives/#fn:16)
+> 每个Go routine需要自己的`defer/recover` [[16](https://go.dev/blog/defer-panic-and-recover)]
 
 ```go
 defer func() {
@@ -205,11 +205,11 @@ defer func() {
 
 什么是channel?
 
-源自Hoare的CSP论文(1977) [7](https://benjiv.com/go-native-concurrency-primitives/#fn:7)，在Go里channel是一个通信机制，支持以线程安全的方式下传输数据。它可以用于两个并行的go routines之间安全且有效地通信，并且不需要互斥锁。
+源自Hoare的CSP论文(1977) [[7](https://www.cs.cmu.edu/~crary/819-f09/Hoare78.pdf)]，在Go里channel是一个通信机制，支持以线程安全的方式下传输数据。它可以用于两个并行的go routines之间安全且有效地通信，并且不需要互斥锁。
 
 channels将构建并行代码的困难抽象到Go runtime时中，并且提供一个简单的方式让go routines之间通信。从本质上讲，channel的最简单形式就是一个数据队列。
 
-用Rob Pike的话说:“channels是协作的；互斥锁是顺序的” [17](https://benjiv.com/go-native-concurrency-primitives/#fn:17)。
+用Rob Pike的话说:“channels是协作的；互斥锁是顺序的” [[17](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=4m20s)]。
 
 <h3 id="hdcwig"> 在Go中channel如何运作？</h3>
 
@@ -476,7 +476,7 @@ default: // Non-blocking default action
 }
 ```
 
-> `select`语句的一个重要注意事项是，它在本质上是*随机*的。意思是说，如果有多个channel准备同时被读取或写入，`select`语句将随机选择其中一个case语句来执行 [18](https://benjiv.com/go-native-concurrency-primitives/#fn:18)。
+> `select`语句的一个重要注意事项是，它在本质上是*随机*的。意思是说，如果有多个channel准备同时被读取或写入，`select`语句将随机选择其中一个case语句来执行 [[18](https://github.com/golang/go/blob/6178d25fc0b28724b1b5aec2b1b74fc06d9294c7/src/runtime/select.go#L177)]。
 
 <h3 id="tss"> 测试select语句</h3>
 
