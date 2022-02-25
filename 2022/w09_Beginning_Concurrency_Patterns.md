@@ -4,7 +4,7 @@
 - 原文作者：Benjamin Vesterby
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w09_Beginning_Concurrency_Patterns.md
 - 译者：[朱亚光](https://github.com/zhuyaguang)
-- 校对：
+- 校对：[4+6](https://github.com/lsj1342)
 
 ![Cover image](https://benjiv.com/beginning-concurrency-patterns/images/cover.webp)
 
@@ -20,7 +20,7 @@ git clone https://github.com/benjivesterby/may2021-triangle-meetup.git
 
 ## 流水线模式
 
-流水线模式 [1](https://benjiv.com/beginning-concurrency-patterns/#fn:1) [2](https://benjiv.com/beginning-concurrency-patterns/#fn:2) 通常由若干个阶段组成，每个阶段都通过一系列 channel 连接。第一阶段是数据来源，最后阶段是数据汇总。数据流水线就是很好的例子，第一步挖掘数据，接下来清洗数据，最后一步将清洗的数据存储到
+流水线模式 [1](https://benjiv.com/beginning-concurrency-patterns/#fn:1) [2](https://benjiv.com/beginning-concurrency-patterns/#fn:2) 通常由若干个阶段组成，每个阶段都通过一系列 channel 连接。第一阶段是数据来源，最后阶段是数据汇总。数据流水线就是很好的例子，第一步挖掘数据，接下来清洗数据，最后一步将清洗的数据存储到数据库中。
 
 ![A diagram showing an example Pipeline](https://benjiv.com/beginning-concurrency-patterns/images/pipeline.webp) **Example Pipeline**
 
