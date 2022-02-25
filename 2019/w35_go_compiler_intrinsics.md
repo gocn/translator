@@ -1,4 +1,4 @@
-# Go compiler intrinsics
+# Go编译器的本质
 
 - 原文地址：https://dave.cheney.net/2019/08/20/go-compiler-intrinsics
 - 原文作者：[Dave Cheney](https://dave.cheney.net/)
@@ -205,7 +205,7 @@ TEXT examples/popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
    popcnt-intrinsic.BenchmarkMathBitsOnesCount64(SB)
    :-1                   0x10f868e    cc                  INT $0x3
    :-1                   0x10f868f    cc                  INT $0x3 
- ```
+```
 
 这里输出了很多内容，但关键的内容是第 48 行（取自 `_test.go` 文件的源代码），程序确实使用了我们期望的 x86 `POPCNT` 指令。事实证明这比操作位运算更快。
 
