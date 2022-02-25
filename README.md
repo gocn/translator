@@ -30,7 +30,6 @@
 - [Go 1.18 中即将出现的功能特性](https://gocn.vip/topics/17460) （[Cluas](https://github.com/Cluas) 翻译）
 - [Go 1.16 新功能：Go Module 支持版本撤回](https://gocn.vip/topics/11667) （[咔叽咔叽](https://github.com/github.com/watermelo) 翻译）
 - [Go 1.16 中 Module 功能新变化](https://github.com/gocn/translator/blob/master/2021/w8_New_module_changes_in_Go_1.16.md) (Jay Conrod 翻译)
-
 - [2021 Go 趋势报告](https://gocn.vip/topics/11650)（[朱亚光](https://github.com/zhuyaguang) 翻译）
 - [更多Go 新特性/发展 文章...](https://github.com/gocn/translator/blob/master/feature_and_future.md)
 
