@@ -1,4 +1,4 @@
-# Internals of Go's new fuzzing system
+# Go 新增模糊测试系统的内部原理
 
 - 原文地址：https://jayconrod.com/posts/123/internals-of-go-s-new-fuzzing-system
 - 原文作者：jayconrod
@@ -6,98 +6,100 @@
 - 译者：[cvley](https://github.com/cvley)
 - 校对：[](https://github.com/)
 
-Go 1.18 is coming out soon, hopefully in a few weeks. It's a huge release with a lot to look forward to, but native fuzzing has a special place in my heart. (I'm super-biased of course: before I [left Google](https://jayconrod.com/posts/122/leaving-google), I worked with Katie Hockman and Roland Shoemaker to build the fuzzing system). Generics are cool too, I guess, but having fuzzing integrated into the `testing` package and `go test` will make fuzz testing more accessible to everyone which makes it easier to write secure, correct code in Go.
+预期在几周之内，Go 1.18 即将发布。这次是一个大的版本，有很多值得期待的东西，但原生的模糊测试在我心中有一个特殊的位置。（当然，我是很有偏见的：在我[离开谷歌](https://jayconrod.com/posts/122/leaving-google)之前，我与 Katie Hockman 和 Roland Shoemaker 合作构建了模糊测试系统）。我想泛型也很酷，但是将模糊测试集成到 `testing` 包和 `go test` 中，将使模糊测试更容易被每个人接触，从而更容易在 Go 中编写安全、正确的代码。
 
-Not much has been written yet on how Go's fuzzing system actually works, so I'll talk a bit about that here. If you'd like to try it out, [Getting started with fuzzing](https://go.dev/doc/tutorial/fuzz) is a great tutorial.
+还没有写太多关于 Go 模糊测试系统实际上是如何工作的，所以我将在这里做一些讨论。[开始模糊测试](https://go.dev/doc/tutorial/fuzz)是一篇很好的教程。
 
-## What is fuzzing?
+## 什么是模糊测试？
 
-Fuzzing is a testing technique where the testing infrastructure calls your code with randomly generated inputs to check that it produces correct results or reasonable errors. Fuzz testing complements unit testing, where you test that your code produces the correct outputs, given a static set of inputs. Unit testing is limited in that you only really test with expected inputs; fuzz testing is great at discovering _unexpected_ inputs that expose weird behavior. A good fuzzing system also instruments the code being tested so it can efficiently generate inputs that expand code coverage.
+模糊测试是一项测试技术，通过测试基础架构用随机生成的输入调用代码，以检查它是否产生正确的结果或合理的错误。模糊测试是对单元测试的补充，在单元测试中，你给定一组静态输入来测试你的代码是否产生正确的输出。单元测试的局限性在于你只能用预期的输入进行测试；模糊测试擅长发现暴露奇怪行为的_意外_输入。一个好的模糊测试系统还可以利用被测试的代码，这样它就可以有效地生成扩大代码覆盖率的输入。
 
-Fuzz testing is commonly used to check parsers and validators, especially anything used in a security context. Fuzzing is great at finding bugs that cause security issues, like invalid lengths in a binary encoding, truncated input, integer overflows, invalid unicode, and more.
+模糊测试通常用于检查解析器和验证器，尤其是安全上下文中使用的任何东西。模糊测试非常擅长发现导致安全问题的错误，如二进制编码中的无效长度、截断输入、整数溢出、无效Unicode等。
 
 There are other ways to use fuzzing, too. For example, differential fuzzing verifies that two implementations of the same thing have the same behavior by feeding in the same random inputs to both implementations and checking that the outputs match. You can also use fuzzing for user interface "monkey" testing: the fuzzing engine could produce random taps, keystrokes, and clicks, and the test verifies that the app doesn't crash.
+还有其他使用模糊的方法。例如，差分模糊通过向两个实现输入相同的随机输入并检查输出是否匹配来验证同一事物的两个实现具有相同的行为。您也可以使用模糊来进行用户界面“猴子”测试：模糊引擎可以产生随机点击、按键和点击，测试验证应用程序没有崩溃。
 
-## What's happening with fuzzing in Go
+## Go 中的模糊测试是什么情况？
 
-Fuzzing is not new to Go. [go-fuzz](https://github.com/dvyukov/go-fuzz) is probably the most widely used tool today, and we certainly borrowed from its design when developing native fuzzing. The new thing in Go 1.18 is that fuzzing is integrated directly into `go test` and the `testing` package. The interface is very similar to the testing interface, [`testing.T`](https://pkg.go.dev/testing@go1.18beta2#T).
+模糊测试对 Go 来说并不新鲜，[go-fuzz](https://github.com/dvyukov/go-fuzz) 可能是当今使用最广泛的工具，我们在开发原生模糊时也借鉴了它的设计。Go 1.18 中的新情况是，模糊直接集成到 `go test` 和 `testing` 包中，接口与 testing 接口非常相似，[`testing.T`](https://pkg.go.dev/testing@go1.18beta2#T)。
 
 For example, if you have a function named `ParseSomething`, you could write a fuzz test like the one below. This checks that for any random input, `ParseSomething` either succeeds or returns a `ParseError`.
+例如，如果你有一个名为 `ParseSomething` 的函数，就可以编写一个如下所示的模糊测试。这将检查对于任何随机输入，`ParseSomething` 要么成功，要么返回一个 `ParseError`。
 
-```
+```Go
 package parser
 
 import (
-"errors"
-"testing"
+    "errors"
+    "testing"
 )
 
 var seeds = [][]byte{
-nil,
-[]byte("123"),
-[]byte("(12)"),
+    nil,
+    []byte("123"),
+    []byte("(12)"),
 }
 
 func FuzzParseSomething(f *testing.F) {
-for _, seed := range seeds {
-f.Add(seed)
-}
-f.Fuzz(func(t *testing.T, input []byte) {
-err := ParseSomething(input)
-if err == nil {
-return
-}
-if parseErr := (*ParseError)(nil); !errors.As(err, &parseErr) {
-t.Fatal(err)
-}
-})
+    for _, seed := range seeds {
+        f.Add(seed)
+    }
+    f.Fuzz(func(t *testing.T, input []byte) {
+        err := ParseSomething(input)
+        if err == nil {
+            return
+        }
+        if parseErr := (*ParseError)(nil); !errors.As(err, &parseErr) {
+            t.Fatal(err)
+        }
+    })
 }
 ```
 
-When `go test` is run normally (without the `-fuzz` flag), `FuzzParseSomething` is treated like a unit test. The fuzz function provided to [`F.Fuzz`](https://pkg.go.dev/testing@go1.18beta2#F.Fuzz) is called with inputs from the seed corpus: inputs registered with [`F.Add`](https://pkg.go.dev/testing@go1.18beta2#F.Add) and inputs read from files in `testdata/corpus/FuzzParseSomething`. If the fuzz function panics or calls [`T.Fail`](https://pkg.go.dev/testing@go1.18beta2#T.Fail), the test fails, and `go test` exits with a non-zero status.
+当正常运行 `go test` 时（没有 `-fuzz` 标签），`FuzzParseSomething` 会按单元测试来对待。提供给 [`F.Fuzz`](https://pkg.go.dev/testing@go1.18beta2#F.Fuzz) 的模糊测试函数会使用种子语料中的输入来调用：使用 [`F.Add`](https://pkg.go.dev/testing@go1.18beta2#F.Add) 注册的输入和 `testdata/corpus/FuzzParseSomething` 文件夹中读取文件的输入。如果模糊测试函数 panic 或调用 [`T.Fail`](https://pkg.go.dev/testing@go1.18beta2#T.Fail)，测试会失败，而 `go test` 会以非零的状态退出。
 
-Fuzzing can be enabled by running `go test` with the `-fuzz` flag, like this:
+模糊测试可以在运行 `go test` 时增加 `-fuzz` 标签来开启，如下所示：
 
 ```
 go test -fuzz=FuzzParseSomething
 ```
 
-In this mode, the fuzzing system will call the fuzz function with randomly generated inputs, using the inputs from the seed corpus and a cached corpus as a starting point. Generated inputs that expand coverage are minimized and added to the cached corpus. Generated inputs that cause errors are minimized and added to the seed corpus, effectively becoming new regression test cases. Later `go test` runs will fail until the problem is fixed, even when fuzzing is not enabled.
+在这种模式下，模糊测试系统将用随机生成的输入调用模糊测试函数，使用来自种子语料库和一个缓存语料库的输入作为起点。生成的扩大覆盖范围的输入被最小化并添加到缓存语料库中。生成的导致错误的输入被最小化并添加到种子语料库中，有效地成为新的回归测试用例。以后的 `go test` 在问题被修复前都会执行失败，即使没有开启模糊测试。
 
-Again, there's nothing really novel here compared with other systems. The strength is in the familiarity of the interface and its ease of use. Writing your first fuzz test is easy, since fuzzing follows the conventions of the `testing` package. There's no need for everyone on a team to install and learn a new tool.
+同样，与其他系统相比，这里没有什么真正的新颖之处。优势在于接口的熟悉性和易用性。编写你的第一个模糊测试很容易，因为模糊测试遵循 `testing` 包的约定。无需让团队中的每个人都安装和学习一个新工具。
 
-## How does the fuzzing system work?
+## 模糊测试系统如何工作？
 
-You may already know that `go test` builds a test executable for each package being tested, then runs those executables to get test and benchmark results. Fuzzing follows this pattern, though there are some differences.
+你可能已经知道 `go test` 为每个被测试的包构建一个测试可执行文件，然后运行这些可执行文件以获得测试和基准测试结果。模糊测试遵循这种模式，尽管有一些不同。
 
-When `go test` is invoked with the `-fuzz` flag, `go test` compiles the test executable with additional coverage instrumentation. The Go compiler already had instrumentation support for [libFuzzer](https://llvm.org/docs/LibFuzzer.html), so we reused that. The compiler adds an 8-bit counter to each basic block. The counter is fast and approximate: it wraps on overflow, and there's no synchronization across threads. (We had to tell the race detector not to complain about writes to these counters). The counter data is used at run-time by the [internal/fuzz](https://pkg.go.dev/internal/fuzz) package, where most of the fuzzing logic is.
+当使用 `-fuzz` 标志调用 `go test` 时，`go test` 使用额外的覆盖率测量来编译测试可执行文件。Go 编译器已经对 [libFuzzer](https://llvm.org/docs/LibFuzzer.html) 提供了测量支持，所以我们重用了它。编译器为每个基本块添加了一个 8 位计数器。计数器快速且近似：它包装了溢出，并且没有跨线程的同步。（我们不得不告诉竞争检测器不要检测这些计数器的写入）。计数器数据在运行时由内部[internal/fuzz](https://pkg.go.dev/internal/fuzz)包使用，其中包括了大部分的模糊逻辑。
 
-After `go test` builds an instrumented executable, it runs it as usual. This is called the coordinator process. This process is started with most of the flags that were passed to `go test`, including `-fuzz=pattern`, which it uses to identify which target to fuzz; for now, only one target may be fuzzed per `go test` invocation ([#46312](https://github.com/golang/go/issues/46312)). When that target calls [`F.Fuzz`](https://pkg.go.dev/testing@go1.18beta2#F.Fuzz), control is passed to [`fuzz.CoordinateFuzzing`](https://pkg.go.dev/internal/fuzz#CoordinateFuzzing), which initializes the fuzzing system and begins the coordinator event loop.
+在 `go test` 构建一个可测量的可执行文件后，它会像往常一样运行它。这被称为协调进程。这个进程以传递给 `go test` 的大部分标志开始，包括 `-fuzz=pattern`，用来识别要模糊测试的目标；目前，每次 `go test` 调用只能模糊测试一个目标（[#46312](https://github.com/golang/go/issues/46312)）。当目标调用 [`F.Fuzz](https://pkg.go.dev/testing@go1.18beta2#F.Fuzz)` 时，控制被传递给 [`fuzz.CoordinateFuzzing`](https://pkg.go.dev/internal/fuzz#CoordinateFuzzing)，它将初始化模糊测试系统并启动协调器的事件循环。
 
-The coordinator starts several worker processes, which run the same test executable and perform the actual fuzzing. Workers are started with an undocumented command line flag that tells them to be workers. Fuzzing must be done in separate processes so that if a worker process crashes entirely, the coordinator can still find and record the input that caused the crash.
+协调器启动几个辅助进程，运行相同的测试可执行文件并执行实际的模糊测试。辅助进程使用一个未记录的命令行标志启动，该标志告诉它们成为辅助进程。模糊测试必须在不同的进程中进行，这样如果辅助进程完全崩溃，协调器仍然可以找到并记录导致崩溃的输入。
 
-![Diagram showing the relationship between fuzzing processes. At the top is a box showing "go test (cmd/go)". An arrow points downward to a box labelled "coordinator (test binary)". From that, three arrows point downward to three boxes labelled "worker (test binary)".](https://jayconrod.com/images/fuzz-processes.svg)
+![](../static/images/2022/w10_Internals_of_Go_new_fuzzing_system/fuzz-processes.svg)
 
-The coordinator communicates with each worker using an improvised JSON-based RPC protocol over a pair of pipes. The protocol is pretty basic because we didn't need anything sophisticated like gRPC, and we didn't want to introduce anything new into the standard library. Each worker also keeps some state in a memory mapped temporary file, shared with the coordinator. Mostly this is just an iteration count and random number generator state. If the worker crashes entirely, the coordinator can recover its state from shared memory without requiring the worker to politely send a message over the pipes first.
+协调器通过一对管道使用基于JSON的简易 RPC 协议与每个辅助角色进行通信。该协议非常简单，因为我们不需要像 gRPC 这样复杂的东西，也不想在标准库中引入任何新的东西。每个辅助角色还在内存映射的临时文件中保留一些状态，与协调器共享。这主要是迭代计数和随机数生成器状态。如果辅助角色完全崩溃，协调器可以从共享内存中恢复其状态，而不需要辅助角色先通过管道发送消息。
 
-After the coordinator starts the workers, it gathers baseline coverage by sending workers inputs from the seed corpus and the fuzzing cache corpus (in a subdirectory of `$GOCACHE`). Each worker runs its given input, then reports back with a snapshot of its coverage counters. The coordinator coarsens and merges these counters into a combined coverage array.
+协调器启动辅助角色后，通过从种子语料库和模糊缓存语料库（在 `$GOCACHE` 的子目录中）发送给辅助角色的输入来收集基线覆盖率。每个辅助角色运行其给定的输入，然后用其覆盖率计数器的快照报告。协调器将这些计数器粗化并合并成一个组合的覆盖率数组。
 
-Next, the coordinator sends out inputs from the seed corpus and cached corpus for fuzzing: each worker is given an input and a copy of the baseline coverage array. Each worker then randomly mutates its input (flipping bits, deleting or inserting bytes, etc.) and calls the fuzz function. In order to reduce communication overhead, each worker can keep mutating and calling for 100 ms without further input from the coordinator. After each call, the worker checks whether an error was reported (with [`T.Fail`](https://pkg.go.dev/testing@go1.18beta2#T.Fail)) or new coverage was found compared with the baseline coverage array. If so, the worker reports the "interesting" input back to the coordinator immediately.
+接下来，协调器从种子语料库和缓存的语料库中发送输入进行模糊测试：每个辅助角色都被赋予一个输入和基线覆盖率数组的副本。然后每个辅助角色随机地改变其输入（翻转位、删除或插入字节等）并调用模糊测试函数。为了减少通信开销，每个辅助角色可以在没有协调器进一步输入的情况下保持 100 ms 的改变和调用。每次调用后，辅助角色检查是否报告了错误（带有 [`T.Fail`](https://pkg.go.dev/testing@go1.18beta2#T.Fail)）或与基线覆盖率数组相比发现了新的覆盖。如果是，辅助角色立即向协调器报告“有趣”的输入。
 
-When the coordiantor receives an input that produces new coverage, it compares the worker's coverage to the current combined coverage array: it's possible that another worker already discovered an input that provides the same coverage. If so, the new input is discarded. If the new input actually does provide new coverage, the coordinator sends it back to a worker (perhaps a different worker) for minimization. Minimization is like fuzzing, but the worker performs random mutations to create a smaller input that still provides at least some new coverage. Smaller inputs tend to be faster, so it's worth spending the time to minimize up front to make the fuzzing process faster later. The worker process reports back when it's done minimizing, even if it failed to find anything smaller. The coordinator adds the minimized input to the cached corpus and continues. Later on, the coordinator may send the minimized input out to workers for further fuzzing. This is how the fuzzing system adapts to find new coverage.
+当协调器收到一个产生新覆盖率的输入时，它会将辅助角色的覆盖范围与当前的组合覆盖范围数组进行比较：可能另一个辅助角色已经发现了一个提供相同覆盖范围的输入。如果是这样，新的输入就会被丢弃。如果新的输入确实提供了新的覆盖范围，协调器会将其发送回一个辅助角色（可能是另一个辅助角色）进行最小化。最小化就像模糊测试，但是辅助角色会执行随机突变来创建一个更小的输入，这个输入仍然提供了至少一些新的覆盖范围。较小的输入往往会更快，所以值得花时间提前最小化，以便以后模糊测试过程更快。辅助进程在完成最小化后返回报告，即使它没有找到任何更小的内容。协调器将最小化的输入添加到缓存的语料库中并继续。稍后，协调器可能会将最小化的输入发送给辅助进程进行进一步的模糊处理。这就是模糊测试系统适应新覆盖范围的方式。
 
-When the coordinator receives an input that causes an error, it again sends the input back to workers for minimization. In this case, a worker attempts to find a smaller input that still causes an error, though not necessarily the same error. After the input is minimized, the coordinator saves it into `testdata/corpus/$FuzzTarget`, shuts worker processes down gracefully, then exits with a non-zero status.
+当协调器收到导致错误的输入时，它会再次将输入发送回辅助角色以进行最小化。在这种情况下，辅助角色试图找到一个仍然会导致错误的较小输入，尽管不一定是相同的错误。输入最小化后，协调器将其保存到 `testdata/corpus/$FuzzTarget` 中，优雅地关闭辅助角色进程，然后以非零状态退出。
 
-![Diagram showing communication between coordinator and worker. Two arrows point down: the left is labelled "coordinator", the right is labelled "worker". Three pairs of horizontal arrows point from the coordinator to the worker and back. The top pair is labelled "baseline coverage", the middle is labelled "fuzz", the bottom is labelled "minimize".](https://jayconrod.com/images/fuzz-communication.svg)
+![](../static/images/2022/w10_Internals_of_Go_new_fuzzing_system/fuzz-communication.svg)
 
-If a worker process crashes while fuzzing, the coordinator can recover the input that caused the crash using the input sent to the worker, and the worker's RNG state and iteration count (both left in shared memory). Crashing inputs are generally not minimized, since minimization is a highly stateful process, and each crash blows that state away. It is [theoretically possible](https://github.com/golang/go/issues/48163) but hasn't been done yet.
+如果辅助进程在模糊处理时崩溃，协调器可以使用发送给辅助进程的输入、辅助进程的 RNG 状态和迭代计数（都留在共享内存中）恢复导致崩溃的输入。崩溃输入通常不会最小化，因为最小化是一个高度有状态的过程，每次崩溃都会将该状态清空。[理论上这是可能的](https://github.com/golang/go/issues/48163)，但还没有完成。
 
-Fuzzing usually continues until an error is discovered or the user interrupts the process by pressing Ctrl-C or the deadline set with the `-fuzztime` flag is passed. The fuzzing engine handles interrupts gracefully, whether they are delivered to the coordinator or worker processes. For example, if a worker is interrupted while minimizing an input that caused an error, the coordinator will save the unminimized input.
+模糊测试通常会持续到发现错误或者用户通过按下 Ctrl-C 中断进程，或者通过设置有 `-fuzztime` 标志的截止日期。模糊测试引擎会优雅地处理中断，无论它们是传递给协调器还是辅助进程。例如，如果一个辅助进程在最小化导致错误的输入时被中断，协调器会保存未最小化的输入。
 
-## Future of fuzzing
+## 模糊测试的未来
 
-I'm very excited for this release, though I have to admit, Go's new fuzzing engine is still a ways from reaching feature and performance parity with other fuzzing systems. Many improvements are possible, but it's already in a useful state, and the API is stable. I'm glad it's shipping now.
+我对这个版本感到非常兴奋，尽管我不得不承认，Go 的新模糊测试引擎仍然离达到其他模糊测试系统的功能和性能还有相当一段路要走。许多改进是可能的，但是它已经处于有用的状态，API 也很稳定。我很高兴它现在已经上市了。
 
-You can find a list of [open issues](https://github.com/golang/go/issues?q=is%3Aissue+is%3Aopen+label%3Afuzz) on the issue tracker with the `fuzz` label. Those with the [Go1.19](https://github.com/golang/go/issues?q=is%3Aissue+is%3Aopen+label%3Afuzz+milestone%3AGo1.19) milestone are considered the highest priority, though issues may get reprioritized depending on user feedback and developer bandwidth.
+您可以在问题跟踪器上找到带有 `fuzz` 标签的[未解决问题列表](https://github.com/golang/go/issues?q=is%3Aissue+is%3Aopen+label%3Afuzz)。那些标记有 [Go1.19](https://github.com/golang/go/issues?q=is%3Aissue+is%3Aopen+label%3Afuzz+milestone%3AGo1.19) 里程碑的问题被认为是最高优先级的，尽管根据用户反馈和开发人员的情况，问题可能会被重新排序。 
 
-Anyway, go try it out, report bugs, and request features! If you find any good bugs in your own code (or someone else's!), add them to the [Fuzzing trophy case](https://github.com/golang/go/wiki/Fuzzing-trophy-case) on the Go wiki.
+不管怎样，去尝试一下，报告错误，并请求功能！如果你在自己的代码（或别人的代码）中发现了任何好的错误，将它们添加到 Go wiki 上的[模糊奖杯案例](https://github.com/golang/go/wiki/Fuzzing-trophy-case)中。
