@@ -2,7 +2,7 @@
 
 - 原文地址：https://jayconrod.com/posts/123/internals-of-go-s-new-fuzzing-system
 - 原文作者：jayconrod
-- 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w10_Internals_of_Go_new_fuzzing_system.md
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w10_Internals_of_Go_new_fuzzing_system.md
 - 译者：[cvley](https://github.com/cvley)
 - 校对：[Tang WenXuan](https://github.com/1-st)
 
@@ -88,7 +88,7 @@ go test -fuzz=FuzzParseSomething
 
 当协调器收到导致错误的输入时，它会再次将输入发送回辅助角色以进行最小化。在这种情况下，辅助角色试图找到一个仍然会导致错误的较小输入，尽管不一定是相同的错误。输入最小化后，协调器将其保存到 `testdata/corpus/$FuzzTarget` 中，优雅地关闭辅助角色进程，然后以非零状态退出。
 
-![](https://jayconrod.com/images/fuzz-communication.svg)
+![](../static/images/2022/w10_Internals_of_Go_new_fuzzing_system/fuzz-communication.svg)
 
 如果辅助进程在模糊处理时崩溃，协调器可以使用发送给辅助进程的输入、辅助进程的 RNG 状态和迭代计数（都留在共享内存中）恢复导致崩溃的输入。崩溃输入通常不会最小化，因为最小化是一个高度有状态的过程，每次崩溃都会将该状态清空。[理论上这是可能的](https://github.com/golang/go/issues/48163)，但还没有完成。
 
