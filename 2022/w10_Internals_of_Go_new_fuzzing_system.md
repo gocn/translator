@@ -12,18 +12,16 @@
 
 ## 什么是模糊测试？
 
-模糊测试是一项测试技术，通过测试基础架构用随机生成的输入调用代码，以检查它是否产生正确的结果或合理的错误。模糊测试是对单元测试的补充，在单元测试中，你给定一组静态输入来测试你的代码是否产生正确的输出。单元测试的局限性在于你只能用预期的输入进行测试；模糊测试擅长发现暴露奇怪行为的_意外_输入。一个好的模糊测试系统还可以利用被测试的代码，这样它就可以有效地生成扩大代码覆盖率的输入。
+模糊测试是一项测试技术，通过测试基础架构用随机生成的输入调用代码，以检查它是否产生正确的结果或合理的错误。模糊测试是对单元测试的补充，在单元测试中，你给定一组静态输入来测试你的代码是否产生正确的输出。单元测试的局限性在于你只能用预期的输入进行测试；模糊测试擅长发现暴露奇怪行为的_非预期_输入。一个好的模糊测试系统还可以利用被测试的代码，这样它就可以有效地生成扩大代码覆盖率的输入。
 
 模糊测试通常用于检查解析器和验证器，尤其是安全上下文中使用的任何东西。模糊测试非常擅长发现导致安全问题的错误，如二进制编码中的无效长度、截断输入、整数溢出、无效Unicode等。
 
-There are other ways to use fuzzing, too. For example, differential fuzzing verifies that two implementations of the same thing have the same behavior by feeding in the same random inputs to both implementations and checking that the outputs match. You can also use fuzzing for user interface "monkey" testing: the fuzzing engine could produce random taps, keystrokes, and clicks, and the test verifies that the app doesn't crash.
 还有其他使用模糊的方法。例如，差分模糊通过向两个实现输入相同的随机输入并检查输出是否匹配来验证同一事物的两个实现具有相同的行为。您也可以使用模糊来进行用户界面“猴子”测试：模糊引擎可以产生随机点击、按键和点击，测试验证应用程序没有崩溃。
 
 ## Go 中的模糊测试是什么情况？
 
 模糊测试对 Go 来说并不新鲜，[go-fuzz](https://github.com/dvyukov/go-fuzz) 可能是当今使用最广泛的工具，我们在开发原生模糊时也借鉴了它的设计。Go 1.18 中的新情况是，模糊直接集成到 `go test` 和 `testing` 包中，接口与 testing 接口非常相似，[`testing.T`](https://pkg.go.dev/testing@go1.18beta2#T)。
 
-For example, if you have a function named `ParseSomething`, you could write a fuzz test like the one below. This checks that for any random input, `ParseSomething` either succeeds or returns a `ParseError`.
 例如，如果你有一个名为 `ParseSomething` 的函数，就可以编写一个如下所示的模糊测试。这将检查对于任何随机输入，`ParseSomething` 要么成功，要么返回一个 `ParseError`。
 
 ```Go
@@ -90,7 +88,7 @@ go test -fuzz=FuzzParseSomething
 
 当协调器收到导致错误的输入时，它会再次将输入发送回辅助角色以进行最小化。在这种情况下，辅助角色试图找到一个仍然会导致错误的较小输入，尽管不一定是相同的错误。输入最小化后，协调器将其保存到 `testdata/corpus/$FuzzTarget` 中，优雅地关闭辅助角色进程，然后以非零状态退出。
 
-![](../static/images/2022/w10_Internals_of_Go_new_fuzzing_system/fuzz-communication.svg)
+![](https://jayconrod.com/images/fuzz-communication.svg)
 
 如果辅助进程在模糊处理时崩溃，协调器可以使用发送给辅助进程的输入、辅助进程的 RNG 状态和迭代计数（都留在共享内存中）恢复导致崩溃的输入。崩溃输入通常不会最小化，因为最小化是一个高度有状态的过程，每次崩溃都会将该状态清空。[理论上这是可能的](https://github.com/golang/go/issues/48163)，但还没有完成。
 
