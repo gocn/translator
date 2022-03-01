@@ -4,7 +4,7 @@
 - 原文作者：jayconrod
 - 本文永久链接：https:/github.com/gocn/translator/blob/master/2022/w10_Internals_of_Go_new_fuzzing_system.md
 - 译者：[cvley](https://github.com/cvley)
-- 校对：[](https://github.com/)
+- 校对：[Tang WenXuan](https://github.com/1-st)
 
 预期在几周之内，Go 1.18 即将发布。这次是一个大的版本，有很多值得期待的东西，但原生的模糊测试在我心中有一个特殊的位置。（当然，我是很有偏见的：在我[离开谷歌](https://jayconrod.com/posts/122/leaving-google)之前，我与 Katie Hockman 和 Roland Shoemaker 合作构建了模糊测试系统）。我想泛型也很酷，但是将模糊测试集成到 `testing` 包和 `go test` 中，将使模糊测试更容易被每个人接触，从而更容易在 Go 中编写安全、正确的代码。
 
