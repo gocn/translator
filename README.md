@@ -23,6 +23,7 @@
 
 - [Go 官方出品泛型教程：如何开始使用泛型](https://gocn.vip/topics/20885) （[zxmfke](https://github.com/zxmfke) 翻译）
 - [Go 1.16 即将到来的函数：ReadDir 和 DirEntry](https://github.com/gocn/translator/blob/master/2021/w6_coming_in_go_1.16_readdir_and_direntry.md) ([cvley](https://github.com/cvley)  翻译)
+- [Go 模糊测试](https://gocn.vip/topics/20941) ([fivezh](https://github.com/fivezh) 翻译)
 
 ### Go 新特性/发展
 
@@ -53,6 +54,7 @@
 
 - [Go原生并发基本原理与最佳做法](https://gocn.vip/topics/21927) （[zxmfke](https://github.com/zxmfke) 翻译）
 - [以 Go 为例-探究并行与并发的区别](https://gocn.vip/topics/20993) （[zxmfke](https://github.com/zxmfke) 翻译）
+- [开启并发模式](https://gocn.vip/topics/rw836AuPQG)（[朱亚光](https://github.com/zhuyaguang) 翻译）
 - [Go 高级并发](https://gocn.vip/topics/9883) ([咔叽咔叽](https://github.com/watermelo) 翻译)
 
 ### Go GC
@@ -93,7 +95,7 @@
 
 ### Go 测试
 
-- [Go 模糊测试](https://gocn.vip/topics/20941) ([fivezh](https://github.com/fivezh) 翻译)
+- [Go 新增模糊测试系统的内部原理](https://gocn.vip/topics/qwj8X7C5RD) ([cvley](https://github.com/cvley) 翻译)
 
 ### Go 与其他语言比较
 
