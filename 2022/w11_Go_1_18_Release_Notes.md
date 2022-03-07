@@ -1,3 +1,9 @@
+- 原文地址：https://tip.golang.org/doc/go1.18
+- 原文作者：**golang.org**
+- 本文永久链接：https://github.com/gocn/translator/edit/master/2022/w11_Go_1_18_Release_Notes.md
+- 译者：[zxmfke](https://github.com/zxmfke)
+- 校对：
+
 # Go 1.18 Release Notes
 
 ## DRAFT RELEASE NOTES — Introduction to Go 1.18
