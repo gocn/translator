@@ -21,7 +21,7 @@ Go 1.18包含一个在[类型参数提案](https://go.googlesource.com/proposal/
 以下是最明显的变化列表。关于更全面的概述，请看[提案](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md)。详情见[语言规范](https://tip.golang.org/ref/spec)。
 
 - [函数](https://tip.golang.org/ref/spec#Function_declarations)和[类型宣告](https://tip.golang.org/ref/spec#Type_declarations)的语法，现在接受[类型参数](https://tip.golang.org/ref/spec#Type_parameters)。
-- 参数化的函数和类型可以通过在它们后面加上方类型参数列表来进行实例化，类型参数列表放在方括号中。
+- 参数化的函数和类型可以通过在它们后面加上类型参数列表来进行实例化，类型参数列表放在方括号中。
 - 添加了新的标识 `~` 到[运算符和标点符号](https://tip.golang.org/ref/spec#Operators_and_punctuation)。
 - [接口类型](https://tip.golang.org/ref/spec#Interface_types)的语法现在已经支持嵌套任意类型(不只是接口的类型名称)，以及union和 `~T` 类型元素。这样的接口只能作为类型约束使用。现在一个接口定义了一组类型以及一组方法。
 - 新的[提前宣告标识符(prdeclared identifyer)](https://tip.golang.org/ref/spec#Predeclared_identifiers) `any` 作为空接口的别名。这将取代原有的 `interface{}`
@@ -35,13 +35,11 @@ Go 1.18包含一个在[类型参数提案](https://go.googlesource.com/proposal/
 
 - [`golang.org/x/exp/slices`](https://pkg.go.dev/golang.org/x/exp/slices)
 
-  A collection of generic functions that operate on slices of any element type.
-
   一个泛型函数的集合，可以对任何元素类型的切片进行操作。
 
 - [`golang.org/x/exp/maps`](https://pkg.go.dev/golang.org/x/exp/maps)
 
-  一个泛型函数的集合，可以对任何键或元素类型的maps进行操作。
+  一个泛型函数的集合，可以对任何键或元素类型的map进行操作。
 
 现在泛型的实现还有如下的限制：
 
@@ -54,7 +52,7 @@ Go 1.18包含一个在[类型参数提案](https://go.googlesource.com/proposal/
 
 ### Bug修复
 
-Go 1.18 编译器现在可以正确报告在函数字面中设置但从未使用的变量的声明但未使用错误。在Go 1.18之前，编译器在这种情况下不会报告错误。这修复了长期存在的编译器问题。由于这一变化，（可能是不正确的）程序可能不再被编译。可以直接这么修改：如果程序实际上是不正确的，就修复它，或者使用了违规的变量，例如把它赋值给空白标识符`_`。由于`go vet`总是指出这个错误，受影响的程序数量可能非常少。
+Go 1.18 编译器现在可以正确报告在函数字面中设置，但从未使用的变量的声明错误。在Go 1.18之前，编译器在这种情况下不会报告错误。这修复了长期存在的编译器问题。由于这一变化，（可能是不正确的）程序可能不再被编译。可以直接这么修改：如果程序实际上是不正确的，就修复它，或者使用了违规的变量，例如把它赋值给空白标识符`_`。由于`go vet`总是指出这个错误，受影响的程序数量可能非常少。
 
 当将一个符文常量表达式，例如`'1' << 32`，作为一个参数传递给预先声明函数`print`和`pintln` 时，Go 1.18编译器会报告溢出，与用户定义的函数的行为一致。在Go 1.18之前，编译器对此情况不是报错误，而是如果它符合`int64`的要求，就会接收它。由于这一变化，（可能是不正确的）程序可能不再被编译。可以直接这么修改：如果程序实际上是不正确的，就修复它，或者使用了违规的变量，例如把它赋值给空白标识符`_`。由于`go vet`总是指出这个错误，受影响的程序数量可能非常少。
 
@@ -95,7 +93,7 @@ Go 1.18包含了[the fuzzing提案](https://golang.org/issue/44551)描述的fuzz
 
 详见[fuzzing landing page](https://go.dev/doc/fuzz)开始使用。
 
-请注意的是fuzzing会消耗大量的内存，并且在运行时有可能会影响你机器的性能。还要注意的是，fuzzing引擎在运行时，会将扩大测试范围的数值写入`$GOCACHE/fuzz`内的fuzzing缓存目录目前没有限制写入fuzzing缓存的文件数量或者写入的字节总数，所以它可能会占用大量的存储(有可能几个GBs)。
+请注意的是fuzzing会消耗大量的内存，并且在运行时有可能会影响你机器的性能。还要注意的是，fuzzing引擎在运行时，会将扩大测试范围的数值写入`$GOCACHE/fuzz`内的fuzzing缓存目录，目前没有限制写入fuzzing缓存的文件数量或者写入的字节总数，所以它可能会占用大量的存储(有可能几个GBs)。
 
 ### Go指令
 
