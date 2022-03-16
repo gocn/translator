@@ -33,15 +33,15 @@ Go 1.18包含一个在[类型参数提案](https://go.googlesource.com/proposal/
 
 [`goland.org/x/exp/constraints`](https://pkg.go.dev/golang.org/x/exp/constraints)
 
-​		对泛型代码有用的约束，例如[constraints.Ordered](https://pkg.go.dev/golang.org/x/exp/constraints#Ordered)
+&emsp;&emsp;对泛型代码有用的约束，例如[constraints.Ordered](https://pkg.go.dev/golang.org/x/exp/constraints#Ordered)
 
 [`golang.org/x/exp/slices`](https://pkg.go.dev/golang.org/x/exp/slices)
 
-​		一个泛型函数的集合，可以对任何元素类型的切片进行操作。
+&emsp;&emsp;一个泛型函数的集合，可以对任何元素类型的切片进行操作。
 
 [`golang.org/x/exp/maps`](https://pkg.go.dev/golang.org/x/exp/maps)
 
-​		一个泛型函数的集合，可以对任何键或元素类型的map进行操作。
+&emsp;&emsp;一个泛型函数的集合，可以对任何键或元素类型的map进行操作。
 
 现在泛型的实现还有如下的限制：
 
@@ -253,72 +253,72 @@ Go 1.17[实现](https://tip.golang.org/doc/go1.17#compiler)了一种新的方法
 
 [bufio](https://tip.golang.org/pkg/bufio/)
 
-​		新的[`Writer.AvailableBuffer`](https://tip.golang.org/pkg/bufio#Writer.AvailableBuffer) 方法返回一个空的缓冲区，其容量可能不是空的，以便与类似append的API使用。在追加之后，缓冲区可以提供给后续的`Write`调用，并可能避免任何复制。
+&emsp;&emsp;新的[`Writer.AvailableBuffer`](https://tip.golang.org/pkg/bufio#Writer.AvailableBuffer) 方法返回一个空的缓冲区，其容量可能不是空的，以便与类似append的API使用。在追加之后，缓冲区可以提供给后续的`Write`调用，并可能避免任何复制。
 
-​		[`Reader.Reset`](https://tip.golang.org/pkg/bufio#Reader.Reset) 和 [`Writer.Reset`](https://tip.golang.org/pkg/bufio#Writer.Reset) 方法在对`nil`缓冲区对象调用时，现在使用默认的缓冲区大小。
+&emsp;&emsp;[`Reader.Reset`](https://tip.golang.org/pkg/bufio#Reader.Reset) 和 [`Writer.Reset`](https://tip.golang.org/pkg/bufio#Writer.Reset) 方法在对`nil`缓冲区对象调用时，现在使用默认的缓冲区大小。
 
 [bytes](https://tip.golang.org/pkg/bytes/)
 
-​		新的 [`Cut`](https://tip.golang.org/pkg/bytes/#Cut)函数将分隔符周围的`[]byte`切成片。它可以取代并简化 [`Index`](https://tip.golang.org/pkg/bytes/#Index), [`IndexByte`](https://tip.golang.org/pkg/bytes/#IndexByte), [`IndexRune`](https://tip.golang.org/pkg/bytes/#IndexRune), 和[`SplitN`](https://tip.golang.org/pkg/bytes/#SplitN).
+&emsp;&emsp;新的 [`Cut`](https://tip.golang.org/pkg/bytes/#Cut)函数将分隔符周围的`[]byte`切成片。它可以取代并简化 [`Index`](https://tip.golang.org/pkg/bytes/#Index), [`IndexByte`](https://tip.golang.org/pkg/bytes/#IndexByte), [`IndexRune`](https://tip.golang.org/pkg/bytes/#IndexRune), 和[`SplitN`](https://tip.golang.org/pkg/bytes/#SplitN).
 
-​		[`Trim`](https://tip.golang.org/pkg/bytes/#Trim), [`TrimLeft`](https://tip.golang.org/pkg/bytes/#TrimLeft), and [`TrimRight`](https://tip.golang.org/pkg/bytes/#TrimRight) 的许多常见用途，而且现在不需要分配，特别是对于小的ASCII切割集，速度可以提高10倍。
+&emsp;&emsp;[`Trim`](https://tip.golang.org/pkg/bytes/#Trim), [`TrimLeft`](https://tip.golang.org/pkg/bytes/#TrimLeft), and [`TrimRight`](https://tip.golang.org/pkg/bytes/#TrimRight) 的许多常见用途，而且现在不需要分配，特别是对于小的ASCII切割集，速度可以提高10倍。
 
-​		[`Title`](https://tip.golang.org/pkg/bytes/#Title)函数现在已经废弃。它不处理Unicode标点符号和特定语言的大小写规则，并被[golang.org/x/text/cases](https://golang.org/x/text/cases) 包所取代。
+&emsp;&emsp;[`Title`](https://tip.golang.org/pkg/bytes/#Title)函数现在已经废弃。它不处理Unicode标点符号和特定语言的大小写规则，并被[golang.org/x/text/cases](https://golang.org/x/text/cases) 包所取代。
 
 [crypto/elliptic](https://tip.golang.org/pkg/crypto/elliptic/)
 
-​		[`P224`](https://tip.golang.org/pkg/crypto/elliptic#P224), [`P384`](https://tip.golang.org/pkg/crypto/elliptic#P384), 和[`P521`](https://tip.golang.org/pkg/crypto/elliptic#P521) 曲线的实现现在都是由[addchain](https://github.com/mmcloughlin/addchain) 和[fiat-crypto](https://github.com/mit-plv/fiat-crypto) 项目产生的代码支持的，后者是基于正式验证的算术运算模型。他们现在使用更安全的完整公式和内部API。P-224和P-384现在大约快4倍。所有具体的曲线实现现在都是恒定时间的。
+&emsp;&emsp;[`P224`](https://tip.golang.org/pkg/crypto/elliptic#P224), [`P384`](https://tip.golang.org/pkg/crypto/elliptic#P384), 和[`P521`](https://tip.golang.org/pkg/crypto/elliptic#P521) 曲线的实现现在都是由[addchain](https://github.com/mmcloughlin/addchain) 和[fiat-crypto](https://github.com/mit-plv/fiat-crypto) 项目产生的代码支持的，后者是基于正式验证的算术运算模型。他们现在使用更安全的完整公式和内部API。P-224和P-384现在大约快4倍。所有具体的曲线实现现在都是恒定时间的。
 
-​		在无效的曲线点(那些`IsOnCurve`方法返回false，并且[`Unmarshal`](https://tip.golang.org/pkg/crypto/elliptic#Unmarshal)或对有效点进行操作的`Curve`方法从未返回的点。)上操作一直是未定义的行为，可能导致密钥恢复攻击，现在新的后端不支持。如果一个无效的点被提供给`P224`、`P384`或`P521`方法，该方法现在将返回一个随机点。在未来发布的版本中，这种行为可能会改变为确定的panic。
+&emsp;&emsp;在无效的曲线点(那些`IsOnCurve`方法返回false，并且[`Unmarshal`](https://tip.golang.org/pkg/crypto/elliptic#Unmarshal)或对有效点进行操作的`Curve`方法从未返回的点。)上操作一直是未定义的行为，可能导致密钥恢复攻击，现在新的后端不支持。如果一个无效的点被提供给`P224`、`P384`或`P521`方法，该方法现在将返回一个随机点。在未来发布的版本中，这种行为可能会改变为确定的panic。
 
 [crypto/tls](https://tip.golang.org/pkg/crypto/tls/)
 
-​		新的 [`Conn.NetConn`](https://tip.golang.org/pkg/crypto/tls/#Conn.NetConn) 方法允许访问底层的 [`net.Conn`](https://tip.golang.org/pkg/net#Conn).
+&emsp;&emsp;新的 [`Conn.NetConn`](https://tip.golang.org/pkg/crypto/tls/#Conn.NetConn) 方法允许访问底层的 [`net.Conn`](https://tip.golang.org/pkg/net#Conn).
 
 [crypto/x509](https://tip.golang.org/pkg/crypto/x509)
 
-​		[`Certificate.Verify`](https://tip.golang.org/pkg/crypto/x509/#Certificate.Verify) 现在使用平台API来验证macOS和iOS上的证书有效性，当它被一个nil的 [`VerifyOpts.Roots`](https://tip.golang.org/pkg/crypto/x509/#VerifyOpts.Roots)调用或者使用一个从[`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool)返回的root池的时候。
+&emsp;&emsp;[`Certificate.Verify`](https://tip.golang.org/pkg/crypto/x509/#Certificate.Verify) 现在使用平台API来验证macOS和iOS上的证书有效性，当它被一个nil的 [`VerifyOpts.Roots`](https://tip.golang.org/pkg/crypto/x509/#VerifyOpts.Roots)调用或者使用一个从[`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool)返回的root池的时候。
 
-​		[`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool)现在在Windows上可用。
+&emsp;&emsp;[`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool)现在在Windows上可用。
 
 ​		在Windows、macOS和iOS上，当 [`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool) 返回的[`CertPool`](https://tip.golang.org/pkg/crypto/x509/#CertPool)中添加了额外的证书时，[`Certificate.Verify`](https://tip.golang.org/pkg/crypto/x509/#Certificate.Verify) 将进行两次验证： 一个是使用平台验证器API和系统root，一个是使用Go验证器和附加root。由平台验证器API返回的链将被优先处理。
 
-​		[`CertPool.Subjects`](https://tip.golang.org/pkg/crypto/x509/#CertPool.Subjects)已经废弃了。在 Windows、macOS 和 iOS 上，由 [`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool)返回的 [`CertPool`](https://tip.golang.org/pkg/crypto/x509/#CertPool) 将返回一个池，其中不包括 `Subjects` 返回的切片中的系统root，因为静态列表不能适当地代表平台策略，而且可能根本无法从平台 APIs 中获得。
+&emsp;&emsp;[`CertPool.Subjects`](https://tip.golang.org/pkg/crypto/x509/#CertPool.Subjects)已经废弃了。在 Windows、macOS 和 iOS 上，由 [`SystemCertPool`](https://tip.golang.org/pkg/crypto/x509/#SystemCertPool)返回的 [`CertPool`](https://tip.golang.org/pkg/crypto/x509/#CertPool) 将返回一个池，其中不包括 `Subjects` 返回的切片中的系统root，因为静态列表不能适当地代表平台策略，而且可能根本无法从平台 APIs 中获得。
 
-​		对使用依赖MD5和SHA-1哈希值的签名算法 (`MD5WithRSA`, `SHA1WithRSA`, 和`ECDSAWithSHA1`)签署证书的支持可能在Go 1.19中被删除。
+&emsp;&emsp;对使用依赖MD5和SHA-1哈希值的签名算法 (`MD5WithRSA`, `SHA1WithRSA`, 和`ECDSAWithSHA1`)签署证书的支持可能在Go 1.19中被删除。
 
 [debug/dwarf](https://tip.golang.org/pkg/debug/dwarf/)
 
-​		[`StructField`](https://tip.golang.org/pkg/debug/dwarf#StructField) 和 [`BasicType`](https://tip.golang.org/pkg/debug/dwarf#BasicType) 结构现在都有字段`DataBitOffset`，如果`DW_AT_data_bit_offset`有值的话，它持有`DW_AT_data_bit_offset`属性的值。
+&emsp;&emsp;[`StructField`](https://tip.golang.org/pkg/debug/dwarf#StructField) 和 [`BasicType`](https://tip.golang.org/pkg/debug/dwarf#BasicType) 结构现在都有字段`DataBitOffset`，如果`DW_AT_data_bit_offset`有值的话，它持有`DW_AT_data_bit_offset`属性的值。
 
 [debug/elf](https://tip.golang.org/pkg/debug/elf/)
 
-​	现已添加常量[`R_PPC64_RELATIVE`](https://tip.golang.org/pkg/debug/elf/#R_PPC64_RELATIVE) 。
+&emsp;&emsp;现已添加常量[`R_PPC64_RELATIVE`](https://tip.golang.org/pkg/debug/elf/#R_PPC64_RELATIVE) 。
 
 [debug/plan9obj](https://tip.golang.org/pkg/debug/plan9obj/)
 
-​		如果文件没有符号部分， [File.Symbols](https://tip.golang.org/pkg/debug/plan9obj#File.Symbols)方法现在会返回新的输出错误值[ErrNoSymbols](https://tip.golang.org/pkg/debug/plan9obj#ErrNoSymbols)。
+&emsp;&emsp;如果文件没有符号部分， [File.Symbols](https://tip.golang.org/pkg/debug/plan9obj#File.Symbols)方法现在会返回新的输出错误值[ErrNoSymbols](https://tip.golang.org/pkg/debug/plan9obj#ErrNoSymbols)。
 
 [go/ast](https://tip.golang.org/pkg/go/ast/)
 
-​		根据提案，对[go/ast和go/token进行了补充，以支持参数化的函数和类型](https://go.googlesource.com/proposal/+/master/design/47781-parameterized-go-ast.md)，以下是对 [`go/ast`](https://tip.golang.org/pkg/go/ast) 包的补充：
+&emsp;&emsp;根据提案，对[go/ast和go/token进行了补充，以支持参数化的函数和类型](https://go.googlesource.com/proposal/+/master/design/47781-parameterized-go-ast.md)，以下是对 [`go/ast`](https://tip.golang.org/pkg/go/ast) 包的补充：
 
 - [`FuncType`](https://tip.golang.org/pkg/go/ast/#FuncType) 和[`TypeSpec`](https://tip.golang.org/pkg/go/ast/#TypeSpec) 节点有一个新的字段`TypeParams`来保存类型参数，如果有的话。
 - 新的表达式节点[`IndexListExpr`](https://tip.golang.org/pkg/go/ast/#IndexListExpr)代表了多个索引的索引表达式，用于实例一个以上显式类型参数的函数和类型。
 
 [go/constant](https://tip.golang.org/pkg/go/constant/)
 
-​		新的[`Kind.String`](https://tip.golang.org/pkg/go/constant/#Kind.String) 方法为接收者类型返回一个可读的名称。
+&emsp;&emsp;新的[`Kind.String`](https://tip.golang.org/pkg/go/constant/#Kind.String) 方法为接收者类型返回一个可读的名称。
 
 [go/token](https://tip.golang.org/pkg/go/token/)
 
-​		新的常量 [`TILDE`](https://tip.golang.org/pkg/go/token/#TILDE) 代表了提案，[go/ast和go/token进行了补充，以支持参数化的函数和类型](https://go.googlesource.com/proposal/+/master/design/47781-parameterized-go-ast.md)，中的`~`的标记。
+&emsp;&emsp;新的常量 [`TILDE`](https://tip.golang.org/pkg/go/token/#TILDE) 代表了提案，[go/ast和go/token进行了补充，以支持参数化的函数和类型](https://go.googlesource.com/proposal/+/master/design/47781-parameterized-go-ast.md)，中的`~`的标记。
 
 [go/types](https://tip.golang.org/pkg/go/types/)
 
-​		新的 [`Config.GoVersion`](https://tip.golang.org/pkg/go/types/#Config.GoVersion)字段集合接收Go语言版本。
+&emsp;&emsp;新的 [`Config.GoVersion`](https://tip.golang.org/pkg/go/types/#Config.GoVersion)字段集合接收Go语言版本。
 
-​		根据提案，对[go/ast和go/token进行了补充，以支持参数化的函数和类型](https://go.googlesource.com/proposal/+/master/design/47781-parameterized-go-ast.md)，以下是对 [`go/types`](https://tip.golang.org/pkg/go/types)包的补充：
+&emsp;&emsp;根据提案，对[go/ast和go/token进行了补充，以支持参数化的函数和类型](https://go.googlesource.com/proposal/+/master/design/47781-parameterized-go-ast.md)，以下是对 [`go/types`](https://tip.golang.org/pkg/go/types)包的补充：
 
 - 增加了新的[`TypeParam`](https://tip.golang.org/pkg/go/types/#TypeParam)类型、工厂函数 [`NewTypeParam`](https://tip.golang.org/pkg/go/types/#NewTypeParam)和相关方法来表示一个类型参数。
 
@@ -344,106 +344,104 @@ Go 1.17[实现](https://tip.golang.org/doc/go1.17#compiler)了一种新的方法
 
   [`AssignableTo`](https://tip.golang.org/pkg/go/types/#AssignableTo), [`ConvertibleTo`](https://tip.golang.org/pkg/go/types/#ConvertibleTo), [`Implements`](https://tip.golang.org/pkg/go/types/#Implements), [`Identical`](https://tip.golang.org/pkg/go/types/#Identical), [`IdenticalIgnoreTags`](https://tip.golang.org/pkg/go/types/#IdenticalIgnoreTags), 和[`AssertableTo`](https://tip.golang.org/pkg/go/types/#AssertableTo) 现在也可以处理属于或包含泛型接口的参数，即接口在Go代码中只能作为类型约束所使用。  请注意，`AssignableTo`, `ConvertibleTo`, `Implements`和`AssertableTo` 的行为在参数为非实例化泛型的情况下是未定义的，如果第一个参数是一个泛型的接口，那么`AssertableTo`的行为是未定义的。
 
-  
-
 [html/template](https://tip.golang.org/pkg/html/template/)
 
-​		在一个`range`管道内，新的`{{break}}`命令将提前结束循环，新的`{{continue}}`命令将立即开始下一个循环迭代。`and`函数不再对所有参数进行评估；它在第一个参数评估为false后就停止评估参数。同样，`or`函数现在在第一个参数评估为 true 后就停止评估参数。如果任何一个参数是一个函数调用，这就有区别了。
+&emsp;&emsp;在一个`range`管道内，新的`{{break}}`命令将提前结束循环，新的`{{continue}}`命令将立即开始下一个循环迭代。`and`函数不再对所有参数进行评估；它在第一个参数评估为false后就停止评估参数。同样，`or`函数现在在第一个参数评估为 true 后就停止评估参数。如果任何一个参数是一个函数调用，这就有区别了。
 
 [image/draw](https://tip.golang.org/pkg/image/draw/)
 
-​		当这些参数实现了 Go 1.17 中添加了可选的[`draw.RGBA64Image`](https://tip.golang.org/pkg/image/draw/#RGBA64Image) 和[`image.RGBA64Image`](https://tip.golang.org/pkg/image/#RGBA64Image) 接口时，`Draw` 和 `DrawMask` 的回退实现比（当参数不是最常见的图像类型时使用）现在更快。	
+&emsp;&emsp;当这些参数实现了 Go 1.17 中添加了可选的[`draw.RGBA64Image`](https://tip.golang.org/pkg/image/draw/#RGBA64Image) 和[`image.RGBA64Image`](https://tip.golang.org/pkg/image/#RGBA64Image) 接口时，`Draw` 和 `DrawMask` 的回退实现比（当参数不是最常见的图像类型时使用）现在更快。	
 
 [net](https://tip.golang.org/pkg/net/)
 
-​		[`net.Error.Temporary`](https://tip.golang.org/pkg/net#Error) 已经废弃。
+&emsp;&emsp;[`net.Error.Temporary`](https://tip.golang.org/pkg/net#Error) 已经废弃。
 
 [net/http](https://tip.golang.org/pkg/net/http/)
 
-​		在WebAssembly目标上，[`Transport`](https://tip.golang.org/pkg/net/http/#Transport) 中的 `Dial`, `DialContext`, `DialTLS` 和 `DialTLSContext` 方法字段现在将被正确使用，如果要明确的话，就是用于创建HTTP请求。
+&emsp;&emsp;在WebAssembly目标上，[`Transport`](https://tip.golang.org/pkg/net/http/#Transport) 中的 `Dial`, `DialContext`, `DialTLS` 和 `DialTLSContext` 方法字段现在将被正确使用，如果要明确的话，就是用于创建HTTP请求。
 
-​		新的[`Cookie.Valid`](https://tip.golang.org/pkg/net/http#Cookie.Valid) 方法报告cookie是否有效。
+&emsp;&emsp;新的[`Cookie.Valid`](https://tip.golang.org/pkg/net/http#Cookie.Valid) 方法报告cookie是否有效。
 
 ​		新的 [`MaxBytesHandler`](https://tip.golang.org/pkg/net/http#MaxBytesHandler)函数创建了一个`Handler`，用[`MaxBytesReader`](https://tip.golang.org/pkg/net/http#MaxBytesReader)包装它的`ResponseWriter`和`Request.Body`。
 
-​		当查询包含非ASCII字符的域名时，Unicode到ASCII的转换现在是按照 [Unicode IDNA Compatibility Processing](https://unicode.org/reports/tr46/)标准（UTS #46）中定义的非过渡性处理进行的。改变了四个不同的符文的解释：ß, ς, zero-width joiner U+200D，和zero-width non-joiner U+200C。非过渡性处理与大多数应用程序和网络浏览器一致。
+&emsp;&emsp;当查询包含非ASCII字符的域名时，Unicode到ASCII的转换现在是按照 [Unicode IDNA Compatibility Processing](https://unicode.org/reports/tr46/)标准（UTS #46）中定义的非过渡性处理进行的。改变了四个不同的符文的解释：ß, ς, zero-width joiner U+200D，和zero-width non-joiner U+200C。非过渡性处理与大多数应用程序和网络浏览器一致。
 
 [os/user](https://tip.golang.org/pkg/os/user/)
 
-​		[`User.GroupIds`](https://tip.golang.org/pkg/os/user#User.GroupIds)现在在cgo不可用时使用Go的原生实现。
+&emsp;&emsp;[`User.GroupIds`](https://tip.golang.org/pkg/os/user#User.GroupIds)现在在cgo不可用时使用Go的原生实现。
 
 [reflect](https://tip.golang.org/pkg/reflect/)
 
-​		新的 [`Value.SetIterKey`](https://tip.golang.org/pkg/reflect/#Value.SetIterKey) 和[`Value.SetIterValue`](https://tip.golang.org/pkg/reflect/#Value.SetIterValue) 方法使用map迭代器作为源来设置一个Value。它们等同于`Value.Set(iter.Key())`和`Value.Set(iter.Value())`，但内存分配得更少。
+&emsp;&emsp;新的 [`Value.SetIterKey`](https://tip.golang.org/pkg/reflect/#Value.SetIterKey) 和[`Value.SetIterValue`](https://tip.golang.org/pkg/reflect/#Value.SetIterValue) 方法使用map迭代器作为源来设置一个Value。它们等同于`Value.Set(iter.Key())`和`Value.Set(iter.Value())`，但内存分配得更少。
 
-​		新的 [`Value.UnsafePointer`](https://tip.golang.org/pkg/reflect/#Value.UnsafePointer) 方法将Value的值作为一个[`unsafe.Pointer`](https://tip.golang.org/pkg/unsafe/#Pointer)返回。这允许调用者从 [`Value.UnsafeAddr`](https://tip.golang.org/pkg/reflect/#Value.UnsafeAddr) 和[`Value.Pointer`](https://tip.golang.org/pkg/reflect/#Value.Pointer) 迁移，以消除在调用的地方需要执行uintptr到unsafe.Pointer的转换（因为unsafe.Pointer规则要求）。
+&emsp;&emsp;新的 [`Value.UnsafePointer`](https://tip.golang.org/pkg/reflect/#Value.UnsafePointer) 方法将Value的值作为一个[`unsafe.Pointer`](https://tip.golang.org/pkg/unsafe/#Pointer)返回。这允许调用者从 [`Value.UnsafeAddr`](https://tip.golang.org/pkg/reflect/#Value.UnsafeAddr) 和[`Value.Pointer`](https://tip.golang.org/pkg/reflect/#Value.Pointer) 迁移，以消除在调用的地方需要执行uintptr到unsafe.Pointer的转换（因为unsafe.Pointer规则要求）。
 
-​		新的[`MapIter.Reset`](https://tip.golang.org/pkg/reflect/#MapIter.Reset)方法改变了它的接收器，在一个不同的map上进行迭代。 使用[`MapIter.Reset`](https://tip.golang.org/pkg/reflect/#MapIter.Reset) 可以在多个map上进行无内存分配的迭代。
+&emsp;&emsp;新的[`MapIter.Reset`](https://tip.golang.org/pkg/reflect/#MapIter.Reset)方法改变了它的接收器，在一个不同的map上进行迭代。 使用[`MapIter.Reset`](https://tip.golang.org/pkg/reflect/#MapIter.Reset) 可以在多个map上进行无内存分配的迭代。
 
-​		一些方法（ [`Value.CanInt`](https://tip.golang.org/pkg/reflect#Value.CanInt), [`Value.CanUint`](https://tip.golang.org/pkg/reflect#Value.CanUint), [`Value.CanFloat`](https://tip.golang.org/pkg/reflect#Value.CanFloat), [`Value.CanComplex`](https://tip.golang.org/pkg/reflect#Value.CanComplex) ）已经被添加到[`Value`](https://tip.golang.org/pkg/reflect#Value)中，以测试转换是否安全。
+&emsp;&emsp;一些方法（ [`Value.CanInt`](https://tip.golang.org/pkg/reflect#Value.CanInt), [`Value.CanUint`](https://tip.golang.org/pkg/reflect#Value.CanUint), [`Value.CanFloat`](https://tip.golang.org/pkg/reflect#Value.CanFloat), [`Value.CanComplex`](https://tip.golang.org/pkg/reflect#Value.CanComplex) ）已经被添加到[`Value`](https://tip.golang.org/pkg/reflect#Value)中，以测试转换是否安全。
 
-​		为了避免在[`Value.FieldByIndex`](https://tip.golang.org/pkg/reflect#Value.FieldByIndex)中通过一个指向嵌入式结构的空指针步进时发生的panic，添加了[`Value.FieldByIndexErr`](https://tip.golang.org/pkg/reflect#Value.FieldByIndexErr)。
+&emsp;&emsp;为了避免在[`Value.FieldByIndex`](https://tip.golang.org/pkg/reflect#Value.FieldByIndex)中通过一个指向嵌入式结构的空指针步进时发生的panic，添加了[`Value.FieldByIndexErr`](https://tip.golang.org/pkg/reflect#Value.FieldByIndexErr)。
 
-​		[`reflect.Ptr`](https://tip.golang.org/pkg/reflect#Ptr) 和[`reflect.PtrTo`](https://tip.golang.org/pkg/reflect#PtrTo) 已经分别更名为 [`reflect.Pointer`](https://tip.golang.org/pkg/reflect#Pointer) 和[`reflect.PointerTo`](https://tip.golang.org/pkg/reflect#PointerTo)，以便与 reflect 包的其他部分保持一致。旧的名字将继续工作，但在未来的Go版本中会被废弃。
+&emsp;&emsp;[`reflect.Ptr`](https://tip.golang.org/pkg/reflect#Ptr) 和[`reflect.PtrTo`](https://tip.golang.org/pkg/reflect#PtrTo) 已经分别更名为 [`reflect.Pointer`](https://tip.golang.org/pkg/reflect#Pointer) 和[`reflect.PointerTo`](https://tip.golang.org/pkg/reflect#PointerTo)，以便与 reflect 包的其他部分保持一致。旧的名字将继续工作，但在未来的Go版本中会被废弃。
 
 [regexp](https://tip.golang.org/pkg/regexp/)
 
-​		[regexp](https://tip.golang.org/pkg/regexp/)现在将UTF-8字符串的每个无效字节视为`U+FFFD`。
+&emsp;&emsp;[regexp](https://tip.golang.org/pkg/regexp/)现在将UTF-8字符串的每个无效字节视为`U+FFFD`。
 
 [runtime/debug](https://tip.golang.org/pkg/runtime/debug/)
 
-​		[`BuildInfo`](https://tip.golang.org/pkg/runtime/debug#BuildInfo)结构有两个新字段，包含关于二进制文件如何构建的额外信息：[`GoVersion`](https://tip.golang.org/pkg/runtime/debug#BuildInfo.GoVersion)持有用于构建二进制文件的Go版本。.[`Settings`](https://tip.golang.org/pkg/runtime/debug#BuildInfo.Settings)是[`BuildSettings`](https://tip.golang.org/pkg/runtime/debug#BuildSettings)结构的一个切片，持有描述构建的键/值对。
+&emsp;&emsp;[`BuildInfo`](https://tip.golang.org/pkg/runtime/debug#BuildInfo)结构有两个新字段，包含关于二进制文件如何构建的额外信息：[`GoVersion`](https://tip.golang.org/pkg/runtime/debug#BuildInfo.GoVersion)持有用于构建二进制文件的Go版本。.[`Settings`](https://tip.golang.org/pkg/runtime/debug#BuildInfo.Settings)是[`BuildSettings`](https://tip.golang.org/pkg/runtime/debug#BuildSettings)结构的一个切片，持有描述构建的键/值对。
 
 [runtime/pprof](https://tip.golang.org/pkg/runtime/pprof/)
 
-​		CPU剖析器现在在Linux上的每个线程使用定时器。这增加了剖析器可以观察到的最大CPU使用率，并减少了某些形式的偏差。
+&emsp;&emsp;CPU剖析器现在在Linux上的每个线程使用定时器。这增加了剖析器可以观察到的最大CPU使用率，并减少了某些形式的偏差。
 
 [strconv](https://tip.golang.org/pkg/strconv/)
 
-​		[`strconv.Unquote`](https://tip.golang.org/pkg/strconv/#strconv.Unquote)现在拒绝接受Unicode surrogate halves。
+&emsp;&emsp;[`strconv.Unquote`](https://tip.golang.org/pkg/strconv/#strconv.Unquote)现在拒绝接受Unicode surrogate halves。
 
 [strings](https://tip.golang.org/pkg/strings/)
 
-​		新的 [`Cut`](https://tip.golang.org/pkg/bytes/#Cut)函数将分隔符周围的`string`切成片。它可以取代并简化 [`Index`](https://tip.golang.org/pkg/bytes/#Index), [`IndexByte`](https://tip.golang.org/pkg/bytes/#IndexByte), [`IndexRune`](https://tip.golang.org/pkg/bytes/#IndexRune), 和[`SplitN`](https://tip.golang.org/pkg/bytes/#SplitN).
+&emsp;&emsp;新的 [`Cut`](https://tip.golang.org/pkg/bytes/#Cut)函数将分隔符周围的`string`切成片。它可以取代并简化 [`Index`](https://tip.golang.org/pkg/bytes/#Index), [`IndexByte`](https://tip.golang.org/pkg/bytes/#IndexByte), [`IndexRune`](https://tip.golang.org/pkg/bytes/#IndexRune), 和[`SplitN`](https://tip.golang.org/pkg/bytes/#SplitN).
 
-​		新的[`Clone`](https://tip.golang.org/pkg/strings/#Clone)函数复制了输入字符串，返回的克隆字符串没有引用输入字符串的内存。
+&emsp;&emsp;新的[`Clone`](https://tip.golang.org/pkg/strings/#Clone)函数复制了输入字符串，返回的克隆字符串没有引用输入字符串的内存。
 
-​		[`Trim`](https://tip.golang.org/pkg/bytes/#Trim), [`TrimLeft`](https://tip.golang.org/pkg/bytes/#TrimLeft), and [`TrimRight`](https://tip.golang.org/pkg/bytes/#TrimRight) 的许多常见用途，而且现在不需要分配，特别是对于小的ASCII切割集，速度可以提高10倍。
+&emsp;&emsp;[`Trim`](https://tip.golang.org/pkg/bytes/#Trim), [`TrimLeft`](https://tip.golang.org/pkg/bytes/#TrimLeft), and [`TrimRight`](https://tip.golang.org/pkg/bytes/#TrimRight) 的许多常见用途，而且现在不需要分配，特别是对于小的ASCII切割集，速度可以提高10倍。
 
-​		[`Title`](https://tip.golang.org/pkg/bytes/#Title)函数现在已经废弃。它不处理Unicode标点符号和特定语言的大小写规则，并被[golang.org/x/text/cases](https://golang.org/x/text/cases) 包所取代。
+&emsp;&emsp;[`Title`](https://tip.golang.org/pkg/bytes/#Title)函数现在已经废弃。它不处理Unicode标点符号和特定语言的大小写规则，并被[golang.org/x/text/cases](https://golang.org/x/text/cases) 包所取代。
 
 [sync](https://tip.golang.org/pkg/sync/)
 
-​		新的方法[`Mutex.TryLock`](https://tip.golang.org/pkg/sync#Mutex.TryLock), [`RWMutex.TryLock`](https://tip.golang.org/pkg/sync#RWMutex.TryLock), 和[`RWMutex.TryRLock`](https://tip.golang.org/pkg/sync#RWMutex.TryRLock)，将在当前没有锁的情况下获取锁。
+&emsp;&emsp;新的方法[`Mutex.TryLock`](https://tip.golang.org/pkg/sync#Mutex.TryLock), [`RWMutex.TryLock`](https://tip.golang.org/pkg/sync#RWMutex.TryLock), 和[`RWMutex.TryRLock`](https://tip.golang.org/pkg/sync#RWMutex.TryRLock)，将在当前没有锁的情况下获取锁。
 
 [syscall](https://tip.golang.org/pkg/syscall/)
 
-​		为Windows引入了新的函数 [`SyscallN`](https://tip.golang.org/pkg/syscall/?GOOS=windows#SyscallN)，允许以任意数量的参数进行调用。因此，, [`Syscall`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall), [`Syscall6`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall6), [`Syscall9`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall9), [`Syscall12`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall12), [`Syscall15`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall15), 和 [`Syscall18`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall18) 将会被弃用，而使用 [`SyscallN`](https://tip.golang.org/pkg/syscall/?GOOS=windows#SyscallN)。
+&emsp;&emsp;为Windows引入了新的函数 [`SyscallN`](https://tip.golang.org/pkg/syscall/?GOOS=windows#SyscallN)，允许以任意数量的参数进行调用。因此，, [`Syscall`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall), [`Syscall6`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall6), [`Syscall9`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall9), [`Syscall12`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall12), [`Syscall15`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall15), 和 [`Syscall18`](https://tip.golang.org/pkg/syscall/?GOOS=windows#Syscall18) 将会被弃用，而使用 [`SyscallN`](https://tip.golang.org/pkg/syscall/?GOOS=windows#SyscallN)。
 
-​		现在在FreeBSD支持[`SysProcAttr.Pdeathsig`](https://tip.golang.org/pkg/syscall/?GOOS=freebsd#SysProcAttr.Pdeathsig) 。
+&emsp;&emsp;现在在FreeBSD支持[`SysProcAttr.Pdeathsig`](https://tip.golang.org/pkg/syscall/?GOOS=freebsd#SysProcAttr.Pdeathsig) 。
 
 [syscall/js](https://tip.golang.org/pkg/syscall/js/)
 
-​		`Wrapper`接口现在被移除。
+&emsp;&emsp;`Wrapper`接口现在被移除。
 
 [testing](https://tip.golang.org/pkg/testing/)
 
-​		在`-run`和`-bench`的参数中，`/`的优先级提高了。`A/B|C/D`过去被视为`A/(B|C)/D`，现在被视为`(A/B)|(C/D)`。
+&emsp;&emsp;在`-run`和`-bench`的参数中，`/`的优先级提高了。`A/B|C/D`过去被视为`A/(B|C)/D`，现在被视为`(A/B)|(C/D)`。
 
-​		如果`-run`选项没有选择任何测试，`-count`选项将被忽略。这可能会改变现有测试的行为，在不太可能的情况下，一个测试改变了每次运行测试函数本身时的子测试集。
+&emsp;&emsp;如果`-run`选项没有选择任何测试，`-count`选项将被忽略。这可能会改变现有测试的行为，在不太可能的情况下，一个测试改变了每次运行测试函数本身时的子测试集。
 
-​		新的[`testing.F`](https://tip.golang.org/pkg/testing#F) 类型被[上述新的fuzzing支持所使用](#fuzzing)。Tests现在也支持命令行参数 `-test.fuzz`, `-test.fuzztime`, 和`-test.fuzzminimizetime`。
+&emsp;&emsp;新的[`testing.F`](https://tip.golang.org/pkg/testing#F) 类型被[上述新的fuzzing支持所使用](#fuzzing)。Tests现在也支持命令行参数 `-test.fuzz`, `-test.fuzztime`, 和`-test.fuzzminimizetime`。
 
 [text/template](https://tip.golang.org/pkg/text/template/)
 
-​		在一个`range`管道内，新的`{{break}}`命令将提前结束循环，新的`{{continue}}`命令将立即开始下一个循环迭代。
+&emsp;&emsp;在一个`range`管道内，新的`{{break}}`命令将提前结束循环，新的`{{continue}}`命令将立即开始下一个循环迭代。
 
-​		`and`函数不再对所有参数进行评估；它在第一个参数评估为false后就停止评估参数。同样，`or`函数现在在第一个参数评估为 true 后就停止评估参数。如果任何一个参数是一个函数调用，这就有区别了。
+&emsp;&emsp;`and`函数不再对所有参数进行评估；它在第一个参数评估为false后就停止评估参数。同样，`or`函数现在在第一个参数评估为 true 后就停止评估参数。如果任何一个参数是一个函数调用，这就有区别了。
 
 [text/template/parse](https://tip.golang.org/pkg/text/template/parse/)
 
-​		该包通过新的常量 [`NodeBreak`](https://tip.golang.org/pkg/text/template/parse#NodeBreak)和新的 [`BreakNode`](https://tip.golang.org/pkg/text/template/parse#BreakNode)类型支持新的[text/template](https://tip.golang.org/pkg/text/template/) 和[html/template](https://tip.golang.org/pkg/html/template/)  `{{break}}`命令，同样也通过新的常量 [`NodeContinue`](https://tip.golang.org/pkg/text/template/parse#NodeContinue)和新的 [`ContinueNode`](https://tip.golang.org/pkg/text/template/parse#ContinueNode)类型支持新的`{{continue}}`命令。
+&emsp;&emsp;该包通过新的常量 [`NodeBreak`](https://tip.golang.org/pkg/text/template/parse#NodeBreak)和新的 [`BreakNode`](https://tip.golang.org/pkg/text/template/parse#BreakNode)类型支持新的[text/template](https://tip.golang.org/pkg/text/template/) 和[html/template](https://tip.golang.org/pkg/html/template/)  `{{break}}`命令，同样也通过新的常量 [`NodeContinue`](https://tip.golang.org/pkg/text/template/parse#NodeContinue)和新的 [`ContinueNode`](https://tip.golang.org/pkg/text/template/parse#ContinueNode)类型支持新的`{{continue}}`命令。
 
 [unicode/utf8](https://tip.golang.org/pkg/unicode/utf8/)
 
-​		新的 [`AppendRune`](https://tip.golang.org/pkg/unicode/utf8/#AppendRune)函数将一个UTF-8编码的`rune`追加到一个`[]byte`上。
+&emsp;&emsp;新的 [`AppendRune`](https://tip.golang.org/pkg/unicode/utf8/#AppendRune)函数将一个UTF-8编码的`rune`追加到一个`[]byte`上。
