@@ -7,7 +7,7 @@
 - 译者：[咔叽咔叽](https:/github.com/watermeloooo)
 - 校对：
 
-今天的文章来自于最近的 Go 代码测试。请看下面的代码。[1](#easy-footnote-bottom-1-4231)
+今天的文章来自于最近的 Go 代码测试。请看下面的基准测试代码。[1](#easy-footnote-bottom-1-4231)
 
 ```
 func BenchmarkSortStrings(b *testing.B) {
