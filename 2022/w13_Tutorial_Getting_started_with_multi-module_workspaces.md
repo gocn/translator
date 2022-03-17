@@ -1,6 +1,6 @@
 - 原文地址：https://go.dev/doc/tutorial/workspaces
 - 原文作者：**go.dev**
-- 本文永久链接：w13_Tutorial_Getting_started_with_multi-module_workspaces.md
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w13_Tutorial_Getting_started_with_multi-module_workspaces.md
 - 译者：[Jancd](https://github.com/Jancd)
 - 校对：
 
