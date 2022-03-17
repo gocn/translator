@@ -5,12 +5,13 @@
 - 校对：
 
 # Tutorial: Getting started with multi-module workspaces
+
 Table of Contents
-- Prerequisites
-- Create a module for your code
-- Create the workspace
-- Download and modify the golang.org/x/example module
-- Learn more about workspaces
+- [Prerequisites](#prerequisites)
+- [Create a module for your code](#create-a-module-for-your-code)
+- [Create the workspace](#create-the-workspace)
+- [Download and modify the golang.org/x/example module](#download-and-modify-the-golangorgxexample-module)
+- [Learn more about workspaces](#learn-more-about-workspaces)
 
 This tutorial introduces the basics of multi-module workspaces in Go. With multi-module workspaces, you can tell the Go command that you’re writing code in multiple modules at the same time and easily build and run code in those modules.
 
@@ -87,7 +88,7 @@ func main() {
 }
 ```
 
-Now, run the hello program:
+Now, run the `hello` program:
 
 ```shell
 $ go run example.com/hello
@@ -246,4 +247,5 @@ The go command has a couple of subcommands for working with workspaces in additi
 - `go work use [-r] [dir]` adds a use directive to the `go.work` file for dir, if it exists, and removes the use directory if the argument directory doesn’t exist. The -r flag examines subdirectories of dir recursively.
 - `go work edit` edits the go.work file similarly to go mod edit
 - `go work sync` syncs dependencies from the workspace’s build list into each of the workspace modules.
+
 See Workspaces in the Go Modules Reference for more detail on workspaces and `go.work` files.
