@@ -2,62 +2,62 @@
 - 原文作者：**go.dev**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w13_Tutorial_Getting_started_with_multi-module_workspaces.md
 - 译者：[Jancd](https://github.com/Jancd)
-- 校对：
+- 校对：[pseudoyu](https://github.com/pseudoyu)
 
-# Tutorial: Getting started with multi-module workspaces
+# 教程：开始使用多模块工作区模式
 
-Table of Contents
-- [Prerequisites](#prerequisites)
-- [Create a module for your code](#create-a-module-for-your-code)
-- [Create the workspace](#create-the-workspace)
-- [Download and modify the golang.org/x/example module](#download-and-modify-the-golangorgxexample-module)
-- [Learn more about workspaces](#learn-more-about-workspaces)
+内容列表
+- [前期准备](#前期准备)
+- [为你的代码创建一个模块](#为你的代码创建一个模块)
+- [创建工作区](#创建工作区)
+- [下载并修改`golang.org/x/example`模块](#下载并修改-golang.org/x/example-模块)
+- [了解有关工作区的更多信息](#了解有关工作区的更多信息)
 
-This tutorial introduces the basics of multi-module workspaces in Go. With multi-module workspaces, you can tell the Go command that you’re writing code in multiple modules at the same time and easily build and run code in those modules.
+本教程介绍了 Go 中多模块工作区的基本知识。通过多模块工作区，将可以同时编写多个模块的代码，并轻松地在这些模块中构建和运行代码。
 
-In this tutorial, you’ll create two modules in a shared multi-module workspace, make changes across those modules, and see the results of those changes in a build.
+在本教程中，你将在一个共享的多模块工作空间中创建两个模块，对这些模块进行修改，并在构建中检验这些修改的结果。
 
-**Note**: For other tutorials, see [Tutorials](https://go.dev/doc/tutorial/index.html).
+**提示**: 对于其他教程, [更多请看](https://go.dev/doc/tutorial/index.html).
 
-## Prerequisites
+## 前期准备
 
-- **An installation of Go 1.18 or later**.
-- **A tool to edit your code**. Any text editor you have will work fine.
-- **A command terminal**. Go works well using any terminal on Linux and Mac, and on PowerShell or cmd in Windows.
+- **安装了 Go 1.18 或更高版本**.
+- **一个编辑你的代码的工具**，任何文本编辑器都可以正常工作。
+- **一个命令终端**， Go 在 Linux 和 Mac 上的任何终端以及 Windows 中的 PowerShell 或 cmd 上都能很好地工作。
 
-This tutorial requires go1.18 or later. Make sure you’ve installed Go at Go 1.18 or later using the links at go.dev/dl.
+本教程需要 go1.18 或更高版本。 使用 `go.dev/dl` 中的链接，确保你已使用 Go 1.18 或更高版本。
 
-## Create a module for your code
+## 为你的代码创建一个模块
 
-To begin, create a module for the code you’ll write.
+首先，为你的代码创建一个模块。
 
-1. Open a command prompt and change to your home directory.
+1. 打开命令行，进入到你的 `home` 目录。
 
-On Linux or Mac:
+在 Linux 或 Mac 上:
 
 ```shell
 $ cd
 ```
-On Windows:
+在 Windows 上:
 
 ```shell
 C:\> cd %HOMEPATH%
 ```
 
-The rest of the tutorial will show a $ as the prompt. The commands you use will work on Windows too.
+教程的其余部分将显示 `$` 作为命令行提示。同理，这些命令在 Windows 上也可以使用。
 
-2. From the command prompt, create a directory for your code called workspace.
+2. 通过命令行为你的代码创建一个名为 `workspace` 的目录。
 
 ```shell
 $ mkdir workspace
 $ cd workspace
 ```
 
-3. Initialize the module
+3. 初始化模块
 
-Our example will create a new module hello that will depend on the golang.org/x/example module.
+为例子创建一个新的模块 `hello`，它将依赖于 `golang.org/x/example` 模块。
 
-Create the hello module:
+创建 `hello` 模块。
 
 ```shell
 $ mkdir hello
@@ -66,13 +66,13 @@ $ go mod init example.com/hello
 go: creating new go.mod: module example.com/hello
 ```
 
-Add a dependency on the golang.org/x/example module by using go get.
+通过使用 `go get` 添加对 `golang.org/x/example` 模块的依赖。
 
 ```shell
 $ go get golang.org/x/example
 ```
 
-Create hello.go in the hello directory with the following contents:
+在 `hello` 目录下创建 `hello.go`，内容如下。
 
 ```go
 package main
@@ -88,28 +88,28 @@ func main() {
 }
 ```
 
-Now, run the `hello` program:
+执行 `hello` 程序:
 
 ```shell
 $ go run example.com/hello
 olleH
 ```
 
-## Create the workspace
+## 创建工作区
 
-In this step, we’ll create a `go.work` file to specify a workspace with the module.
+在这一步，我们将创建一个 `go.work` 文件，以指定一个带有模块的工作空间。
 
-### Initialize the workspace
+### 初始化工作区
 
-In the workspace directory, run:
+在工作区目录中，执行：
 
 ```shell
 $ go work init ./hello
 ```
 
-The `go work init` command tells go to create a go.work file for a workspace containing the modules in the `./hello` directory.
+`go work init` 命令会让 go 为包含 `./hello` 目录下的模块的工作空间创建一个 `go.work` 文件。
 
-The go command produces a go.work file that looks like this:
+这个 go 命令产生一个 `go.work` 文件，看起来像这样。
 
 ```shell
 go 1.18
@@ -117,34 +117,33 @@ go 1.18
 use ./hello
 ```
 
-The `go.work` file has similar syntax to go.mod.
+`go.work` 文件的语法与 go.mod 相似。
 
-The go directive tells Go which version of Go the file should be interpreted with. It’s similar to the go directive in the `go.mod` file.
+这个指令让 go 编译器明确应该用哪个版本的 go 来解释该文件。它与 `go.mod` 文件中的 go 指令类似。
 
-The use directive tells Go that the module in the hello directory should be main modules when doing a build.
+`use` 指令告诉 go 编译器，在进行构建时，`hello` 目录下的模块应该是主模块。
 
-So in any subdirectory of workspace the module will be active.
+因此，在工作区的任何子目录中，该模块都将处于活跃状态。
 
-### Run the program in the workspace directory
+### 运行工作区目录下的程序
 
-In the workspace directory, run:
+在 `workspace` 目录中，运行：
 
 ```shell
 $ go run example.com/hello
 olleH
 ```
+这个 go 命令将工作区中的所有模块都作为主模块。这样，我们就可以引用模块中的包，甚至在模块之外的包。在模块或工作区之外运行 `go run` 命令会导致错误，因为 `go` 命令不知道要使用哪些模块。
 
-The Go command includes all the modules in the workspace as main modules. This allows us to refer to a package in the module, even outside the module. Running the go run command outside the module or the workspace would result in an error because the go command wouldn’t know which modules to use.
+接下来，我们将在工作区添加一个 `golang.org/x/example` 模块的本地拷贝。然后我们将在 `stringutil` 包中添加一个新的函数，我们可以用它代替 `Reverse`。
 
-Next, we’ll add a local copy of the `golang.org/x/example` module to the workspace. We’ll then add a new function to the stringutil package that we can use instead of `Reverse`.
+## 下载并修改`golang.org/x/example`模块
 
-## Download and modify the `golang.org/x/example` module
+在这一步，我们将下载一份包含 `golang.org/x/example` 模块的 git 管理仓库副本，将其添加到工作区，然后为其添加一个新函数，我们将在 `hello` 程序中使用该函数。
 
-In this step, we’ll download a copy of the Git repo containing the `golang.org/x/example` module, add it to the workspace, and then add a new function to it that we will use from the hello program.
+1. 拷贝代码仓库
 
-1. Clone the repository
-
-From the workspace directory, run the git command to clone the repository:
+在工作区目录下，运行 git 命令来拷贝代码仓库：
 
 ```shell
 $ git clone https://go.googlesource.com/example
@@ -154,13 +153,13 @@ Receiving objects: 100% (165/165), 434.18 KiB | 1022.00 KiB/s, done.
 Resolving deltas: 100% (27/27), done.
 ```
 
-2. Add the module to the workspace
+2. 将该模块添加到工作区
 
 ```shell
 $ go work use ./example
 ```
 
-The go work use command adds a new module to the go.work file. It will now look like this:
+`go work use` 命令在 `go.work` 文件中增加了一个新模块。现在它的布局如下：
 
 ```shell
 go 1.18
@@ -171,15 +170,15 @@ use (
 )
 ```
 
-The module now includes both the `example.com/hello` module and the `golang.org/x/example` module.
+该模块现在同时包括 `example.com/hello` 模块和 `golang.org/x/example` 模块。
 
-This will allow us to use the new code we will write in our copy of the stringutil module instead of the version of the module in the module cache that we downloaded with the `go get` command.
+这将允许我们使用即将在 `stringutil` 模块副本中编写的新代码，而不是 `go get` 命令下载的模块缓存中的版本。
 
-3. Add the new function.
+3. 添加新函数
 
-We’ll add a new function to uppercase a string to the `golang.org/x/example/stringutil` package.
+我们将在 `golang.org/x/example/stringutil` 包中添加一个新的函数来对字符串进行大写转换。
 
-Add a new folder to the workspace/example/stringutil directory containing the following contents:
+在 `workspace/example/stringutil` 目录下添加一个新的文件夹，包含以下内容。
 
 ```go
 package stringutil
@@ -196,9 +195,9 @@ func ToUpper(s string) string {
 }
 ```
 
-4. Modify the hello program to use the function.
+4. 修改 `hello` 程序以使用该函数
 
-Modify the contents of `workspace/hello/hello.go` to contain the following contents:
+修改 `workspace/hello/hello.go` 的内容，如下：
 
 ```go
 package main
@@ -214,38 +213,38 @@ func main() {
 }
 ```
 
-### Run the code in the workspace
+### 在工作区执行代码
 
-From the workspace directory, run
+从工作区目录，执行：
 
 ```shell
 $ go run example/hello
 HELLO
 ```
 
-The Go command finds the` example.com/hello` module specified in the command line in the hello directory specified by the go.work file, and similarly resolves the `golang.org/x/example` import using the `go.work` file.
+这个 go 命令在 `go.work` 文件指定的 `hello`目录下找到命令行中指定的 `example.com/hello` 模块，并同样使用 `go.work` 文件解析 `golang.org/x/example` 导入。
 
-`go.work` can be used instead of adding replace directives to work across multiple modules.
+`go.work`可以用来代替添加替换指令，便于在多个模块间工作。
 
-Since the two modules are in the same workspace it’s easy to make a change in one module and use it in another.
+由于这两个模块在同一个工作区，所以很容易出现在一个模块中做出改变并在另一个模块中使用的情况。
 
-### Future step
+### 版本控制
 
-Now, to properly release these modules we’d need to make a release of the `golang.org/x/example` module, for example at `v0.1.0`. This is usually done by tagging a commit on the module’s version control repository. See the [module release workflow documentation](https://go.dev/doc/modules/release-workflow) for more details. Once the release is done, we can increase the requirement on the `golang.org/x/example` module in hello/go.mod:
+现在，为了正确发布这些模块，我们需要对 `golang.org/x/example` 模块进行版本发布，例如 `v0.1.0` 。这通常是通过在模块的版本控制库中标记一个提交来完成的。更多细节见[模块发布工作流程文档](https://go.dev/doc/modules/release-workflow)。一旦发布完成，我们可以在 `hello/go.mod` 中增加对 `golang.org/x/example`模块的版本约束。 
 
 ```shell
 cd hello
 go get example.com/dep@v0.1.0
 ```
 
-That way, the go command can properly resolve the modules outside the workspace.
+这样， go 命令可以正确解析工作区之外的模块。
 
-## Learn more about workspaces
+## 了解有关工作区的更多信息
 
-The go command has a couple of subcommands for working with workspaces in addition to `go work init` which we saw earlier in the tutorial:
+除了本教程前面的 `go work init` 之外，go 还有几个子命令用于处理工作空间。
 
-- `go work use [-r] [dir]` adds a use directive to the `go.work` file for dir, if it exists, and removes the use directory if the argument directory doesn’t exist. The -r flag examines subdirectories of dir recursively.
-- `go work edit` edits the go.work file similarly to go mod edit
-- `go work sync` syncs dependencies from the workspace’s build list into each of the workspace modules.
+- `go work use [-r] [dir]` 在 `go.work` 文件中会将目录 `dir` 作为一个模块，如果目录不存在，则放弃使用目录。`-r` 标志会递归地检查dir的子目录。
+- `go work edit` 编辑 `go.work` 文件，与`go mod edit`类似。
+- `go work sync` 将工作区构建列表中的依赖项同步到每个工作区模块中。
 
-See Workspaces in the Go Modules Reference for more detail on workspaces and `go.work` files.
+关于工作区和 `go.work` 文件的更多细节，[请参见 go modules 的文章](https://go.dev/ref/mod#workspaces)。
