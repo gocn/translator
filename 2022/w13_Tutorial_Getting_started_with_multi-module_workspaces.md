@@ -2,7 +2,7 @@
 - 原文作者：**go.dev**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w13_Tutorial_Getting_started_with_multi-module_workspaces.md
 - 译者：[Jancd](https://github.com/Jancd)
-- 校对：
+- 校对：[pseudoyu](https://github.com/pseudoyu)
 
 # 教程：开始使用多模块工作区模式
 
@@ -46,7 +46,7 @@ C:\> cd %HOMEPATH%
 
 教程的其余部分将显示 `$` 作为命令行提示。同理，这些命令在 Windows 上也可以使用。
 
-2. 在命令行下，为你的代码创建一个名为 `workspace` 的目录。
+2. 通过命令行为你的代码创建一个名为 `workspace` 的目录。
 
 ```shell
 $ mkdir workspace
@@ -172,11 +172,11 @@ use (
 
 该模块现在同时包括 `example.com/hello` 模块和 `golang.org/x/example` 模块。
 
-这将使我们能够使用我们将在 `stringutil` 模块副本中编写的新代码，而不是我们用 `go get` 命令下载的模块缓存中的模块版本。
+这将允许我们使用即将在 `stringutil` 模块副本中编写的新代码，而不是 `go get` 命令下载的模块缓存中的版本。
 
 3. 添加新函数
 
-我们将在 `golang.org/x/example/stringutil` 包中添加一个新的函数来对字符串进行大写。
+我们将在 `golang.org/x/example/stringutil` 包中添加一个新的函数来对字符串进行大写转换。
 
 在 `workspace/example/stringutil` 目录下添加一个新的文件夹，包含以下内容。
 
@@ -241,10 +241,10 @@ go get example.com/dep@v0.1.0
 
 ## 了解有关工作区的更多信息
 
-除了我们在本教程前面看到的 `go work init` 之外，还有几个子命令用于处理工作空间。
+除了本教程前面的 `go work init` 之外，go 还有几个子命令用于处理工作空间。
 
 - `go work use [-r] [dir]` 在 `go.work` 文件中会将目录 `dir` 作为一个模块，如果目录不存在，则放弃使用目录。`-r` 标志会递归地检查dir的子目录。
 - `go work edit` 编辑 `go.work` 文件，与`go mod edit`类似。
 - `go work sync` 将工作区构建列表中的依赖项同步到每个工作区模块中。
 
-关于工作空间和 `go.work` 文件的更多细节，[请参见 go modules 的文章](https://go.dev/ref/mod#workspaces)。
+关于工作区和 `go.work` 文件的更多细节，[请参见 go modules 的文章](https://go.dev/ref/mod#workspaces)。
