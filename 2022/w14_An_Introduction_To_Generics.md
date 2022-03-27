@@ -1,4 +1,5 @@
 # An Introduction To Generics
+# 泛型简介
 
 - 原文地址：https://golang.google.cn/blog/intro-generics
 - 原文作者：**Robert Griesemer and Ian Lance Taylor**
@@ -6,28 +7,46 @@
 
 
 ## Introduction
+## 内容介绍
 
 This blog post is based on our talk at GopherCon 2021:
+这篇博客内容基于我们在 2021 Gophercon 的演讲：
 
 <iframe src="https://www.youtube.com/embed/Pa_e9EeCdy8" width="560" height="315" frameborder="0" allowfullscreen="" mozallowfullscreen="" webkitallowfullscreen=""></iframe>
 
 The Go 1.18 release adds support for generics. Generics are the biggest change we’ve made to Go since the first open source release. In this article we’ll introduce the new language features. We won’t try to cover all the details, but we will hit all the important points. For a more detailed and much longer description, including many examples, see the [proposal document](https://go.googlesource.com/proposal/+/HEAD/design/43651-type-parameters.md). For a more precise description of the language changes, see the [updated language spec](https://golang.google.cn/ref/spec). (Note that the actual 1.18 implementation imposes some restrictions on what the proposal document permits; the spec should be accurate. Future releases may lift some of the restrictions.)
 
+Go 1.18 增加了对泛型的支持。泛型是 Go 的第一个开源版本以来最大特性变更。在本文中，我们将介绍新的语言特性。在这里，我们主要侧重泛型相关的重点内容。详细的描述和更多的例子需要参考 [提议文档](https://go.googlesource.com/proposal/+/HEAD/design/43651-type-parameters.md) 。准确语言变化需要参考[更新之后的语言规范](https://golang.google.cn/ref/spec) 。（请注意，实际的 1.18 实现对提案文件允许的内容施加了一些限制；规范应该是准确的。未来的版本可能会取消一些限制。）
+
 Generics are a way of writing code that is independent of the specific types being used. Functions and types may now be written to use any of a set of types.
+泛型是一种独立于使用的特定类型编写代码的方式。现在可以编写函数和类型适用于一组类型集合的任何一种。
 
 Generics adds three new big things to the language:
 
+泛型为 Go 添加了三个新的重要内容：
+
 1.  Type parameters for function and types.
+1. 函数和结构体定义支持类型参数。
+
 2.  Defining interface types as sets of types, including types that don’t have methods.
+2. 将 interface 定义为类型集合，也包括没有提供方法的类型。
+
 3.  Type inference, which permits omitting type arguments in many cases when calling a function.
 
-## Type Parameters
+3. 类型推断，允许在调用函数时（在一般场景下可以）省略类型参数。
 
+## Type Parameters
+## 类型参数
 Functions and types are now permitted to have type parameters. A type parameter list looks like an ordinary parameter list, except that it uses square brackets instead of parentheses.
+
+现在允许函数和类型具有类型参数。类型参数列表看起来像一个普通的参数列表，除了它使用方括号而不是圆括号。
 
 To show how this works, let’s start with the basic non-generic `Min` function for floating point values:
 
+为了展示泛型的工作原理，让我们从浮点值的基本非泛型 `Min` 函数开始：
+
 ```
+// 这里返回的是两个浮点数的最小值
 func Min(x, y float64) float64 {
     if x < y {
         return x
@@ -38,7 +57,9 @@ func Min(x, y float64) float64 {
 
 We can make this function generic–make it work for different types–by adding a type parameter list. In this example we add a type parameter list with a single type parameter `T`, and replace the uses of `float64` with `T`.
 
+我们可以通过添加类型参数列表来使这个函数适用于不同的类型。在这个例子中，我们添加了一个带有单个类型参数 `T` 的类型参数列表，并将 `float64` 的使用替换为 `T`(`constraints.Ordered` 是参数列表类型 `T` 的约束)。
 ```
+
 import "golang.org/x/exp/constraints"
 
 func GMin[T constraints.Ordered](x, y T) T {
@@ -51,24 +72,33 @@ func GMin[T constraints.Ordered](x, y T) T {
 
 It is now possible to call this function with a type argument by writing a call like
 
-```
+现在可以通过编写类似的调用来使用带有类型参数的 `GMin`。 
+
+``` go
+// 类型参数 T 被明确指定为 int,
 x := GMin[int](2, 3)
 ```
 
 Providing the type argument to `GMin`, in this case `int`, is called _instantiation_. Instantiation happens in two steps. First, the compiler substitutes all type arguments for their respective type parameters throughout the generic function or type. Second, the compiler verifies that each type argument satisfies the respective constraint. We’ll get to what that means shortly, but if that second step fails, instantiation fails and the program is invalid.
 
-After successful instantiation we have a non-generic function that can be called just like any other function. For example, in code like
+向 `GMin` 提供类型参数，在本例中为 `int`，称为实例化。实例化分两步进行。首先，编译器在泛型函数或类型中用所有类型参数替换它们各自的类型参数。其次，编译器验证每个类型参数是否满足各自的约束。我们很快就会明白这是什么意思，但如果第二步失败，实例化就会失败，程序就会无效。
 
-```
+After successful instantiation we have a non-generic function that can be called just like any other function. For example, in code like
+成功实例化后，我们有一个可以像任何其他函数一样调用的非泛型函数。例如，在类似的代码中
+``` go 
+// 使用 float64 来实例化 GMin
 fmin := GMin[float64]
 m := fmin(2.71, 3.14)
 ```
 
 the instantiation `GMin[float64]` produces what is effectively our original floating-point `Min` function, and we can use that in a function call.
+实例化 `GMin[float64]` 产生了我们原来的浮点 `Min` 函数，我们可以在函数调用中使用它。
 
 Type parameters can be used with types also.
+类型参数也可以与类型定义一起使用。
 
 ```
+
 type Tree[T interface{}] struct {
     left, right *Tree[T]
     value       T
@@ -80,40 +110,60 @@ var stringTree Tree[string]
 ```
 
 Here the generic type `Tree` stores values of the type parameter `T`. Generic types can have methods, like `Lookup` in this example. In order to use a generic type, it must be instantiated; `Tree[string]` is an example of instantiating `Tree` with the type argument `string`.
+这里泛型类型`Tree`存储类型参数`T`的值。泛型类型可以有方法，例如本例中的 `Lookup`。为了使用泛型类型，它必须被实例化； `Tree[string]` 是使用类型参数 `string` 实例化 `Tree` 的示例。
 
 ## Type sets
-
+## 类型集合
 Let’s look a bit deeper at the type arguments that can be used to instantiate a type parameter.
 
+让我们更深入地了解可用于实例化的类型参数。
 An ordinary function has a type for each value parameter; that type defines a set of values. For instance, if we have a `float64` type as in the non-generic function `Min` above, the permissible set of argument values is the set of floating-point values that can be represented by the `float64` type.
 
-Similarly, type parameter lists have a type for each type parameter. Because a type parameter is itself a type, the types of type parameters define sets of types. This meta-type is called a _type constraint_.
+普通函数对每个值参数都有一个类型；该类型定义了一组值。例如，如果我们有一个 `float64` 类型，如上面的非泛型函数 `Min` 中，则允许的参数值集是可以由 `float64` 类型表示的浮点值集。
+
+Similarly, type parameter lists have a type for each type parameter. Because a type parameter is itself a type, the types of type parameters define sets of types. This meta-type is called a type constraint.
+
+同样，类型参数列表对每个类型参数都有一个类型。因为类型参数本身就是一种类型，所以类型参数的类型定义了类型集合。这种元类型称为类型约束。
 
 In the generic `GMin`, the type constraint is imported from the [constraints package](https://golang.org/x/exp/constraints). The `Ordered` constraint describes the set of all types with values that can be ordered, or, in other words, compared with the < operator (or <= , > , etc.). The constraint ensures that only types with orderable values can be passed to `GMin`. It also means that in the `GMin` function body values of that type parameter can be used in a comparison with the < operator.
+在泛型的 `GMin` 中，类型约束是从 [constraints 包](https://golang.org/x/exp/constraints) 导入的。 `Ordered` 描述了具有可排序值的所有类型的集合，或者换句话说，与 < 运算符（或者 <=， > 等等运算符）进行比较。该约束确保只有具有可排序值的类型才能传递给`GMin`。这也意味着在 `GMin` 函数体中，该类型参数的值可以用于与 < 运算符进行比较。
 
 In Go, type constraints must be interfaces. That is, an interface type can be used as a value type, and it can also be used as a meta-type. Interfaces define methods, so obviously we can express type constraints that require certain methods to be present. But `constraints.Ordered` is an interface type too, and the < operator is not a method.
+在 Go 中，类型约束必须是接口。即接口类型可以作为值类型，也可以作为元类型。接口定义了方法，因此我们可以表达需要某些方法存在的类型约束。但是 `constraints.Ordered` 也是接口类型，<操作符不是方法。
 
 To make this work, we look at interfaces in a new way.
+为了完成这项工作，我们以一种新的方式看待接口。
 
 Until recently, the Go spec said that an interface defines a method set, which is roughly the set of methods enumerated in the interface. Any type that implements all those methods implements that interface.
+
+直到最近，Go 规范才说接口定义了枚举的方法集。所有实现这些方法的类型都实现了该接口。
 
 ![](https://golang.google.cn/blog/intro-generics/method-sets.png)
 
 But another way of looking at this is to say that the interface defines a set of types, namely the types that implement those methods. From this perspective, any type that is an element of the interface’s type set implements the interface.
 
+但另一种看法是，接口定义了一组类型，即实现这些方法的类型。从这个角度来看，作为接口类型集元素的任何类型都实现了该接口。
+
 ![](https://golang.google.cn/blog/intro-generics/type-sets.png)
 
 The two views lead to the same outcome: For each set of methods we can imagine the corresponding set of types that implement those methods, and that is the set of types defined by the interface.
+这两个看法都有相同的结果：对于每组方法，我们可以想象实现这些方法的相应类型集，即接口定义的类型集。
 
 For our purposes, though, the type set view has an advantage over the method set view: we can explicitly add types to the set, and thus control the type set in new ways.
+但是，就我们的目的而言，类型集观点比方法集观点具有优势：我们可以显式地将类型添加到集合中，从而以新的方式控制类型集。
 
 We have extended the syntax for interface types to make this work. For instance, `interface{ int|string|bool }` defines the type set containing the types `int`, `string`, and `bool`.
+
+我们扩展了接口类型的语法以使其工作。例如，`interface{ int|string|bool }` 定义了包含 `int`、`string` 和 `bool` 类型的类型集合。
 
 ![](https://golang.google.cn/blog/intro-generics/type-sets-2.png)
 
 Another way of saying this is that this interface is satisfied by only `int`, `string`, or `bool`.
+另一种说法是，该接口仅由 `int`、`string` 或 `bool` 满足。
 
 Now let’s look at the actual definition of `contraints.Ordered`:
+
+现在让我们看看 `constraints.Ordered` 的实际定义：
 
 ```
 type Ordered interface {
@@ -123,21 +173,32 @@ type Ordered interface {
 
 This declaration says that the `Ordered` interface is the set of all integer, floating-point, and string types. The vertical bar expresses a union of types (or sets of types in this case). `Integer` and `Float` are interface types that are similarly defined in the `constraints` package. Note that there are no methods defined by the `Ordered` interface.
 
+这个声明表明 `Ordered` 接口是所有整数、浮点和字符串类型的集合。竖线表示类型的联合（或本例中的类型集）。 `Integer` 和 `Float` 是在 `constraints` 包中类似定义的接口类型。请注意，`Ordered` 接口没有定义任何方法。
+
 For type constraints we usually don’t care about a specific type, such as `string`; we are interested in all string types. That is what the `~` token is for. The expression `~string` means the set of all types whose underlying type is `string`. This includes the type `string` itself as well as all types declared with definitions such as `type MyString string`.
 
+对于类型约束，我们通常不关心特定类型，例如 `string`；我们对所有字符串类型都感兴趣。这就是 `~` 标记的用途。表达式`~string`表示底层类型为`string`的所有类型的集合。这包括类型 `string` 本身以及使用定义声明的所有类型，例如 `type MyString string`。
+
 Of course we still want to specify methods in interfaces, and we want to be backward compatible. In Go 1.18 an interface may contain methods and embedded interfaces just as before, but it may also embed non-interface types, unions, and sets of underlying types.
+当然，我们仍然希望在接口中指定方法，并且我们希望向后兼容。在 Go 1.18 中，接口可以像以前一样包含方法和嵌入式接口，但它也可以嵌入非接口类型、联合和底层类型集。
 
 When used as a type constraint, the type set defined by an interface specifies exactly the types that are permitted as type arguments for the respective type parameter. Within a generic function body, if the type of a operand is a type parameter `P` with constraint `C`, operations are permitted if they are permitted by all types in the type set of `C` (there are currently some implementation restrictions here, but ordinary code is unlikely to encounter them).
+当用作类型约束时，接口定义的类型集准确地指定了参数类型。在泛型函数体内，如果操作数的类型是类型参数 `P`，约束为 `C`，则在 `C` 类型集中的所有类型都允许的情况下允许操作（目前有一些实现限制在这里，但普通代码不太可能遇到它们）。
 
 Interfaces used as constraints may be given names (such as `Ordered`), or they may be literal interfaces inlined in a type parameter list. For example:
+
+用作约束的接口可以被赋予名称（比如 `Ordered`），或者它们可以是内联在类型参数列表中的文字接口。例如：
 
 ```
 [S interface{~[]E}, E interface{}]
 ```
 
 Here `S` must be a slice type whose element type can be any type.
+这里 `S` 必须是一个切片类型，其元素类型可以是任何类型。
 
 Because this is a common case, the enclosing `interface{}` may be omitted for interfaces in constraint position, and we can simply write:
+
+因为这是一种常见的情况，所以对于处于约束位置的接口，可以省略封闭的 `interface{}`，我们可以简单地写：
 
 ```
 [S ~[]E, E interface{}]
@@ -145,25 +206,33 @@ Because this is a common case, the enclosing `interface{}` may be omitted for in
 
 Because the empty interface is common in type parameter lists, and in ordinary Go code for that matter, Go 1.18 introduces a new predeclared identifier `any` as an alias for the empty interface type. With that, we arrive at this idiomatic code:
 
+因为空接口在类型参数列表和普通 Go 代码中很常见，所以 Go 1.18 引入了一个新的预声明标识符`any` 作为空接口类型的别名。有了这个，我们得到了这个惯用的代码：
+
 ```
 [S ~[]E, E any]
 ```
 
 Interfaces as type sets is a powerful new mechanism and is key to making type constraints work in Go. For now, interfaces that use the new syntactic forms may only be used as constraints. But it’s not hard to imagine how explicitly type-constrained interfaces might be useful in general.
 
-## Type inference
+类型集的接口是一种强大的新机制，在 Go 类型约束中起关键作用。目前，使用新语法形式的接口只能用作约束。明确类型约束的接口一般来说是非常有用的。
 
+## Type inference
+## 类型推断
 The last new major language feature is type inference. In some ways this is the most complicated change to the language, but it is important because it lets people use a natural style when writing code that calls generic functions.
+最后一个主要的新功能是类型推断。在某些方面，这是对语言最复杂的更改，但它很重要，因为它让人们在编写调用泛型函数的代码时可以使用自然风格。
 
 ### Function argument type inference
+### 函数参数类型推断
 
 With type parameters comes the need to pass type arguments, which can make for verbose code. Going back to our generic `GMin` function:
+使用类型参数需要传递类型参数，这可能会产生冗长的代码。回到我们的泛型的 `GMin`：
 
 ```
 func GMin[T constraints.Ordered](x, y T) T { ... }
 ```
 
 the type parameter `T` is used to specify the types of the ordinary non-type arguments `x`, and `y`. As we saw earlier, this can be called with an explicit type argument
+类型参数 `T` 用于指定普通非类型参数 `x` 和 `y` 的类型。正如我们之前看到的，这可以使用显式类型参数调用
 
 ```
 var a, b, m float64
@@ -173,6 +242,8 @@ m = GMin[float64](a, b) // explicit type argument
 
 In many cases the compiler can infer the type argument for `T` from the ordinary arguments. This makes the code shorter while remaining clear.
 
+在许多情况下，编译器可以从普通参数中推断出 `T` 的类型参数。这使得代码更短，同时保持清晰。
+
 ```
 var a, b, m float64
 
@@ -181,17 +252,28 @@ m = GMin(a, b) // no type argument
 
 This works by matching the types of the arguments `a` and `b` with the types of the parameters `x`, and `y`.
 
-This kind of inference, which infers the type arguments from the types of the arguments to the function, is called _function argument type inference_.
+这通过将参数 `a` 和 `b` 的类型与参数 `x` 和 `y` 的类型相匹配来工作。
+
+This kind of inference, which infers the type arguments from the types of the arguments to the function, is called function argument type inference.
+
+这种从函数实际参数的参数类型推断类型参数的推断称为函数参数类型推断。
 
 Function argument type inference only works for type parameters that are used in the function parameters, not for type parameters used only in function results or only in the function body. For example, it does not apply to functions like `MakeT[T any]() T`, that only uses `T` for a result.
 
-### Constraint type inference
+函数实参类型推断仅适用于函数参数中使用的类型参数，不适用于仅用于函数结果或函数体中的类型参数。例如，它不适用于像 `MakeT[T any]() T` 这样只使用 `T` 作为结果的函数。
 
-The language supports another kind of type inference, _constraint type inference_. To describe this, let’s start with this example of scaling a slice of integers:
+### Constraint type inference
+### 约束类型推断
+
+The language supports another kind of type inference, constraint type inference. To describe this, let’s start with this example of scaling a slice of integers:
+
+Go 支持另一种类型推断，即约束类型推断。为了描述这一点，让我们从这个 `Scale` 整数切片的例子开始：
 
 ```
 // Scale returns a copy of s with each element multiplied by c.
+// Scale 返回 s 的副本，其中每个元素乘以 c
 // This implementation has a problem, as we will see.
+// 正如我们将看到的，这个实现有一个问题。
 func Scale[E constraints.Integer](s []E, c E) []E {
     r := make([]E, len(s))
     for i, v := range s {
@@ -203,7 +285,11 @@ func Scale[E constraints.Integer](s []E, c E) []E {
 
 This is a generic function that works for a slice of any integer type.
 
+这是一个泛型函数，适用于任何整数类型的切片。
+
 Now suppose that we have a multi-dimensional `Point` type, where each `Point` is simply a list of integers giving the coordinates of the point. Naturally this type will have some methods.
+
+现在假设我们有一个多维 `Point` 类型，其中每个 `Point` 只是一个整数列表，给出了点的坐标。自然这种类型会有一些方法。
 
 ```
 type Point []int32
@@ -215,6 +301,7 @@ func (p Point) String() string {
 
 Sometimes we want to scale a `Point`. Since a `Point` is just a slice of integers, we can use the `Scale` function we wrote earlier:
 
+有时我们想 `Scale` 一个 `Point`。由于 `Point` 只是一个整数切片，我们可以使用我们之前编写的 `Scale` 函数：
 ```
 // ScaleAndPrint doubles a Point and prints it.
 func ScaleAndPrint(p Point) {
@@ -225,12 +312,19 @@ func ScaleAndPrint(p Point) {
 
 Unfortunately this does not compile, failing with an error like `r.String undefined (type []int32 has no field or method String)`.
 
+不幸的是，这并不能编译，会出现类似 `r.String undefined (type []int32 has no field or method String)` 这样的错误。
+
 The problem is that the `Scale` function returns a value of type `[]E` where `E` is the element type of the argument slice. When we call `Scale` with a value of type `Point`, whose underlying type is `[]int32`, we get back a value of type `[]int32`, not type `Point`. This follows from the way that the generic code is written, but it’s not what we want.
+
+问题是 `Scale` 函数返回类型为 `[]E` 的值，其中 `E` 是参数切片的元素类型。当我们用 `Point` 类型的值调用 `Scale` 时，它的底层类型是 `[]int32`，我们得到的是 `[]int32` 类型的值，而不是 `Point` 类型。这源于通用代码的编写方式，但这不是我们想要的。
 
 In order to fix this, we have to change the `Scale` function to use a type parameter for the slice type.
 
+为了解决这个问题，我们必须更改 `Scale` 函数以使用切片类型的类型参数。
+
 ```
 // Scale returns a copy of s with each element multiplied by c.
+// Scale 返回 s 的副本，其中每个元素乘以 c。
 func Scale[S ~[]E, E constraints.Integer](s S, c E) S {
     r := make(S, len(s))
     for i, v := range s {
@@ -242,24 +336,45 @@ func Scale[S ~[]E, E constraints.Integer](s S, c E) S {
 
 We’ve introduced a new type parameter `S` that is the type of the slice argument. We’ve constrained it such that the underlying type is `S` rather than `[]E`, and the result type is now `S`. Since `E` is constrained to be an integer, the effect is the same as before: the first argument has to be a slice of some integer type. The only change to the body of the function is that now we pass `S`, rather than `[]E`, when we call `make`.
 
+我们引入了一个新的类型参数 `S`，它是切片参数的类型。我们对其进行了约束，使得基础类型是 `S` 而不是 `[]E`，结果类型现在是 `S`。由于 `E` 被限制为整数，因此效果与之前相同：第一个参数必须是某个整数类型的切片。函数体的唯一变化是，现在我们在调用 `make` 时传递了 `S`，而不是 `[]E`。
+
 The new function acts the same as before if we call it with a plain slice, but if we call it with the type `Point` we now get back a value of type `Point`. That is what we want. With this version of `Scale` the earlier `ScaleAndPrint` function will compile and run as we expect.
 
-But it’s fair to ask: why is it OK to write the call to `Scale` without passing explicit type arguments? That is, why can we write `Scale(p, 2)`, with no type arguments, rather than having to write `Scale[Point, int32](p, 2)`? Our new `Scale` function has two type parameters, `S` and `E`. In a call to `Scale` not passing any type arguments, function argument type inference, described above, lets the compiler infer that the type argument for `S` is `Point`. But the function also has a type parameter `E` which is the type of the multiplication factor `c`. The corresponding function argument is `2`, and because `2` is an _untyped_ constant, function argument type inference cannot infer the correct type for `E` (at best it might infer the default type for `2` which is `int` and which would be incorrect). Instead, the process by which the compiler infers that the type argument for `E` is the element type of the slice is called _constraint type inference_.
+如果我们用普通切片调用新函数，它的作用与以前相同，但如果我们用 `Point` 类型调用它，我们现在会返回 `Point` 类型的值。这就是我们想要的。使用这个版本的 `Scale`，早期的 `ScaleAndPrint` 函数将按照我们的预期编译和运行。
+
+But it’s fair to ask: why is it OK to write the call to `Scale` without passing explicit type arguments? That is, why can we write `Scale(p, 2)`, with no type arguments, rather than having to write `Scale[Point, int32](p, 2)`? Our new `Scale` function has two type parameters, `S` and `E`. In a call to `Scale` not passing any type arguments, function argument type inference, described above, lets the compiler infer that the type argument for `S` is `Point`. But the function also has a type parameter `E` which is the type of the multiplication factor `c`. The corresponding function argument is `2`, and because `2` is an untyped constant, function argument type inference cannot infer the correct type for `E` (at best it might infer the default type for `2` which is `int` and which would be incorrect). Instead, the process by which the compiler infers that the type argument for `E` is the element type of the slice is called constraint type inference.
+
+但公平地问：为什么在不传递显式类型参数的情况下编写对 `Scale` 的调用是可以的？也就是说，为什么我们可以写 `Scale(p, 2)`，没有类型参数，而不必写 `Scale[Point, int32](p, 2)`？我们新的 `Scale` 函数有两个类型参数，`S` 和 `E`。在调用 `Scale` 时不传递任何类型参数，函数参数类型推断，如上所述，让编译器推断 `S` 的类型参数是 `Point`。但是该函数还有一个类型参数 `E`，它是乘法因子 `c` 的类型。对应的函数参数是`2`，因为`2`是一个无类型常量，所以函数参数类型推断不能推断 `E` 的正确类型（充其量它可能推断 `2` 的默认类型是 `int` 这将是不正确的）。相反，编译器推断 `E` 的类型参数是切片的元素类型的过程称为约束类型推断。
 
 Constraint type inference deduces type arguments from type parameter constraints. It is used when one type parameter has a constraint defined in terms of another type parameter. When the type argument of one of those type parameters is known, the constraint is used to infer the type argument of the other.
 
-The usual case where this applies is when one constraint uses the form `~`_`type`_ for some type, where that type is written using other type parameters. We see this in the `Scale` example. `S` is `~[]E`, which is `~` followed by a type `[]E` written in terms of another type parameter. If we know the type argument for `S` we can infer the type argument for `E`. `S` is a slice type, and `E` is the element type of that slice.
+约束类型推断从类型参数约束中推导出类型参数。当一个类型参数具有根据另一个类型参数定义的约束时使用它。当其中一个类型参数的类型参数已知时，约束用于推断另一个类型参数的类型参数。
+
+The usual case where this applies is when one constraint uses the form `~` `type`  for some type, where that type is written using other type parameters. We see this in the `Scale` example. `S` is `~[]E`, which is `~` followed by a type `[]E` written in terms of another type parameter. If we know the type argument for `S` we can infer the type argument for `E`. `S` is a slice type, and `E` is the element type of that slice.
+
+这适用的通常情况是，当一个约束对某种类型使用 `~` `type` 形式时，该类型是使用其他类型参数编写的。我们在 `Scale` 示例中看到了这一点。 `S` 是 `~[]E`，它是 `~` 后跟一个类型 `[]E`，用另一个类型参数编写。如果我们知道 `S` 的类型参数，我们可以推断 `E` 的类型参数。 `S` 是切片类型，`E` 是该切片的元素类型。
 
 This was just an introduction to constraint type inference. For full details see the [proposal document](https://go.googlesource.com/proposal/+/HEAD/design/43651-type-parameters.md) document or the [language spec](https://golang.google.cn/ref/spec).
 
+这只是对约束类型推断的介绍。完整的详细信息请参见[提案文件](https://go.googlesource.com/proposal/+/HEAD/design/43651-type-parameters.md) 或[语言规范](https://golang.google.cn/ref/spec) 。
+
 ### Type inference in practice
+### 类型推断实践
 
 The exact details of how type inference works are complicated, but using it is not: type inference either succeeds or fails. If it succeeds, type arguments can be omitted, and calling generic functions looks no different than calling ordinary functions. If type inference fails, the compiler will give an error message, and in those cases we can just provide the necessary type arguments.
+类型推断如何工作的具体细节很复杂，但使用简单：类型推断要么成功，要么失败。如果成功，可以省略类型参数，调用泛型函数看起来与调用普通函数没有什么不同。如果类型推断失败，编译器将给出错误消息，在这种情况下，我们可以只提供必要的类型参数。
+
 
 In adding type inference to the language we’ve tried to strike a balance between inference power and complexity. We want to ensure that when the compiler infers types, those types are never surprising. We’ve tried to be careful to err on the side of failing to infer a type rather than on the side of inferring the wrong type. We probably have not gotten it entirely right, and we may continue to refine it in future releases. The effect will be that more programs can be written without explicit type arguments. Programs that don’t need type arguments today won’t need them tomorrow either.
 
+在向 Go 添加类型推断功能时，我们试图在推断能力和复杂性之间取得平衡。我们希望确保当编译器推断类型时，这些类型永远不会令人惊讶。我们试图小心地在未能推断出类型方面犯错，而不是在推断错误类型方面犯错。我们可能还没有完全正确，我们可能会在未来的版本中继续完善它。结果将是可以编写更多程序而无需显式类型参数。今天不需要类型参数的程序明天也不需要它们。
+
 ## Conclusion
+## 结论
 
 Generics are a big new language feature in 1.18. These new language changes required a large amount of new code that has not had significant testing in production settings. That will only happen as more people write and use generic code. We believe that this feature is well implemented and high quality. However, unlike most aspects of Go, we can’t back up that belief with real world experience. Therefore, while we encourage the use of generics where it makes sense, please use appropriate caution when deploying generic code in production.
 
+泛型是 1.18 中一个很大的新语言特性。这些新语言功能产生了大量没有在生产环境上进行重大测试的代码。泛型功能只会发生在使用和编写代码中。我们相信这个功能实现得很好并且质量很高。然而，与 Go 的大多数方面不同，我们不能用现实世界的经验来支持这种信念。因此，虽然我们鼓励在有意义的地方使用泛型，但在生产环境中部署泛型代码时请谨慎行事。
+
 That caution aside, we’re excited to have generics available, and we hope that they will make Go programmers more productive.
+除了这个谨慎之外，我们很高兴能有泛型可用，我们希望它们能让 Go 程序员更有效率。
