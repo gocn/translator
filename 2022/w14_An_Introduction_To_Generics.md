@@ -4,7 +4,7 @@
 - 原文作者：**Robert Griesemer and Ian Lance Taylor**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w14_An_Introduction_To_Generics.md
 - 译者：[xkk](https://github.com/xkkhy)
-- 校对：[](https://github.com/)
+- 校对：[zxmfke](https://github.com/zxmfke)
 
 
 ## 内容介绍
@@ -13,7 +13,7 @@
 
 <iframe src="https://www.youtube.com/embed/Pa_e9EeCdy8" width="560" height="315" frameborder="0" allowfullscreen="" mozallowfullscreen="" webkitallowfullscreen=""></iframe>
 
-Go 1.18 增加了对泛型的支持。泛型是 Go 的第一个开源版本以来最大特性变更。在本文中，我们将介绍新的语言特性。在这里，我们主要侧重泛型相关的重点内容。详细的描述和更多的例子需要参考 [提议文档](https://go.googlesource.com/proposal/+/HEAD/design/43651-type-parameters.md) 。准确语言变化需要参考[更新之后的语言规范](https://golang.google.cn/ref/spec) 。（请注意，实际的 1.18 实现对提案文件允许的内容施加了一些限制；规范应该是准确的。未来的版本可能会取消一些限制。）
+Go 1.18 增加了对泛型的支持。泛型是 Go 的第一个开源版本以来最大特性变更。在本文中，我们将介绍新的语言特性。在这里，我们不会尝试去讲解所有的细节，但是我们会把所有的重点都讲一下。关于更精准的语言改变的描述，请看 [提议文档](https://go.googlesource.com/proposal/+/HEAD/design/43651-type-parameters.md) 。准确语言变化需要参考[更新之后的语言规范](https://golang.google.cn/ref/spec) 。（请注意，实际的 1.18 实现对提案文件允许的内容施加了一些限制；规范应该是准确的。未来的版本可能会取消一些限制。）
 
 泛型是一种独立于使用的特定类型编写代码的方式。现在可以编写函数和类型适用于一组类型集合的任何一种。
 
@@ -137,7 +137,7 @@ type Ordered interface {
 
 当用作类型约束时，接口定义的类型集准确地指定了参数类型。在泛型函数体内，如果操作数的类型是类型参数 `P`，约束为 `C`，则在 `C` 类型集中的所有类型都允许的情况下允许操作（目前有一些实现限制在这里，但普通代码不太可能遇到它们）。
 
-用作约束的接口可以被赋予名称（比如 `Ordered`），或者它们可以是内联在类型参数列表中的文字接口。例如：
+用作约束的接口可以被赋予名称（比如 `Ordered`），或者它们可以是内联在类型参数列表中的字面上的接口。例如：
 
 ```go
 [S interface{~[]E}, E interface{}]
@@ -161,7 +161,7 @@ type Ordered interface {
 
 ## 类型推断
 
-最后一个主要的新功能是类型推断。在某些方面，这是对语言最复杂的更改，但它很重要，因为它让人们在编写调用泛型函数的代码时可以使用自然风格。
+最后一个主要的新功能是类型推断。在某些方面，这是对语言最复杂的更改，但它很重要，因为它让人们更加自然地编写调用泛型函数的代码。
 
 ### 函数参数类型推断
 
@@ -221,7 +221,7 @@ func (p Point) String() string {
 }
 ```
 
-有时我们想 `Scale` 一个 `Point`。由于 `Point` 只是一个整数切片，我们可以使用我们之前编写的 `Scale` 函数：
+有时我们想 `Scale` 一个 `Point`。由于 `Point` 只是一个整数切片，所以我们可以使用我们之前编写的 `Scale` 函数：
 
 ```go
 // ScaleAndPrint doubles a Point and prints it.
