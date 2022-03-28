@@ -105,11 +105,11 @@ var stringTree Tree[string]
 
 直到最近，Go 规范才说接口定义了枚举的方法集。所有实现这些方法的类型都实现了该接口。
 
-![](https://golang.google.cn/blog/intro-generics/method-sets.png)
+![](../static/images/2022/w14_An_Introduction_To_Generics/method-sets.png)
 
 但另一种看法是，接口定义了一组类型，即实现这些方法的类型。从这个角度来看，作为接口类型集元素的任何类型都实现了该接口。
 
-![](https://golang.google.cn/blog/intro-generics/type-sets.png)
+![](../static/images/2022/w14_An_Introduction_To_Generics/type-sets.png)
 
 这两个看法都有相同的结果：对于每组方法，我们可以想象实现这些方法的相应类型集，即接口定义的类型集。
 
@@ -117,7 +117,7 @@ var stringTree Tree[string]
 
 我们扩展了接口类型的语法以使其工作。例如，`interface{ int|string|bool }` 定义了包含 `int`、`string` 和 `bool` 类型的类型集合。
 
-![](https://golang.google.cn/blog/intro-generics/type-sets-2.png)
+![](../static/images/2022/w14_An_Introduction_To_Generics/type-sets-2.png)
 
 另一种说法是，该接口仅由 `int`、`string` 或 `bool` 满足。
 
