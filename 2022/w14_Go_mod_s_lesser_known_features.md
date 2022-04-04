@@ -1,61 +1,55 @@
 - 原文地址：https://verdverm.com/go-mods/
-- 原文作者：**verdverm.com**
+- 原文作者：**Dr. Tony Worm**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w14_Go_mod_s_lesser_known_features.md
 - 译者：[Fivezh](https://github.com/fivezh)
 - 校对：[](https://github.com/)
 
-# Go mod's lesser known features
+# 鲜为人知的Go mod特性
 
-Modules are how Go manages dependencies. A module is a collection of packages that are released, versioned, and distributed together. Each package within a module is a collection of source files in the same directory that are compiled together.
+模块(Module)是Go管理依赖关系的方式。模块是一组包的集合，它们被一起发布、版本化和分发。一个模块中的每个包都是同一目录下被一起编译的源文件的集合。
 
-In this post, we will explore Go mododules design and learn how they support supply chain security. You can find the `go mod` documentation here: https://golang.org/ref/mod
+在这篇文章中，我们将探讨Go模块的设计，并学习它们是如何支持供应链安全。你可以在 `https://golang.org/ref/mod` 找到`go mod`的详细文档
 
-### Contents
+### 目录
 
 [Anatomy of a go.mod file](https://verdverm.com/go-mods/#anatomy-of-a-gomod-file)[Minimum Version Selection](https://verdverm.com/go-mods/#minimum-version-selection)[Directives in go.mod](https://verdverm.com/go-mods/#directives-in-gomod)[Environment variables](https://verdverm.com/go-mods/#environment-variables)[Hashes and the go.sum file](https://verdverm.com/go-mods/#hashes-and-the-gosum-file)[Local module cache](https://verdverm.com/go-mods/#local-module-cache)[Global services modules and hashes](https://verdverm.com/go-mods/#global-services-modules-and-hashes)[Module naming](https://verdverm.com/go-mods/#module-naming)[Only Secure Remotes](https://verdverm.com/go-mods/#only-secure-remotes)[Private module support](https://verdverm.com/go-mods/#private-module-support)[Preventing dependency confusion](https://verdverm.com/go-mods/#preventing-dependency-confusion)[Malicious version changes](https://verdverm.com/go-mods/#malicious-version-changes)[No pre or post hooks](https://verdverm.com/go-mods/#no-pre-or-post-hooks)[Information in the binaries](https://verdverm.com/go-mods/#information-in-the-binaries)[Reproducible Builds](https://verdverm.com/go-mods/#reproducible-builds)[Learning more](https://verdverm.com/go-mods/#learning-more)
 
-Notes:
+说明:
 
-*The statements here reference Go 1.17 and not all applies to older versions.*
+*本文的描述限定于Go 1.17，并不全部适用于旧版本。*
 
-*This post is accompanied by a talk at PackageCon2021. The video will be added once available.*
+*这篇文章与PackageCon2021上的一次谈话相关联，一旦有了视频后，将会加入进来。*
 
-[Download the slides](https://verdverm.com/PackagingCon2021-GoMods.pdf)
+[此分享的pdf文件下载](../static/image/2022/w14_Go_mod_s_lesser_known_features/PackagingCon2021-GoMods.pdf)
 
-## Anatomy of a go.mod file
-
-
+## `go.mod` 文件剖析
 
 ```
-// Sample go.mod file
-module github.com/org/module         // module name
+// go.mod 示例文件
+module github.com/org/module         // 当前模块名称
 
-require (                            // module dependencies
+require (                            // 模块依赖说明
   github.com/foo/bar  v0.1.2
   github.com/cow/moo  v1.2.3
   mydomain.com/gopher v0.2.3-beta1
 )
 ```
 
-Go has restrictions on a module name which we will talk about later. The version is a specific and minimum version for your project. Note, there are no version ranges, only a single Semantic Version. As Go processes the dependency tree, it selects the *maximum* of the versions found. In doing so, MVS can create a reproducible dependency tree without a lockfile.
+Go对模块名称是有限制的，我们后文会再讨论。版本是项目的一个特定的、最小的版本。注意，没有版本范围，只有单一的语义版本（Semantic Version）。当Go处理依赖关系树时，它会选择所发现的版本中*最大*的版本。这样一来，最小版本选择`MVS`就可以在没有锁文件的情况下创建一个可重复的依赖关系树。
 
-## Minimum Version Selection
+## 最小版本选择 Minimum Version Selection
 
+Golang使用MVS（最小版本选择）[1](https://research.swtch.com/vgo-mvs) [2](https://golang.org/ref/mod#minimal-version-selection )算法来选择依赖版本。这种确定性的算法对于可复制的构建有很好的特性，并且避免了运行时NP完全的复杂性。因为依赖性选择问题是受限制的，所以不需要SAT求解器。
 
+这里的的核心，*告别一些细节*，MVS是一个广度优先的模块和版本的遍历机制。树是由模块的`go.mod`文件定义的，描述了项目的依赖关系、依赖到依赖的关系等等。
 
-Golang uses the MVS (minimum version selection) [1](https://verdverm.com/go-mods/#fn:1) [2](https://verdverm.com/go-mods/#fn:2) algorithm to select dependency versions. This deterministic algorithm has nice properties for reproducible builds and avoids the NP-complete runtime complexity. There is no need for a SAT solver because the dependency selection problem is constrained.
+![Minimum Version Selection](../static/images/2022/w14_Go_mod_s_lesser_known_features/mvs-buildlist.svg)
 
-At its heart, *hand waving away some details*, MVS is a breadth-first traversal across modules and versions. The tree is defined by `go.mod` files for a module, its dependencies, its dependencies-dependencies, and so on.
+术语`最小`是指这是一个无锁文件、确定性的依赖管理系统的最小实现。
 
-![Minimum Version Selection](https://verdverm.com/images/mvs-buildlist.svg)
+## go.mod中的指令
 
-The `minimum` terminology is due to the idea that this is a minimal implementation for a lockfile free, deterministic dependecy management system.
-
-## Directives in go.mod
-
-
-
-The `go.mod` file has a number of directives for controlling versions and dependencies.
+`go.mod` 有一些列来控制版本依赖的指令：
 
 ```
 module example.com/my/thing
@@ -69,39 +63,37 @@ replace example.com/bad/thing v1.4.5 => example.com/good/thing v1.4.5
 retract [v1.9.0, v1.9.5]
 ```
 
-- `go` - sets the minimum Go syntax version
-- `require` - specify direct module dependencies
-- `exclude` - prevents a dependency version
-- `replace` - substitutes without renaming
-- `retract` - minor and patch versions of this module
+- `go` - 设置最小的Go语法版本
+- `require` - 指定直接的模块依赖关系
+- `exclude` - 排除的依赖关系
+- `replace` - 替换，而不是重命名
+- `retract` - 本模块的次要和补丁版本
 
-`//Deprecated` can be used for major version of your modules. You add a comment and tag a new release.
+`//Deprecated` 可用在模块的主要版本，你可以添加一个评论并标记说明模块的新版本。
 
 ```
 // Deprecated: use example.com/mod/v2 instead.
 module example.com/mod
 ```
 
-As of Go 1.17, there are two require blocks, one for direct and indirect each, to support lazy loading. [3](https://verdverm.com/go-mods/#fn:3)
+从Go 1.17开始，有两个require指令块，分别是直接和间接依赖，这用来支持懒惰加载。[3](https://golang.org/ref/mod#lazy-loading)
 
-## Environment variables
+## 环境变量
 
+Go支持一些环境变量，用于控制模块和模块感知命令[4](https://golang.org/ref/mod#mod-commands)的工作方式。下表包含了后面章节中提到的变量。关于完整的列表、更多的细节和例子，请参见。[5](https://golang.org/ref/mod#environment-variables) [6](https://golang.org/ref/mod#private-modules)
 
+可以使用`go env`命令来查看当前环境变量设置
 
-Go supports a number of environment variables for controlling how modules and module aware commands [4](https://verdverm.com/go-mods/#fn:4) work. The following table contains the variables referenced in later sections. For a full list, more details, and examples, see: [5](https://verdverm.com/go-mods/#fn:5) [6](https://verdverm.com/go-mods/#fn:6)
-
-You can use `go env` to see the current settings.
-
-| variable   | used for                                                     |
+| 变量   | 用途 |
 | ---------- | ------------------------------------------------------------ |
-| GOMODCACHE | directory for module related files                           |
-| GOPRIVATE  | module globs to handle as private                            |
-| GOPROXY    | ordered list of module proxies to use                        |
-| GONOPROXY  | module globs to fetch directly                               |
-| GOSUMDB    | ordered list of sumdb hosts to use                           |
-| GONOSUMDB  | module globs to omit remote sumdb checks on                  |
-| GOVCS      | sets VCS tools allowed for public and private access         |
-| GOINSECURE | globs to allow fallback to http on [7](https://verdverm.com/go-mods/#fn:7) |
+| GOMODCACHE | 模块相关文件的目录                           |
+| GOPRIVATE  | 将模块中处理为私有的                            |
+| GOPROXY    | 模块代理的有序列表                        |
+| GONOPROXY  | 直接拉取的模块                               |
+| GOSUMDB    | sumdb主机的有序列表                           |
+| GONOSUMDB  | 忽略远程sumdb校验的模块                  |
+| GOVCS      | 设置允许公共和私人访问的VCS工具         |
+| GOINSECURE | 允许降级到http请求 |
 
 ## Hashes and the go.sum file
 
