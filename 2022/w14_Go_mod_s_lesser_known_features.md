@@ -10,10 +10,6 @@
 
 在这篇文章中，我们将探讨Go模块的设计，并学习它们是如何支持供应链安全。你可以在 `https://golang.org/ref/mod` 找到`go mod`的详细文档
 
-### 目录
-
-[Anatomy of a go.mod file](https://verdverm.com/go-mods/#anatomy-of-a-gomod-file)[Minimum Version Selection](https://verdverm.com/go-mods/#minimum-version-selection)[Directives in go.mod](https://verdverm.com/go-mods/#directives-in-gomod)[Environment variables](https://verdverm.com/go-mods/#environment-variables)[Hashes and the go.sum file](https://verdverm.com/go-mods/#hashes-and-the-gosum-file)[Local module cache](https://verdverm.com/go-mods/#local-module-cache)[Global services modules and hashes](https://verdverm.com/go-mods/#global-services-modules-and-hashes)[Module naming](https://verdverm.com/go-mods/#module-naming)[Only Secure Remotes](https://verdverm.com/go-mods/#only-secure-remotes)[Private module support](https://verdverm.com/go-mods/#private-module-support)[Preventing dependency confusion](https://verdverm.com/go-mods/#preventing-dependency-confusion)[Malicious version changes](https://verdverm.com/go-mods/#malicious-version-changes)[No pre or post hooks](https://verdverm.com/go-mods/#no-pre-or-post-hooks)[Information in the binaries](https://verdverm.com/go-mods/#information-in-the-binaries)[Reproducible Builds](https://verdverm.com/go-mods/#reproducible-builds)[Learning more](https://verdverm.com/go-mods/#learning-more)
-
 说明:
 
 *本文的描述限定于Go 1.17，并不全部适用于旧版本。*
