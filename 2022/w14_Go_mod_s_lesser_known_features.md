@@ -95,166 +95,119 @@ Go支持一些环境变量，用于控制模块和模块感知命令[4](https://
 | GOVCS      | 设置允许公共和私人访问的VCS工具         |
 | GOINSECURE | 允许降级到http请求 |
 
-## Hashes and the go.sum file
+## 哈希值和go.sum文件
 
+当go命令下载一个模块时，它会计算出一个加密的哈希值，并将其与已知的值进行比较，以验证该文件自首次下载以来没有变化。模块将这些哈希值存储在`go.sum`文件中，Go命令会验证它们是否匹配。Go也将这些哈希值存储在模式模块缓存中，并将其与全局数据库进行比较。[8](https://golang.org/ref/mod#authenticating)
 
+## 本地模块缓存
 
-When the go command downloads a module, it computes a cryptographic hash and compares it with a known value to verify the file hasn’t changed since it was first downloaded. Modules store these hashes in a `go.sum` file and the Go command verifies they match. Go also stores these hashes in mode module cache and will compare them with a global database. [8](https://verdverm.com/go-mods/#fn:8)
+Go在你的本地系统上维护一个共享模块缓存。[9](https://golang.org/ref/mod#module-cache) 这是下载的模块存放的地方，其位置由`GOMODCACHE`变量决定。模块代码默认为只读，以防止本地修改和"它在我的机器上是工作"的问题。共享缓存也包含了预先构建的工件。所有这些意味着你的机器上的多个项目可以重复使用相同的下载和预处理的软件包。
 
-## Local module cache
+## 全局服务模块和哈希值
 
+Go团队维护全局代理的sumdb、cachedb以及全局哈希完整性和撤销检查。[10](https://golang.org/ref/mod#checksum-database)校验数据库可用于检测行为不端的来源和代理服务器。它有一个由`Trillian`项目提供的哈希值树的透明日志。缓存数据库代理公共模块，并将保持副本，即使源服务器删除它们。
 
+Go团队已经认真得对待隐私问题，这些服务记录的信息非常少。你可以阅读[的隐私声明](https://sum.golang.org/privacy)了解详情。他们在GitHub上issues的交流也反映了这一点。例如，只有有限的认证功能被启用，因为他们在试图维护代理中的隐私时非常谨慎。
 
-Go maintains a shared module cache on your local system. [9](https://verdverm.com/go-mods/#fn:9) This is where downloaded modules are stored. The location is determined by the `GOMODCACHE` variable. Module code is read-only by default to prevent local modifications and “it works on my machine” issues. The shared cache also contains prebuilt artifacts. All of this means that multiple projects on your machine can reuse the same downloaded and preprocessed packages.
+## 模块命名
 
-## Global services modules and hashes
+Go有许多模块的命名规则。这些规则部分是专门设计的，使用代码托管方而不是包注册，但也是出于安全考虑。
 
+> **要求域名成为模块标识符的第一部分**
 
+域的要求本身是必须的，因为Go将模块解析到代码主机上。它还可以防止一类依赖关系的混乱，在下一节中讨论。
 
-The Go team maintain global proxies for sumdb, cachedb, and global hash integrity and revocation checks. [10](https://verdverm.com/go-mods/#fn:10) The checksum database can be used to detect misbehaving origin and proxy servers. It has a merkel tree transparency log for hashes powered by the Trillian project. The cache database proxies public modules and will maintain copies even if the origin server removes them.
+> **只包含ascii字母、数字和有限的标点符号 (`[.~_-]`)**
 
-The Go team has taken privacy seriously. These services record very minimal information. You can read the [privacy statemnt for sum.golang.org/privacy](https://sum.golang.org/privacy) for details. Their communications in issues on GitHub reflects this. For example, only limited auth features have been enabled, because they are being careful in trying to maintain privacy in proxy.
-
-## Module naming
-
-
-
-Go has a number of module naming rules. These are partially by design, in using code hosts rather than package registries, but also for security resaons.
-
-> **Requires a domain name to be the first part of the module identifier**
-
-The domain requirement is itself required because Go resolves modules to the code host. It also prevents a class of dependency confusion, discussed in the next section.
-
-> **Only contain ascii letters, digits, and limited punctuation (`[.~_-]`)**
-
-Restrictions on allowed import path parameters prevents **homograph** or **homoglyph** attacks. [11](https://verdverm.com/go-mods/#fn:11) [12](https://verdverm.com/go-mods/#fn:12) [13](https://verdverm.com/go-mods/#fn:13)
+对允许的导入路径参数的限制可以防止**同音字**攻击。[11](https://blog.malwarebytes.com/101/2017/10/out-of-character-homograph-attacks-explained/) [12](https://www.securityweek.com/zero-day-homograph-domain-name-attack) [13](https://github.com/golang/go/issues/44970)
 
 ```sh
 $ go mod init ɢoogle.com/chrome
 go: malformed module path "ɢoogle.com/chrome": invalid char 'ɢ'
 ```
 
-> **Cannot begin or end with a slash or dot**
+> **不能以斜线或点开始或结束**
 
-Slash and dot restrictions prevent absolute and relative path from being part of imports. While this means they are more verbose, it also means that
+斜线和点的限制使绝对和相对路径不能成为导入名的一部分。虽然这意味着它们更加冗长，但它也意味着
 
-1. you can always see the exact package being used
-2. relative and absolute path attacks are not possible
+1. 你总是可以看到正在使用的确切的软件包
+2. 相对和绝对路径攻击是不可能的
 
-> **There are more restrictions**
+> **有更多的限制**
 
-For specific contexts, there are more rules
+对于特定的上下文中，有更多的规则
 
-- The domain part has further restrictions
-- Windows has reserved files to avoid
-- Major version suffixes
+- 域名部分有进一步的限制
+- 避免使用Windows保留的文件名
+- 主要版本后缀
 
-See [14](https://verdverm.com/go-mods/#fn:14) for more details.
+访问 [14](https://golang.org/ref/mod#go-mod-file-ident) 获取更多详细。
 
-## Only Secure Remotes
+## 只允许安全的远程访问
 
+Go只与安全的代码托管方通信，更倾向于`https`和`git+ssh`。
 
+你可以使用`GOINSECURE`来列出可以通过`http`和其他不安全协议获取的模块。以不安全方式获取的模块仍将根据校验数据库进行验证。
 
-Go will only talk to secure code hosts, preferring `https` and `git+ssh`.
+请查阅VCS计划表[15](https://golang.org/ref/mod#vcs)，了解哪些工具和协议被支持。你可能还需要设置GOVCS [16](https://golang.org/ref/mod#vcs-govcs)。
 
-You can use GOINSECURE to list module patterns which can be fetched over http and other insecure protocols. Modules fetched insecurly will still be validated against the checksum database.
+## 私有模块支持
 
-Consult the table of VCS Schemes [15](https://verdverm.com/go-mods/#fn:15) to find which tools and protocols are supported. You may also need to set GOVCS [16](https://verdverm.com/go-mods/#fn:16).
+Go支持私有开发的模块，你可以：
 
-## Private module support
+- 通过私有代码仓库拉取模块
+- 防止私有模块被公共索引
+- 运行私有的代理和校验数据库
 
+有关私人模块部分的细节和必要的配置详见[17](https://golang.org/ref/mod#private-modules)。
 
+为了对私有模块托管方进行认证，Go在直接下载时默认使用如`.gitconfig`的配置工具。对于 `https`的基本安全校验支持通过`.netrc`文件来验证。[18](https://golang.org/ref/mod#private-module-repo-auth)
 
-Go supports modules developed in private. You can
+## 防止依赖的混乱
 
-- Fetch modules from private code repositories
-- Prevent your private modules from being publicly indexed
-- Run a private proxy and sumdb
+**依赖混乱** [19](https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610) 描述了当获取与内部包同名的公共包时，Go 能有效防止这种情况发生
 
-See the private modules section [17](https://verdverm.com/go-mods/#fn:17) for details and necessary configuration.
+> **需要域来开始模块名和导入路径**
 
-To authenticate with private module hosts, Go defers to tool config like `.gitconfig` when downloading directly. For `https` BasicAuth is supported through the `.netrc` file. [18](https://verdverm.com/go-mods/#fn:18)
+这意味着模块名称不能重叠，例如当恶意行为者在公共库中注册相同模块时。
 
-## Preventing dependency confusion
+> **忽略依赖关系中的替换指令**
 
+受损的依赖项不能用替换托管在其他域下的依赖项
 
+## 恶意版本更改
 
-**Dependency confusion** [19](https://verdverm.com/go-mods/#fn:19) is when a public package with the same name as an internal package is fetched. Go helps to prevent this by
+有两种主要的版本攻击方式：使用漏洞替换或添加标签。
 
-> **Requiring a domain to start module and import paths**
+> **替换标签**
 
-This means that module names cannot overlap, such as when a malicious actor registers the same module in a public registry.
+重新标记实际上是不可能的，因为一个模块已经被任何人拉取过一次。 原始哈希将在全局 sumdb 中缓存，此时验证将会失败。 这当然取决于您的 `GO[NO]SUM`、`GO[NO]PROXY` 和 `GOPRIVATE` 设置。
 
-> **Ignoring replace directives in dependencies**
+> **创建新的标签**
 
-A comprimised dependency cannot replace other dependencies with one hosted under a different domain.
+在 Go 中，版本是特定的，而不是范围。 此外，Go 只会从列出的版本中进行选择。 按照此设计，Go 不会选择较新的模块，此时不受恶意版本增量的影响而相对安全。
 
-## Malicious version changes
+## 没有前置或后置hook
 
+go 模块系统缺少用于获取、构建或安装的任何前置或后置hook。这排除了一类攻击，例如在 `NPM` 中看到的攻击。
 
+## 二进制文件中的信息
 
-There are two main version attacks, replacing or adding a tag with an exploit.
-
-> **Replacing a tag**
-
-Retagging is practically impossible, given a module has been fetched once, by anyone. The original hash will be in the global sumdb and the validation will fail. This will of course depend on your `GO[NO]SUM`, `GO[NO]PROXY`, and `GOPRIVATE` settings.
-
-> **Creating a new tag**
-
-In Go, versions are specific, not a range. Additionally, Go will only select from versions which are listed. By design, Go will not select newer modules and is relatively safe from malicious version increments.
-
-## No pre or post hooks
-
-
-
-The go module system lacks any pre or post hooks for fetch, build, or install. This rules out a class of attacks, such as those seen with NPM.
-
-## Information in the binaries
-
-
-
-Go adds the dependency information into the binary. This includes their path, version, and sumdb hash.
+Go 将依赖信息添加到二进制文件中。这包括它们的路径、版本和 sumdb 哈希。
 
 ```
 go version -m $(which binary)
 ```
 
-With Go 1.18, it will also include the build flags, environment settings, and VCS information for the main module. [20](https://verdverm.com/go-mods/#fn:20)
+在 Go 1.18 中，它还将包括主模块的构建标志、环境设置和 VCS 信息。 [20](https://github.com/golang/go/issues/37475)
 
-## Reproducible Builds
+## 可重现的构建
 
+Go 的目标是 100% 可重现的工程构建。`MVS` 依赖管理是其中的部分核心，这确保了源代码是相同的。虽然这只是第一步，但即使在交叉编译时 Go 团队也能够实现这一目标。
 
+## 了解更多
 
-Go has a goal for 100% reproducible builds of artifacts. MVS dependency management is one part and core to this, ensuring that the source code is the same. While this is only the first step, the Go team has been able to reach this goal even when cross-compiling.
-
-## Learning more
-
-
-
-- [Module Reference](https://golang.org/ref/mod)
-- [Go & Versioning](https://research.swtch.com/vgo)
-- [Original Proposal](https://github.com/golang/go/issues/24301)
+- [模块参考](https://golang.org/ref/mod)
+- [Go & 版本](https://research.swtch.com/vgo)
+- [mod原始提议](https://github.com/golang/go/issues/24301)
 - [GitHub Issues](https://github.com/golang/go/issues?q=is%3Aopen+is%3Aissue+label%3Amodules)
-
-------
-
-1. https://research.swtch.com/vgo-mvs (part 4 of a series) [↩︎](https://verdverm.com/go-mods/#fnref:1)
-2. https://golang.org/ref/mod#minimal-version-selection [↩︎](https://verdverm.com/go-mods/#fnref:2)
-3. https://golang.org/ref/mod#lazy-loading [↩︎](https://verdverm.com/go-mods/#fnref:3)
-4. https://golang.org/ref/mod#mod-commands [↩︎](https://verdverm.com/go-mods/#fnref:4)
-5. https://golang.org/ref/mod#environment-variables [↩︎](https://verdverm.com/go-mods/#fnref:5)
-6. https://golang.org/ref/mod#private-modules [↩︎](https://verdverm.com/go-mods/#fnref:6)
-7. You probably shouldn’t use this [↩︎](https://verdverm.com/go-mods/#fnref:7)
-8. https://golang.org/ref/mod#authenticating [↩︎](https://verdverm.com/go-mods/#fnref:8)
-9. https://golang.org/ref/mod#module-cache [↩︎](https://verdverm.com/go-mods/#fnref:9)
-10. https://golang.org/ref/mod#checksum-database [↩︎](https://verdverm.com/go-mods/#fnref:10)
-11. https://blog.malwarebytes.com/101/2017/10/out-of-character-homograph-attacks-explained/ [↩︎](https://verdverm.com/go-mods/#fnref:11)
-12. https://www.securityweek.com/zero-day-homograph-domain-name-attack [↩︎](https://verdverm.com/go-mods/#fnref:12)
-13. https://github.com/golang/go/issues/44970 [↩︎](https://verdverm.com/go-mods/#fnref:13)
-14. https://golang.org/ref/mod#go-mod-file-ident [↩︎](https://verdverm.com/go-mods/#fnref:14)
-15. https://golang.org/ref/mod#vcs [↩︎](https://verdverm.com/go-mods/#fnref:15)
-16. https://golang.org/ref/mod#vcs-govcs [↩︎](https://verdverm.com/go-mods/#fnref:16)
-17. https://golang.org/ref/mod#private-modules [↩︎](https://verdverm.com/go-mods/#fnref:17)
-18. https://golang.org/ref/mod#private-module-repo-auth [↩︎](https://verdverm.com/go-mods/#fnref:18)
-19. https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610 [↩︎](https://verdverm.com/go-mods/#fnref:19)
-20. https://github.com/golang/go/issues/37475 [↩︎](https://verdverm.com/go-mods/#fnref:20)
