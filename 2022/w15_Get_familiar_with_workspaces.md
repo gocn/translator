@@ -14,7 +14,7 @@ Go 1.18为Go增加了工作区模式，使你可以同时在多个模块上工�
 
 你可以通过访问[下载](https://go.dev/dl/)页面获得Go 1.18。[发布说明](https://go.dev/doc/go1.18)有关于所有变化的更多细节。
 
-## 工作空间
+## 工作区
 
 Go 1.18中的[工作区](https://go.dev/ref/mod#workspaces)可以让你同时处理多个模块，而不必为每个模块编辑go.mod文件。在解决依赖关系时，工作区中的每个模块都被视为根模块。
 
@@ -113,7 +113,7 @@ Go 1.18中的[工作区](https://go.dev/ref/mod#workspaces)可以让你同时处
 
 > 注意：如果你有没有`go.mod`文件的项目，你想把它添加到工作区，请换到它们的项目目录，运行`go mod init`，然后用`go work use [path-to-module]`把新模块添加到你的工作区。
 
-## 工作空间指令
+## 工作区指令
 
 除了`go work init`和`go use`之外，Go 1.18为工作区引入了以下命令：
 
@@ -124,7 +124,7 @@ Go 1.18中的[工作区](https://go.dev/ref/mod#workspaces)可以让你同时处
 
 如果`GOWORK`变量命名的文件路径以`.work`结尾，则工作区模式被激活。要确定哪个`go.work`文件正在被使用，请运行`go env GOWORK`。如果`go`命令不在工作区模式下，则输出为空。
 
-当工作区模式被启用时，`go.work`文件被解析以确定工作区模式的三个参数。一个Go版本，一个目录列表，以及一个替换列表。
+当工作区模式被启用时，`go.work`文件被解析以确定工作区模式的三个参数：一个Go版本，一个目录列表，以及一个替换列表。
 
 在工作区模式下可以尝试一些命令（前提是你已经知道它们的作用！）：
 
@@ -139,7 +139,7 @@ go run
 go vet
 ```
 
-编辑器体验的改进
+## 编辑器体验的改进
 
 我们对Go语言服务器[gopls](https://pkg.go.dev/golang.org/x/tools/gopls)和[VSCode Go扩展](https://marketplace.visualstudio.com/items?itemName=golang.go)的升级感到特别兴奋，这使得在兼容LSP的编辑器中处理多个模块的工作变得顺利而有意义。
 
@@ -151,14 +151,14 @@ go vet
 
 ![Access the go.work file via the Go status bar&rsquo;s Quick Pick menu](https://user-images.githubusercontent.com/4999471/157268414-fba63843-5a14-44ba-be82-d42765568856.gif)
 
-- [GoLand](https://www.jetbrains.com/go/)支持工作空间，并计划为`go.work`文件增加语法高亮和代码完成。
+- [GoLand](https://www.jetbrains.com/go/)支持工作区，并计划为`go.work`文件增加语法高亮和代码完成。
 
 关于在不同编辑器中使用`gopls`的更多信息，请看`gopls`[文档](https://pkg.go.dev/golang.org/x/tools/gopls#readme-editors)。
 
 ## 接下来是什么？
 
 - 下载并安装[Go 1.18](https://go.dev/dl/)。
-- 尝试使用[workspaces](https://go.dev/ref/mod#workspaces)与[Go workspaces Tutorial](https://go.dev/doc/tutorial/workspaces)。
-- 如果你在使用工作空间时遇到任何问题，或者想提出一些建议，请提交一个[问题](https://github.com/golang/go/issues/new/choose)。
+- 尝试通过[Go工作区教程](https://go.dev/doc/tutorial/workspaces)来使用[工作区](https://go.dev/ref/mod#workspaces)。
+- 如果你在使用工作区时遇到任何问题，或者想提出一些建议，请提交一个[issue](https://github.com/golang/go/issues/new/choose)。
 - 阅读[工作区维护文档](https://pkg.go.dev/cmd/go#hdr-Workspace_maintenance)。
 - 探索[在单一模块外工作](https://go.dev/ref/mod#commands-outside)的模块命令，包括`go work init`，`go work sync`等等。
