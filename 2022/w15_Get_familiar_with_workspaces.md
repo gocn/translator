@@ -1,8 +1,8 @@
-原文地址：https://go.dev/blog/get-familiar-with-workspaces
-原文作者：golang.org
-本文永久链接：https://github.com/gocn/translator/edit/master/2022/w15_Get_familiar_with_workspaces.md
-译者：[zxmfke](https://github.com/zxmfke)
-校对：[cvley](https://github.com/cvley)
+- 原文地址：https://go.dev/blog/get-familiar-with-workspaces
+- 原文作者：golang.org
+- 本文永久链接：https://github.com/gocn/translator/edit/master/2022/w15_Get_familiar_with_workspaces.md
+- 译者：[zxmfke](https://github.com/zxmfke)
+- 校对：[cvley](https://github.com/cvley)
 
 
 # 熟悉工作区
