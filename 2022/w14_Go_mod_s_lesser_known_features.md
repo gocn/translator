@@ -16,7 +16,7 @@
 
 *这篇文章与PackageCon2021上的一次谈话相关联，一旦有了视频后，将会加入进来。*
 
-[此分享的pdf文件下载](../static/image/2022/w14_Go_mod_s_lesser_known_features/PackagingCon2021-GoMods.pdf)
+[此分享的pdf文件下载](../static/images/2022/w14_Go_mod_s_lesser_known_features/PackagingCon2021-GoMods.pdf)
 
 ## `go.mod` 文件剖析
 
