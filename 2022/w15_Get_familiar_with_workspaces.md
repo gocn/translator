@@ -1,8 +1,8 @@
 原文地址：https://go.dev/blog/get-familiar-with-workspaces
 原文作者：golang.org
 本文永久链接：https://github.com/gocn/translator/edit/master/2022/w15_Get_familiar_with_workspaces.md
-译者：zxmfke
-校对：
+译者：[zxmfke](https://github.com/zxmfke)
+校对：[cvley](https://github.com/cvley)
 
 
 # 熟悉工作区
@@ -30,7 +30,7 @@ Go 1.18中的[工作区](https://go.dev/ref/mod#workspaces)可以让你同时处
 
 - `go`：go工具链的版本，例如：`go 1.18`
 - `use`：将磁盘上的一个模块添加到工作区的主模块集合中。它的参数是包含该模块`go.mod`文件的目录的相对路径。`use`指令不会在指定目录的子目录中添加模块。
-- `replace`: 与`go.mod`文件中的`替换`指令类似，`go.work`文件中的替换指令用其他地方的内容替换一个模块的*特定版本*或*所有版本*。
+- `replace`: 与`go.mod`文件中的`replace`指令类似，`go.work`文件中的replace指令用其他地方的内容替换一个模块的*特定版本*或*所有版本*。
 
 ## 工作流
 
@@ -85,16 +85,16 @@ Go 1.18中的[工作区](https://go.dev/ref/mod#workspaces)可以让你同时处
    )
    ```
 
-   在 `tool`模块中做出的任何本地修改都将被你的工作空间中的`tool/groundhog`所使用。
+   在 `tool`模块中做出的任何本地修改都将被你的工作区中的`tool/groundhog`所使用。
 
 ### 在依赖性配置之间进行切换
 
-为了用不同的依赖配置测试你的模块，你可以用独立的`go.work`文件创建多个工作空间，或者保留一个工作空间，在一个`go.work`文件中注释掉你不需要的`use`指令。
+为了用不同的依赖配置测试你的模块，你可以用独立的`go.work`文件创建多个工作区，或者保留一个工作区，在一个`go.work`文件中注释掉你不需要的`use`指令。
 
-要创建多个工作空间。
+要创建多个工作区。
 
 1. 为不同的依赖性需求创建单独的目录。
-2. 在每个工作空间的目录中运行`go work init`。
+2. 在每个工作区的目录中运行`go work init`。
 3. 通过 "go work use [path-to-dependency]"在每个目录中添加你想要的依赖性。
 4. 在每个工作区目录中运行`go run [path-to-your-module]`，以使用其`go.work`文件所指定的依赖项。
 
@@ -102,14 +102,14 @@ Go 1.18中的[工作区](https://go.dev/ref/mod#workspaces)可以让你同时处
 
 ### 还在使用GOPATH吗？
 
-也许使用工作空间会改变你的想法。`GOPATH`用户可以使用位于其`GOPATH`目录底部的`go.work`文件来解决他们的依赖关系。工作空间的目的不是要完全重新创建所有的`GOPATH`工作流程，但它们可以创建一个设置，分享`GOPATH`的一些便利，同时仍然提供模块的好处。
+也许使用工作区会改变你的想法。`GOPATH`用户可以使用位于其`GOPATH`目录底部的`go.work`文件来解决他们的依赖关系。工作区的目的不是要完全重新创建所有的`GOPATH`工作流程，但它们可以创建一个设置，分享`GOPATH`的一些便利，同时仍然提供模块的好处。
 
-要为GOPATH创建一个工作空间:
+要为GOPATH创建一个工作区:
 
 1. 在你的`GOPATH`目录下运行`go work init`。
-2. 要在你的工作空间中使用一个本地模块或特定版本作为依赖，运行`go work use [path-to-module]`。
+2. 要在你的工作区中使用一个本地模块或特定版本作为依赖，运行`go work use [path-to-module]`。
 3. 要替换你的模块的`go.mod`文件中的现有依赖关系，请使用`go work replace [path-to-module]`。
-4. 要添加你的GOPATH或任何目录中的所有模块，运行`go work use -r`来递归地添加有`go.mod`文件的目录到你的工作区。如果一个目录没有`go.mod`文件，或者不再存在，该目录的`use`指令将从你的`go.work`文件中删除。
+4. 要添加你的GOPATH或任何目录中的所有模块，运行`go work use -r`来递归地添加有`go.mod`文件的目录到你的工作区。如果一个目录没有`go.mod`文件，或者不再存在，使用`use`指令的目录将会从 `go.work`文件中删除。
 
 > 注意：如果你有没有`go.mod`文件的项目，你想把它添加到工作区，请换到它们的项目目录，运行`go mod init`，然后用`go work use [path-to-module]`把新模块添加到你的工作区。
 
