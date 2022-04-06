@@ -2,7 +2,7 @@
 - 原文作者：**Dr. Tony Worm**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w14_Go_mod_s_lesser_known_features.md
 - 译者：[Fivezh](https://github.com/fivezh)
-- 校对：[](https://github.com/)
+- 校对：[zhuyaguang](https://github.com/zhuyaguang)
 
 # 鲜为人知的Go mod特性
 
