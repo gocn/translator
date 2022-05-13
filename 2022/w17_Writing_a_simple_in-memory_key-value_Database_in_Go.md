@@ -6,9 +6,7 @@
 - 译者：[张宇](https://github.com/pseudoyu)
 - 校对：
 
-[FlashDB]: ../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png
-![flashdb][FlashDB]
-<center style="font-size:14px;color:#C0C0C0;text-decoration">FlashDB</center>
+![FlashDB](../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png)
 
 从 Postgres 到 Redis，再到 Prometheus，我们都使用并从事过各种数据库的开发。我花了很多时间来阅读其中一些数据库的源代码，对于那些像我一样好奇的少数人来说，他们有兴趣学习如何编写一个数据库。本书旨在记录这一过程。
 
@@ -44,9 +42,7 @@
 
 ## 架构
 
-[FlashDB]: ../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png
-![flashdb][FlashDB]
-<center style="font-size:14px;color:#C0C0C0;text-decoration">FlashDB</center>
+![FlashDB](../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png)
 
 架构很简单，FlashDB 支持各种 Redis 命令。Redis 本质上不是一个普通的键值存储，而是一个数据结构服务器，支持不同种类的值。本质上 Redis 使用以下数据结构实现了各种类型。
 
