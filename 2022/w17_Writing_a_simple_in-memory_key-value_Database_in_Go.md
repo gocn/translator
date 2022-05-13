@@ -1,91 +1,97 @@
-# Writing a simple in-memory key-value Database in Go
+# 用 Go 编写一个简单的内存键值数据库
 
-[flashdb]: ../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png
-![flashdb][flashdb]
-<center style="font-size:14px;color:#C0C0C0;text-decoration">flashdb</center>
+- 原文地址：https://aly.arriqaaq.com/building-a-database-in-go
+- 原文作者：Farhan Aly
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go.md
+- 译者：[张宇](https://github.com/pseudoyu)
+- 校对：
 
-We've used databases and have worked on a variety of them, right from Postgres to Redis to Prometheus. I've spent a lot of time reading through the source code of some of these databases. And for those curious few like me who would be interested in learning how to build one, this book aims to document the process.
+[FlashDB]: ../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png
+![flashdb][FlashDB]
+<center style="font-size:14px;color:#C0C0C0;text-decoration">FlashDB</center>
+
+从 Postgres 到 Redis，再到 Prometheus，我们都使用并从事过各种数据库的开发。我花了很多时间来阅读其中一些数据库的源代码，对于那些像我一样好奇的少数人来说，他们有兴趣学习如何编写一个数据库。本书旨在记录这一过程。
 
 [GitHub - arriqaaq/flashdb: FlashDB is an embeddable, in-memory key/value database in Go (with Redis like commands)](https://github.com/arriqaaq/flashdb)
 
-## In-Memory Database
+## 内存数据库
 
-In-memory databases are purpose-built databases that rely primarily on memory for data storage, in contrast to databases that store data on disk or SSDs. In-memory data stores are designed to enable minimal response times by eliminating the need to access disks. An in-memory database keeps all data in the main memory or RAM of a computer. A traditional database retrieves data from disk drives.Because all data is stored and managed exclusively in main memory, In-memory databases are more volatile than traditional databases because data is lost when there is a loss of power or the computer’s RAM crashes. In-memory databases can persist data on disks by storing each operation in a log or by taking snapshots.
+与在磁盘或固态硬盘上存储数据的数据库不同，内存数据库是有特定用途的数据库，主要依靠内存进行数据存储。内存数据存储旨在通过取缔访问磁盘这一需求来实现最小的响应时间。内存数据库将所有数据保存在计算机的主存或 RAM 中，而传统数据库则从磁盘驱动器中检索数据。由于所有的数据都存储与管理在主存中，内存数据库相比传统的数据库更不稳定，因为当计算机断点或 RAM 崩溃时，数据将会丢失。内存数据库可以通过将每个操作存储在日志中或采取快照的方式在磁盘上持久化数据。
 
-## Expectations
+## 目标
 
-The aim is to build a simple, fast, embeddable and persistent key/value database in Go that can
+我们的目标是用 Go 编写一个简单、快速、嵌入式和可持久化的键/值数据库，它可以
 
-- Supports Redis like data structures: `string`,  `hash`, `set`, `zset`.
-- Has low latency and high throughput.
-- Support transaction, ACID semantics.
-- [Durable append-only file](https://github.com/arriqaaq/flashdb#append-only-file) format for persistence.
-- Option to evict old items with an [expiration](https://github.com/arriqaaq/flashdb#data-expiration) TTL.
+- 支持类似 Redis 的数据结构：`string`,  `hash`, `set`, `zset`
+- 具有低延时和高吞吐量
+- 支持事务，ACID 语义
+- [仅可写入的持久化文件](https://github.com/arriqaaq/flashdb#append-only-file)格式
+- 可以通过使用 TTL 来处理[数据过期](https://github.com/arriqaaq/flashdb#data-expiration)
 
-## Getting Started
+## 开始
 
-The aim was to build a very simple KV (key/value) store so that it is easy to for everyone to understand and implement. There are quite a few embedded key/value stores available in Go. Here are a few to list:
+我们的目的是建立一个非常简单的 KV（键/值）存储，以便让每个人都能轻松理解和实现。在 Go 中，有相当多的嵌入式键/值存储可用，以下是一些例子：
 
-- [BadgerDB](https://github.com/dgraph-io/badger) - BadgerDB is an embeddable, persistent, simple and fast key-value (KV) database written in pure Go. It's meant to be a performant alternative to non-Go-based key-value stores like RocksDB.
-- [BoltDB](https://github.com/boltdb/bolt) - BoltDB is a B+ tree based embedded key/value database for Go.
-- [BuntDB](https://github.com/tidwall/buntdb) - BuntDB is an embeddable, in-memory key/value database for Go with custom indexing and geospatial support
-- [go-memdb](https://github.com/hashicorp/go-memdb) - Golang in-memory database built on immutable radix trees
-- [nutsdb](https://github.com/xujiajun/nutsdb) - A disk-backed key-value store
+- [BadgerDB](https://github.com/dgraph-io/badger) - BadgerDB 是一个完全用 Go 编写的嵌入式、可持久化、简单而快速的键值（KV）数据库。它旨在成为 RocksDB 等非基于 Go 实现的键值存储的高性能替代品
+- [BoltDB](https://github.com/boltdb/bolt) - BoltDB 是一个基于 B+ 树的嵌入式 Go 键/值数据库
+- [BuntDB](https://github.com/tidwall/buntdb) - BuntDB 是一个应用于 Go 的嵌入式内存键/值数据库，具有自定义索引和地理空间支持
+- [go-memdb](https://github.com/hashicorp/go-memdb) - 基于不可变基数树的 Golang 内存数据库
+- [nutsdb](https://github.com/xujiajun/nutsdb) - 一个基于磁盘的键值存储
 
-It is easier read than done. It is possible to understand the internals reading going through the huge codebases, but that becomes a starting hurdle for many. [NutsDB](https://github.com/xujiajun/nutsdb) was one of the first ones I read 2-3 years back which was simple and easy to read.
+读起来比做起来容易，我们可以通过阅读庞大的代码库来了解其内部结构，但这对很多人来说是开始的障碍。[NutsDB](https://github.com/xujiajun/nutsdb) 是我在 2-3 年前读到的第一批简单易懂的代码之一。
 
-Hence, FlashDB is made of composable libraries that are easy to understand. The idea is to bridge the learning for anyone new on how to build a simple ACID database.
+因此，FlashDB 是由易于理解的组合库组成的。我们的想法是为任何想学习关于如何编写一个简单的 ACID 数据库的新手提供桥梁。
 
-## Architecture
+## 架构
 
-[flashdb]: ../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png
-![flashdb][flashdb]
-<center style="font-size:14px;color:#C0C0C0;text-decoration">flashdb</center>
+[FlashDB]: ../static/images/2022/w17_Writing_a_simple_in-memory_key-value_Database_in_Go/flashdb.png
+![flashdb][FlashDB]
+<center style="font-size:14px;color:#C0C0C0;text-decoration">FlashDB</center>
 
-The architecture is simple. FlashDB supports a variety of Redis commands. Redis is not a plain key-value store, it is actually a data structures server, supporting different kinds of values. Under the hood, Redis implements various types using the following data structures:
+架构很简单，FlashDB 支持各种 Redis 命令。Redis 本质上不是一个普通的键值存储，而是一个数据结构服务器，支持不同种类的值。本质上 Redis 使用以下数据结构实现了各种类型。
 
-### Strings
+### 字符串
 
-The Redis String type is the simplest type of value you can associate with a Redis key. Since Redis keys are strings, when we use the string type as a value too, we are mapping a string to another string. This is implemented using an [Adaptive Radix Tree](https://github.com/arriqaaq/art) (ART) so that scans could be done easily.
+Redis 字符串类型是你能与 Redis 键关联的最简单的值类型。由于 Redis 键是字符串，当我们把字符串类型也作为一个值时，我们是把一个字符串映射到另一个字符串。这是用[可变基数树](https://github.com/arriqaaq/art)（ART）实现的，这样可以很容易进行扫描。
 
 - [String](https://github.com/arriqaaq/skiplist)
 
-### Hashes
+### 哈希
 
-While hashes are handy to represent objects, actually the number of fields you can put inside a hash has no practical limits (other than available memory), so you can use hashes in many different ways inside your application. This is implemented using a very simple HashMap data structure.
+用哈希表示对象很方便，而实际上哈希中可放入的字段数量并没有实际限制（除了可用的内存），所以你可以在应用程序中以许多不同的方式使用哈希。这是用一个非常简单的 HashMap 数据结构实现的。
 
 - [Hash](https://github.com/arriqaaq/hash)
 
-### Sets
+### 集合
 
-Redis Sets are unordered collections of strings. It's also possible to do a number of other operations against sets like testing if a given element already exists, performing the intersection, union or difference between multiple sets, and so forth. This is also implemented using a simple HashMap data structure.
+Redis 集合是无序的字符串集合。我们可以对集合进行一些操作，比如检测某个元素是否已经存在，查找多个集合之间的交集、并集或差集等。这也是用一个简单的 HashMap 数据结构实现的。
 
 - [Set](https://github.com/arriqaaq/set)
 
-### Sorted sets
+### 有序集合
 
-Sorted sets are a data type which is similar to a mix between a Set and a Hash. Like sets, sorted sets are composed of unique, non-repeating string elements, so in some sense a sorted set is a set as well.
+有序集合是一种数据类型，类似于集合与哈希的混合体。和集合一样，有序集合也是由唯一的、不重复的字符串元素组成的。所以从某种意义上说，有序集合也是一个集合。
 
-However while elements inside sets are not ordered, every element in a sorted set is associated with a floating point value, called the score (this is why the type is also similar to a hash, since every element is mapped to a value).
+虽然集合内的元素并不是有序的，但有序集合中的每个元素都与一个浮点值相关，称为分数（该类型类似于哈希，因为每个元素都被映射到一个值）。
 
-This is implemented using a slightly modified skiplist than the one used for strings.
+这是对用于字符串的跳表结构稍加修改实现的。
 
 - [ZSet](https://github.com/arriqaaq/zset)
 
-## Persistence
+## 持久化
 
-Though there are many persistence mechanisms, I chose a simple append-only log design because it is easier to implement and understand. **AOF** (Append Only File) logs every write operation received by the server, that will be played again at server startup, reconstructing the original dataset. Commands are logged using the same format as the API protocol itself, in an append-only fashion. FlashDB is able to handle multiple segments of the log in the background when it gets too big. This is implemented based on [wal](https://github.com/tidwall/wal)
+虽然已经有了很多持久化机制，我选择了一个简单的 append-only 日志设计方式，因为它比较容易实现和理解。**AOF**(仅可写入的文件)记录了服务器收到的每一个写操作，这些操作将在服务器启动时再重放，重建原始数据集。命令的记录格式与 API 协议本身相同，以只写入的方式进行。当日志过大时，FlashDB 能够在后台分片处理日志。这是基于 [wal](https://github.com/tidwall/wal) 实现的。
 
 - [Append Only Log](https://github.com/arriqaaq/aol)
 
-## Conclusion
+## 总结
 
-So that is it. Using the five simple libraries above, [FlashDB](https://github.com/arriqaaq/flashdb) was made. It has transaction and ACID support, which is easy to understand. But I hope this serves as a useful tutorial to anyone interested in learning how to make a database.
+综上，[FlashDB](https://github.com/arriqaaq/flashdb) 仅依靠上述五个简单的库就完成了，具有事务与 ACID 支持。它很易于理解，但我希望这对任何有兴趣学习如何编写数据库的人来说是一个有用的教程。
 
 [GitHub - arriqaaq/flashdb: FlashDB is an embeddable, in-memory key/value database in Go (with Redis like commands)](https://github.com/arriqaaq/flashdb)
 
-## Talks
+## 讲座
 
-I recently spoke about this in the Golang meetup, here is the slide deck.
+我最近在 Golang meetup 上分享了这个项目，这是幻灯片的内容。
 
 [https://www.canva.com/design/DAE8sGRyC2o/ZCuCaezQ6dYA0Oq24QxjUQ/view?utm_content=DAE8sGRyC2o&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink](https://www.canva.com/design/DAE8sGRyC2o/ZCuCaezQ6dYA0Oq24QxjUQ/view?utm_content=DAE8sGRyC2o&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink)
