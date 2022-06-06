@@ -4,7 +4,7 @@
 - 原文作者：David Cassel
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w18_Golang_creators_look_back.md
 - 译者：[张宇](https://github.com/pseudoyu)
-- 校对：
+- 校对：[cvley](https://github.com/cvley)
 
 ![golang](../static/images/2022/w18_Golang_creators_look_back/golang.png)
 
