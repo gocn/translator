@@ -1,14 +1,14 @@
-# 静态代码分析如何防止你在凌晨3点起来处理产品事故
+# 静态代码分析如何防止你在凌晨3点起来处理生产事故
 
 - 原文地址：https://xeiaso.net/talks/conf42-static-analysis
 - 原文作者：Xe Iaso
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire.md
 - 译者：[tt](https://github.com/1-st)
-- 校对：[]()
+- 校对：[iddunk](https://github.com/iddunk)
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.001.jpeg)
 
-大家好，我是Xe Iaso。今天我要讲的是静态分析以及它如何帮助你设计出更可靠的系统。这将帮助您避免写下在凌晨3点破坏生产环境的错误代码。有很多工具可以为各种语言做这间事情，但是我将专注于Go，因为我是这方面的专家。在这次演讲中，我将谈及问题范围，一些你现在可以应用的解决方案，以及你如何与人们一起设计更可靠的系统。
+大家好，我是Xe Iaso。今天我要讲的是静态分析以及它如何帮助你设计出更可靠的系统。这将帮助您避免写下在凌晨3点破坏生产环境的错误代码。有很多工具可以为各种语言做这件事情，但是我将专注于Go，因为我是这方面的专家。在这次演讲中，我将谈及问题范围，一些你现在可以应用的解决方案，以及你如何与人们一起设计更可靠的系统。
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.002.jpeg)
 
@@ -28,13 +28,13 @@
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.005.jpeg)
 
-该规范概述了可供阅读的Go语言的核心规则。这些问题包括每个.go文件需要放在一个包中，在使用变量之前需要声明变量，语言中的核心类型是什么，如何处理片，等等。
+该规范概述了可供阅读的Go语言的核心规则。这些问题包括每个.go文件需要放在一个包中，在使用变量之前需要声明变量，语言中的核心类型是什么，如何处理分片，等等。
 
 然而，这个规范并没有定义什么是正确的Go代码。它只定义了有效的Go代码是什么。这对这种规格来说很正常，确保正确性是计算机科学研究的一个活跃领域，而像谷歌、微软和苹果这样的小型初创公司正在努力解决这个问题。
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.006.jpeg)
 
-因此，您不能依赖编译器本身来阻止将不正确的代码部署到生产环境中。很多细小的错误会在过程中停止，但它不会停止更细微的错误。这是Go编译器可以自己捕获的错误类型的一个例子，如果你声明一个整数值，你就不能把一个字符串放在里面。它们是不同的类型，编译器会拒绝它。
+因此，你不能依赖编译器本身来阻止将不正确的代码部署到生产环境中。很多细小的错误会在过程中停止，但更细微的错误并不会。这是Go编译器可以自己捕获的错误类型的一个例子，如果你声明一个整数值，你就不能把一个字符串放在里面。它们是不同的类型，编译器会拒绝它。
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.007.jpeg)
 
@@ -100,7 +100,7 @@
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.020.jpeg)
 
-然而，如果出现错误，就会发生不同的事情。返回错误，然后运行预定的Close调用。Close调用假定响应是有效的，但实际上不是。这导致程序恐慌，即在凌晨3点崩溃。这就是静态分析能够拯救您的地方。让我们看看go vet对这段代码是怎么说的:
+然而，如果出现错误，就会发生不同的事情。返回错误，然后运行预定的Close调用。Close调用假定响应是有效的，但实际上不是。这导致程序panic，即在凌晨3点崩溃。这就是静态分析能够拯救您的地方。让我们看看go vet对这段代码是怎么说的:
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.022.jpeg)
 
@@ -197,7 +197,7 @@ Failure类型有一个Error方法，这意味着我们可以将其视为错误�
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.043.jpeg)
 
-正确的doWork版本应该是这样的。
+正确的有效工作版本应该是这样的。
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.044.jpeg)
 
@@ -215,7 +215,7 @@ Failure类型有一个Error方法，这意味着我们可以将其视为错误�
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.047.jpeg)
 
-我想我已经好几年没听到呼机的声音了，但上次听到呼机的声音时，我差点恐慌发作。我曾经因为寻呼机而精疲力竭，严重影响了我的健康。
+我想我已经好几年没听到寻呼机的声音了，但上次听到寻呼机的声音时，我差点恐慌发作。我曾经因为寻呼机而精疲力竭，严重影响了我的健康。
 
 我还在从那次SRE任务的后遗症中恢复，它导致我做出了永久性的职业改变，这样我就再也不会陷入那种境地。我不希望任何人遭受这种痛苦。
 
@@ -225,7 +225,7 @@ Failure类型有一个Error方法，这意味着我们可以将其视为错误�
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.049.jpeg)
 
-将静态分析添加到持续集成设置中可以让您在这两个极端之间走一条中间道路。它不会是完美的，无论事情会逐渐好转。
+将静态分析添加到持续集成设置中可以让您在这两个极端之间走一条中间道路。它不会是完美的，但是事情会逐渐好转。
 
 微小的错误将被阻止进入生产，您将能够更容易地睡眠。
 
@@ -241,7 +241,7 @@ Failure类型有一个Error方法，这意味着我们可以将其视为错误�
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.052.jpeg)
 
-在这样的谈话中，人们很容易忽视这样一个事实，即负责确保服务可靠的人是。人类。公司文化可能会成为阻碍，可能缺乏愿意或能够进行寻呼机轮换的人。
+在这样的谈话中，人们很容易忽视这样一个事实，即负责确保服务可靠的是人。公司文化可能会成为阻碍，可能缺乏愿意或能够进行寻呼机轮换的人。
 
 ![](../static/images/2022/w19_How_Static_Code_Analysis_Prevents_You_From_Waking_Up_at_3AM_With_Production_on_Fire/Conf42+SRE+2022.053.jpeg)
 
