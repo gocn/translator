@@ -1,5 +1,10 @@
 # 用 Go 跑的更快：使用 Golang 为机器学习服务
 
+- 原文地址：https://ai.ragv.in/posts/golang-for-machine-learning-serving/
+- 原文作者：Raghava Dhanya
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w20_Go_faster_with_Go_Golang_for_ML_Serving.md
+- 译者：[朱亚光](https://github.com/zhuyaguang)
+
 因此，我们的要求是用尽可能少的资源完成每秒300万次的预测。值得庆幸的是，这是一种比较简单的推荐系统模型，即多臂老虎机（MAB）。多臂老虎机通常涉及从 [Beta 分布](https://en.wikipedia.org/wiki/Beta_distribution) 等分布中取样。这也是花费时间最多的地方。如果我们能同时做尽可能多的采样，我们就能很好地利用资源。最大限度地提高资源利用率是减少模型所需总体资源的关键。
 
 我们目前的预测服务是用 Python 编写的微服务，它们遵循以下一般结构
@@ -210,7 +215,7 @@ func Betasample(alpha, beta float64, random int) float64 {
 
 简短的答案：不用。
 
-长答案。Go 在服务方面有很大的优势，但 Python 仍然是实验的王道。我只建议在模型简单且长期运行的基础模型中使用 Go，而不是实验。Go 对于复杂的 ML 用例来说[尚](https://github.com/josephmisiti/awesome-machine-learning#go)不是很成熟。
+长答案：Go 在服务方面有很大的优势，但 Python 仍然是实验的王道。我只建议在模型简单且长期运行的基础模型中使用 Go，而不是实验。Go 对于复杂的 ML 用例来说[尚](https://github.com/josephmisiti/awesome-machine-learning#go)不是很成熟。
 
 ### 所以房间里的大象，为什么不是 Rust ？
 
