@@ -1,24 +1,24 @@
-# Go limit service time per request
+# 使用GO限制每个请求的时间
 
-In this problem, you are given a video processing service with a freemium tier. Everyone will be given 10 seconds of free processing time. If you are not a paying user, the service will kill your process after 10 seconds.
+现在有这样一个场景，你将获得具有免费增值服务的视频处理服务。 每个人都将获得 10 秒的免费处理时间。 如果你不是付费用户，该服务将在 10 秒后终止你的进程。
 
-There are two variations for this problem. You can limit every 10 seconds for every request or limit 10 seconds for every user accumulated.
+这个问题有两种变体。 你可以限制每个请求为 10 秒，或者每个用户累计使用限制为 10 秒。
 
-This article will discuss the first one, limiting every request to 10 seconds.
+本文将讨论第一种，限制每个请求为 10 秒。
 
-## Solution
+## 解决方案
 
 ![w21_01](../static/images/2022/w21_Go_limit_service_time_per_request/w21_Go_limit_service_time_per_request_01.png)
 
 
 
-This implementation will block a request if a user is not premium after 10 seconds.
+如果10秒后用户还不是高级用户，请求将被终止。
 
-## Key takeaways
+## 关键要点
 
-### How to time out code
+### 如何让代码超时
 
-You can use the following pattern when you need to limit how long operations take in Go.
+当你在Go中需要限制程序的执行时间时，你可以使用以下模式。
 
 ```go
 // This code is taken from the book 
@@ -44,27 +44,27 @@ func timeLimit() (int, error) {
 
 ```
 
-You will see many variations of the above pattern when you want to limit or time out code in Golang.
+当你想在 Go 中限制程序执行时间或让代码超时时，你会看到上述模式的许多变体。
 
-In this pattern, I use:
+在这个模式中，我使用了：
 
-1. `time.After`  function that sends the current time to a channel after a specific duration has elapsed.
+1.  `time.After` 函数在特定时间后将当前时间写入 channel 。
 
-2. `select`  statement behavior, where it will block until one of its cases can run. And it will choose one at random if multiple cases can run.   
+2.  `select` 语句，它将阻塞直到其中一个 case 可以运行。 如果可以运行多个 case ，它将随机选择一个。
 
-This is the pattern I utilize to solve this problem. The only difference is that I wrap the select block inside a for loop, which I will explain later.
+这是我用来解决这个问题的模式。 唯一的区别是我将 select 块包装在一个 for 循环中，我将在后面解释。
 
-### Goroutine are not actually being killed with this time our pattern
+### 这次我们的模式实际上并没有杀死 Goroutine
 
-If you exit `timeLimit` before the goroutine finishes processing, the goroutine continues to run. You just choose not to do anything with the result that it (eventually) returns.
+如果你在 goroutine 完成处理之前退出 `timeLimit`，goroutine 会继续运行。 你只是选择不对它（最终）返回的结果做任何事情。
 
-If you want to stop work in a goroutine that you are no longer wish to wait for its completion, use context cancellation. But that will be the topic of another article.
+如果你想停止 goroutine 中的工作，而不再希望等待其完成，请使用上下文取消。 但这将是另一篇文章的主题。
 
-### Select statement behavior
+### Select 语句
 
-The `select` statement lets a goroutine wait on several communication operations. A `select` statement without a `default` statement blocks until one of its cases can run.
+`select` 语句让 goroutine 等待某些通信操作。 没有 `default` 语句的 `select` 语句会阻塞，直到其中一个 case 可以运行。
 
-In this problem, you need to wrap the `select` statement inside a for-loop because once you receive a message from the timer, you might need to wait for the process to finish.
+在这个问题中，你需要将 `select` 语句包装在 for 循环中，因为一旦收到来自定时器的消息，就可能需要等待进程完成。
 
 ```go
 func HandleRequest(process func(), u *User) bool {
@@ -82,4 +82,5 @@ func HandleRequest(process func(), u *User) bool {
     ...
 ```
 
-When `time.After` sends a message to the channel, you need to check if the user is premium or not. If the user is premium, you need to continue the process until it is finished. By putting the select statement inside a for-loop, you execute the `select` statement once again and wait until the `done` channel has been written before the function returns.
+当`time.After`向 channel 发送消息时，你需要检查用户是否为高级用户。 如果用户是高级用户，则需要继续该过程直到完成。 通过将 select 语句放在 for 循环中，就可以再次执行 `select` 语句，在函数返回之前会等待 `done` channel 写入。
+
