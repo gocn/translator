@@ -1,5 +1,5 @@
-- 原文地址：
-- 原文作者：
+- 原文地址：https://albertgao.xyz/2022/07/22/how-to-have-a-completely-decoupled-request-validation-layer-in-gin-framework/
+- 原文作者：albertgao
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w23_How_to_build_a_completely_decoupled_request_validation_layer_with_generic_in_Gin_framework.md
 - 译者：[Jancd](https://github.com/Jancd)
 - 校对：[]()
