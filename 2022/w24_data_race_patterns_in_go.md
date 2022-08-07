@@ -2,7 +2,7 @@
 - 原文作者：[Milind Chabbi](https://eng.uber.com/author/milind-chabbi/) and [Murali Krishna Ramanathan](https://eng.uber.com/author/murali-ramanathan/)
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w24_data_race_patterns_in_go.md
 - 译者：[小超人](https://github.com/dijkvy)
-- 校对：[]()
+- 校对：[zxmfke](https://github.com/zxmfke)
 
 # Go 中的数据竞争模型
 
@@ -15,7 +15,11 @@ Uber 把Golang(简称 Go)作为开发微服务的主要编程语言。我们的 
 并发作为 Go 中的一等公民；在函数调用之前使用 go 关键字就会以异步的方式调用。这些异步函数调用在 Go 中被称为 goroutines。开发者通过创建 goroutines 来缩短延迟时间（比如在 IO 或 RPC 调用等场景）。多个 goroutine 之间可以通过 ([channels](https://go101.org/article/channel.html) 来传递消息或者使用 [共享内存](https://en.wikipedia.org/wiki/Shared_memory#:~:text=In%20computer%20science%2C%20shared%20memory,of%20passing%20data%20between%20programs.
 ) ) 来进行通信。共享内存恰好是 Go 中最常用的通信方式。
 
-Go 程序员可以随意使用 goroutines, 因为它们被认为是 "[轻量级](https://medium.com/the-polyglot-programmer/what-are-goroutines-and-how-do-they-actually-work-f2a734f6f991)" 并且创建 goroutines 是一件很容易的事。最后，我们注意到，在使用 Go 编写的程序通常比使用其他语言编写的程序表现出更高的并发性能。例如，通过扫描运行我们数据中心的数十万个微服务实例，我们发现使用 Go 编写的微服务表现出的并发能力大约是 java 的 8 倍。更高的并发也意味着可能发生更多并发错误。数据竞争是两个或者多个 goroutines 同时以无序并且至少有一个是以写的方式访问同一个数据时产生的并发错误。数据竞争是潜在的错误，必须 [不惜一切代价避免](https://www.usenix.org/legacy/events/hotpar11/tech/final_files/Boehm.pdf)。
+Go 程序员可以随意使用 goroutines, 因为它们被认为是 "[轻量级](https://medium.
+com/the-polyglot-programmer/what-are-goroutines-and-how-do-they-actually-work-f2a734f6f991)" 并且创建 goroutines 
+是一件很容易的事。最后，我们注意到，在使用 Go 编写的程序通常比使用其他语言编写的程序表现出更高的并发性能。例如，通过扫描运行我们数据中心的数十万个微服务实例，我们发现使用 Go 编写的微服务表现出的并发能力大约是 java 的 
+8 倍。更高的并发也意味着可能发生更多并发错误。数据竞争是两个或者多个 goroutines 同时以无序并且至少有一个是以写的方式访问同一个数据时产生的并发错误。数据竞争是潜在的 bug，必须 [不惜一切代价避免]
+(https://www.usenix.org/legacy/events/hotpar11/tech/final_files/Boehm.pdf)。
 
 我们使用动态数据竞争检测技术开发了一个系统来检测 Uber 的数据竞争。这个系统在六个月的时间里，在我们的 Go 代码库中检测到大约 2,000 个数据竞争，其中我们的开发人员已经修复了大约 1,100 个数据竞争。
 
@@ -47,7 +51,7 @@ Go 程序员可以随意使用 goroutines, 因为它们被认为是 "[轻量级]
 
 图 1B：由于习惯捕获错误而引发的数据竞争。
 
-Go [提倡函数有多个返回值](https://www.digitalocean.com/community/tutorials/handling-errors-in-go)。实际上，如图 1B 所示，函数除了实际的返回值以外，还会返回一个用于指示是否发生错误的错误对象。仅当错误值为 `nil` 时，实际的返回值才会被认为是有意义的。一种常见的做法是将返回的错误对象分配给名称为 `err` 的变量，然后检查其零值。但是，由于可以在函数主体内调用多个返回错误的函数，，因此每次都会对 `err` 变量进行多次赋值，然后每次进行空值检查。当开发者将此惯用方式与 goroutine 混合在一起时，在闭包中通过引用捕获 `err`
+Go [提倡函数有多个返回值](https://www.digitalocean.com/community/tutorials/handling-errors-in-go)。实际上，如图 1B 所示，函数除了实际的返回值以外，还会返回一个用于指示是否发生错误的错误对象。仅当错误值为 `nil` 时，实际的返回值才会被认为是有意义的。一种常见的做法是将返回的错误对象分配给名称为 `err` 的变量，然后检查其零值。但是，由于可以在函数主体内调用多个返回错误的函数，因此每次都会对 `err` 变量进行多次赋值，然后每次进行空值检查。当开发者将此惯用方式与 goroutine 混合在一起时，在闭包中通过引用捕获 `err`
 。最终，在闭包函数（或多个 goroutine 实例）中对相同的 `err` 变量同时读取并将其写入，这就会导致数据竞争。
 
 示例 3：由于捕捉命名返回变量而引起的数据竞争。
@@ -91,7 +95,7 @@ Go 引入了一种 [命名返回值](https://yourbasic.org/golang/named-return-v
 2. 哈希表访问语法就像数组访问语法（与 Java 的 get/put API 不同）一样，使其易于使用，这种访问语法不出意外地混淆了对数据结构的随机访问。在 Go 中，可以使用 `table[key]`
 语法轻松查询不存在的 map 元素，该语法只需返回默认值而不会产生任何错误。这种容错性让开发者在 Go 中使用 map 时感到很满意。
 
-### 4. Go 开发者经常在传递值（或在方法上传值）方面犯错，这可能导致非凡的数据竞争
+### 4. Go 开发者经常在传递值（或在方法上传值）方面犯错，这可能导致非比寻常的数据竞争
 
 按值传递语义是 Go [推荐](https://goinbigdata.com/golang-pass-by-pointer-vs-pass-by-value/)
 ，因为它简化了逃逸分析并为变量提供了更好的在栈上分配的机会，这减少了垃圾回收的压力。
@@ -119,7 +123,8 @@ RWMutex`，在是 Go 中的值类型（结构）。如果一个函数创建了�
 
 图 5 显示的是一个由开发者使用 `channel` 的信号和等待机制实现的一个泛型的 [future](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html)。这个 Future 可以通过调用 `Start()` 方法来启动，并且可以通过调用 Future 的 `Wait()` 方法来阻塞直到 Future 的完成。`Start()` 方法创建一个 goroutine，它执行注册到 Future 的函数并记录其返回值（响应和错误）。 goroutine 通过在通道 ch 上发送一条消息来向 `Wait()` 方法发出 future 完成的信号，如第 6 行所示。对称地，`Wait()` 方法阻塞以从 channel 中获取消息（第 11 行）。
 
-Go 中的 [Contexts](https://pkg.go.dev/context) 在横跨 API 和进程之间携带截止日期、取消信号和其他请求相关的值。这种为任务设置截止时间的默认在微服务中很常见。因此，`Wait()` 在上下文被取消（第 13 行）或 阻塞直到 future 完成（第 11 行）。此外，`Wait()` 包含在 [select](https://go.dev/ref/spec#Select_statements) 语句（第 10 行）中，这个语句会阻塞，直到至少有一个分支是 ready 状态的。
+Go 中的 [Contexts](https://pkg.go.dev/context) 在横跨 API 和进程之间携带截止日期、取消信号和其他请求相关的值。这种为任务设置截止时间的做法在微服务开发中很常见。因此，`Wait()` 
+在上下文被取消（第 13 行）或 阻塞直到 future 完成（第 11 行）。此外，`Wait()` 包含在 [select](https://go.dev/ref/spec#Select_statements) 语句（第 10 行）中，这个语句会阻塞，直到至少有一个分支是 ready 状态的。
 
 如果上下文超时，则相应的案例在第 14 行将 Future 的 err 字段记录为 `ErrCancelled`。这个对 err 的写入与第 5 行对 future 相同变量的写入竞争。
 
