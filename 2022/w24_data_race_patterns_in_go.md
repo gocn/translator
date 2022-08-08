@@ -15,11 +15,9 @@ Uber 把Golang(简称 Go)作为开发微服务的主要编程语言。我们的 
 并发作为 Go 中的一等公民；在函数调用之前使用 go 关键字就会以异步的方式调用。这些异步函数调用在 Go 中被称为 goroutines。开发者通过创建 goroutines 来缩短延迟时间（比如在 IO 或 RPC 调用等场景）。多个 goroutine 之间可以通过 ([channels](https://go101.org/article/channel.html) 来传递消息或者使用 [共享内存](https://en.wikipedia.org/wiki/Shared_memory#:~:text=In%20computer%20science%2C%20shared%20memory,of%20passing%20data%20between%20programs.
 ) ) 来进行通信。共享内存恰好是 Go 中最常用的通信方式。
 
-Go 程序员可以随意使用 goroutines, 因为它们被认为是 "[轻量级](https://medium.
-com/the-polyglot-programmer/what-are-goroutines-and-how-do-they-actually-work-f2a734f6f991)" 并且创建 goroutines 
+Go 程序员可以随意使用 goroutines, 因为它们被认为是 "[轻量级](https://medium.com/the-polyglot-programmer/what-are-goroutines-and-how-do-they-actually-work-f2a734f6f991)" 并且创建 goroutines 
 是一件很容易的事。最后，我们注意到，在使用 Go 编写的程序通常比使用其他语言编写的程序表现出更高的并发性能。例如，通过扫描运行我们数据中心的数十万个微服务实例，我们发现使用 Go 编写的微服务表现出的并发能力大约是 java 的 
-8 倍。更高的并发也意味着可能发生更多并发错误。数据竞争是两个或者多个 goroutines 同时以无序并且至少有一个是以写的方式访问同一个数据时产生的并发错误。数据竞争是潜在的 bug，必须 [不惜一切代价避免]
-(https://www.usenix.org/legacy/events/hotpar11/tech/final_files/Boehm.pdf)。
+8 倍。更高的并发也意味着可能发生更多并发错误。数据竞争是两个或者多个 goroutines 同时以无序并且至少有一个是以写的方式访问同一个数据时产生的并发错误。数据竞争是潜在的 bug，必须 [不惜一切代价避免](https://www.usenix.org/legacy/events/hotpar11/tech/final_files/Boehm.pdf)。
 
 我们使用动态数据竞争检测技术开发了一个系统来检测 Uber 的数据竞争。这个系统在六个月的时间里，在我们的 Go 代码库中检测到大约 2,000 个数据竞争，其中我们的开发人员已经修复了大约 1,100 个数据竞争。
 
