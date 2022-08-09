@@ -2,7 +2,7 @@
 - 原文作者：**Cheikh seck**
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/2022/w32_atomic_pointers_in_go_1_19.md
 - 译者：[Fivezh](https://github.com/fivezh)
-- 校对：[]()
+- 校对：[zhuyaguang](https://github.com/zhuyaguang)
 
 # Go 1.19 中的原子指针
 
