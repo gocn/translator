@@ -4,12 +4,12 @@
 - 原文作者：Emir Ribic
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w33_Easy_memory_saving_tricks_in_Go.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[cvley](https://github.com/cvley)
 ***
 
 除非您正在对服务进行原型设计，否则您可能会关心应用程序的内存使用情况。占用更小的内存，会使基础设施成本降低，扩展变得更容易。尽管 Go 以不消耗大量内存而闻名，但仍有一些方法可以进一步减少消耗。其中一些需要大量重构，但很多都很容易做到。
 
-![](https://www.ribice.ba/img/38/go_memory.png#c)
+![](https://github.com/gocn/translator/raw/master/static/images/2022/w33_Easy_memory_saving_tricks_in_Go/go_memory.png)
 
 ### 预先分配切片
 
@@ -196,7 +196,7 @@ func BenchmarkEmptyStruct(b *testing.B) {
 }
 ```
 
-得到以下结果（MBP 14 2021，10C M1 Pro）：
+多次运行程序得到的结果一致（MBP 14 2021，10C M1 Pro）：
 
 ```
 name            time/op
