@@ -260,7 +260,6 @@ RocksDB 是一个用于快速存储的可嵌入持久化键值存储。RocksDB �
 
 ## Redis SortedSet
 
-Redis Sorted Sets are similar to Sets with the feature that members are stored with user defined values. [To quote Antirez](https://news.ycombinator.com/item?id=1171423), it was chosen over balanced trees because
 Redis Sorted Sets 类似于 Sets，它的功能是用用户定义的值存储成员。[引用 Antirez 的话](https://news.ycombinator.com/item?id=1171423)，选择它而不是平衡的树是因为
 
 > 1. 它们不是很占用内存。但这基本上取决于你的使用。对于具有给定数量的层级，改变节点出现的概率参数将使内存占用小于 b 树。
