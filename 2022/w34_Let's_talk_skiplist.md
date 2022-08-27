@@ -4,7 +4,7 @@
 - 原文作者：ketansingh
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w34_Let's_talk_skiplist.md
 - 译者：[haoheipi](https://github.com/haoheipi)
-- 校对：[]()
+- 校对：[watermelo](https://github.com/watermelo)
 
 ## 背景
 
