@@ -4,7 +4,7 @@
 - 原文作者：ketansingh
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w34_Let's_talk_skiplist.md
 - 译者：[haoheipi](https://github.com/haoheipi)
-- 校对：[]()
+- 校对：[watermelo](https://github.com/watermelo)
 
 ## 背景
 
@@ -268,7 +268,7 @@ Redis Sorted Sets 类似于 Sets，它的功能是用用户定义的值存储成
 
 ## MuQSS Linux 调度器
 
-Con Kolivas 维护了一系列调度器补丁集，多年来他为自己的使用进行了大量的调优，主要集中在减少延迟以获得更好的桌面体验。【 2016 年 10 月初】(http://ck-hack.blogspot.my/2016/10/muqss-multiple-queue-skiplist-scheduler.html)， Kolivas 发布了他广受欢迎的桌面调度器补丁集的设计，并将其重命名为 MuQSS。MuQSS 是具有多个运行队列的 CPU 调度器，每个 CPU 一个运行队列。队列被实现为跳表，而不是链表。Kolivas 的实现是一个为他的调度器自定义的跳表。
+Con Kolivas 维护了一系列调度器补丁集，多年来他为自己的使用进行了大量的调优，主要集中在减少延迟以获得更好的桌面体验。[2016 年 10 月初](http://ck-hack.blogspot.my/2016/10/muqss-multiple-queue-skiplist-scheduler.html)， Kolivas 发布了他广受欢迎的桌面调度器补丁集的设计，并将其重命名为 MuQSS。MuQSS 是具有多个运行队列的 CPU 调度器，每个 CPU 一个运行队列。队列被实现为跳表，而不是链表。Kolivas 的实现是一个为他的调度器自定义的跳表。
 
 # 参考资料
 - https://johnysswlab.com/the-quest-for-the-fastest-linked-list/
