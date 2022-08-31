@@ -1,76 +1,80 @@
-# Designing a Password-less Login System in Go from scratch
+# 从头开始在 Go 中设计一个无密码的登录系统
 
-Password-less login is kind of a misnomer since passwords are involved in one way or another in any authentication step. Even in a biometric system, your biometrics act as a password. The idea of password-less revolves around creating temporary passwords for users. Thereby reducing the attack surface. Rest assured, if the password changes each time, then the attacker will have to get access to the user's email or phone number to crack the system.
+- 原文地址：https://abhik.hashnode.dev/designing-a-password-less-login-system-in-go-from-scratch
+- 原文作者：Abhik Banerjee
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w36_Designing_a_Password-less_Login_System_in_Go_from_scratch.md
+- 译者：[Cluas](https://github.com/Cluas)
+- 校对：
+  
 
-This article is a part of series of blogs where we will build the backend and frontend for a password-less authentication system from the ground up. The code used here should not be used as seed code for any project as the project itself is supposed to give an insight into the working of the paradigm.
+无密码登录是一种误导性的说法，因为在任何认证步骤中都会以这样或那样的方式涉及密码。即使是在生物识别系统中，你的生物识别技术也充当了密码。无密码的概念是围绕着为用户创建临时密码而展开的。以达到减少攻击面的目的。请放心，如果密码每次都改变，那么攻击者将不得不获得用户的邮箱账号或手机号来破解系统。
 
-If you want a more concrete implementation or a module, I would recommend checking out [Authboss](https://github.com/volatiletech/authboss). It is a complete set of offering for Go devs to integrate secure authentication in their systems.
+本文是系列博客的一部分，我们将从头开始构建无密码认证系统的后端和前端。这里使用的代码不应该被用作任何项目的种子代码，因为项目本身只是对范式的工作进行了研究。
 
-In this article, we will delve into the design of our system. This article will not be code-intensive and is meant to give you an idea about what we will be building in successive blogs.
+如果你想要一个更具体的实现或模块，我推荐你去看看[Authboss](https://github.com/volatiletech/authboss)。它是一套完整的产品，供 `Go` 开发者在他们的系统中集成安全认证。
 
-## Tech Stack
+在这篇文章中，我们将深入探讨我们系统的设计。这篇文章不会是代码密集型的，这意味着目的只是让你了解我们将在以后的博客中构建的内容。
 
-For the backend, we will be using the following:
+## 技术栈
 
-1.  Go - to build the backend
-2.  MongoDB - to store the user profile
-3.  Redis - to store OTPs
+对于后端，我们将使用以下内容：
 
-Simple right? I will not be discussing the frontend stack just yet because I feel conflicted. On one hand, it would be easy and probably niche to build the Frontend stack with React. On the other, I am curious to explore what Rust offers. So let's keep that one in limbo for now.
+1.  `Go` - 来构建后端
+2.  `MongoDB` - 来存储用户资料
+3.  `Redis` - 来存储 `OTPs`(One-time password 一次性密码)
 
-## Design
 
-The system consists of two parts - a sign-up and a sign-in mechanism. We will not be going beyond this in the spirit of keeping things focused. You may try to replicate the stuff and add it to your Todo list app if you want to :)
+很简单，对吧？我现在还不会讨论前端技术栈，因为我觉得很矛盾。一方面，用 React 构建前端技术栈是很容易而且可能是小众的。另一方面，我很想探索 Rust 提供的东西。所以让我们暂时把这个问题放在一边。
+## 设计
 
-### Sign-up Phase
+该系统由两部分组成--注册机制和登录机制。为了保持重点关注，我们将不会超越这一点。如果你愿意，你可以尝试复制这些东西并将其添加到你的 Todo 列表应用程序中 :)
+
+### 注册阶段
 
 ![Password-less Signup flow](../static/images/2022/w36_Designing_a_Password-less_Login_System_in_Go_from_scratch/Password-less_Signup_flow.avif)
 
-The Sign-up Phase will consist of the following steps:-
+注册阶段将包括以下步骤：
 
-1.  The user pings the backend through the API and sends the user's profile information.
-2.  The backend queries MongoDB to check for the presence of such a profile.
-3.  MongoDB result returns nil since this would be a new user.
-4.  The backend sends the profile to store in MongoDB.
-5.  It stores an OTP for the user's profile verification.
-6.  The backend sends the notification back to the user that an OTP has been sent to the User's email/phone number.
+1.  用户通过 `API` `ping` 后端，并发送用户的资料信息。
+2.  后端查询 `MongoDB` 以检查是否存在这样的资料。
+3.  `MongoDB` 结果返回 `nil`，因为这将是一个新的用户。
+4.  后端发送个人资料以存储在 `MongoDB` 中。
+5.  它存储一个 `OTP`，用于用户的资料验证。
+6.  后端向用户发送通知，称 `OTP` 已被发送到用户的 邮箱/手机号。
 
-The user then needs to check his/her/it (don't want to offend any bots reading this) and enters the OTP. This completes the Sign-up flow. The user's profile is verified.
+然后，用户需要检查他/她/它（不想冒犯任何正在阅读的机器人），并输入 OTP。这就完成了注册的流程，用户的资料得到了验证。
 
-#### Extras
+#### 锦上添花
+你可以把它提高一个档次，实施以下机制：
 
-You can take it up a notch and implement the following mechanism:-
+1. 如果用户在 `X` 个小时内没有验证，那么该用户资料就会被删除，用户需要再次通过流程。这将需要一个定时运行的 `cronjob` 来清除未验证的资料。
+2. 考虑上述步骤的另一种可能的方式是将用户的配置文件存储在 `Redis` 中并设置一个过期标签。一旦用户验证了，就把它移到 `MongoDB` 上。
 
-1.  If the user does not verify within X number of hours, then the profile is deleted and the user would need to go again through the flow. This would require a cron job which would periodically run to clear unverified profiles.
-2.  The other possible way to think about the above step would be to store the user's profile in Redis and set an expiry tag. Once the user verifies, move it to MongoDB
-
-### Sign-in Phase
+### 登陆阶段
 
 ![Passwordless signin](../static/images/2022/w36_Designing_a_Password-less_Login_System_in_Go_from_scratch/Passwordless_signin.avif)
 
-This step would be quite similar to the flow above in representation. The steps, in this case, would be:
+这个步骤与上面的流程很相似。在这种情况下，步骤将是：
 
-1.  The user pings the backend server API with the email/phone number.
-2.  The backend server checks to find a profile associated with the given email/phone number.
-3.  The MongoDB search either yields a true or a false value.
-4.  If false, the user will need to go through the Sign-up Flow. On the front end, this would mean getting re-directed to the Sign-up page. In case of the backend, this will stop the flow with an error message.
-5.  If the MongoDB search yields a true value, an expiring OTP is generated and stored in Redis.
-6.  The OTP is sent to the user's email/phone with a note that it expires in x seconds/hours.
-7.  The user enters the OTP and is sent back an Authentication Token.
+1. 用户用 邮箱/手机号 向后端服务器 `API` 发出请求。
+2. 后端服务器检查是否有与给定的 邮箱/手机号 相关的个人资料。
+3. `MongoDB` 的搜索要么产生一个 `true`，要么产生一个`false`。
+4. 如果是`false`，用户将需要通过注册流程。在前端，这将意味着将被重新引导到注册页面。如果是在后端，这将会报错并停止流程。
+5. 如果 `MongoDB` 搜索产生一个`true`，就会产生一个即将到期的 `OTP` 并存储在 `Redis` 中。
+6. `OTP` 被发送到用户的邮箱/手机，并注明它在X秒/小时后失效。
+7. 用户输入 `OTP`，并被送回一个认证令牌。
 
-We do not store the Auth token in Redis or MongoDB. The user is responsible for maintaining it. In the case of a full-stack app, this would mean the Auth token might be kept in the browser's cache and attached to every API request.
+### 额外流程
 
-### Additional Flows
+除此以外，我们将为以下内容建立 `API` 端点：
 
-Apart from this, we will build the API endpoints for the following:-
+1. 浏览那些将自己的资料公开的用户。
+2. 改变当前用户的个人资料细节。
 
-1.  Browse users who have kept their profiles public.
-2.  Change profile details for the current user.
+我们可以在这里疯狂地实现好友请求设置。但我们会把它保留到将来。
 
-We can go ballistic and implement a friend request setup here. But we will keep that for the future.
+## 总结
 
-## Conclusion
+很遗憾，目前的文章到此结束。该系列文章的所有代码都将在 GitHub 上公开。在下一篇文章中，我们将设计路由/端点并为数据库安排连接。之后的文章将看到这些端点的控制器的实现。
 
-Unfortunately, this concludes the current article. All the code for the article series will be made public on GitHub. In the next article, we will design the routes/endpoints and arrange connections for the DB. The article after that will see the implementation of the controllers for those endpoints.
-
-I am taking a break of sorts from my usual blockchain-themed articles and during this time would love to deal out some interesting articles like the ones discussed above. If you liked the article and wish to follow the series, feel free to subscribe to my newsletter and leave a reaction. Until next time, continue to build awesome stuff and WAGMI!
+我正在从我通常的区块链主题文章中休息一下，在这段时间里，我很想发表一些有趣的文章，比如上面讨论的那些。如果你喜欢这篇文章并希望关注这个系列，请随时订阅我的通讯并留下反应。直到下一次，继续建造令人敬畏的东西和 WAGMI（**We All Gonna Make It**  **我们都会成功的**）!
