@@ -1,6 +1,6 @@
 - 原文地址：[Go Developer Survey 2022 Q2 Results - The Go Programming Language (golang.org)](https://tip.golang.org/blog/survey2022-q2-results)
 - 原文作者：**golang.org**
-- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w12_Go_Developer_Survey_2022_Q2_Results.md
+- 本文永久链接：[https://github.com/gocn/translator/blob/master/2022/w12_Go_Developer_Survey_2022_Q2_Results.md](https://github.com/gocn/translator/blob/master/2022/w38_Go_Developer_Survey_2022_Q2_Results.md)
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
