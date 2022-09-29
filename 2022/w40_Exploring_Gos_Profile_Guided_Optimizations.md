@@ -1,24 +1,30 @@
-# Exploring Go's Profile-Guided Optimizations
+- 原文地址：[Exploring Go's Profile-Guided Optimizations (polarsignals.com)](https://www.polarsignals.com/blog/posts/2022/09/exploring-go-profile-guided-optimizations/)
+- 原文作者：**Polar Signals**
+- 本文永久链接：[https://github.com/gocn/translator/blob/master/2022/w40_Exploring_Gos_Profile_Guided_Optimizations.md](https://github.com/gocn/translator/blob/master/2022/w40_w40_Exploring_Gos_Profile_Guided_Optimizations.md)
+- 译者：[zxmfke](https://github.com/zxmfke)
+- 校对：
 
-Making code faster without modifying it using Profile-Guided Optimizations.
+## 探究 Go Profile-Guided Optimizations(PGO)
 
+> Profile-Guided Optimizations可以理解为一种运行时编译器优化，在下面描述中用 PGO 来当做缩写
 
+使用 PGO 在不修改代码的前提下来提高代码执行速度。
 
-At Polar Signals 100% of our backend code is written in Go, so we have been very excited ever since the momentum on Profile-Guided Optimizations (PGO) picked up in late 2021, when the Go compiler team at Google [started prototyping it](https://github.com/golang/go/issues/28262#issuecomment-945837783). In this blog post we’ll go over what PGO is, how it works, and why it’s exciting.
+在 Polar Signals，后端代码 100% 都是用 Go 写的。因此，自从2021年底谷歌的 Go 编译器团队开始对 PGO 进行[原型设计](https://github.com/golang/go/issues/28262#issuecomment-945837783)时，我们就非常兴奋。在这个伯克利，我们将会描述一下什么是 PGO，它是如何工作的，以及为什么它是令人兴奋的一个工具。
 
-PGO support in the Go compiler is currently slated for the 1.20 release (based on previous releases probably going out February/March 2023, and the [issue now being in the active column](https://github.com/golang/go/issues/55022#issuecomment-1254050321)).
+Go 编译器对 PGO 的支持目前定在 1.20 版本(根据以前的版本可能会在 2023 年 2 月/ 3 月发布，而这个[issue现在是在活动栏中](https://github.com/golang/go/issues/55022#issuecomment-1254050321))。
 
-## What is PGO?
+## 什么是 PGO ？
 
-PGO boils down to using runtime information in the form of profiling data to apply optimizations at compile time that are not generally a good idea, but informed by the provided runtime information, can be expected to have a net positive impact.
+总的来说，PGO 就是使用以 profiling 数据格式 的 runtime 信息，在编译时进行优化，这个其实不是一个好的思路，但通过 runtime 所提供的信息，可以预期会有一个正向的积极影响。
 
-The first Profile-Guided Optimization the Go compiler is introducing is using profiling data to inline functions that may not be inlined otherwise. If you’re unfamiliar with function inlining or want a refresher, check out our blog post on [Why Compiler Function Inlining Matters](https://www.polarsignals.com/blog/posts/2021/12/15/why-compiler-function-inlining-matters/).
+Go 编译器引入的第一个 PGO 是使用 profiling 数据来内联函数，否则可能不会内联。如果你不熟悉内联函数或者想要重新复习一下，可以看一下我们发布的博客[为什么编译器内联函数如此重要](https://www.polarsignals.com/blog/posts/2021/12/15/why-compiler-function-inlining-matters/)
 
-So how does PGO work with function inlining? The Go compiler has a heuristic of a function’s cost of inlining. By default, if the cost of inlining is higher than 80, it will not be inlined. However, with PGO even functions that have a higher inlining cost than 80 may still be inlined, if the provided profiling data suggests that that this function would still benefit from inlinining.
+所以 PGO 到底是如何进行函数内联的呢？Go 编译器对一个函数的内联成本有一个启发式的判断。通常情况下，如果内联成本高于 80，那它是不会被内联的。然而，在 PGO 的加持下如果 profiling 数据建议这个函数能在内联后获得提升，那即使函数的内联成本高于 80，也依旧会被内联，
 
-Let’s look at a concrete example using the currently proposed changes to the Go compiler at the time of writing this article.
+让我们来看一个具体的例子，在写这篇文章时，使用目前提议后对 Go 编译器的修改。
 
-If you would like to follow along with this blog post and try PGO on your codebase or just replicate what this blog post demonstrates, checkout the patch and compile the Go runtime with it:
+如果你想跟随着这篇博文，在你的代码库中尝试 PGO ，或者只是复制这篇博文所演示的内容，请勾选该补丁并使用它编译 Go runtime：
 
 ```bash
 git clone https://go.googlesource.com/go
@@ -29,21 +35,21 @@ cd src
 ..export PATH="$(pwd)/bin:$PATH" # or add the path to your bashrc/zshrc
 ```
 
-Conveniently the patch for the compiler contains a small code sample that demonstrates PGO inlining for testing purposes.
+方便的是，编译器的补丁包含一个小的代码范例，演示了 PGO 的内联，来用于测试。
 
 ```bash
 cd src/cmd/compile/internal/test/testdata/pgo/inline
 ```
 
-Let’s run it and have the go benchmark output profiling data that we can then use in subsequent calls to enable PGO.
+让我们运行它，让 go benchmark 输出 profiling 数据，然后我们可以在随后的调用中使用，以启用 PGO。
 
 ```bash
 go test -o inline_hot.test -bench=. -cpuprofile inline_hot.pprof
 ```
 
-First let’s have a look at what functions were inlined without PGO:
+首先，然我们看下在用 PGO 之前有哪些函数被内联：
 
-> The `-run=none -tags=”” -gcflags=”-m -m”` flags allow us to just compile the tests without running them, while also outputting inlining cost and decisions the compiler makes.
+> `-run=none -tags=”” -gcflags=”-m -m”`标志允许我们只编译单元测试，而不需要执行他们，同时也可以输出内联成本以及编译器做的内联决定。
 
 ```bash
 go test -run=none -tags='' -timeout=9m0s -gcflags="-m -m" 2>&1 | grep "can inline"
@@ -55,22 +61,22 @@ go test -run=none -tags='' -timeout=9m0s -gcflags="-m -m" 2>&1 | grep "can inlin
 _testmain.go:37:6: can inline init.0 with cost 3 as: func() { testdeps.ImportPath = "cmd/compile/internal/test/testdata/pgo/inline" }
 ```
 
-As we can see all the inlined functions have a cost of 80 or less. Now let’s run that again with PGO enabled and see what functions are now inlined. Judging by an ongoing conversation by the Go team on the tracking issue it appears that the flag to enable PGO won’t stay like this, but using this patch, it can be enabled using the `-gcflags=”-pgoprofile <file>”` flag:
+正如我们看到的所有内联函数的成本均在80及以下。现在让我们开启 PGO，再运行一次，看下现在哪些函数被内联了。 从 Go 团队在跟踪的 issue ，其中正在进行讨论的对话来看，启用 PGO 的标志似乎不会一直是这样的，但使用这个补丁，可以使用`-gcflags="-pgoprofile <file>"`标志来启用它：
 
 ```bash
 go test -run=none -tags='' -timeout=9m0s -gcflags="-m -m -pgoprofile inline_hot.pprof"
 ```
 
-To save you from having to compare the output, there is the diff between the two commands:
+为了使你不需要比较这两个输出，这里列出了这两个指令的差异：
 
 ```bash
 diff <(go test -run=none -tags='' -timeout=9m0s -gcflags="-m -m" 2>&1 | grep "can inline") <(go test -run=none -tags='' -timeout=9m0s -gcflags="-m -m -pgoprofile inline_hot.pprof" 2>&1 | grep "can inline")
 > ./inline_hot.go:44:6: can inline (*BS).NS with cost 106 as: method(*BS) func(uint) (uint, bool) { x := int(i >> lWSize); if x >= len(b.s) { return 0, false }; w := b.s[x]; w = w >> (i & (wSize - 1)); if w != 0 { return i + T(w), true }; x = x + 1; for loop; return 0, false }
 ```
 
-As we can see the cost of the function inlined is 106, much higher than the typical 80.
+正如我们看到的函数内联的成本是106，远高于标准的 80。
 
-Actually now running the benchmarks and comparing the result shows the change:
+事实上现在运行 benchmarks 然后比较结果就可以看到差异：
 
 ```bash
 go test -o inline_hot.test -bench=. -cpuprofile 
@@ -80,15 +86,15 @@ name  old time/op  new time/op  delta
 A-10   960µs ± 2%   950µs ± 1%  -1.05%  (p=0.000 n=98+83)
 ```
 
-1% improvement for doing absolutely nothing to the code, is pretty awesome, but the reality is this is a piece of test code that inlines a single function in a single benchmark, which is really just used to test whether this particular inlining optimization works as expected.
+1% 的改进对代码完全没有影响，是非常完美的，但实际上这是一段测试代码，在一个 benchmark 中内联一个函数，这实际上只是用来测试这个特定的内联优化是否像预期的那样工作。
 
-## Closing thoughts
+## 结束语
 
-This is only the very first profile-guided optimization added to the Go compiler, but we are very excited where it is headed. Next optimizations being discussed include [profiling informed escape analysis](https://github.com/golang/go/issues/55022#issuecomment-1252526633), [devirtualization](https://github.com/golang/go/issues/55022#issuecomment-1252191950), and [more](https://github.com/golang/go/issues/55022#issuecomment-1245605666).
+这只是添加到 Go 编译器中的第一个 PGO，但我们对它的发展方向感到非常兴奋。正在讨论下一步的优化，包括[剖析告知逃逸分析](https://github.com/golang/go/issues/55022#issuecomment-1252526633)，[devirtualization](https://github.com/golang/go/issues/55022#issuecomment-1252191950)，以及[更多](https://github.com/golang/go/issues/55022#issuecomment-1245605666)。
 
-Real world experience with PGO has shown a typical 5-15% improvement on real workloads with real profiling data [1][2], so we are excited for Go’s future with PGO.
+使用 PGO 的实际经验表明，在真实的工作负载上，使用真实的 profiling 数据[1]\[2]，通常会有 5 - 15% 的提升，因此我们对 Go 的未来与 PGO 的关系感到兴奋。
 
-Next we are excited to put Go’s upcoming PGO support to the test with real workloads and use [Parca Agent](https://github.com/parca-dev/parca-agent) collected profiles to use instead of those coming from the Go runtime, but we’ll leave that for a future post, so stay tuned!
+接下来，我们很高兴用真实的工作负载来测试 Go 即将推出的 PGO 支持，并使用 [Parca Agent](https://github.com/parca-dev/parca-agent) 收集的profiles 来代替来自 Go runtime 的 profiles ，但我们会把这个问题留给未来的文章，敬请关注！
 
 [1] https://lists.llvm.org/pipermail/llvm-dev/2019-September/135393.html
 
