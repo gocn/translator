@@ -79,8 +79,8 @@ diff <(go test -run=none -tags='' -timeout=9m0s -gcflags="-m -m" 2>&1 | grep "ca
 事实上现在运行 benchmarks 然后比较结果就可以看到差异：
 
 ```bash
-go test -o inline_hot.test -bench=. -cpuprofile 
-inline_hot.pprof -count=100 > without_pgo.txtgo test -o inline_hot.test -bench=. -gcflags="-pgoprofile inline_hot.pprof" -count=100 > with_pgo.txt
+go test -o inline_hot.test -bench=. -cpuprofile inline_hot.pprof -count=100 > without_pgo.txt
+go test -o inline_hot.test -bench=. -gcflags="-pgoprofile inline_hot.pprof" -count=100 > with_pgo.txt
 benchstat without_pgo.txt with_pgo.txt
 name  old time/op  new time/op  delta
 A-10   960µs ± 2%   950µs ± 1%  -1.05%  (p=0.000 n=98+83)
