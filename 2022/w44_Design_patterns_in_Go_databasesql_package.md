@@ -1,17 +1,27 @@
-### Design patterns in Go's database/sql package
+原文地址：https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/
 
----
+原文作者：[Eli Bendersky](https://eli.thegreenplace.net/)
 
-Using SQL databases from Go is easy, in three steps:
+本文永久链接：[https://github.com/gocn/translator/blob/master/2022/w44_Design_patterns_in_Go_databasesql_package.md](https://github.com/gocn/translator/blob/master/2022/w44_Design_patterns_in_Go_databasesql_package.md)
+
+译者：[zxmfke](https://github.com/zxmfke)
+
+校对：
+
+### 探究 Go database/sql 包的设计模式
+
+------
+
+使用 Go 中的 SQL database 是容易的，只需下列这三步：
 
 ```go
-// Step 1: import the main SQL package
+// 步骤 1：导入主要的 SQL 包
 import "database/sql"
 
-// Step 2: import a driver package to use a specific SQL database
+// 步骤 2：导入一个驱动包来明确要使用的 SQL 数据库
 import _ "github.com/mattn/go-sqlite3"
 
-// Step 3: open a database using a registered driver name
+// 步骤 3：用一个注册好的驱动名称来打开一个数据库
 func main() {
   // ...
   db, err := sql.Open("sqlite3", "database.db")
@@ -19,61 +29,61 @@ func main() {
 }
 ```
 
-From this point on, the `db` object can be used to query and modify the database, with the same code suitable for all the supported SQL databases. If we want to change our database from SQLite to PostgreSQL, it's very likely that we only need to import a different driver and provide a different name in the call to `sql.Open` [[1\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#sql1).
+从这时候开始，对象 `db` 可以用相同的代码来查询和修改所有支持的 SQL 数据库。如果我们想从 SQLite 转到 PostgreSQL，类似的做法只需要导入另个一数据库的驱动包，以及在调用 `sql.Open`[[1\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#sql1) 时传入另一个驱动名称。
 
-In this post I want to briefly examine some of the design patterns and architecture behind `database/sql` that makes this all possible.
+在这篇博客里，我想简述一些 `database/sql` 背后的设计模式及架构。
 
-## The main design pattern
+## 主要的设计模式
 
-The architecture of `database/sql` is governed by one overarching design pattern. I was trying to figure out which of the classical design patterns it resembles most, and the [Strategy Pattern](https://en.wikipedia.org/wiki/Strategy_pattern) seems the closest, though it's not quite that. Let me know if you can think of a closer correspondence [[2\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#sql2).
+`database\sql` 的架构受一个整体的设计模式制约。我尝试分析它可能是哪个经典的设计模式，然后[策略模式](https://en.wikipedia.org/wiki/Strategy_pattern)看起来比较接近，尽管它不是那么的一致。如果你认为哪个设计模式更符合，请告诉我 [[2\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#sql2)。
 
-It goes like this: we have a common interface we want to present to users, with an implementation that's specific to every DB backend. Obviously, this sounds like a classic interface + implementation, which Go is particularly good at with its robust support for interfaces.
+它看起来像这样：我们有一个想要呈现给用户的通用接口，并有一个针对每个数据库后端的实现。很显然，它听起来很像经典的接口+实现，Go在这方面特别擅长，它对接口的支持很强大。
 
-So the first idea would be: create some `DB` interface which the user interacts with, and each backend implements this interface. Sounds simple, right?
+所以第一个想法会是：创建一些用户会交互的 `DB` 接口，并且每个数据库后端都实现这些接口。听起来是不是很简单？
 
-Sure, but there are some issues with this approach. Remember that Go recommends interfaces to be small, with just a handful of methods to implement. Here we'd need a much larger `DB` interface, and this leads to problems:
+当然，但使用这个方法会有一些问题。记住的是 Go 建议接口尽量小，也就是实现较少的方法。这里我们需要较大一点的 `DB` 接口，而这导致了一些问题：
 
-1. Adding user-facing capabilities is difficult because they may require adding methods to the interface. This breaks all the interface implementations and requires multiple standalone projects to update their code.
-2. Encapsulating functionality that is common to all database backends is difficult, because there is no natural place to add it if the user interacts directly with the `DB` interface. It has to be implemented separately for each backend, which is wasteful and logistically complicated.
-3. If backends want to add optional capabilities, this is challenging with a single interface without resorting to type-casts for specific backends.
+2. 添加面向用户的能力是很困难的，因为他们可能需要对接口添加额外的方法。这个破坏了所有接口的实现，并且需要许多独立的项目去维护它们的代码。
+3. 让所有数据库后端封装相同的方法是困难的，因为如果用户想直接加方法到 `DB` 接口，是没有一个原生(不能直接修改接口的方法)的地方去添加的。它需要每个后端独立地实现，这是很浪费的，逻辑也是非常复杂的。
+4. 如果后端想增加可选的能力，对一个单一的接口来说，不为特定的后端采用类型转换，这是具有挑战性的。
 
-Therefore, a better idea seems to be: split up the user-facing type and functionality from the common backend interface. Graphically, it looks like this:
+因此，一个更好的想法应该像这样：从后端接口分离出面向用户的类型及方法。如图所示：
 
-![](./database_sql_diagram.png)
+![](../static/images/2022/w44_Design_patterns_in_Go_databasesql_package/database_sql_diagram.png)
 
-`DB` is a user-facing type. It's not an interface, but a *concrete* type (a struct) implemented in `database/sql` itself. It is backend-independent and encapsulates a lot of functionality that is common to all backends, like [connection pooling](https://en.wikipedia.org/wiki/Connection_pool).
+`DB` 是一个面向用户类型。不是一个接口，而是一个在 `database/sql`包内实现的一个*具体*类型（一个结构）。它是与后端是分隔开的，封装了许多后端通用的功能，就像[连接池](https://en.wikipedia.org/wiki/Connection_pool)。
 
-To do backend-specific work (such as issue SQL queries to the actual database), `DB` uses an interface called `database/sql/driver.Driver` (and several other interfaces that define connections, transactions, etc). This interface is lower-level, and it's implemented by each database backend. In the diagram above we can see implementations from the `pq` package (for PostreSQL) and from the `sqlite3` package.
+为了做后端特定的工作（比如向实际的数据库发出 SQL 查询），`DB`使用一个叫做`database/sql/driver` 的接口。`Driver` (以及其他几个定义连接、事务等的接口)。这个接口是低级别的，它由每个数据库后端实现。在上图中，我们看到 `pq` 包的实现 (PostreSQL 的实现) 以及 `sqlit3` 包的实现。
 
-This approach helps `database/sql` elegantly address the problems mentioned earlier:
+这个方法优雅地帮助 `database/sql` 解决了在前面提到的问题：
 
-1. Adding user-facing capabilities doesn't necessarily require an interface change now, as long as the capability can be implemented in the backend-independent layer (`DB` and its sister types).
-2. Functionality that's common to all database backends now has a natural place to be in. I've mentioned connection pooling, but there is a lot of other stuff the backend-independent types in `database/sql` add on top of the backend-specific implementations. Another example: handling retries for bad connection to the database server.
-3. If backends add optional capabilities, these can be selectively utilized in the backend-independent layer without exposing them directly to the user.
+2. 现在增加面向用户的能力不一定需要改变接口，只要该能力可以在独立于后端（``DB``和它的姐妹类型）中实现即可。
+3. 所有数据库后端共有的功能现在有了一个可以修改的位置。虽然我在前面提到了连接池，但是 `database/sql` 中独立于后端的类型在后端特定实现的基础上增加了很多其他的东西。另一个例子：处理与数据库服务器的错误连接的重试。
+4. 如果后端增加了可选的能力，这些能力可以在独立于后端的层中被选择性地利用，而不用直接暴露给用户。
 
-## Registering drivers
+## 注册驱动
 
-Another interesting aspect of the design of `database/sql` is how database drivers register themselves with the main package. It's a nice example of implementing *compile-time plugins* in Go.
+`database/sql` 的设计另一个有趣的方面是数据库驱动如何自己注册到 main 包里面。这是一个在 Go 中实现*编译时插件*的好例子。
 
-As the code sample at the top of this post shows, `database/sql` knows about the imported drivers' names, and can open them by name with `sql.Open`. How does that work?
+正如本博客顶部的代码示例所示，`database/sql` 知道导入的驱动程序的名称，并且可以用 `sql.Open `按名称打开它们。它是如何实现的呢？
 
-The trick is in the blank import:
+诀窍就在空白引用：
 
-```
+```go
 import _ "github.com/mattn/go-sqlite3"
 ```
 
-While it doesn't actually import any names from the package, it does invoke its `init` function, which in case of `sqlite3` is:
+虽然它实际上没有从包中导入任何名字，但它调用了它的 `init` 函数，对于 `sqlite3` 来说，就是：
 
-```
+```go
 func init() {
     sql.Register("sqlite3", &SQLiteDriver{})
 }
 ```
 
-In `sql.go`, `Register` adds a mapping from a string name to an implementation of the `driver.Driver` interface; the mapping is in a global map:
+在 `sql.go` 中，`Register` 添加了一个从字符串名称到 `driver.Driver` 接口实现的映射；该映射在一个全局映射中：
 
-```
+```go
 var (
     driversMu sync.RWMutex
     drivers   = make(map[string]driver.Driver)
@@ -95,44 +105,44 @@ func Register(name string, driver driver.Driver) {
 }
 ```
 
-When `sql.Open` is called, it looks up the name in the `drivers` map and can then instantiate a `DB` object with the proper driver implementation attached. You can also call the `sql.Drivers` function at any time to get the names of all the registered drivers.
+当 `sql.Open` 被调用时，它在 `drivers`  映射中查找名称，然后会实例化一个 `DB` 对象，并附加适当的驱动实现。你也可以在任何时候调用 `sql.Drivers` 函数来获取所有注册的驱动的名称。
 
-This approach implements a *compile-time* plugin, because the `import`s for the included backends happen when the Go code is compiled. The binary has a fixed set of database drivers built into it. Go also has support for *run-time* plugins, but that is a topic for a separate post.
+这个方法实现了一个*编译时*的插件，因为包含的后端的 `import` 是在 Go 代码编译时发生的。二进制文件中构建了一套固定的数据库驱动程序。Go 也支持 *运行时* 的插件，但是这是另一篇的主题。
 
-## Custom types with the `Scanner` interface
+## 实现 `Scanner` 接口的自定义类型
 
-Another interesting architectural feature of the `database/sql` package is supporting storage and retrieval of custom types in the database. The `Rows.Scan` method is typically used to read columns from a row. It takes a sequence of `interface{}` to be generic, using a type switch underneath to select the right reader depending on the type of an argument.
+`database/sql `包的另一个有趣的结构特征是支持数据库中自定义类型的存储和检索。`Rows.Scan` 方法通常用于从行中读取列。 它把一连串的 `interface{}` 当作泛型，内部通过类型开关，根据一个参数的类型选择正确的 reader。
 
-For customization, `Rows.Scan` supports types that implement the `sql.Scanner` interface, and then invokes their `Scan` method to perform the actual data read.
+为了定制化，`Rows.Scan` 支持实现了 `sql.Scanner` 接口的类型，然后调用它们 `Scan` 方法来执行实际的数据读取操作。
 
-One built-in example is `sql.NullString`. If we try to `Scan` a column into a `string` variable:
+一个内建例子是 `sql.NullString`。如果我们尝试 `Scan` 一个列到一个 `string` 参数：
 
-```
+```go
 var id int
 var username string
 err = rows.Scan(&id, &username)
 ```
 
-and that column has a `NULL` value, we'll get an error:
+然后那个列有一个 `NULL` 的值，我们会得到一个错误：
 
-```
+```go
 sql: Scan error on column index 1, name "username":
     unsupported Scan, storing driver.Value type <nil> into type *string
 ```
 
-We can avoid this by using a `sql.NullString` instead:
+我们可以通过使用`sql.NullString` 来避免：
 
-```
+```go
 var id int
 var username sql.NullString
 err = rows.Scan(&id, &username)
 ```
 
-Here `username` will have its `Valid` field set to `false` for a `NULL` column. This works because `NullString` implements the `Scanner` interface.
+在这里，`username` 将把它的`Valid` 字段设置为`false`，因为它是 `NULL` 列。这个能够实现的原因是 `NullString` 实现了 `Scanner` 接口。
 
-A more interesting example involves types that are specific to certain database backends. For example, while PostgrSQL supports [array types](https://www.postgresql.org/docs/9.1/arrays.html), some other databases (like SQLite) do not. So `database/sql` cannot support array types natively, but features like the `Scanner` interface make it possible for user code to interact with such data fairly easily anyway.
+一个更有趣的例子涉及到某些数据库后端特有的类型。举个例子，虽然 PostgrSQL 支持 [数组类型](https://www.postgresql.org/docs/9.1/arrays.html)，但其他一些数据库（如 SQLite ）并不支持。所以 `database/sql` 不能原生支持数组类型，但是像 `Scanner` 接口这样的功能使得用户代码可以相较容易地与这些数据进行交互。
 
-To extend the previous example, suppose our rows also have a list of activities (as strings) for each user [[3\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#sql3). Then the `Scan` would go like this:
+为了扩展前面的例子，假设我们的行也有每个用户\[[3\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#sql3)的 activities（作为字符串）。那么 `Scan` 就会像这样：
 
 ```
 var id int
@@ -141,20 +151,14 @@ var activities []string
 err = rows.Scan(&id, &username, pq.Array(&activities))
 ```
 
-The `pq.Array` function is provided by the [pq PostgreSQL binding](https://godoc.org/github.com/lib/pq). It takes a slice and converts it to an anonymous type that implements the `sql.Scanner` interface.
+`pq.Array` 函数是由 [pq PostgreSQL 绑定](https://godoc.org/github.com/lib/pq) 提供。 它接收一个分片，并将其转换为一个匿名类型，实现 `sql.Scanner` 接口。
 
-This is a nice way to *escape the abstraction* when necessary. Even though it's great to have a uniform interface to access many kinds of databases, sometimes we really do want to use a specific DB with its specific features. It would be a shame to give up `database/sql` in this case, and we don't have to - because of these features that let specific database backends provide custom behavior.
+这是一个很好的方法，在必要时可以*摆脱抽象*。 尽管有一个统一的接口来访问许多种数据库是很好的，但有时我们确实想使用一个特定的数据库，并具有其特定的功能。在这种情况下，放弃 `database/sql` 是很可惜的，不过我们也不必这样 - 因为这些功能让特定的数据库后端提供了自定义行为。
 
 ------
 
-| [[1\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#footnote-reference-1) | Assuming we only use standard SQL syntax in our queries that both databases support, of course. |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-|                                                              |                                                              |
+[[1\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#footnote-reference-1)  当然，假设我们在查询中只使用两个数据库，且都支持的标准SQL语法。
 
-| [[2\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#footnote-reference-2) | I first encountered an explicit discussion of this pattern in the [Go CDK project](https://github.com/google/go-cloud), which I recently joined. The Go CDK uses a similar approach for its portable types, and its [design documentation](https://github.com/google/go-cloud/blob/master/internal/docs/design.md#portable-types-and-drivers) calls it the *portable type and driver pattern*. |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-|                                                              |                                                              |
+[[2\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#footnote-reference-2)  我第一次在最近加入的[Go CDK 项目](https://github.com/google/go-cloud)中遇到了关于这种模式的明确讨论。Go CDK 对其可移植类型使用了类似的方法，其[设计文档](https://github.com/google/go-cloud/blob/master/internal/docs/design.md#portable-types-and-drivers)称其为*可移植类型和驱动模式*。
 
-| [[3\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#footnote-reference-3) | I realize that multi-valued fields are not good relational design. This is just an example. |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-|                                                              |                                                              |
+[[3\]](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/#footnote-reference-3)  我意识到，多值字段并不是好的关系设计。这只是一个例子。
