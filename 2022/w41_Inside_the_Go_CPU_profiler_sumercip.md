@@ -1,8 +1,12 @@
-5. 原文地址：[Inside the Go CPU profiler (sumercip.com)](https://sumercip.com/posts/inside-the-go-cpu-profiler/)
-2. 原文作者：[ Sümer Cip](https://sumercip.com/)
-3. 本文永久链接：[https://github.com/gocn/translator/blob/master/2022/w41_Inside_the_Go_CPU_profiler_sumercip.md](https://github.com/gocn/translator/blob/master/2022/w41_Inside_the_Go_CPU_profiler_sumercip.md)
-4. 译者：[zxmfke](https://github.com/zxmfke)
-5. 校对：
+原文地址：[Inside the Go CPU profiler (sumercip.com)](https://sumercip.com/posts/inside-the-go-cpu-profiler/)
+
+原文作者：[ Sümer Cip](https://sumercip.com/)
+
+本文永久链接：[https://github.com/gocn/translator/blob/master/2022/w41_Inside_the_Go_CPU_profiler_sumercip.md](https://github.com/gocn/translator/blob/master/2022/w41_Inside_the_Go_CPU_profiler_sumercip.md)
+
+译者：[zxmfke](https://github.com/zxmfke)
+
+校对：
 
 ### 深究 Go CPU profiler
 
