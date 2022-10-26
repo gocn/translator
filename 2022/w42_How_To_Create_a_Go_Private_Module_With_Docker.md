@@ -210,7 +210,7 @@ func main(){
 }
 ```
 
-- 既然我们有了 main 包和 main 函数，它们都是作为我们样例程序的入口，让我们打开终端使用 **go get** 下载私有 Go 模块： 
+- 既然我们有了 main 包和 main 函数，它们都是作为我们样例程序的入口，让我们打开终端使用 **go get** 下载私有 Go 模块：
 
 ```
 go get github.com/username/go-filter
@@ -230,7 +230,7 @@ go get github.com/username/go-filter
 
 我们将会详解两种方法，万一你都感兴趣，但我们以使用 ssh 开始。
 
-> _💡_ 即时你设置了两种选项（即，ssh 和 .netrc），你将毫无疑问可以下载私有 Go 模块。
+> _💡_ 即使你设置了两种选项（即，ssh 和 .netrc），你将毫无疑问可以下载私有 Go 模块。
 
 ### 使用 ssh <a name="section-5"></a>
 
@@ -253,7 +253,7 @@ Git 在全局配置文件中提供了一个叫做 **insteadOf** 的选项，它�
 ### 使用 .netrc 文件
 
 > _💡_ **.netrc** 文件位于用户 home 文件夹下，用于保存无需手动输入的用于登录的凭证。更多信息可以参阅[这里](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html)。
-> 
+>
 > 同时，这个方法包含了潜在将未加密的凭证保存在磁盘上的操作，因此请谨慎操作。
 
 开始前，我们先进入 home 目录（**$HOME**）并检查 **.netrc** 文件是否在目录中：
@@ -292,7 +292,7 @@ machine github.com login username password accesstoken
 
 > Gitlab 如何设置？
 
-仅需要把 github.com URL 替换成 gitlab.com 或 bitbucket.com URL 抑或其他仓库服务地址。
+仅需要把 github.com URL 替换成 gitlab.com 或 bitbucket.com URL 亦或其他仓库服务地址。
 
 现在，让我们重复下面的命令再次尝试获取 Go 私有模块：
 
@@ -317,7 +317,7 @@ require (
 )
 ```
 
-这表明我们的 Go 私有模块已经被添加成为一个依赖项，我们可以轻松在样例程序中使用它。通过拷贝下面的内容并替换到前面添加的内容，我们更新程序 **main.go** 文件：
+这表明我们的 Go 私有模块已经被添加成为一个依赖项，我们可以轻松地在样例程序中使用它。通过拷贝下面的内容并替换到前面添加的内容，我们更新程序 **main.go** 文件：
 
 ```golang
 package main
