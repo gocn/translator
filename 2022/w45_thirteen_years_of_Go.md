@@ -2,7 +2,7 @@
 
 原文作者：Russ Cox, for the Go team
 
-本文永久链接：[https://github.com/gocn/translator/blob/master/2022/w45_thirteen_yeasr_of_Go.md](https://github.com/gocn/translator/blob/master/2022/w45_thirteen_yeasr_of_Go.md)
+本文永久链接：[[https://github.com/gocn/translator/blob/master/2022/w45_thirteen_yeasr_of_Go.md](https://github.com/gocn/translator/blob/master/2022/w45_thirteen_yeasr_of_Go.md)](https://github.com/gocn/translator/blob/master/2022/w45_thirteen_years_of_Go.md)
 
 译者：[zxmfke](https://github.com/zxmfke)
 
