@@ -1,4 +1,4 @@
-# HTTP Resource Leak Mysteries in Go
+# Go 中的 HTTP 资源泄漏之谜
 
 - 原文地址：https://coder.com/blog/go-leak-mysteries
 - 原文作者：Spike Curtis
@@ -6,28 +6,29 @@
 - 译者：[Jancd](https://github.com/Jancd)
 - 校对：[]()
 
-I love a good leak hunt. It’s an intellectual mystery, and I always learn something new in the process.
+我喜欢排查泄露的问题。这是一个智力之谜，我总能在这个过程中学到新东西。
 
-This mystery is like you read about or watch on TV: details are salacious, never depressing, and at the end, we always get a nice logical explanation. That’s the great thing about computers: they are ultimately predictable, so I get to play detective secure in the knowledge that I always get my perp.
+这个谜就像你在电视上读到或看的一样：细节是猥琐的，从不令人沮丧，最后，我们总能得到一个很好的合乎逻辑的解释。 这就是计算机的伟大之处：它们最终是可以预测的，所以我可以安全地扮演侦探角色，因为我知道我总是能得到我的罪犯。
 
-If you hate mysteries or are coming back for reference, you can [skip to the key takeaways (spoiler warning, duh)](https://coder.com/blog/go-leak-mysteries#key-takeaways).
+如果你讨厌神秘小说或者只想学习参考，你可以[跳到关键要点(剧透警告，废话)](https://coder.com/blog/go-leak-mysteries#key-takeaways)。
 
-## Leaky Dog Food
+## 泄露 Dogfood
 
 ![](https://www.datocms-assets.com/19109/1667325071-output-onlinepngtools.png?fit=clip&fm=webp&w=768)
 
-At Coder, we build tools for managing development workspaces in public and private clouds, and of course, we develop Coder on Coder. Last week, an engineer noticed something suspicious in our dogfood[1] cluster’s main coder service, coderd (see above).
+在 Coder，我们构建用于管理公共和私有云中的开发工作区的工具。当然，我们在 Coder 上开发 Coder。 上周，一位工程师在我们的 dogfood[1] 集群的主要编码器服务 coderd（见上图）中发现了一些可疑的地方。
 
-The restarts are expected because we re-deploy very aggressively to keep close to the tip of master, but you can see each time we restart we begin a slow but steady climb.
+需要重新启动是意料之中的事情了，因为我们非常积极地重新部署以保持接近生产环境，但是同时可以看到每次我们重新启动时，goroutine 数量都会开始缓慢且稳定的增加。
 
-Notice the slope of the climb is constant: it increases at the same rate, day or night. This service is our main API server, and its load is definitely not constant. Like most services, it sees the most load during the workday, and nearly nothing overnight. So, our leak is most likely in some constant background task, rather than an API handler.
+注意，增加的上升角度是恒定的：它以相同的速度上升，无论白天还是晚上。这个服务是我们的主 API 服务器，它的负载肯定不是恒定的。与大多数服务一样，它在工作日的负载最大，而在夜间几乎没有负载。因此，我们猜测泄漏最有可能发生在一些固定的后台任务中，而不是 API 处理程序中。
 
-## Finding Facts
-Ok, so let’s learn some more about our leak!
+## 寻找真相
 
-Fortunately, we run our dogfood cluster with [golang’s pprof HTTP endpoint](https://pkg.go.dev/net/http/pprof). And, we know from metrics we’ve got a goroutine leak, so we can just ask for the stack traces of running goroutines.
+好了，让我们来了解更多关于泄漏的信息!
 
-At the top of the list, 822 goroutines in a writeLoop and 820 in a readLoop.
+幸运的是，我们使用[golang 的 pprof HTTP 端点](https://pkg.go.dev/net/http/pprof)运行我们的 dogfood 集群。而且，我们从指标中知道我们有一个 goroutine 泄漏，所以我们可以顺着运行 goroutine 的堆栈跟踪。
+
+在以下信息的行头能看到，一个 writeLoop 有 822 个 goroutines，一个 readLoop 有 820 个 goroutines。
 
 ```go
 goroutine profile: total 2020
@@ -38,13 +39,13 @@ goroutine profile: total 2020
 #   0x94d3c4    net/http.(*persistConn).readLoop+0xda4  /usr/local/go/src/net/http/transport.go:2213
 ```
 
-Immediately, we can read off that HTTP is involved. It is a persistConn, which, with [a little bit of code reading](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L98), we can see is used in connection pooling on the client side.
+接着，我们可以读出涉及 HTTP 的信息。 它是一个 `persistConn`，通过[一些代码阅读](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L98)，我们可以看到它用于客户端的连接池。
 
-Performance HTTP clients, instead of making a new connection for each HTTP request, maintain a pool of connections to each host. These connections are reused for multiple requests before eventually timing out if idle. This increases request & response throughput for issuing many requests to a host, which is very typical of HTTP client applications.
+一般来说性能 HTTP 客户端，不会为每个 HTTP 请求建立一个新连接，而是为每个主机维护一个连接池。 这些连接在空闲时最终超时之前被重复用于多个请求。 这增加了向主机发出许多请求的请求和响应吞吐量，这是非常典型的 HTTP 客户端应用程序。
 
-In our code, we appear to be leaking these connections. But how?
+在我们的代码中，我们似乎泄露了这些连接。但是是怎么泄露的？
 
-Let’s look at the [line we are hanging at on the readLoop goroutines](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L2213). It’s a select with a nice, helpful comment above it.
+让我们看看 [我们挂在 readLoop goroutines 上的那一行](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L2213)。 这是一个 `select`，上面有一个很好的有用的评论。
 
 ```go
 // Before looping back to the top of this function and peeking on
@@ -53,83 +54,85 @@ Let’s look at the [line we are hanging at on the readLoop goroutines](https://
 select {
 ```
 
-So, some code is making an HTTP request, then failing to either cancel the request or finish reading the response body. Usually, this happens when the caller doesn’t call [`response.Body.Close()`](https://pkg.go.dev/net/http#Response). This also explains the writeLoop goroutines, which are created as a pair to the readLoop and are [all waiting for a new HTTP request](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L2392).
+因此，某些代码正在发出 HTTP 请求，然后无法取消请求或完成读取响应正文。 通常，当调用者没有调用 [`response.Body.Close()`](https://pkg.go.dev/net/http#Response) 时，就会发生这种情况。 这也解释了 writeLoop goroutines，它们是作为 `readLoop` 的一并创建的，并且[都在等待新的 HTTP 请求](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L2392)。
 
-## Needles in Callstacks
+## 深究调用堆栈
 
-You’d be forgiven for expecting that we are done here. We’ve noticed there is a problem with our metrics, and then used the profiler to track down the exact lines of code that are hanging. Haven’t we solved the mystery?
+如果你以为我们已经结束了，那是可以理解的。我们注意到我们的指标有一个问题，然后使用分析器跟踪挂起的确切代码行。我们还没解开这个谜吗?
 
-Well, no. The goroutines we’ve found are working as designed: these guys are the victims, not the perpetrators. The problem is that some other goroutine has made an HTTP request and failed to cancel it or close the response body. And we know the other goroutine(s) are not sitting around waiting for a response, because otherwise we’d see 820 of them in the pprof output. They’ve moved on.
+嗯，没有。我们发现的 goroutine 正在按设计工作：这些 goroutine 是受害者，而不是肇事者。问题是其他一些 goroutine 发出了 HTTP 请求，但未能取消它或关闭响应正文。而且我们知道其他 goroutine 不会继续那里等待响应，否则我们会在 pprof 输出中看到其中的 820 个。它们会继续执行。
 
-Wouldn’t it be nice to be able to see the call stack where the leaked goroutine was created? You get this kind of output in the [go race detector](https://go.dev/blog/race-detector), so it must be technically possible. Clearly it would add some memory overhead to store it on goroutine creation, but it would likely be a few kB per goroutine. Maybe someday we’ll get a runtime mode that includes it, but unfortunately it would not help here. It’s actually easy to track down [the line that starts the leaked goroutines](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L1750), since it’s in the same file. But, remember, this is a persistent connection and it is itself started asynchronously from the HTTP requests that it processes.
+如果能够看到创建泄漏的 goroutine 的调用堆栈不是很好吗？你可以在[go race检测器](https://go.dev/blog/race-detector)中得到这种输出，因此它在技术上必须是可行的。显然，在创建 goroutine 时存储它会增加一些内存开销，但每个 goroutine 可能只需要几 kB。也许有一天我们会得到一个包含它的运行时模式，但不幸的是它在这里没有帮助。实际上很容易找到[开始泄露的goroutines的行](https://github.com/golang/go/blob/8ed0e51b5e5cc50985444f39dc56c55e4fa3bcf9/src/net/http/transport.go#L1750)，因为它在同一个文件中。但是，请记住，这是一个持久连接，它本身是从它所处理的 HTTP 请求异步启动的。
 
-No, we need to track down the misbehaving HTTP client code. We know the basic signature of the bug: issue an HTTP request, receive the HTTP response, forget call response.Body.Close(). Our task is gigantic because, simply put HTTP is everywhere. It is the go-to choice for application development protocols. Auditing every HTTP request/response in our codebase would take weeks.
+我们需要追踪行为不当的 HTTP 客户端代码。我们知道这个 bug 的基本特征：发出 HTTP 请求，接收 HTTP 响应，忘记调用 `response.Body.Close()`。我们的任务是巨大的，因为简单地说，HTTP 无处不在。它是应用程序开发协议的首选。审计我们代码库中的每个 HTTP 请求/响应将花费数周时间。
 
-## All in the Timing
+## 一切取决于时机
 
-Recall that our earlier analysis of the metrics led us to conclude it is a background job, and we now know it is one that makes HTTP requests. But we can do better by taking a closer look.
+回想一下，我们之前对度量的分析使我们得出结论，它是一个后台任务，现在我们知道它是一个发出 HTTP 请求的任务。但我们可以通过更仔细地观察来找到问题细节。
 
 ![](https://www.datocms-assets.com/19109/1667325163-output-onlinepngtools-1.png?fit=clip&fm=webp&w=768)
 
-What looked like a straight-line-steady increase is actually stair-stepped, and although there is some noise in the data, it looks like we see a big increase every 1 hour.
+看似直线稳定的增长实际上是阶梯式的，尽管数据中有一些噪声，但我们似乎看到每 1 小时就有一个很大的增长。
 
-It turns out that our coderd service runs 4 background jobs every 1 hour. We have 4 suspects. Which one could it be? Could it be more than one of them? A quick fix to help our sleuthing is to alter the period of the job runs. I could do this one job at a time, but wouldn’t it be nice to make one change that I could leave in place?
+事实证明，我们的 coderd 服务每 1 小时运行 4 个后台作业。我们有四名嫌疑人。会是哪一个呢？会不会不止一个人干的？帮助我们进行侦察的一个快速修复方法是改变作业运行的周期。我可以一次只做一件任务，但如果我能做一点改变，就能留在原地，不是更好吗?
 
-The choice of 1 hour intervals is what most people would consider “a nice round number.” But unlike people, computers don’t care about round numbers[2]. 1 hour isn’t an exact value we care about, so it’s fine to change it to something close and not expect the system-wide behavior to be affected.
+选择 1 小时的间隔是大多数人认为的“一个不错的整数”。但与人不同的是，计算机不关心整数[2]。1 小时并不是我们所关心的确切值，因此可以将其更改为接近的值，而不期望系统范围的行为受到影响。
 
-It’s best to avoid round numbers, in fact the less round, the better. I choose the most “unround” numbers of them all: prime numbers. That makes it mathematically impossible for the period to be some multiple of a more frequent job so they continually happen at the same time. Choose a base unit, and then make your jobs prime numbers times that base unit. I chose 1 minute as the base unit so it will still be easy to read off a metric chart, and because our Prometheus metrics are only scraped every 15 seconds or so, so going much smaller than 1 minute won’t help correlating to metrics. So, my 1 hour jobs become 47, 53, 59, and 67 minutes.
+最好避免整数，事实上，整数越少越好。我选择了其中最不四舍五入的数：质数。这使得从数学上讲，周期不可能是更频繁的任务的倍数，所以它们不断地在同一时间发生。选择一个基本单位，然后让作业的质数乘以这个基本单位。我选择 1 分钟作为基本单位，这样就可以很容易地读出度量图表，因为我们的 Prometheus 度量每 15 秒左右才会被删除一次，所以比 1 分钟更小的度量并不能帮助我们理解度量。所以，1 小时的任务变成了47、53、59、67 分钟。
 
 ![](https://www.datocms-assets.com/19109/1667325210-output-onlinepngtools-2.png?fit=clip&fm=webp&w=768)
 
-The spikes in goroutines are now mostly 47 minutes apart, although there is still some noise. This extra noise threw me for a loop, and made me wonder whether more than one job was responsible for the leaks. But, the power of choosing prime numbers means that job starts are staggered, and when looking at the peaks alongside metrics that show when jobs start and stop, the peaks always correlated with either the start or the stop of the same job.
+goroutroutine 的峰值现在大多间隔 47 分钟，尽管仍然有一些噪音。这种额外的噪音使我大吃一惊，并使我怀疑是否不止一个任务要对泄漏负责。但是，选择质数的能力意味着任务的开始是交错的，当将峰值与显示任务开始和停止时间的指标放在一起时，峰值总是与同一任务的开始或停止相关。
 
-So, I have my prime suspect: a job that checks all our workspace container image tags for updates from their respective registries. It’s got motive: HTTP requests to container image registries. It’s got opportunity: I can correlate it, over and over, to the time of the crime.
+因此，我有了我的主要怀疑对象：一个检查所有工作区容器图像标记的任务，以便从它们各自的注册中心获得更新。它的动机是：向容器镜像注册中心发送 HTTP 请求。它是有机会的：我可以一遍又一遍地把它与犯罪时间联系起来。
 
-## Interlude: Searching
+## 插曲：搜索
 
-Above I have described to you the things that I did that actually made progress in my investigation. While doing those things, I was also pounding sand in an activity that did not make progress: reading code.
+上面我已经向你描述了我所做的事情，这些事情实际上在我的调查中取得了进展。在做这些事情的同时，我也在做一件没有进展的事情：读代码。
 
-With a good IDE, you can drill down though call stacks and back up. This is tedious, but I’d like to think I’m pretty good at understanding code and this kind of depth-first search for the buggy code has actually netted me the bug on more than one occasion in the past.
+有了一个好的 IDE，你可以通过调用堆栈向下执行并返回。这很乏味，但我认为我很擅长理解代码，这种深度优先搜索错误代码的方法在过去不止一次地为我找到了错误。
 
-But, as previously mentioned, HTTP is very ubiquitous, so there is a lot of ground to cover, and it’s not always clear when to stop drilling down. Another HTTP request could be just another level down. Alas, it was not to be on this outing.
+但是，正如前面提到的，HTTP 是非常普遍的，因此有很多地方需要覆盖，并且并不总是清楚何时停止深入执行。另一个 HTTP 请求可能只是另一个层次。可惜的是，这里不能体现。
 
-## Tracking it Down
-The game is afoot! But, there are still many different code paths. Interacting with a container image registry is [a complex interaction involving many HTTP requests](https://docs.docker.com/docker-hub/api/latest/).
+## Tracking it Down 追踪它
 
-I also spend some time getting to know the victim. At first glance, they are all John Doe. We don’t know what was being requested when they died. But, on closer inspection of the transport code, the leaked readLoop goroutine turns out to have a reference to the HTTP request it died trying to return the response for. If only I could read that request! I’d know the URL, and it could crack the case wide open.
+游戏仍在继续！但是，仍然有许多不同的代码路径。与容器镜像注册表交互是[涉及许多 HTTP 请求的复杂交互](https://docs.docker.com/docker-hub/api/latest/)。
 
-I could read it if I had it in a debugger.
+我也花了一些时间去了解受害者。乍一看，他们都是无名氏。我们不知道他们死的时候有什么要求。但是，仔细检查传输代码就会发现，泄漏的 readLoop goroutine 有一个 HTTP 请求的引用，它试图返回响应而失败。要是我能读到那个请求就好了！我就知道网址了，这就能让案子有更大的进展。
 
-I try to reproduce the leak in some hastily constructed unit tests, but no luck. It’s not just any container image from just any registry that results in the leak.
+如果我把它放在调试器里，我就能读取它。
 
-Then it dawns on me: I know exactly the set of container images that reproduce the bug. It’s the one in our dogfood cluster. I clone the database so that my testing won’t disrupt other users or delete any data, then run the background job in my own workspace, with debugger, against the cloned data.
+我试图在一些匆忙构建的单元测试中重现泄漏，但没有运气。并不是来自任何注册表的任何容器镜像都会导致泄漏。
 
-Bingo.
+然后我明白了：我确切地知道再现错误的容器镜像集。是我们 dogfoog 集群里的那个。我克隆了数据库，这样我的测试就不会中断其他用户或删除任何数据，然后在我自己的工作区中使用调试器针对克隆的数据运行后台作业。
 
-Stepping through the job with a debugger, I can see the leaked goroutine. I can read its memory from beyond the grave. From the request URL, I can tell what image it is. The goroutine is no longer John Doe! But, the deed is done and goroutine leaked. I still need to find the perpetrator.
+就这么干。
 
-Armed with knowledge of the container image, I run the job one more time, adding some code at the top level that skips everything but the one I know results in the leak. I also add a breakpoint deep in the HTTP transport RoundTripper, so that I will break on every HTTP request. My trap is set and I lay in wait for the perpetrator. I know I’m close.
+使用调试器逐步检查该任务，我可以看到泄漏的 goroutine。我能从历史信息中读出它的记忆。从请求 URL，我可以知道它是什么图像。僵尸不再是无名氏了！但是，事情已经完成了，goroutine 泄露了。我还是得找到凶手。
 
-I click, click, click ahead on my breakpoint as HTTP requests come in, waiting for the exact URL I know to be the trigger. And then, I have it: the callstack where the bug lies.
+有了容器镜像的知识，我再次运行该任务，在顶层添加一些代码，跳过所有内容，但我知道导致泄漏的代码除外。我还在 HTTP 传输 RoundTripper 中添加了一个断点，以便在每个 HTTP 请求上中断。我的断电已经设好，我埋伏着等待行凶者。我知道我接近了真相。
 
-It’s just as we suspected: a missing response.Body.Close(). [The PR with the fix is a one liner](https://github.com/google/go-containerregistry/pull/1482). It’s a little poetic, for so much effort, to write a single line of code.
+当 HTTP 请求进来时，我点击、点击、点击我的断点，等待我知道的确切的 URL 作为触发器。然后，我有了它：bug 所在的调用堆栈。
+
+正如我们所怀疑的：一个丢失的 `response.Body.Close()`。[修复的PR是一行](https://github.com/google/go-containerregistry/pull/1482)。花了这么多精力，只写一行代码就有点诗意了。
 
 ![](https://www.datocms-assets.com/19109/1667325250-output-onlinepngtools-3.png?fit=clip&fm=webp&w=768)
 
-The results speak for themselves.
+结果不言自明（google/go-containerregistry 仓库的一个 bug）。
 
-## Key Takeaways
+## 关键要点
 
-While every leaky code is leaky in its own way, many of the leak detective’s techniques and analytical tools are general.
+虽然每一个泄漏的代码都以自己的方式泄漏，但许多泄漏探测技术和分析工具都是通用的。
 
-1. Monitor your services for leaks. Key resources to check for every piece of Go software include: a. Memory b. Goroutines c. File descriptors (open files)
-2. Depending on your application, you might also want to monitor: a. Disk space b. Inodes c. Child processes d. Special resources used by your application (IP Addresses?)
-3. Look at the rate at which resources are leaked. a. Does the rate correlate to load? Likely related to the request path of your service b. Is the rate independent of load? Likely a background job
-4. Avoid running all your background jobs on the exact same schedule. Use prime numbers to avoid overlapping job runs.
-5. Use metrics or logs to record background job start and end times; look for correlations between these times and leaks.
-6. If you can, export or clone real data to reproduce the problem in your IDE.
+1. 监控你的服务是否存在泄漏。检查每个 Go 软件的关键资源包括： a.内存 b.协程 c.文件描述符（打开的文件）
+2. 根据你的应用程序，你可能还需要监视：a.磁盘空间 b.Inodes c.子进程 d.应用程序使用的特殊资源（IP地址?）
+3. 看看资源泄漏的速度：a.速率与负载相关吗?可能与你的服务的请求路径相关 b.速率是否与负载无关?可能是一份后台任务
+4. 避免在完全相同的时间间隔上运行所有后台作业。使用素数以避免作业运行重叠。
+5. 使用监控或日志记录后台作业的开始和结束时间；寻找这些时间和泄漏之间的相关性。
+6. 如果可以，可以导出或克隆真实数据，在 IDE 中重现问题。
 
-On the last point, a word of caution: be careful about cloning production data that includes external customer or user data. Consult with your security team before copying data if you are at all unsure. This is doubly true if you operate in a regulated industry (finance, healthcare, etc.) or are a spy.
+最后一点，请注意：克隆包含外部客户或用户数据的生产数据时要小心。 如果你完全不确定，请在复制数据之前咨询你的安全团队。 如果你在受监管的行业（金融、医疗保健等）经营或者是爬虫，情况就更是如此。
 
-[1] Using your own product is colloquially known as dogfooding, as in, “eating your own dog food.” [2] And, they have a different idea of what counts as round.
+附注
+[1] 使用你自己的产品通俗地称为 dogfooding，如“吃你自己的狗粮”。 [2] 不同人对什么是圆形有不同的看法。
 
