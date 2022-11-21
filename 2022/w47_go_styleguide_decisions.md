@@ -281,23 +281,23 @@ func (db *DB) UserCount() (int, error) {
 
 ## 评论Commentary
 
-The conventions around commentary (which include what to comment, what style to use, how to provide runnable examples, etc.) are intended to support the experience of reading the documentation of a public API. See [Effective Go](http://golang.org/doc/effective_go.html#commentary) for more information.
+关于评论的约定（包括评论什么、使用什么风格、如何提供可运行的示例等）旨在支持阅读公共 API 文档的体验。 有关详细信息，请参阅 [Effective Go](http://golang.org/doc/effective_go.html#commentary)。
 
-The best practices document’s section on [documentation conventions](https://google.github.io/styleguide/go/best-practices#documentation-conventions) discusses this further.
+最佳实践文档关于 [文档约定](https://google.github.io/styleguide/go/best-practices#documentation-conventions) 的部分进一步讨论了这一点。
 
-**Best Practice:** Use [doc preview](https://google.github.io/styleguide/go/best-practices#documentation-preview) during development and code review to see whether the documentation and runnable examples are useful and are presented the way you expect them to be.
+**最佳实践：**在开发和代码审查期间使用[文档预览](https://google.github.io/styleguide/go/best-practices#documentation-preview) 查看文档和可运行示例是否有用 并以您期望的方式呈现。
 
-**Tip:** Godoc uses very little special formatting; lists and code snippets should usually be indented to avoid linewrapping. Apart from indentation, decoration should generally be avoided.
+**提示：** Godoc 使用很少的特殊格式； 列表和代码片段通常应该缩进以避免换行。 除缩进外，通常应避免装饰。
 
-### Comment line length
+### 注释行长度Comment line length
 
-Ensure that commentary is readable from source even on narrow screens.
+确保即使在较窄的屏幕上注释的可读性。
 
-When a comment gets too long, it is recommended to wrap it into multiple single-line comments. When possible, aim for comments that will read well on an 80-column wide terminal, however this is not a hard cut-off; there is no fixed line length limit for comments in Go. The standard library, for example, often chooses to break a comment based on punctuation, which sometimes leaves the individual lines closer to the 60-70 character mark.
+当评论变得太长时，建议将其包装成多个单行评论。在可能的情况下，争取在 80 列宽的终端上阅读良好的注释，但这并不是硬性限制； Go 中的注释没有固定的行长度限制。例如，标准库经常选择根据标点符号来打断注释，这有时会使个别行更接近 60-70 个字符标记。
 
-There is plenty of existing code in which comments exceed 80 characters in length. This guidance should not be used as a justification to change such code as part of a readability review (see [consistency](https://google.github.io/styleguide/go/guide#consistency)), though teams are encouraged to opportunistically update comments to follow this guideline as a part of other refactors. The primary goal of this guideline is to ensure that all Go readability mentors make the same recommendation when and if recommendations are made.
+有很多现有代码的注释长度超过 80 个字符。本指南不应作为更改此类代码作为可读性审查的一部分的理由（请参阅[一致性](https://google.github.io/styleguide/go/guide#consistency)），但鼓励团队作为其他重构的一部分，有机会时更新注释以遵循此指南。本指南的主要目标是确保所有 Go 可读性导师在提出建议时以及是否提出相同的建议。
 
-See this [post from The Go Blog on documentation](https://blog.golang.org/godoc-documenting-go-code) for more on commentary.
+有关评论的更多信息，请参阅此 [来自 The Go Blog 的帖子](https://blog.golang.org/godoc-documenting-go-code)。
 
 ```
 # Good:
@@ -313,7 +313,7 @@ See this [post from The Go Blog on documentation](https://blog.golang.org/godoc-
 // if it helps rather than hinders.
 ```
 
-Avoid comments that will wrap repeatedly on small screens, which is a poor reader experience.
+避免在小屏幕上重复换行的评论，这是一种糟糕的阅读体验。
 
 ```
 # Bad:
@@ -328,9 +328,9 @@ repeatedly.
 // https://supercalifragilisticexpialidocious.example.com:8080/Animalia/Chordata/Mammalia/Rodentia/Geomyoidea/Geomyidae/
 ```
 
-### Doc comments
+### 文档注释Doc comments
 
-All top-level exported names must have doc comments, as should unexported type or function declarations with unobvious behavior or meaning. These comments should be [full sentences](https://google.github.io/styleguide/go/decisions#comment-sentences) that begin with the name of the object being described. An article (“a”, “an”, “the”) can precede the name to make it read more naturally.
+所有顶级导出名称都必须有文档注释，具有不明显行为或含义的未导出类型或函数声明也应如此。 这些注释应该是[完整句子](https://google.github.io/styleguide/go/decisions#comment-sentences)，以所描述对象的名称开头。 冠词（“a”、“an”、“the”）可以放在名字前面，使其读起来更自然。
 
 ```
 // Good:
@@ -341,9 +341,9 @@ type Request struct { ...
 func Encode(w io.Writer, req *Request) { ...
 ```
 
-Doc comments appear in [Godoc](https://pkg.go.dev/) and are surfaced by IDEs, and therefore should be written for anyone using the package.
+文档注释出现在 [Godoc](https://pkg.go.dev/) 中，并通过 IDE 显示，因此应该为使用该包的任何人编写文档注释。
 
-A documentation comment applies to the following symbol, or the group of fields if it appears in a struct.
+如果出现在结构中，文档注释适用于以下符号或字段组：
 
 ```
 // Good:
@@ -362,15 +362,15 @@ type Options struct {
 }
 ```
 
-**Best Practice:** If you have doc comments for unexported code, follow the same custom as if it were exported (namely, starting the comment with the unexported name). This makes it easy to export it later by simply replacing the unexported name with the newly-exported one across both comments and code.
+**最佳实践：**如果你对未导出的代码有文档注释，请遵循与导出代码相同的习惯（即，以未导出的名称开始注释）。 这使得以后导出它变得容易，只需在注释和代码中用新导出的名称替换未导出的名称即可。
 
-### Comment sentences
+### 注释语句Comment sentences
 
-Comments that are complete sentences should be capitalized and punctuated like standard English sentences. (As an exception, it is okay to begin a sentence with an uncapitalized identifier name if it is otherwise clear. Such cases are probably best done only at the beginning of a paragraph.)
+完整句子的注释应该像标准英语句子一样大写和标点符号。 （作为一个例外，如果在其他方面很清楚，可以以非大写的标识符名称开始一个句子。这种情况最好只在段落的开头进行。）
 
-Comments that are sentence fragments have no such requirements for punctuation or capitalization.
+作为句子片段的注释对标点符号或大小写没有此类要求。
 
-[Documentation comments](https://google.github.io/styleguide/go/decisions#doc-comments) should always be complete sentences, and as such should always be capitalized and punctuated. Simple end-of-line comments (especially for struct fields) can be simple phrases that assume the field name is the subject.
+[文档注释](https://google.github.io/styleguide/go/decisions#doc-comments) 应始终是完整的句子，因此应始终大写和标点符号。 简单的行尾注释（特别是对于结构字段）可以假设字段名称是主语的简单短语。
 
 ```
 // Good:
@@ -389,15 +389,15 @@ type Server struct {
 }
 ```
 
-### Examples
+### 示例Examples
 
-Packages should clearly document their intended usage. Try to provide a [runnable example](http://blog.golang.org/examples); examples show up in Godoc. Runnable examples belong in the test file, not the production source file. See this example ([Godoc](https://pkg.go.dev/time#example-Duration), [source](https://cs.opensource.google/go/go/+/HEAD:src/time/example_test.go)).
+包应该清楚地记录它们的预期用途。 尝试提供一个[可运行的例子](http://blog.golang.org/examples)； 示例出现在 Godoc 中。 可运行示例属于测试文件，而不是生产源文件。 请参阅此示例（[Godoc](https://pkg.go.dev/time#example-Duration)，[source](https://cs.opensource.google/go/go/+/HEAD:src/time /example_test.go））。
 
-If it isn’t feasible to provide a runnable example, example code can be provided within code comments. As with other code and command-line snippets in comments, it should follow standard formatting conventions.
+如果无法提供可运行的示例，可以在代码注释中提供示例代码。 与注释中的其他代码和命令行片段一样，它应该遵循标准格式约定。
 
-### Named result parameters
+### 命名的结果参数Named result parameters
 
-When naming parameters, consider how function signatures appear in Godoc. The name of the function itself and the type of the result parameters are often sufficiently clear.
+当有命名参数时，请考虑函数签名在 Godoc 中的显示方式。 函数本身的名称和结果参数的类型通常要足够清楚。
 
 ```
 // Good:
@@ -405,14 +405,14 @@ func (n *Node) Parent1() *Node
 func (n *Node) Parent2() (*Node, error)
 ```
 
-If a function returns two or more parameters of the same type, adding names can be useful.
+如果一个函数返回两个或多个相同类型的参数，添加名称会很有用。
 
 ```
 // Good:
 func (n *Node) Children() (left, right *Node, err error)
 ```
 
-If the caller must take action on particular result parameters, naming them can help suggest what the action is:
+如果调用者必须对特定的结果参数采取行动，命名它们可以帮助暗示行动是什么：
 
 ```
 // Good:
