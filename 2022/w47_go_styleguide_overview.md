@@ -1,4 +1,4 @@
-# Go 编程风格指南 - 概述
+# Go 风格指南 - 概述
 
 - 原文地址：https://google.github.io/styleguide/go/index
 - 原文作者：Google
@@ -6,112 +6,106 @@
 - 译者：[fivezh](https://github.com/fivezh)
 - 校对：[]()
 
-# Go Style
+# Go 风格
 
-https://google.github.io/styleguide/go
+原文：[https://google.github.io/styleguide/go](https://google.github.io/styleguide/go)
 
-[Overview](https://google.github.io/styleguide/go/index) | [Guide](https://google.github.io/styleguide/go/guide) | [Decisions](https://google.github.io/styleguide/go/decisions) | [Best practices](https://google.github.io/styleguide/go/best-practices)
-
-
+[概述](https://google.github.io/styleguide/go/index) | [指南](https://google.github.io/styleguide/go/guide) | [决策](https://google.github.io/styleguide/go/decisions) | [最佳实践](https://google.github.io/styleguide/go/best-practices)
 
 ## 关于
 
-The Go Style Guide and accompanying documents codify the current best approaches for writing readable and idiomatic Go. Adherence to the Style Guide is not intended to be absolute, and these documents will never be exhaustive. Our intention is to minimize the guesswork of writing readable Go so that newcomers to the language can avoid common mistakes. The Style Guide also serves to unify the style guidance given by anyone reviewing Go code at Google.
+本文的 `Go` 风格指南和文档整理了当前编写可读和惯用的 Go 最佳方法。 遵守风格指南并不是绝对的，这份文件也永远不会详尽无遗。我们的目的是尽量减少编写可读 Go 代码的猜测，以便该语言的新手可以避免常见的错误。此风格指南也用于统一 Google 内 Go 代码review人的风格指南。
 
-| Document            | Link                                                  | Primary Audience    | [Normative](https://google.github.io/styleguide/go/index#normative) | [Canonical](https://google.github.io/styleguide/go/index#canonical) |
+| 文档            | 链接                                                  | 主要受众    | [规范性(Normative)](https://google.github.io/styleguide/go/index#normative) | [规范(Canonical)](https://google.github.io/styleguide/go/index#canonical) |
 | ------------------- | ----------------------------------------------------- | ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Style Guide**     | https://google.github.io/styleguide/go/guide          | Everyone            | Yes                                                          | Yes                                                          |
-| **Style Decisions** | https://google.github.io/styleguide/go/decisions      | Readability Mentors | Yes                                                          | No                                                           |
-| **Best Practices**  | https://google.github.io/styleguide/go/best-practices | Anyone interested   | No                                                           | No                                                           |
+| **风格指南**     | https://google.github.io/styleguide/go/guide          | 所有人            | Yes                                                          | Yes                                                          |
+| **风格决策** | https://google.github.io/styleguide/go/decisions      | 可读性导师 | Yes                                                          | No                                                           |
+| **最佳实践**  | https://google.github.io/styleguide/go/best-practices | 任何有兴趣的人   | No                                                           | No                                                           |
 
 
 
-### Documents
+### 文档说明
 
-1. The **Style Guide** (https://google.github.io/styleguide/go/guide) outlines the foundation of Go style at Google. This document is definitive and is used as the basis for the recommendations in Style Decisions and Best Practices.
+1. **风格指南(Style Guide)** (https://google.github.io/styleguide/go/guide) 概述了 Google Go 风格的基础。本文档是权威的，用作风格决策和最佳实践中建议的基础。
 
-2. **Style Decisions** (https://google.github.io/styleguide/go/decisions) is a more verbose document that summarizes decisions on specific style points and discusses the reasoning behind the decisions where appropriate.
+2. **风格决策(Style Decisions)** (https://google.github.io/styleguide/go/decisions) 是一份更详细的文档，它总结了关于特定风格点的决策，并在适当的时候讨论了决策背后的原因。
 
-   These decisions may occasionally change based on new data, new language features, new libraries, or emerging patterns, but it is not expected that individual Go programmers at Google should keep up-to-date with this document.
+   这些决定可能偶尔会根据新数据、新语言特性、新库或新出现的模式而改变，但不希望谷歌的个别 Go 程序员应该时刻关注本文档的同步更新。
 
-3. **Best Practices** (https://google.github.io/styleguide/go/best-practices) documents some of the patterns that have evolved over time that solve common problems, read well, and are robust to code maintenance needs.
+3. **最佳实践(Best Practices)** (https://google.github.io/styleguide/go/best-practices) 描述了一些随时间演变的模式，这些模式可以解决通用问题，可读性强，并且对代码可维护的需要有很好的健壮性。
 
-   These best practices are not canonical, but Go programmers at Google are encouraged to use them where possible to keep the codebase uniform and consistent.
+   这些最佳实践并不规范，但鼓励谷歌的Go程序员尽可能使用它们，以保持代码库的统一和一致。
 
-These documents intend to:
+这些文件旨在:
 
-- Agree on a set of principles for weighing alternate styles
-- Codify settled matters of Go style
-- Document and provide canonical examples for Go idioms
-- Document the pros and cons of various style decisions
-- Help minimize surprises in Go readability reviews
-- Help readability mentors use consistent terminology and guidance
+- 就权衡备选风格的一套原则达成一致
+- 编撰最终的 Go 风格
+- 记录并提供Go习语的典型示例
+- 记录各种风格决策的利弊
+- 帮助减少Go可读性review中的意外
+- 帮助可读性导师使用一致的术语和指导
 
-These documents do **not** intend to:
+本文档**不是**旨在：
 
-- Be an exhaustive list of comments that can be given in a readability review
-- List all of the rules everyone is expected to remember and follow at all times
-- Replace good judgment in the use of language features and style
-- Justify large-scale changes to get rid of style differences
+- 在可读性审查中给出的详尽评论列表
+- 列出每个人在任何时候都应该记住和遵守的所有规则
+- 在语言特型和风格的使用上取代良好的判断力
+- 为了消除风格差异，证明大规模的改变是合理的
 
-There will always be differences from one Go programmer to another and from one team’s codebase to another. However, it is in the best interest of Google and Alphabet that our codebase be as consistent as possible. (See [guide](https://google.github.io/styleguide/go/guide#consistency) for more on consistency.) To that end, feel free to make style improvements as you see fit, but you do not need to nit-pick every violation of the Style Guide that you find. In particular, these documents may change over time, and that is no reason to cause extra churn in existing codebases; it suffices to write new code using the latest best practices and address nearby issues over time.
+不同 Go 程序员之间以及不同团队的代码库之间总会存在差异。然而，我们的代码库尽可能保持一致符合 Google 和 Alphabet 的最大利益。 （有关一致性的更多信息，请参阅 [指南](https://google.github.io/styleguide/go/guide#consistency)。）为此，您可以随意进行风格改进，但不需要挑剔你发现的每一个违反风格指南的行为。特别是，这些文档可能会随着时间的推移而改变，这不是导致现有代码库额外改动的理由； 使用最新的最佳实践编写新代码并随着时间的推移解决附近的问题就足够了。
 
-It is important to recognize that issues of style are inherently personal and that there are always inherent trade-offs. Much of the guidance in these documents is subjective, but just like with `gofmt`, there is significant value in the uniformity they provide. As such, style recommendations will not be changed without due discourse, Go programmers at Google are encouraged to follow the style guide even where they might disagree.
+重要的是要认识到风格问题本质上是个人的，并且总是带有特定的权衡。这些文档中的大部分指南都是主观的，但就像 `gofmt` 一样，它提供的一致性具有重要价值。 因此，风格建议不会在未经适当讨论的情况下改变，谷歌的 Go 程序员被鼓励遵循风格指南，即使他们可能不同意。
 
+## 定义
 
+样式文档中使用的以下词语定义如下：
 
-## Definitions
+- **规范(Canonical)**: 制定规定性和持久性规则
 
-The following words, which are used throughout the style documents, are defined below:
-
-- **Canonical**: Establishes prescriptive and enduring rules
-
-  Within these documents, “canonical” is used to describe something that is considered a standard that all code (old and new) should follow and that is not expected to change substantially over time. Principles in the canonical documents should be understood by authors and reviewers alike, so everything included within a canonical document must meet a high bar. As such, canonical documents are generally shorter and prescribe fewer elements of style than non-canonical documents.
+  在这些文档中，“规范”用于描述被认为是所有代码（旧的和新的）都应该遵循的标准，并且预计不会随着时间的推移而发生重大变化。规范文档中的原则应该被作者和审稿人理解，因此规范文档中包含的所有内容都必须达到高标准。 因此，与非规范文档相比，规范文档通常更短并且规定的样式元素更少。
 
   https://google.github.io/styleguide/go#canonical
 
-- **Normative**: Intended to establish consistency
+- **规范性(Normative)**: 旨在建立一致性
 
-  Within these documents, “normative” is used to describe something that is an agreed-upon element of style for use by Go code reviewers, in order that the suggestions, terminology, and justifications are consistent. These elements may change over time, and these documents will reflect such changes so that reviewers can remain consistent and up-to-date. Authors of Go code are not expected to be familiar with the normative documents, but the documents will frequently be used as a reference by reviewers in readability reviews.
+  在这些文档中，“规范”用于描述 Go 代码审查者使用的一致同意的风格元素，以便建议、术语和理由保持一致。 这些元素可能会随着时间的推移而发生变化，本文涉及的这些文件将反映出这些变化，以便审阅者可以保持一致和时刻最新。 Go 代码编写者不被要求熟悉此文档，但这些文档将经常被审阅者用作可读性审查的参考。
 
   https://google.github.io/styleguide/go#normative
 
-- **Idiomatic**: Common and familiar
+- **惯用语(Idiomatic)**: 常见且熟悉
 
-  Within these documents, “idiomatic” is used to refer to something that is prevalent in Go code and has become a familiar pattern that is easy to recognize. In general, an idiomatic pattern should be preferred to something unidiomatic if both serve the same purpose in context, as this is what will be the most familiar to readers.
+  在这些文档中，“惯用语”指在 Go 代码中普遍存在的东西，并已成为一种易于识别的常见模式。一般来说，如果两者在上下文中服务于相同的目的，那么惯用模式应该优先于非惯用模式，因为这是读者最熟悉的模式。
 
   https://google.github.io/styleguide/go#idiomatic
 
+## 附加参考
 
+本指南假定读者熟悉 [Effective Go](https://go.dev/doc/effective_go)，因为它为整个 Go 社区的 Go 代码提供了一个通用基线。
 
-## Additional references
+下面是一些额外的资源，供那些希望自学 Go 风格的人和希望在他们的评论中提供更多可链接的代码审阅者。 Go 可读性过程的参与者不应熟悉这些资源，但它们可能作为可读性审阅的上下文出现。
 
-This guide assumes the reader is familiar with [Effective Go](https://go.dev/doc/effective_go), as it provides a common baseline for Go code across the entire Go community.
+**外部参考**
 
-Below are some additional resources for those looking to self-educate about Go style and for reviewers looking to provide further linkable context in their reviews. Participants in the Go readability process are not expected to be familiar with these resources, but they may arise as context in readability reviews.
-
-**External References**
-
-- [Go Language Specification](https://go.dev/ref/spec)
+- [Go 语言规范](https://go.dev/ref/spec)
 - [Go FAQ](https://go.dev/doc/faq)
-- [Go Memory Model](https://go.dev/ref/mem)
-- [Go Data Structures](https://research.swtch.com/godata)
-- [Go Interfaces](https://research.swtch.com/interfaces)
-- [Go Proverbs](https://go-proverbs.github.io/)
-- Go tips - stay tuned.
+- [Go 内存模型](https://go.dev/ref/mem)
+- [Go 数据结构](https://research.swtch.com/godata)
+- [Go 接口](https://research.swtch.com/interfaces)
+- [Go 谚语](https://go-proverbs.github.io/)
+- Go 技巧 - 敬请期待
 
-**Relevant Testing-on-the-Toilet articles**
+**相关的 马桶测试(Testing-on-the-Toilet) 文档**
 
-- [TotT: Identifier Naming](https://testing.googleblog.com/2017/10/code-health-identifiernamingpostforworl.html)
-- [TotT: Testing State vs. Testing Interactions](https://testing.googleblog.com/2013/03/testing-on-toilet-testing-state-vs.html)
-- [TotT: Effective Testing](https://testing.googleblog.com/2014/05/testing-on-toilet-effective-testing.html)
-- [TotT: Risk-driven Testing](https://testing.googleblog.com/2014/05/testing-on-toilet-risk-driven-testing.html)
-- [TotT: Change-detector Tests Considered Harmful](https://testing.googleblog.com/2015/01/testing-on-toilet-change-detector-tests.html)
+- [TotT: 标识命令](https://testing.googleblog.com/2017/10/code-health-identifiernamingpostforworl.html)
+- [TotT: 测试状态与 vs Testing Interactions](https://testing.googleblog.com/2013/03/testing-on-toilet-testing-state-vs.html)
+- [TotT: 有效测试](https://testing.googleblog.com/2014/05/testing-on-toilet-effective-testing.html)
+- [TotT: 风险驱动测试](https://testing.googleblog.com/2014/05/testing-on-toilet-risk-driven-testing.html)
+- [TotT: 变化检测器测试被认为是有害的](https://testing.googleblog.com/2015/01/testing-on-toilet-change-detector-tests.html)
 
-**Additional External Writings**
+**额外的外部文档**
 
-- [Go and Dogma](https://research.swtch.com/dogma)
-- [Less is exponentially more](https://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html)
-- [Esmerelda’s Imagination](https://commandcenter.blogspot.com/2011/12/esmereldas-imagination.html)
-- [Regular expressions for parsing](https://commandcenter.blogspot.com/2011/08/regular-expressions-in-lexing-and.html)
-- [Gofmt’s style is no one’s favorite, yet Gofmt is everyone’s favorite](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=8m43s) (YouTube)
+- [Go 和 教条](https://research.swtch.com/dogma)
+- [少即是成倍的多](https://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html)
+- [Esmerelda的想象力](https://commandcenter.blogspot.com/2011/12/esmereldas-imagination.html)
+- [用于解析的正则表达式](https://commandcenter.blogspot.com/2011/08/regular-expressions-in-lexing-and.html)
+- [Gofmt 的风格没有人喜欢，但 Gofmt 却是每个人的最爱](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=8m43s) (YouTube)
