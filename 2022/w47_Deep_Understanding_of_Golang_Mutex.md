@@ -7,7 +7,7 @@
 - 校对：[zxmfke](https://github.com/zxmfke)
 
 > How to implement Golang Mutex
-> 如何实现 Golang Mutex
+> golang 是如何实现互斥锁的
 
 ![.](../static/images/2022/w47_Deep_Understanding_of_Golang_Mutex/1_BWLrf8Kh0LvhK9nuqnH9jg.jpeg)
 
