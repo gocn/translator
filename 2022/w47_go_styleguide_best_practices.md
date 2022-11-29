@@ -2171,9 +2171,9 @@ func TestRegression682831(t *testing.T) {
 
 普通拆解之所以棘手，是因为没有统一的地方来注册清理例程。如果设置函数（本例中为`loadDataset`）依赖于上下文，`sync.Once`可能会有问题。这是因为两次对设置函数的调用中的第二次需要等待第一次调用完成后再返回。这段等待时间不容易做到尊重上下文的取消。
 
-## 字符串链接
+## 字符串拼接
 
-在 Go 中，有几种字符串链接的方法。包括下面几种例子：
+在 Go 中，有几种字符串拼接的方法。包括下面几种例子：
 
 - "+"运算符
 - `fmt.Sprintf`
@@ -2181,11 +2181,11 @@ func TestRegression682831(t *testing.T) {
 - `text/template`
 - `safehtml/template`
 
-尽管选择哪种方法没有一刀切的规则，但下面的指南概述了每种方法在什么情况下是首选。
+尽管选择哪种方法没有一刀切的规则，但下面的指南概述了在什么情况下哪种方法是首选。
 
 ### 简单情况下，首选 "+"
 
-当连接几个字符串时，更愿意使用 "+"。这种方法在语法上是最简单的，不需要导入。
+当连接几个字符串时，更愿意使用 "+"。这种方法在语法上是最简单的，不需要导入包。
 
 ```go
 // Good:
@@ -2206,7 +2206,7 @@ str := fmt.Sprintf("%s [%s:%d]-> %s", src, qos, mtu, dst)
 bad := src.String() + " [" + qos.String() + ":" + strconv.Itoa(mtu) + "]-> " + dst.String()
 ```
 
-**最佳做法：**当构建字符串操作的输出是一个`io.Writer`时，不要用`fmt.Sprintf`构建一个临时字符串，只是为了把它发送给 Writer。相反，使用`fmt.Fprintf`来直接向Writer发送。
+**最佳做法：**当构建字符串操作的输出是一个`io.Writer`时，不要用`fmt.Sprintf`构建一个临时字符串，只是为了把它发送给 Writer。相反，使用`fmt.Fprintf`来直接向 Writer 发送。
 
 当格式化更加复杂时，请酌情选择 [`text/template`](https://pkg.go.dev/text/template) 或 [`safehtml/template`](https://pkg.go.dev/github.com/google/safehtml/template)。
 
