@@ -1,4 +1,4 @@
-## Go Style 最佳实践
+## Go 编程风格指南最佳实践
 
 https://google.github.io/styleguide/go/best-practices
 
@@ -133,7 +133,7 @@ func (c *Config) WriteBinaryTo(w io.Writer) (int64, error)
 
 ### 测试替身包和类型
 
-有几个原则你可以应用于[命名](https://google.github.io/styleguide/go/guide#naming)包和类型，提供测试帮助器，特别是[测试替身](https://en.wikipedia.org/wiki/Test_double)。一个测试替身可以是一个桩、假的、模拟的或间谍的。
+有几个原则你可以应用于[命名](https://google.github.io/styleguide/go/guide#naming)包和类型，提供测试助手，特别是[测试替身](https://en.wikipedia.org/wiki/Test_double)。一个测试替身可以是一个桩、假的、模拟的或间谍的。
 这些例子大多使用打桩。如果你的代码使用假的或其他类型的测试替身，请相应地更新你的名字。
 假设你有一个重点突出的包，提供与此类似的生产代码：
 
@@ -695,14 +695,6 @@ if err := os.Open("settings.txt"); err != nil {
 // could not open settings.txt: open settings.txt: no such file or directory
 ```
 
-When adding information to a propagated error, you can either wrap the error or present a fresh error. Wrapping the error with the `%w` verb in `fmt.Errorf` allows callers to access data from the original error. This can be very useful at times, but in other cases these details are misleading or uninteresting to the caller. See the [blog post on error wrapping](https://blog.golang.org/go1.13-errors) for more information. Wrapping errors also expands the API surface of your package in a non-obvious way, and this can cause breakages if you change the implementation details of your package.
-
-It is best to avoid using `%w` unless you also document (and have tests that validate) the underlying errors that you expose. If you do not expect your caller to call `errors.Unwrap`, `errors.Is` and so on, don’t bother with `%w`.
-
-The same concept applies to [structured errors](https://google.github.io/styleguide/go/best-practices#error-structure) like [`*status.Status`](https://pkg.go.dev/google.golang.org/grpc/status) (see [canonical codes](https://pkg.go.dev/google.golang.org/grpc/codes)). For example, if your server sends malformed requests to a backend and receives an `InvalidArgument` code, this code should _not_ be propagated to the client, assuming that the client has done nothing wrong. Instead, return an `Internal` canonical code to the client.
-
-However, annotating errors helps automated logging systems preserve the status payload of an error. For example, annotating the error is appropriate in an internal function:
-
 当添加信息到一个传播的错误时，你可以包裹错误或提出一个新的错误。用`fmt.Errorf`中的`%w`动词来包装错误，允许调用者访问原始错误的数据。这在某些时候是非常有用的，但在其他情况下，这些细节对调用者来说是误导或不感兴趣的。更多信息请参见[关于错误包装的博文](https://blog.golang.org/go1.13-errors)。包裹错误也以一种不明显的方式扩展了你的包的 API 表面，如果你改变了你的包的实现细节，这可能会导致破坏。
 
 最好避免使用`%w`，除非你也记录（并有测试来验证）你所暴露的基本错误。如果你不期望你的调用者调用`errors.Unwrap`, `errors.Is`等等，就不要费心使用`%w`。
@@ -720,8 +712,6 @@ func (s *Server) internalFunction(ctx context.Context) error {
     }
 }
 ```
-
-Code directly at system boundaries (typically RPC, IPC, storage, and similar) should report errors using the canonical error space. It is the responsibility of code here to handle domain-specific errors and represent them canonically. For example:
 
 直接位于系统边界的代码（通常是RPC、IPC、存储等之类的）应该使用规范的错误空间报告错误。这里的代码有责任处理特定领域的错误，并以规范的方式表示它们。比如说：
 
@@ -772,10 +762,6 @@ flowchart LR
   err3 == err3 wraps err2 ==> err2;
   err2 == err2 wraps err1 ==> err1;
 ```
-
-Regardless of where the `%w` verb is placed, the error returned always represents the front of the error chain, and the `%w` is the next child. Similarly, `Unwrap() error` always traverses the error chain from newest to oldest error.
-
-Placement of the `%w` verb does, however, affect whether the error chain is printed newest to oldest, oldest to newest, or neither:
 
 不管`%w`动词放在哪里，返回的错误总是代表错误链的前面，而`%w`是下一个子节点。同样，`Unwrap()error`总是从最新的错误到最旧的错误穿越错误链。
 
@@ -1027,8 +1013,6 @@ func (*Buffer) Len() int
 // It is not safe to be called concurrently by multiple goroutines.
 func (*Buffer) Grow(n int)
 ```
-
-Documentation is strongly encouraged if:
 
 强烈鼓励在以下情况下提供文档：
 
@@ -1379,10 +1363,6 @@ func sum(values chan int) (out int) {
     close(values)
 }
 ```
-
-When the direction is specified, the compiler catches simple errors like this. It also helps to convey a measure of ownership to the type.
-
-See also Bryan Mills’ talk “Rethinking Classical Concurrency Patterns”: [slides](https://drive.google.com/file/d/1nPdvhB0PutEJzdCq5ms6UI58dp50fcAN/view?usp=sharing) [video](https://www.youtube.com/watch?v=5zXAHh5tJqQ).
 
 当方向被指定时，编译器会捕捉到像这样的简单错误。它还有助于向类型传达一种所有权的措施。
 也请看 Bryan Mills 的演讲 "重新思考经典的并发模式"。[PPT链接](https://drive.google.com/file/d/1nPdvhB0PutEJzdCq5ms6UI58dp50fcAN/view?usp=sharing) [视频链接](https://www.youtube.com/watch?v=5zXAHh5tJqQ)。
