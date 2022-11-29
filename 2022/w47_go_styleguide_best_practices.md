@@ -512,7 +512,7 @@ import (
 )
 ```
 
-如果一个包只使用一个proto，或者该包与该proto紧密相连，那么前缀可以省略：
+如果一个包只使用一个 proto，或者该包与该 proto 紧密相连，那么前缀可以省略：
 
 import ( pb “path/to/package/foo\_service\_go\_proto” grpc “path/to/package/foo\_service\_go\_grpc” )
 
@@ -534,7 +534,7 @@ import (
 1. 标准库导入（例如，`"fmt"`）。
 2. 导入（例如，"/path/to/somelib"）。
 3. （可选）Protobuf 导入（例如，`fpb "path/to/foo_go_proto"`）。
-4. （可选）副作用导入（例如，`_ "path/to/package"`)
+4. （可选）无使用导入（例如，`_ "path/to/package"`)
 
 如果一个文件没有上述可选类别组，相关的导入将包含在项目倒入组中。
 
@@ -548,13 +548,13 @@ import (
 
 在 Go 中，[错误就是价值](https://go.dev/blog/errors-are-values)；它们由代码创造，也由代码消耗。错误可以是：
 
-- 转化为诊断信息，显示给人类
+- 转化为诊断信息，显示给程序员看
 - 由维护者使用
 - 向终端用户解释
 
 错误信息也显示在各种不同的渠道，包括日志信息、错误转储和渲染的 UI。
 
-处理（产生或消耗）错误的代码应该故意这样做。忽略或盲目地传播错误的返回值可能是很诱人的。然而，总是值得考虑的是，调用框架中的当前函数是否被定位为最有效地处理该错误。这是一个很大的话题，很难给出明确的建议。使用你的判断，但要记住以下的考虑。
+处理（产生或消耗）错误的代码应该刻意这样做。忽略或盲目地传播错误的返回值可能是很诱人的。然而，值得注意的是，调用框架中的当前函数是否被定位为最有效地处理该错误。这是一个很大的话题，很难给出明确的建议。请使用你自己的判断，但要记住以下的考虑。
 
 - 当创建一个错误值时，决定是否给它任何[结构](https://google.github.io/styleguide/go/best-practices#error-structure)。
 - 当处理一个错误时，考虑[添加信息](https://google.github.io/styleguide/go/best-practices#error-extra-info)，这些信息你有，但调用者和/或被调用者可能没有。
