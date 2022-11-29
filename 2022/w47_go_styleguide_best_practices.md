@@ -8,7 +8,9 @@ https://google.github.io/styleguide/go/best-practices
 
 ## 关于
 
-本文件记录了**关于如何更好地应用 Go 风格指南的指导意见**。该指导旨在解决经常出现的常见问题，但不一定适用于所有情况。在可能的情况下，我们讨论了多种替代方法，以及决定何时该用和何时不该用这些方法的考虑因素。
+本文件记录了**关于如何更好地应用 Go 风格指南的指导意见**。该指导旨在解决经常出现的通用问题，但不一定适用于所有情况。在可能的情况下，我们讨论了多种替代方法，以及决定何时该用和何时不该用这些方法的考虑因素。
+
+查看[概述](https://google.github.io/styleguide/go/index#about)来获取完整的风格指导文档
 
 ## 命名
 
@@ -20,7 +22,7 @@ https://google.github.io/styleguide/go/best-practices
 
 - 以下内容一般可以从函数和方法名称中省略。
 
-  - 输入和输出的类型（当没有碰撞的时候）
+  - 输入和输出的类型（当没有冲突的时候）
   - 方法的接收器的类型
   - 一个输入或输出是否是一个指针
 
@@ -85,51 +87,49 @@ func (c *Config) WriteTextTo(w io.Writer) (int64, error)
 func (c *Config) WriteBinaryTo(w io.Writer) (int64, error)
 ```
 
-#### [命名习惯](https://google.github.io/styleguide/go/best-practices#naming-conventions)
+#### [命名约定](https://google.github.io/styleguide/go/best-practices#naming-conventions)
 
-在为函数和方法选择名称时，还有一些常见的习惯：
+在为函数和方法选择名称时，还有一些常见的约定：
 
--   Functions that return something are given noun-like names.
-    
--   返回某物的函数被赋予类似名词的名称。
-    
-    ```
-    // Good:
-    func (c *Config) JobName(key string) (value string, ok bool)
-    ```
-    
-    这方面的一个推论是，函数和方法名称应该[避免使用前缀`Get`](https://google.github.io/styleguide/go/decisions#getters)。
-    
-    ```
-    // Bad:
-    func (c *Config) GetJobName(key string) (value string, ok bool)
-    ```
-    
--   做事的函数被赋予类似动词的名称。
-    
-    ```
-    // Good:
-    func (c *Config) WriteDetail(w io.Writer) (int64, error)
-    ```
-    
--   只因所涉及的类型而不同，而功能相同的函数在名称的末尾带上类型的名称。
-    
-    ```
-    // Good:
-    func ParseInt(input string) (int, error)
-    func ParseInt64(input string) (int64, error)
-    func AppendInt(buf []byte, value int) []byte
-    func AppendInt64(buf []byte, value int64) []byte
-    ```
-    
-    如果有一个明确的 "主要 "版本，该版本的名称中可以省略类型：
-    
-    ```
-    // Good:
-    func (c *Config) Marshal() ([]byte, error)
-    func (c *Config) MarshalText() (string, error)
-    ```
-    
+- 有返回结果的函数使用类名词的名称。
+
+  ```
+  // Good:
+  func (c *Config) JobName(key string) (value string, ok bool)
+  ```
+
+  这方面的一个推论是，函数和方法名称应该[避免使用前缀`Get`](https://google.github.io/styleguide/go/decisions#getters)。
+
+  ```
+  // Bad:
+  func (c *Config) GetJobName(key string) (value string, ok bool)
+  ```
+
+- 做事的函数被赋予类似动词的名称。
+
+  ```
+  // Good:
+  func (c *Config) WriteDetail(w io.Writer) (int64, error)
+  ```
+
+- 只因所涉及的类型而不同，而功能相同的函数在名称的末尾带上类型的名称。
+
+  ```
+  // Good:
+  func ParseInt(input string) (int, error)
+  func ParseInt64(input string) (int64, error)
+  func AppendInt(buf []byte, value int) []byte
+  func AppendInt64(buf []byte, value int64) []byte
+  ```
+
+  如果有一个明确的 "主要 "版本，该版本的名称中可以省略类型：
+
+  ```
+  // Good:
+  func (c *Config) Marshal() ([]byte, error)
+  func (c *Config) MarshalText() (string, error)
+  ```
+
 
 ### 测试替身包和类型
 
@@ -446,12 +446,6 @@ func LongFunction() {
 ```
 
 ### 工具包
-
-Go packages have a name specified on the `package` declaration, separate from the import path. The package name matters more for readability than the path.
-
-Go package names should be [related to what the package provides](https://google.github.io/styleguide/go/decisions#package-names). Naming a package just `util`, `helper`, `common` or similar is usually a poor choice (it can be used as _part_ of the name though). Uninformative names make the code harder to read, and if used too broadly they are liable to cause needless [import conflicts](https://google.github.io/styleguide/go/decisions#import-renaming).
-
-Instead, consider what the callsite will look like.
 
 Go 包在 `package` 声明中指定了一个名称，与导入路径分开。包的名称比路径更重要，因为它的可读性。
 
@@ -1632,7 +1626,7 @@ func foo(ctx context.Context) {
 Go 区分了 "测试助手 "和 "断言助手"。
 
 - **测试助手**就是做设置或清理任务的函数。所有发生在测试助手中的故障都被认为是环境的故障（而不是来自被测试的代码）--例如，当一个测试数据库不能被启动，因为在这台机器上没有更多的空闲端口。对于这样的函数，调用`t.Helper`通常是合适的，[将其标记为测试助手](https://google.github.io/styleguide/go/decisions#mark-test-helpers)。参见 [测试助手的错误处理](https://google.github.io/styleguide/go/best-practices#test-helper-error-handling) 了解更多细节。
-- **断言助手**是检查系统正确性的函数，如果没有达到预期，则测试失败。断言助手在 Go 中[不被认为是习惯用法](https://google.github.io/styleguide/go/decisions#assert)。
+- **断言助手**是检查系统正确性的函数，如果没有达到预期，则测试失败。断言助手在 Go 中[不被认为是常见用法](https://google.github.io/styleguide/go/decisions#assert)。
 
 测试的目的是报告被测试代码的通过/失败情况。测试失败的理想场所是在`Test`函数本身，因为这样可以确保[失败信息](https://google.github.io/styleguide/go/decisions#useful-test-failures)和测试逻辑是清晰的。
 
