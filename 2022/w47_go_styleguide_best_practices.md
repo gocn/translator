@@ -1,8 +1,8 @@
-## Go 编程风格指南最佳实践
+## Go 编程风格指南 - 最佳实践
 
 https://google.github.io/styleguide/go/best-practices
 
-[概述](https://google.github.io/styleguide/go/index) | [指南](https://google.github.io/styleguide/go/guide) | [决定](https://google.github.io/styleguide/go/decisions) | [最佳实践](https://google.github.io/styleguide/go/best-practices)
+[概述](https://google.github.io/styleguide/go/index) | [指南](https://google.github.io/styleguide/go/guide) | [决策](https://google.github.io/styleguide/go/decisions) | [最佳实践](https://google.github.io/styleguide/go/best-practices)
 
 **注意：**本文是 Google [Go 风格](https://google.github.io/styleguide/go/index) 系列文档的一部分。本文档是 **[规范性(normative)](https://google.github.io/styleguide/go/index#normative) 但不是[强制规范(canonical)](https://google.github.io/styleguide/go/index#canonical )**，并且从属于[Google 风格指南](https://google.github.io/styleguide/go/guide)。请参阅[概述](https://google.github.io/styleguide/go/index#about)获取更多详细信息。
 
@@ -1224,7 +1224,7 @@ var (
 )
 ```
 
-当你想传达一个**准备好以后使用**的空值时，你应该使用零值来声明值。使用带有显式初始化的复合字面会很笨重：
+当你想要传递一个空值**以供以后使用**时，你应该使用零值声明。使用带有显式初始化的复合字面会显得很笨重：
 
 ```go
 // Bad:
@@ -1235,7 +1235,7 @@ var (
 )
 ```
 
-零值声明的一个常见应用是当使用一个变量作为解读时的输出：
+零值声明的一个常见应用是当使用一个变量作为反序列化时的输出：
 
 ```go
 // Good:
@@ -1243,7 +1243,7 @@ var coords Point
 if err := json.Unmarshal(data, &coords); err != nil {
 ```
 
-如果你需要一个锁或其他字段在你的结构中[不得复制](https://google.github.io/styleguide/go/decisions#copying)，你可以把它变成一个值类型以利用零值初始化的优势。这确实意味着，现在必须通过指针而不是值来传递包含的类型。该类型的方法必须采取指针接收方式。
+在你的结构体中，如果你需要一个[不得复制](https://google.github.io/styleguide/go/decisions#copying)的锁或其他字段，可以将其设为值类型以利用零值初始化。这确实意味着，现在必须通过指针而不是值来传递包含的类型。该类型的方法必须采用指针接收器。
 
 ```go
 // Good:
@@ -1287,9 +1287,9 @@ var myMsg = pb.Bar{}
 > **重要的是：** Map 类型在被修改之前必须明确地初始化。然而，从零值 Map 中读取是完全可以的。
 > 对于 map 和 slice 类型，如果代码对性能特别敏感，并且你事先知道大小，请参见[size hints](https://google.github.io/styleguide/go/best-practices#vardeclsize)部分。
 
-### 复合字面
+### 复合字面量
 
-以下是[复合字面](https://golang.org/ref/spec#Composite_literals)的声明：
+以下是[复合字面量](https://golang.org/ref/spec#Composite_literals)的声明：
 
 ```go
 // Good:
@@ -1301,11 +1301,11 @@ var (
 )
 ```
 
-当你知道初始元素或成员时，你应该使用复合字词来声明一个值。
+当你知道初始元素或成员时，你应该使用复合字面量来声明一个值。
 
-相比之下，使用复合字面来声明空值或无成员的值，与[零值初始化](https://google.github.io/styleguide/go/best-practices#vardeclzero)相比，视觉上会很吵。
+相比之下，与[零值初始化]相比，使用复合字面量声明空或无成员值可能会在视觉上产生噪音
 
-当你需要一个指向零值的指针时，你有两个选择：空复合字面和`new`。两者都很好，但是`new`关键字可以提醒读者，如果需要一个非零值，就不能用复合字面：
+当你需要一个指向零值的指针时，你有两个选择：空复合字面和`new`。两者都很好，但是`new`关键字可以提醒读者，如果需要一个非零值，这个复合字面量将不起作用：
 
 ```go
 // Good:
@@ -1315,9 +1315,9 @@ var (
 )
 ```
 
-### 大小提示
+### size 提示
 
-以下是利用大小提示的声明，以便预先分配容量：
+以下是利用 size 提示来预分配容量的声明方式：
 
 ```go
 // Good:
@@ -1331,11 +1331,11 @@ var (
 )
 ```
 
-**根据对代码及其集成的经验分析，**创建对性能敏感和资源高效的代码，大小提示和预分配是重要的步骤。
+根据对代码及其集成的经验分析，对创建性能敏感和资源高效的代码，size 提示和预分配是重要的步骤。
 
-大多数代码不需要大小提示或预分配，可以允许运行时根据需要增加分片或映射。当最终大小已知时，预分配是可以接受的（例如，在映射和分片之间转换时），但这不是一个可读性要求，而且在小情况下可能不值得这样做。
+大多数代码不需要大小提示或预分配，可以允许运行时根据需要增加分片或映射。当最终大小已知时，预分配是可以接受的（例如，在 slice 或 map 之间转换时），但这不是一个可读性要求，而且在少数情况下可能不值得这样做。
 
-**警告：**预先分配比你需要的更多的内存，会在舰队中浪费内存，甚至损害性能。如有疑问，请参阅[GoTip #3: Benchmarking Go Code](https://google.github.io/styleguide/go/index.html#gotip)并默认为[零初始化](https://google.github.io/styleguide/go/best-practices#vardeclzero)或[复合字面声明](https://google.github.io/styleguide/go/best-practices#vardeclcomposite)。
+**警告：**预先分配比你需要的更多的内存，会在队列中浪费内存，甚至损害性能。如有疑问，请参阅[GoTip #3: Benchmarking Go Code](https://google.github.io/styleguide/go/index.html#gotip)并默认为[零初始化](https://google.github.io/styleguide/go/best-practices#vardeclzero)或[复合字面量声明](https://google.github.io/styleguide/go/best-practices#vardeclcomposite)。
 
 ### [Channel 方向](https://google.github.io/styleguide/go/best-practices#channel-direction)
 
@@ -1369,13 +1369,13 @@ func sum(values chan int) (out int) {
 
 ## 函数参数列表
 
-不要让一个函数的签名变得太长。当一个函数中的参数越多，单个参数的作用就越不明确，同一类型的相邻参数就越容易混淆。有大量参数的函数不容易被记住，在调用现场也更难读懂。
+不要让一个函数的签名变得太长。当一个函数中的参数越多，单个参数的作用就越不明确，同一类型的相邻参数就越容易混淆。有大量参数的函数不容易被记住，在调用点也更难读懂。
 
 在设计 API 时，可以考虑将一个签名越来越复杂的高配置函数分割成几个更简单的函数。如果有必要的话，这些函数可以共享一个（未导出的）实现。
 
 当一个函数需要许多输入时，可以考虑为一些参数引入一个选项结构，或者采用更高级的变体选项技术。选择哪种策略的主要考虑因素应该是函数调用在所有预期的使用情况下看起来如何。
 
-下面的建议主要适用于导出的 API，它的标准比未导出的 API 要高。这些技术对于你的用例可能是不必要的。使用你的判断，并平衡清晰性和最小机制的原则。
+下面的建议主要适用于导出的 API，它比未导出的 API 的标准要高。这些技术对于你的用例可能是不必要的。使用你的判断，并平衡清晰性和最小机制的原则。
 
 也请参见。[Go技巧#24：使用特定案例的结构]((https://google.github.io/styleguide/go/index.html#gotip))
 
