@@ -1,158 +1,158 @@
-# Best Practices for Kubernetes in 2023
+# 2023 年 Kubernetes 最佳实践
 
 
 - 原文地址：https://myhistoryfeed.medium.com/best-practices-for-kubernetes-in-2023-bd0aaada1f72
 - 原文作者：MyHistoryFeed
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[cvley](https://github.com/cvley)
 ***
 
-![Kubernetes](https://miro.medium.com/max/1024/0*JDVk89SkkXugCfZH)
+![Kubernetes](https://github.com/gocn/translator/raw/master/static/images/2022/w48_Best_Practices_for_Kubernetes/0*JDVk89SkkXugCfZH)
 
-As a container orchestration platform, Kubernetes (K8s) offers numerous advantages. K8s, for example, is big on automation. This includes workload discovery, self-healing, and containerized application scaling.
+作为容器编排平台，Kubernetes（K8s）具有诸多优势。例如，K8s 在工作负载发现、自我修复和应用容器化扩展等方面具备很强的自动化。
 
-However, Kubernetes isn’t always ready for production after a few tweaks.
+然而，在经过一些调整后，Kubernetes 并不总是适用于生产环境。
 
-This guide shares critical Kubernetes best practices that you should implement right away to improve your K8s security, performance, and costs.
+本文向您分享了一些重要的 Kubernetes 最佳实践，以提高您的 K8s 安全性、性能和成本。
 
-![Practices](https://miro.medium.com/max/1400/0*6AEPn08Te6lX8513.jpg)
+![Practices](https://github.com/gocn/translator/raw/master/static/images/2022/w48_Best_Practices_for_Kubernetes/0*6AEPn08Te6lX8513.webp)
 
-## 1. Keep Up With The Most Stable
+## 1. 保持最稳定版本
 
-The general rule is to update your K8s to the most recent stable version. It will most likely already be patched for any security or performance issues. There will almost certainly be more community-based or vendor-provided support available as well. Finally, the K8s best practice allows you to avoid security, performance, and cost anomalies that could jeopardize your service delivery.
+一般是将您的 K8s 更新到最新的稳定版本。此版本很可能已经针对任何安全或性能问题进行了修补。基本上也会有更多基于社区版本或供应商提供的支持。最后，K8s 最佳实践可以让您避免出现一些可能危及服务交付的安全、性能和成本异常。
 
-## 2. Lint Your Manifests
+## 2. 整理清单
 
-Perhaps you find YAML difficult to use. Then you can use yamllint, which can handle multiple documents in a single file.
+也许您发现 YAML 很难用。那么你可以使用 yamllint，它可以在一个文件中处理多个文档。
 
-There are also Kubernetes-specific linters available:
+此外也有 Kubernetes 特定的 linters 可用：
 
-You can lint your manifests and follow best practices with kube-score.  
-Kubeval will also lint your manifests. However, it only checks for validity.  
-The dry-run option on kubectl in Kubernetes 1.13 allows Kubernetes to inspect but not apply your manifests. This feature allows you to validate your YAML files for K8s.
+- 您可以使用 kube-score 整理您的清单并遵循最佳实践。
+- Kubeval 也会检查你的清单。但是，它只检查有效性。
+- Kubernetes 1.13 中 kubectl 的 dry-run 选项允许 Kubernetes 检查但不应用您的清单。此功能将验证 K8s 的 YAML 文件。
 
-## 3. Versioning Config Files Is Your Friend
+## 3. 管理好版本控制配置文件
 
-Store all config files, such as deployment, services, and ingress ones in a version control system. GitHub is the most popular, open-source, and distributed version control platform for that, but others include GitLab, BitBucket, and SourceForge.
+将所有配置文件（例如 deployment、services 和 ingress）存储在版本控制系统中。GitHub 是目前最流行的开源分布式版本控制平台，其他平台还包括 GitLab、BitBucket 和 SourceForge。
 
-Doing this before pushing your code to a cluster enables you to track source code changes and who made them. Whenever necessary, you can quickly roll back the change, re-create, or restore your cluster to ensure stability and security.
+在将您的代码推送到集群之前执行此操作，使您能够跟踪源代码变更以及谁进行了变更。必要时，您可以快速回滚变更、重新创建或恢复集群，以确保稳定性和安全性。
 
-## 4. A Git Workflow Is The Way To Go
+## 4. Git 工作流
 
-GitOps, or Git-based workflow, is an excellent model for automating all tasks, including CI/CD pipelines, with Git serving as the single source of truth. A GitOps framework can assist you in the following ways, in addition to increasing productivity:
+GitOps 或基于 Git 的工作流，是一个用于自动化所有任务的优秀模型，包括 CI/CD 管道。除了提高生产力之外，GitOps 框架还可以通过以下方式为您提供帮助：
 
-1.  Accelerate deployments
-2.  Enhance error tracking
-3.  Automate your CI/CD workflows.
+1.  加速部署
+2.  增强错误跟踪能力
+3.  CI/CD 流程自动化
 
-Finally, using the GitOps approach simplifies cluster management and speeds up app development.
+总之，使用 GitOps 方法可以简化集群管理并加快应用程序开发。
 
-## 5. Take Advantage Of Declarative YAML Files
+## 5. 利用声明式 YAML 文件
 
-Write declarative YAML files instead of using imperative kubectl commands like kubectl run. Then, using the kubectl apply command, you can add them to your cluster. A declarative approach allows you to specify the desired state, and Kubernetes will figure out how to get there.
+编写声明式的 YAML 文件，而不是使用诸如 kubectl run 等命令。之后，使用 kubectl apply 命令，您可以将它们添加到集群中。声明式方法允许您指定所需的状态， Kubernetes 也能够处理。
 
-All of your objects, as well as your code, can be stored and versioned in YAML files. If something goes wrong, you can easily roll back deployments by restoring an earlier YAML file and reapplying it. Furthermore, this model ensures that your team can see the cluster’s current status as well as changes made to it over time.
+所有对象以及代码都可以存储在 YAML 文件中并进行版本控制。如果出现问题，您可以通过恢复较早的 YAML 文件并重新应用它来实现轻松回滚。此外，此模式可确保您的团队可以看到集群的当前状态，以及从时间线上看到对其所做的更改。
 
-## 6. Say What You Want With Resource Requests And Caps
+## 6. 指定资源请求和限制
 
-Millicores are typically used for CPUs and mebibytes or megabytes for memory when defining CPU and memory limits for either requests or limits. Containers will not run in a pod if a resource request exceeds the limit you specify.
+当定义 CPU 和内存的资源限制和请求时，毫核通常用于CPU，兆字节用户内存。需要注意的是，容器运行时会禁止容器使用超出所设置资源限制的资源。
 
-When resources are scarce, production clusters may fail in the absence of resource limits and requests. Excess resources can be consumed by pods in a cluster, increasing your Kubernetes costs. Furthermore, if pods consume too much CPU or memory and the scheduler is unable to add new pods, nodes can crash.
+当资源稀缺时，生产集群可能会在没有资源限制和请求的情况下失败。集群中的 Pod 可能会消耗过多的资源，从而增加您的 Kubernetes 成本。此外，如果 pod 消耗太多 CPU 或内存并且调度程序无法添加新的 pod，节点可能会崩溃。
 
-## 7. Couple Pods To Deployments, ReplicaSets, And Jobs
+## 7. 将 Pods 与Deployments, ReplicaSets, 和 Jobs绑定
 
-As much as possible, avoid using naked pods. Naked pods cannot be rescheduled in the event of a node failure because they are not bound to a Deployment or ReplicaSet.
+尽可能不要使用独立的 Pod（即未绑定到 ReplicaSet 或 Deployment 的 Pod）。 如果节点发生故障，将不会重新调度这些独立的 Pod。
 
-A deployment achieves two goals:
+deployment 能够实现两个目标：
 
-1.  Creates a ReplicaSet to keep the desired number of pods.
-2.  Defines a replacement strategy for pods, such as a RollingUpdate.
+1.  创建一个 ReplicaSet 来确保预期个数的 Pod 始终可用
+2.  指定替换 Pod 的策略，例如 RollingUpdate
 
-Unless you have a strict restart Policy: Never use cases, deploying is almost always more efficient than creating pods directly.
+除了一些显式的 restartPolicy: Never 场景外，Deployment 通常比直接创建 Pod 要好得多。
 
-## 8. Clearly Label Your K8s Resources
+## 8. 清晰标记 K8s 资源
 
-Labels are key/value pairs that help you identify the characteristics of a specific resource in Kubernetes clusters. Labels also allow you to filter and select objects with kubectl, allowing you to quickly identify objects based on a specific characteristic.
+标签是可帮助您识别 Kubernetes 集群中资源特性的键/值对。标签还允许您使用 kubectl 过滤和选择对象，让您可以根据特定特征快速识别对象。
 
-Even if you don’t think you’ll use them right away, labeling your objects is a good idea. Also, use as many descriptive labels as possible to differentiate between the resources that your team will be working on. Objects can be labeled by owner, version, instance, component, managed by, project, team, confidentiality level, compliance aspects, and other criteria.
+即使您认为您当前不会使用它们，给您的对象贴上标签也是极好的。此外，尽可能多地使用描述性标签来区分您的团队将使用的资源。对象可以按所有者、版本、实例、组件、管理者、项目、团队、保密级别、合规性和其他标准进行标记。
 
-## 9. Run Liveness Probes (After This Other Probe)
+## 9. 运行存活探测（在其他探测之后）
 
-Liveness probes check the health of long-lived pods on a regular basis, preventing Kubernetes from routing traffic to unhealthy ones. Kubernetes (kubelet default policy) restarts pods that fail a health check, ensuring your app’s availability.
+存活探测定期检查 pod 的健康状况，防止 Kubernetes 将流量路由到不健康的 pod。Kubernetes（kubelet 默认策略）会重启未通过健康检查的 pod，确保应用程序的可用性。
 
-The probe sends a ping to the pod to see if it receives a response. No response indicates that your app is not running on that pod, causing the probe to launch a new pod and run the application there.
+探针向 pod 发送 ping 以查看是否能收到响应。无响应则表示您的应用程序未在该 pod 上运行，进而启动新的 pod 并在那里运行应用程序。
 
-Another point. You must first run a startup probe, a third type of probe that alerts K8s when a pod’s startup sequence is complete. If a pod’s startup probe is incomplete, the liveness and readiness probes do not target it.
+还有一点。您必须先运行启动探测，这是第三种类型的探测，它会在 pod 的启动阶段完成时向 K8s 发出警报。如果 pod 的启动探测不完整，则 存活探针 和 就绪态探针 也不会再去探测。
 
-## 10. Namespaces Simplify Resource Management
+## 10. 通过命名空间简化资源管理
 
-Namespaces assist your team in logically partitioning a cluster into sub-clusters. This is especially useful when you want to share a Kubernetes cluster among multiple projects or teams at the same time. Namespaces allow development, testing, and production teams to collaborate within the same cluster without overwriting or interfering with each other’s projects.
+命名空间可帮助您的团队在逻辑上将一个集群划分为多个子集群。当您想同时在多个项目或团队之间共享 Kubernetes 集群时，这尤其有用。命名空间允许开发、测试和生产团队在同一集群内协作，而不会覆盖或干扰彼此的项目。
 
-Kubernetes ships with three namespaces: default, kube-system, and kube-public. A cluster can support multiple namespaces that are logically separate but can communicate with one another.
+Kubernetes 附带三个命名空间：default、kube-system 和 kube-public。一个集群可以支持多个逻辑上独立但可以相互通信的命名空间。
 
-## 11. Keep It Stateless
+## 11. 保持无状态
 
-Stateless apps are generally easier to manage than stateful apps, though this is changing as Kubernetes Operators gain popularity.
+无状态应用程序通常比有状态应用程序更易于管理，尽管随着 Kubernetes Operators 越来越受欢迎，这种情况正在发生变化。
 
-A stateless backend eliminates the need for teams new to Kubernetes to maintain long-running connections that limit scalability.
+对于不熟悉 Kubernetes 的团队来说，无状态后端消除了维持长期连接的可扩展性限制。
 
-Stateless apps also make it easier to migrate and scale on demand.
+无状态应用程序还可以更轻松地按需迁移和扩展。
 
-Just one more thing. Keeping workloads stateless allows you to use spot instances.
+更重要的是，保持工作负载无状态，您就可以使用临时实例。
 
-Here’s the deal. One disadvantage of using Spots Instances is that providers such as AWS and Azure frequently require the cheap compute resources to be returned on short notice, which can disrupt your workload. You can circumvent this issue by making your application stateless.
+使用临时实例的一个缺点是 AWS 和 Azure 等提供商经常需要您在短时间内返还这些廉价的计算资源，这可能会中断您的工作负载。您可以通过使您的应用程序无状态来规避此问题。
 
-## 12. Establish Your Network Policies
+## 12. 建立网络策略
 
-A network policy in Kubernetes specifies which traffic is allowed and which is not. It’s similar to putting firewalls between pods in a Kubernetes cluster. Regardless of how traffic moves between pods in your environment, it will only be permitted if your network policies allow it.
+Kubernetes 中的网络策略指的是哪些流量被允许，哪些不被允许。这类似于在 Kubernetes 集群中的 pod 之间放置防火墙。无论流量如何在您环境中的 pod 之间流动，只有在您的网络策略认可的情况下流量才会被允许。
 
-You must define authorized connections and specify which pods the policy should apply to before you can create a network policy. This filters out any traffic that does not meet your criteria.
+在创建网络策略之前，您必须定义授权连接并指定该策略应用于哪些 pod。这能帮助您过滤掉任何不符合条件的流量。
 
-You can find various examples of Kubernetes Network Policies and sample YAML files in this repository.
+您可以在[此](https://kubernetes.io/zh-cn/docs/concepts/services-networking/network-policies/)找到 Kubernetes 网络策略的各种示例和示例 YAML 文件。
 
-## 13. Set Up Role Based Access Controls
+## 13. 设置基于角色的访问控制
 
-Consider this:
+先看以下数据：
 
-RedHat discovered the following in a survey of over 300 DevOps professionals in 2022:
+RedHat 在 2022 年对 300 多名 DevOps 专业人员的调查中发现了以下内容：
 
--   For 55% of respondents, security concerns delayed application release.
--   In terms of continuing to use Kubernetes and containers, 59% cited security as a major impediment.
--   31% said a security breach resulted in revenue or customer loss.
--   Almost all of them (94%) had at least one Kubernetes security incident in the previous year.
+-   对于 55% 的受访者来说，安全问题会延后应用程序发布。
+-   在持续使用 Kubernetes 和容器方面，59% 的人认为安全是主要障碍。
+-   31% 表示安全漏洞导致了收入或客户流失。
+-   几乎所有人 (94%) 在前一年至少发生过一次 Kubernetes 安全事件。
 
-![Kubernetes Adoption, Security, and Market Trends](https://miro.medium.com/max/1400/1*adz0_UmrIqCPJID4eVi6ew.png)
+![Kubernetes Adoption, Security, and Market Trends](https://github.com/gocn/translator/raw/master/static/images/2022/w48_Best_Practices_for_Kubernetes/1*adz0_UmrIqCPJID4eVi6ew.webp)
 
-You can use RBAC to specify which users have access to which Kubernetes resources, such as which clusters they can access, who can make changes, and to what extent they can make changes.
+您可以使用 RBAC 指定哪些用户可以访问哪些 Kubernetes 资源，例如他们可以访问哪些集群、谁可以进行更改以及他们可以更改到什么程度。
 
-RBAC permissions can be configured in two ways:
+可以通过两种方式配置 RBAC 权限：
 
--   If you want to set permissions for a non-namespaces resource, use **ClusterRole**.  
-    •Namespaced Kubernetes resource **by Role**
+-   如果你希望定义集群范围的角色，应该使用 **ClusterRole**。
+-   如果你希望在名字空间内定义角色，应该使用 **by Role**。
 
-## 14. Firewall Your Kubernetes Environment
+## 14. 为 Kubernetes 环境设置防火墙
 
-Another significant Kubernetes security best practice.
+这是另外一种重要的 Kubernetes 安全最佳实践。
 
-Set up a firewall in front of the cluster to limit external requests from reaching the API server, in addition to network policies to control internal traffic within your cluster. This can be accomplished through the use of regular or port firewall rules.
+在集群前面设置防火墙以限制外部请求到达 API 服务器，此外还设置网络策略来控制集群内的内部流量。可以通过使用常规或端口防火墙规则来完成。
 
-Additionally, make sure that IP addresses are whitelisted and that open ports are restricted.
+此外，需要确保 IP 地址已列入白名单并且设置开放端口限制。
 
-## 15. Smaller Images Are More Ideal
+## 15. 镜像越小越好
 
-Make your images small and layered. The smaller the image, the faster the build and the less storage space required. An image’s size can be significantly reduced by efficiently layering it. By starting from scratch, you can optimize your images.
+使您的镜像小而分层。因为镜像越小，构建速度越快，所需的存储空间也越少。通过有效地分层可以显着减小图像的大小。从此之后，您可以通过一些手段来优化镜像。
 
-How?
+如果做呢？
 
-Use multiple FROM statements in a single Dockerfile if you need many different components. The setup will lift each layer from the deployed container based on the FROM command.
+如果您需要许多不同的组件，请在单个 Dockerfile 中使用多个 FROM 语句。该设置将根据 FROM 命令从已部署的容器中提取每一层。
 
-The feature generates sections, each referring to a different base image. The resulting Docker container is smaller because it no longer includes previous layers, only the components you require.
+在生成阶段，每个部分都引用不同的基本镜像。这样生成的 Docker 容器更小，因为它不再包含前面的层，只包含您需要的组件。
 
-## See you in my next post!
+## 在我的下一篇文章中见！
 
-## Best Articles Of The Month:
+## 本月最佳文章：
 
--   [Top 10 DevOps Trends to keep an Eye on 2023!](https://myhistoryfeed.medium.com/top-10-devops-trends-to-keep-an-eye-on-in-2023-247971ad4a26)
--   [5 Top Kubernetes Monitoring Tools You’ve Probably Haven’t Used](https://myhistoryfeed.medium.com/5-top-kubernetes-monitoring-tools-youve-probably-haven-t-used-2a149f264288)
--   [You Should Know this Kubernetes Terminologies!](https://myhistoryfeed.medium.com/you-should-know-these-kubernetes-terminologies-b6451bceae1e)
+-   [2023 年值得关注的 10 大 DevOps 趋势！](https://myhistoryfeed.medium.com/top-10-devops-trends-to-keep-an-eye-on-in-2023-247971ad4a26)
+-   [您可能没有使用过的 5 个顶级 Kubernetes 监控工具](https://myhistoryfeed.medium.com/5-top-kubernetes-monitoring-tools-youve-probably-haven-t-used-2a149f264288)
+-   [你应该知道这个 Kubernetes 术语！](https://myhistoryfeed.medium.com/you-should-know-these-kubernetes-terminologies-b6451bceae1e)
