@@ -1672,6 +1672,8 @@ func FuzzFencepost(f *testing.F) {
 
 #### 验收测试
 
+这种测试被称为[验收测试](https://en.wikipedia.org/wiki/Acceptance_testing)。这种测试的前提是，使用测试的人不知道测试中发生的每一个细节；他们只是把输入交给测试机构来完成。这可以被认为是一种[控制反转](https://en.wikipedia.org/wiki/Inversion_of_control)的形式。
+
 在典型的Go测试中，测试函数控制着程序流程，[无断言](https://google.github.io/styleguide/go/decisions#assert)和[测试函数](https://google.github.io/styleguide/go/best-practices#test-functions)指南鼓励你保持这种方式。本节解释了如何以符合 Go 风格的方式来编写对这些测试的支持。
 
 在深入探讨如何做之前，请看下面摘录的[`io/fs`](https://pkg.go.dev/io/fs)中的一个例子：
