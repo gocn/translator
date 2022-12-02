@@ -133,7 +133,7 @@ func (c *Config) WriteBinaryTo(w io.Writer) (int64, error)
 
 ### 测试替身包和类型
 
-有几个原则你可以应用于[命名](https://google.github.io/styleguide/go/guide#naming)包和类型，提供测试助手，特别是[测试替身](https://en.wikipedia.org/wiki/Test_double)。一个测试替身可以是一个桩、假的、模拟的或间谍的。
+有几个原则你可以应用于[命名](https://google.github.io/styleguide/go/guide#naming)包和类型，提供测试辅助函数，特别是[测试替身](https://en.wikipedia.org/wiki/Test_double)。一个测试替身可以是一个桩、假的、模拟的或间谍的。
 这些例子大多使用打桩。如果你的代码使用假的或其他类型的测试替身，请相应地更新你的名字。
 假设你有一个重点突出的包，提供与此类似的生产代码：
 
@@ -839,23 +839,23 @@ log.V(2).Infof("Handling %v", sql.Explain())
 
 程序的初始化错误（如坏的标志和配置）应该向上传播到`main`，它应该调用`log.Exit`，并说明如何修复错误。在这些情况下，一般不应使用`log.Fatal`，因为指向检查的堆栈跟踪不可能像人工生成的可操作信息那样有用。
 
-### 程序检查和恐慌
+### 程序检查和 panic
 
-正如[反对恐慌的决定](https://google.github.io/styleguide/go/decisions#dont-panic)中所述，标准的错误处理应该围绕错误返回值进行结构化。库应该倾向于向调用者返回错误，而不是中止程序，特别是对于瞬时错误。
+正如[反对 panic 的决定](https://google.github.io/styleguide/go/decisions#dont-panic)中所述，标准的错误处理应该围绕错误返回值进行结构化。库应该倾向于向调用者返回错误，而不是中止程序，特别是对于瞬时错误。
 
 偶尔有必要对一个不变量进行一致性检查，如果违反了这个不变量，就终止程序。一般来说，只有当不变量检查失败意味着内部状态已经无法恢复时，才会这样做。在谷歌代码库中，最可靠的方法是调用`log.Fatal`。在这种情况下使用`panic`是不可靠的，因为延迟函数有可能会出现死锁或进一步破坏内部或外部状态。
 
-同样，抵制恢复恐慌以避免崩溃的诱惑，因为这样做可能导致传播损坏的状态。你离恐慌越远，你对程序的状态就越不了解，它可能持有锁或其他资源。然后，程序可以发展出其他意想不到的故障模式，使问题更加难以诊断。与其试图在代码中处理意外的恐慌，不如使用监控工具来浮现出意外的故障，并高度优先修复相关的错误。
+同样，抵制恢复 panic 以避免崩溃的诱惑，因为这样做可能导致传播损坏的状态。你离 panic 越远，你对程序的状态就越不了解，它可能持有锁或其他资源。然后，程序可以发展出其他意想不到的故障模式，使问题更加难以诊断。与其试图在代码中处理意外的 panic，不如使用监控工具来浮现出意外的故障，并高度优先修复相关的错误。
 
-**注意：**标准的[`net/http`服务器](https://pkg.go.dev/net/http#Server)违反了这个建议，从请求处理程序中恢复恐慌。有经验的 Go 工程师的共识是，这是一个历史性的错误。如果你对其他语言的应用服务器的日志进行采样，通常会发现有大量的堆栈轨迹没有被处理。在你的服务器中应避免这种陷阱。
+**注意：**标准的[`net/http`服务器](https://pkg.go.dev/net/http#Server)违反了这个建议，从请求处理程序中恢复 panic。有经验的 Go 工程师的共识是，这是一个历史性的错误。如果你对其他语言的应用服务器的日志进行采样，通常会发现有大量的堆栈轨迹没有被处理。在你的服务器中应避免这种陷阱。
 
 ### 何时 panic
 
-标准库对 API 的误用感到恐慌。例如，[`reflect`](https://pkg.go.dev/reflect)在许多情况下，如果一个值的访问方式表明它被误读，就会发出恐慌。这类似于对核心语言错误的恐慌，如访问一个越界的 slice 元素。代码审查和测试应该发现这样的错误，这些错误预计不会出现在生产代码中。这些恐慌作为不依赖库的不变性检查，因为标准库不能访问谷歌代码库使用的[levelled `log`](https://google.github.io/styleguide/go/decisions#logging) 包。
+标准库对 API 的误用感到 panic。例如，[`reflect`](https://pkg.go.dev/reflect)在许多情况下，如果一个值的访问方式表明它被误读，就会发出 panic。这类似于对核心语言错误的 panic，如访问一个越界的 slice 元素。代码审查和测试应该发现这样的错误，这些错误预计不会出现在生产代码中。这些 panic 作为不依赖库的不变性检查，因为标准库不能访问谷歌代码库使用的[levelled `log`](https://google.github.io/styleguide/go/decisions#logging) 包。
 
-另一种情况下，恐慌可能是有用的，尽管不常见，是作为一个包的内部实现细节，在调用链中总是有一个匹配的恢复。解析器和类似的深度嵌套、紧密耦合的内部函数组可以从这种设计中受益，其中管道错误返回增加了复杂性而没有价值。这种设计的关键属性是，这些恐慌永远不允许跨越包的边界，不构成包的API的一部分。这通常是通过一个顶层的延迟恢复来实现的，它将传播的恐慌转化为公共API表面的返回错误。
+另一种情况下，panic 可能是有用的，尽管不常见，是作为一个包的内部实现细节，在调用链中总是有一个匹配的恢复。解析器和类似的深度嵌套、紧密耦合的内部函数组可以从这种设计中受益，其中管道错误返回增加了复杂性而没有价值。这种设计的关键属性是，这些 panic 永远不允许跨越包的边界，不构成包的API的一部分。这通常是通过一个顶层的延迟恢复来实现的，它将传播的 panic 转化为公共API表面的返回错误。
 
-当编译器无法识别不可到达的代码时，例如使用像`log.Fatal`这样不会返回的函数时，也会使用Panic：
+当编译器无法识别不可到达的代码时，例如使用像`log.Fatal`这样不会返回的函数时，也会使用 Panic：
 
 ```go
 // Good:
@@ -872,7 +872,7 @@ func answer(i int) string {
 }
 ```
 
-[不要在标志被解析之前调用`log`函数](https://pkg.go.dev/github.com/golang/glog#pkg-overview)。如果你必须在 `init`函数中死亡，可以接受用恐慌来代替日志调用。
+[不要在标志被解析之前调用`log`函数](https://pkg.go.dev/github.com/golang/glog#pkg-overview)。如果你必须在 `init`函数中死亡，可以接受用 panic 来代替日志调用。
 
 ## 文档
 
@@ -1161,8 +1161,6 @@ Go 的特点是有一个[文档服务器](https://pkg.go.dev/golang.org/x/pkgsit
   //   "import" will make this configuration inherit from the named file.
   //   "env" if present will be populated with the system environment.
   ```
-
-- A single line that begins with a capital letter, contains no punctuation except parentheses and commas, and is followed by another paragraph, is formatted as a header:
 
 - 一行以大写字母开始，除括号和逗号外不含标点符号，后面是另一个段落，其格式为标题：
 
@@ -1597,26 +1595,26 @@ func foo(ctx context.Context) {
 
 **警告**：cobra 命令函数应该使用 `cmd.Context()` 来获取上下文，而不是用 `context.Background` 来创建自己的根上下文。使用子命令包的代码已经将正确的上下文作为一个函数参数接收。
 
-你不需要把每个子命令放在一个单独的包中，而且通常也没有必要这样做。应用与任何 Go 代码库相同的关于包边界的考虑。如果你的代码既可以作为库也可以作为二进制文件使用，通常将 CLI 代码和库分开是有好处的，使 CLI 只是其客户端中的一个。(这不是专门针对有子命令的CLI的，但在此提及，因为它是一个常见的地方。）
+你不需要把每个子命令放在一个单独的包中，而且通常也没有必要这样做。应用与任何 Go 代码库相同的关于包边界的考虑。如果你的代码既可以作为库也可以作为二进制文件使用，通常将 CLI 代码和库分开是有好处的，使 CLI 只是其客户端中的一个。(这不是专门针对有子命令的CLI的，但在此提及，因为它经常出现。）
 
 ## 测试
 
 ### 把测试留给 `Test` 函数
 
-Go 区分了 "测试助手 "和 "断言助手"。
+Go 区分了 "测试辅助函数 "和 "断言辅助函数"。
 
-- **测试助手**就是做设置或清理任务的函数。所有发生在测试助手中的故障都被认为是环境的故障（而不是来自被测试的代码）--例如，当一个测试数据库不能被启动，因为在这台机器上没有更多的空闲端口。对于这样的函数，调用`t.Helper`通常是合适的，[将其标记为测试助手](https://google.github.io/styleguide/go/decisions#mark-test-helpers)。参见 [测试助手的错误处理](https://google.github.io/styleguide/go/best-practices#test-helper-error-handling) 了解更多细节。
-- **断言助手**是检查系统正确性的函数，如果没有达到预期，则测试失败。断言助手在 Go 中[不被认为是常见用法](https://google.github.io/styleguide/go/decisions#assert)。
+- **测试辅助函数**就是做设置或清理任务的函数。所有发生在测试辅助函数中的故障都被认为是环境的故障（而不是来自被测试的代码）--例如，当一个测试数据库不能被启动，因为在这台机器上没有更多的空闲端口。对于这样的函数，调用`t.Helper`通常是合适的，[将其标记为测试辅助函数](https://google.github.io/styleguide/go/decisions#mark-test-helpers)。参见 [测试辅助函数的错误处理](https://google.github.io/styleguide/go/best-practices#test-helper-error-handling) 了解更多细节。
+- **断言辅助函数**是检查系统正确性的函数，如果没有达到预期，则测试失败。断言辅助函数在 Go 中[不被认为是常见用法](https://google.github.io/styleguide/go/decisions#assert)。
 
 测试的目的是报告被测试代码的通过/失败情况。测试失败的理想场所是在`Test`函数本身，因为这样可以确保[失败信息](https://google.github.io/styleguide/go/decisions#useful-test-failures)和测试逻辑是清晰的。
 
-随着你的测试代码的增长，可能有必要将一些功能分解到独立的函数中。标准的软件工程考虑仍然适用，因为_测试代码仍然是代码_。如果这些功能不与测试框架交互，那么所有的常规规则都适用。然而，当通用代码与框架交互时，必须注意避免常见的陷阱，这些陷阱会导致无信息的失败信息和不可维护的测试。
+随着你的测试代码的增长，可能有必要将一些功能分解到独立的函数中。标准的软件工程考虑仍然适用，因为_测试代码仍然是代码_。如果这些功能不与测试框架交互，那么所有的常规规则都适用。然而，当通用代码与框架交互时，必须注意避免常见的陷阱，这些陷阱会导致语焉不详的失败信息和不可维护的测试。
 
-如果许多独立的测试用例需要相同的验证逻辑，请以下列方式之一安排测试，而不是使用断言助手或复杂的验证函数。
+如果许多独立的测试用例需要相同的验证逻辑，请以下列方式之一安排测试，而不是使用断言辅助函数或复杂的验证函数。
 
 - 在`Test`函数中内联逻辑（包括验证和失败），即使它是重复的。这在简单的情况下效果最好。
 - 如果输入是类似的，可以考虑把它们统一到一个[表格驱动的测试](https://google.github.io/styleguide/go/decisions#table-driven-tests)，同时在循环中保持逻辑的内联。这有助于避免重复，同时在 "测试 "中保持验证和失败。
-- 如果有多个调用者需要相同的验证功能，但表格测试不适合（通常是因为输入不够简单或验证需要作为操作序列的一部分），安排验证功能，使其返回一个值（通常是一个 "错误"），而不是接受一个 "testing.T "参数并使用它来失败测试。在`测试`中使用逻辑来决定是否失败，并提供[有用的测试失败](https://google.github.io/styleguide/go/decisions#useful-test-failures)。你也可以创建测试助手，以剔除常见的模板设置代码。
+- 如果有多个调用者需要相同的验证功能，但表格测试不适合（通常是因为输入不够简单或验证需要作为操作序列的一部分），安排验证功能，使其返回一个值（通常是一个 "错误"），而不是接受一个 "testing.T "参数并使用它来让测试失败。在`测试`中使用逻辑来决定是否失败，并提供[有用的测试失败](https://google.github.io/styleguide/go/decisions#useful-test-failures)。你也可以创建测试辅助函数，以剔除常见的模板设置代码。
 
 最后一点中概述的设计保持了正交性。例如，[`cmp` 包 ](https://pkg.go.dev/github.com/google/go-cmp/cmp)不是为了测试失败而设计的，而是为了比较（和差异）值。因此，它不需要知道进行比较的上下文，因为调用者可以提供这个。如果你的普通测试代码为你的数据类型提供了一个`cmp.Transformer`，这通常是最简单的设计。对于其他的验证，可以考虑返回一个`error`值。
 
@@ -1666,7 +1664,7 @@ func FuzzFencepost(f *testing.F) {
 
 `polygonCmp`函数对它的调用方式是不可知的；它不接受具体的输入类型，也不规定在两个对象不匹配的情况下该怎么做。因此，更多的调用者可以使用它。
 
-**注意：**在测试助手和普通库代码之间有一个类比。库中的代码通常应该[不恐慌](https://google.github.io/styleguide/go/decisions#dont-panic)，除非在极少数情况下；从测试中调用的代码不应该停止测试，除非[继续进行没有意义](https://google.github.io/styleguide/go/best-practices#t-fatal)。
+**注意：**在测试辅助函数和普通库代码之间有一个类比。库中的代码通常应该[不 panic](https://google.github.io/styleguide/go/decisions#dont-panic)，除非在极少数情况下；从测试中调用的代码不应该停止测试，除非[继续进行没有意义](https://google.github.io/styleguide/go/best-practices#t-fatal)。
 
 ### 设计可扩展的验证API
 
@@ -1792,19 +1790,20 @@ func TestAcceptance(t *testing.T) {
 
 ### [`t.Error` vs. `t.Fatal`](https://google.github.io/styleguide/go/best-practices#terror-vs-tfatal)
 
-正如在[决定](https://google.github.io/styleguide/go/decisions#keep-going)中所讨论的，测试一般不应该在第一次遇到问题时中止。
+正如在[执行策略](https://google.github.io/styleguide/go/decisions#keep-going)中讨论的一样, 测试过程不应该在遇到问题的地方中断。
 
-然而，有些情况需要测试不继续进行。当某些测试设置失败时，调用`t.Fatal`是合适的，特别是在 [test setup helpers](https://google.github.io/styleguide/go/best-practices#test-helper-error-handling)，没有它，你就不能运行测试的其余部分。在表驱动的测试中，`t.Fatal`适合于在测试循环之前设置整个测试函数的失败。影响测试表中单个条目的故障，使该条目无法继续进行，应报告如下。
+然而，有些情况需要终止当前测试。当某些测试需要标记失败时，调用t.Fatal是合适的，特别是在 使用测试辅助函数时，没有它，你就不能运行测试的其余部分。在表格驱动的测试中，t.Fatal适合于在测试在进入循环之前整个测试函数标记为失败状态。它只会影响整个测试列表中被标记为失败的测试函数不能继续向前推进, 而不会影响其他的测试函数, 所以, 错误报告应该像下面这样:
 
-- 如果你不使用`t.Run`子测试，使用`t.Error`，后面跟一个`continue`语句，继续到下一个表项。
+- 如果你不使用 `t.Run子` 测试，使用 `t.Error`，后面跟一个 `continue` 语句，继续到下一个测试项。
 - 如果你使用子测试（并且你在调用`t.Run`时），使用`t.Fatal`，结束当前子测试，并允许你的测试用例进入下一个子测试。
 
-**警告：**调用`t.Fatal`和类似函数并不总是安全的。[更多细节在这里](https://google.github.io/styleguide/go/best-practices#t-fatal-goroutine)。
+**警告：**调用和`t.Fatal`和类似函数并不总是安全的。[更多细节在这里](https://google.github.io/styleguide/go/best-practices#t-fatal-goroutine)。
 
-### 测试助手中的错误处理
+### 在测试辅助函数中处理错误
 
-**注意：**本节讨论的[测试助手](https://google.github.io/styleguide/go/decisions#mark-test-helpers)是 Go 使用的术语：执行测试设置和清理的函数，而不是普通的断言设施。更多的讨论请参见 [test functions](https://google.github.io/styleguide/go/best-practices#test-functions) 部分。
-由测试助手执行的操作有时会失败。例如，设置一个带有文件的目录涉及到 I/O，这可能会失败。当测试助手失败时，它们的失败往往标志着测试不能继续，因为一个设置的前提条件失败了。当这种情况发生时，最好在助手中调用一个`Fatal`函数：
+**注意：**本节讨论的[测试辅助函数](https://google.github.io/styleguide/go/decisions#mark-test-helpers)是 Go 使用的术语：这些函数用于准备测试环境和清理测试现场，而不是普通的断言设施。更多的讨论请参见 [test functions](https://google.github.io/styleguide/go/best-practices#test-functions) 部分。
+
+由测试辅助函数执行的操作有时会失败。例如，设置一个带有文件的目录涉及到 I/O，这可能会失败。当测试辅助函数失败时，它们的失败往往标志着测试不能继续，因为一个设置的前提条件失败了。当这种情况发生时，最好在辅助函数中调用一个`Fatal`函数：
 
 ```go
 // Good:
@@ -1819,7 +1818,7 @@ func mustAddGameAssets(t *testing.T, dir string) {
 }
 ```
 
-这就使调用方比助手返回错误给测试本身更干净：
+这就使调用测试辅助函数返回错误给测试本身更清晰：
 
 ```go
 // Bad:
@@ -1835,11 +1834,11 @@ func addGameAssets(t *testing.T, dir string) error {
 }
 ```
 
-**警告：**调用`t.Fatal`和类似函数并不总是安全的。[更多细节](https://google.github.io/styleguide/go/best-practices#t-fatal-goroutine)这里。
+**警告：**调用和 `t.Fatal`类似函数并不总是安全的。点击这里查看[更多细节](https://google.github.io/styleguide/go/best-practices#t-fatal-goroutine)。
 
-失败信息应该包括对发生的事情的描述。这一点很重要，因为你可能会向许多用户提供测试 API，特别是当助手中产生错误的步骤增多时。当测试失败时，用户应该知道在哪里，以及为什么。
+失败信息应该包括对错误的详细描述信息。这一点很重要，因为你可能会向许多用户提供测试 API，特别是在测试辅助函数中产生错误的场景增多时。用户应该知道在哪里，以及为什么产生错误。
 
-**提示：** Go 1.14引入了一个[`t.Cleanup`](https://pkg.go.dev/testing#T.Cleanup)函数，可以用来注册清理函数，在你的测试完成后运行。该函数也适用于测试帮助器。参见 [GoTip #4: Cleaning Up Your Tests](https://google.github.io/styleguide/go/index.html#gotip) 以获得简化测试辅助程序的指导。
+**提示：** Go 1.14引入了一个[`t.Cleanup`](https://pkg.go.dev/testing#T.Cleanup)函数，可以用来注册清理函数，在你的测试完成后运行。该函数也适用于测试辅助函数。参见 [GoTip #4: Cleaning Up Your Tests](https://google.github.io/styleguide/go/index.html#gotip) 以获得简化测试辅助程序的指导。
 
 下面是一个名为`paint_test.go`的虚构文件中的片段，演示了`(*testing.T).Helper`如何影响 Go 测试中的失败报告：
 
@@ -1899,19 +1898,19 @@ FAIL
 
 正确地使用`(*testing.T).Helper`可以更好地归纳出失败的位置，当：
 
-- 助手函数增长
-- 帮助器函数调用其他帮助器
-- 测试函数中的帮助器使用量增加
+- 辅助函数数量增加
+- 在辅助函数中使用其他的辅助函数
+- 测试函数使用辅助函数的数量增加
 
-**提示：**如果一个助手调用`(*testing.T).Error`或`(*testing.T).Fatal`，在格式字符串中提供一些上下文，以帮助确定出错的原因。
+**提示：**如果一个辅助函数调用`(*testing.T).Error`或`(*testing.T).Fatal`，在格式字符串中提供一些上下文，以帮助确定出错的原因。
 
-**提示：**如果一个助手没有做任何事情会导致测试失败，那么它就不需要调用`t.Helper`。通过从函数参数列表中删除`t`来简化其签名。
+**提示：**如果一个辅助函数没有做任何事情会导致测试失败，那么它就不需要调用`t.Helper`。通过从函数参数列表中删除`t`来简化其签名。
 
 ### 不要从独立的 goroutines 中调用`t.Fatal`
 
-正如[package testing](https://pkg.go.dev/testing#T)中记载的那样，从任何 goroutine 中调用`t.FailNow`，`t.Fatal`等都是不正确的，除了运行 Test 函数（或子测试）的 goroutine。如果你的测试启动了新的 goroutine，它们不能从这些 goroutine 内部调用这些函数。
+正如[package testing](https://pkg.go.dev/testing#T)中记载的那样，在测试函数或子测试函数之外的任何 goroutine 中调用 `t.FailNow`，`t.Fatal` 等都是不正确的。如果你的测试启动了新的 goroutine，它们不能从这些 goroutine 内部调用这些函数。
 
-[测试助手](https://google.github.io/styleguide/go/best-practices#test-functions)通常不会从新的 goroutine 发出失败信号，因此它们使用`t.Fatal`是完全正确的。如果有疑问，可以调用 t.Error 并返回。
+[测试辅助函数](https://google.github.io/styleguide/go/best-practices#test-functions)通常不会从新的 goroutine 发出失败信号，因此它们使用`t.Fatal`是完全正确的。如果有疑问，可以调用 t.Error 并返回。
 
 ```go
 // Good:
@@ -1947,7 +1946,7 @@ func TestRevEngine(t *testing.T) {
 
 在测试或子测试中添加`t.Parallel`并不会使调用`t.Fatal`变得不安全。
 
-当所有对 `testing` API 的调用都在 [test function](https://google.github.io/styleguide/go/best-practices#test-functions) 中时，通常很容易发现不正确的用法，因为`go`关键字是显而易见的。传递`testing.T`参数会使跟踪这种用法更加困难。通常，传递这些参数的原因是为了引入一个测试助手，而这些测试助手不应该依赖于被测系统。因此，如果一个测试助手[注册了一个致命的测试失败](https://google.github.io/styleguide/go/best-practices#test-helper-error-handling)，它可以而且应该从测试的 goroutine 中这样做。
+当所有对 `testing` API 的调用都在 [test function](https://google.github.io/styleguide/go/best-practices#test-functions) 中时，通常很容易发现不正确的用法，因为`go`关键字是显而易见的。传递`testing.T`参数会使跟踪这种用法更加困难。通常，传递这些参数的原因是为了引入一个测试辅助函数，而这些测试辅助函数不应该依赖于被测系统。因此，如果一个测试辅助函数[注册了一个致命的测试失败](https://google.github.io/styleguide/go/best-practices#test-helper-error-handling)，它可以而且应该从测试的 goroutine 中这样做。
 
 ### 对结构字使用字段标签
 
@@ -2065,7 +2064,7 @@ $ go test -run TestRegression682831
 
 如果**包中的所有测试**都需要共同设置，并且**设置需要拆解**，你可以使用[自定义测试主入口](https://golang.org/pkg/testing/#hdr-Main)。如果测试用例所需的资源的设置特别昂贵，而且成本应该被摊销，就会发生这种情况。通常情况下，你在这一点上已经从测试套件中提取了任何无关的测试。它通常只用于[功能测试](https://en.wikipedia.org/wiki/Functional_testing)。
 
-使用自定义的 `TestMain` **不应该是你的首选**，因为要正确使用它，必须要有足够的谨慎。首先考虑[_摊销普通测试设置_](https://google.github.io/styleguide/go/best-practices#t-setup-amortization)部分的解决方案或普通的[测试助手](https://google.github.io/styleguide/go/best-practices#t-common-setup-scope)是否足以满足你的需求。
+使用自定义的 `TestMain` **不应该是你的首选**，因为要正确使用它，必须要有足够的谨慎。首先考虑[_摊销普通测试设置_](https://google.github.io/styleguide/go/best-practices#t-setup-amortization)部分的解决方案或普通的[测试辅助函数](https://google.github.io/styleguide/go/best-practices#t-common-setup-scope)是否足以满足你的需求。
 
 ```go
 // Good:
