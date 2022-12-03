@@ -3,7 +3,7 @@
 
 - 原文地址：https://myhistoryfeed.medium.com/best-practices-for-kubernetes-in-2023-bd0aaada1f72
 - 原文作者：MyHistoryFeed
-- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w48_Best_Practices_for_Kubernetes_in_2023.md
 - 译者：[lsj1342](https://github.com/lsj1342)
 - 校对：[cvley](https://github.com/cvley)
 ***
