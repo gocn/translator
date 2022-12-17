@@ -1,4 +1,4 @@
-New in Go 1.20: wrapping multiple errors
+GO 1.20 新功能：多重错误包装
 
 - 原文地址：https://lukas.zapletalovi.com/posts/2022/wrapping-multiple-errors/
 - 原文作者：Lukáš Zapletal
@@ -6,9 +6,9 @@ New in Go 1.20: wrapping multiple errors
 - 译者：[haoheipi](https://github.com/haoheipi)
 - 校对：
 
-Go 1.20, which is expected to be released in February 2023, comes with a small change that can possibly improve error handling in applications which heavily use error wrapping. Let’s take a look how it looks, but first, short recap of what error wrapping is. Feel free to skip to “New in Go 1.20” section down below for the news.
+预计将于 2023 年 2 月发布的 Go 1.20 有一个小的变化，对于那些大量使用错误包装的应用程序来说，可能会有效的改进它们的错误处理方法。让我们看一下它的用法，但首先，需要简要回顾一下什么是错误包装。如果已经掌握了可以直接跳到下面的 "Go 1.20 新功能" 部分以获取新的信息。
 
-Errors in Go are values which implements a very simple interface:
+Go 中的错误是实现一个非常简单的接口：
 
 ```
 type error interface {
@@ -16,7 +16,7 @@ type error interface {
 }
 ```
 
-Error types can be anything, from `string` itself to `int`, but very often they are `struct` types. This example is from the standard library:
+错误类型可以是任何东西，从 `string` 本身到 `int`，但通常它们是 `struct` 类型。下面这个例子来自标准库：
 
 ```
 type err struct {
@@ -28,7 +28,7 @@ func (e *err) Error() string {
 }
 ```
 
-To check an error in Go, you simply compare a value (in this case an `int` value):
+要检查 Go 中的错误，您只需比较一个值（在本例中为 `int` 值）：
 
 ```
 if err == io.EOF {
@@ -36,7 +36,7 @@ if err == io.EOF {
 }
 ```
 
-The second common thing is to check error’s type, that is little bit more code to write tho:
+第二种常见的用法是检查错误的类型，那也意味着要写更多的代码：
 
 ```
 if nerr, ok := err.(net.Error) {
@@ -44,13 +44,13 @@ if nerr, ok := err.(net.Error) {
 }
 ```
 
-In the example above, the type assertion tests the `err` value for type `net.Error` creating a new variable `nerr` which can be used in the if statement. Errors in Go are simple to understand, simple to use use and efficient.
+在上面的例子中，类型断言测试类型 `net.Error` 的 `err` 值，并创建一个新变量 `nerr` ，它可以在 if 语句中使用。 Go 中的错误易于理解、易于使用且非常高效。
 
-## Error wrapping
+## 错误包装
 
-Now, starting from Go 1.13, wrapping was introduced. Wrapping allows to embed errors into other errors, just like wrapping exceptions in other languages. This is very useful: a function that encounters “record not found” error can add more context information to the message like “unknown user: record not found”.
+从 Go 1.13 开始，引入了错误包装。包装允许将错误嵌入到其他错误中，就像在其他语言中包装异常一样。这非常实用：比如函数遇到 "未找到记录" 错误时，可以向错误信息中添加更多上下文信息，例如 "未知用户：未找到记录"。
 
-The interesting idea behind error wrapping design in Go is that the contract does not care about error types, structure or how they are created. What only matters is the unwrapping procedure and conversion to string because that is what is needed. It is very simple then: error types with unwrapping support must implement `Unwrap() error` method. There is no (named) interface in the standard library to show you since interfaces are implemented implicitly and there is no need to have one. Let`s write one just for the purpose of this post:
+Go 中错误包装设计背后的有趣想法是，契约不用关心错误类型、结构或它们是如何创建的。而唯一关注的是解包过程和转换为字符串，因为这两者是必须的。这就非常容易实现：支持解包的错误类型必须实现 `Unwrap() error` 方法。标准库中没有（命名的）接口可以向您展示，因为接口是隐式实现的，没有必要单独写一个。这里我们写一个只是为了更好说明这篇文章：
 
 ```
 type WrappedError interface {
@@ -58,7 +58,7 @@ type WrappedError interface {
 }
 ```
 
-Let’s take a look how wrapped errors are implemented in the Go standard library (package fmt actually):
+我们来看看 Go 标准库（实际上是 package fmt）中是如何实现包装错误的：
 
 ```
 type wrapError struct {
@@ -75,7 +75,7 @@ func (e *wrapError) Unwrap() error {
 }
 ```
 
-Since errors are types which implement `Error() string` and there is nothing wrong saying that errors in Go actually are “strings” in the end, a good mechanism of creating these strings is needed. This is where function `fmt.Errorf` from standard library comes into play:
+由于上面错误实现了 `Error() string` 的类型，所以说 Go 中的错误实际上最终是 `字符串` 并没有错，因此需要一种创建这些字符串的良好机制。这就是标准库中的函数 `fmt.Errorf` 发挥作用的地方：
 
 ```
 var RecordNotFoundErr = errors.New("not found")
@@ -86,15 +86,15 @@ werr := fmt.Errorf("unknown user %q (id %d): %w", name, id, recordNotFoundErr)
 fmt.Println(werr.Error())
 ```
 
-A special format verb `%w`, which can be only used once per call (more about this later), is meant for error arguments. Other than that, the function works similar to `fmt.Printf` function. The example above prints this:
+一个特殊格式的动词 `%w`，每次调用只能使用一次（稍后会详细介绍），用于错误参数。除此之外，该函数的工作方式类似于 `fmt.Printf` 函数。上面的例子打印了这个结果：
 
 ```
 unknown user "lzap" (id 13): not found
 ```
 
-As you can see, wrapped errors are essentially a linked list. To unwrap an error use `errors.Unwrap` function which will return `nil` for the last error value in the list. To check for error type or value, the whole list needs to be walked which is not very practical for each error check. Luckily, there are two helper functions to do that.
+如您所见，错误包装本质上是一个链表。要解包错误，请使用 `errors.Unwrap` 函数，该函数将为列表中的最后一个错误值返回 `nil`。要检查错误类型或值，需要遍历整个列表，这对于需要进行频繁的错误检查不太实用。幸运的是，有两个辅助函数可以做到这一点。
 
-To check for a value in wrapped errors list:
+检查包装错误列表中的值：
 
 ```
 if errors.Is(err, RecordNotFoundErr) {
@@ -102,7 +102,7 @@ if errors.Is(err, RecordNotFoundErr) {
 }
 ```
 
-To check for a specific type (a network error from the standard library in this case):
+要检查特定类型（下面例子是来自标准库的网络错误）:
 
 ```
 var nerr *net.Error
@@ -111,11 +111,11 @@ if errors.As(err, &nerr) {
 }
 ```
 
-That summarizes error wrapping in Go 1.13 and later.
+以上总结了 Go 1.13 及更高版本中的错误包装。
 
-## New in Go 1.20
+## Go 1.20 新特性
 
-Let’s take a look what is actually new in Go 1.20 starting with function `errors.Join` which wraps list of errors via variadic arguments:
+让我们看看 Go 1.20 中真正的新功能，从函数 `errors.Join` 开始，它通过可变参数包装错误列表：
 
 ```
 err1 := errors.New("err1")
@@ -126,14 +126,14 @@ err := errors.Join(err1, err2)
 fmt.Println(err)
 ```
 
-This function can be useful for joining errors together when amount of errors is not known in advance. A good example would be gathering errors from goroutines. It is worth mentioning that the function concatenates errors from the list with newline characters. The above snippet prints:
+当事先不知道错误数量时，此功能可用于将错误连接在一起。一个很好的例子是从 goroutines 收集错误。值得一提的是，该函数将列表中的错误与换行符连接起来。上面的代码片段打印：
 
 ```
 err1
 err2
 ```
 
-This could be a problem for many applications or (logging) libraries which expects errors to be very often just strings without newline characters. Luckily, another change in Go 1.20 changes behavior of `fmt.Errorf`: the function now accepts multiple `%w` format specifiers:
+对于许多应用程序或（日志记录）库来说，这可能会存在问题，它们期望错误通常只是没有换行符的字符串。幸运的是，Go 1.20 中的另一个变化改变了 `fmt.Errorf` 的行为：该函数现在接受多个 `%w` 格式说明符：
 
 ```
 err1 := errors.New("err1")
@@ -144,13 +144,13 @@ err := fmt.Errorf("%w + %w", err1, err2)
 fmt.Println(err)
 ```
 
-What would previously result as a malformed format string now correctly prints:
+以前会导致格式错误的格式字符串现在可以正确打印：
 
 ```
 err1 + err2
 ```
 
-How this is possible when wrapped errors implements `Unwrap() error?` It turns out that there is a new mechanism in Go 1.20 standard library: an error type implementing `Unwrap() []error` function can wrap multiple errors instead of just one. Let’s take a look how this is implemented in the library:
+同时包装多个错误实现 `Unwrap() error` ，这是可能的吗? 事实证明，在 Go 1.20 标准库中有一种新的机制: 实现 `Unwrap() []error` 函数的错误类型可以包装多个错误。让我们来看看这是如何在库中实现的:
 
 ```
 type joinError struct {
@@ -166,7 +166,7 @@ func (e *joinError) Unwrap() []error {
 }
 ```
 
-A theoretical interface, which does not exists in the standard library, looks like this:
+一个理论上的接口，但标准库中实际不存在，如下所示：
 
 ```
 type MultiWrappedError interface {
@@ -174,20 +174,20 @@ type MultiWrappedError interface {
 }
 ```
 
-Since Go does not allow method overloading, each type can either implement `Unwrap() error` or `Unwrap() []error`, but not both. Remember when I mentioned that wrapped errors are essentially a linked list? Types which implement the former (the newly introduced) method actually form a linked tree and functions `errors.Is` and `errors.As` work the same, except now they need to traverse tree instead of list. According to documentation, the implementation performs pre-order, depth-first traversal.
+由于 Go 不允许方法重载，因此每种类型都可以实现 `Unwrap() error` 或 `Unwrap() []error`，但不能同时实现。还记得我提到过包装错误本质上是一个链表吗？实现前一个（新引入的）方法的类型实际上形成了一个链接树，函数 `errors.Is` 和 `errors.As` 的工作方式相同，只是现在它们需要遍历树而不是列表。根据文档，该实现执行预排序、深度优先遍历。
 
-That is really all that Go 1.20 brings to the table, it may seem like a small change, but it allows new ways how to handle errors efficiently and cleanly. Before I show a real-world example, let me summarize the new features:
+这确实是 Go 1.20 带来的全部，它可能看起来是一个小的变化，但它提供了如何有效和干净地处理错误的新方法。在展示真实示例之前，让我总结一下新功能：
 
-- New `Unwrap []error` function contract allowing traversing through tree of errors.
-- New `errors.Join` function which is a handy function to join two error string values (with a newline).
-- Existing functions `errors.Is` and `errors.As` updated to work both on list and tree of errors.
-- Existing function `fmt.Errorf` now accepts multiple `%w` format verbs.
+- 新的 `Unwrap []error` 函数契约允许遍历错误树。
+- 新的 `errors.Join` 函数，这是一个方便的函数，用于连接两个错误字符串值（使用换行符）。
+- 现有函数 `errors.Is` 和 `errors.As` 已更新，可以同时处理错误列表和错误树。
+- 现有函数 `fmt.Errorf` 现在接受多个 `%w` 格式动词。
 
-## In practice
+## 实践
 
-So it’s all great, but how can you leverage this in practice? In a small REST API microservice, we do all error handling through `errors.New` and `fmt.Errorf` wrapping various errors from DAO package (database), REST clients (other backend services) and other packages. The return HTTP status code should be either 2xx, 4xx or 5xx depending on the error status to follow the best REST API practices. One way to achieve this is to unwrap errors in the main HTTP handler and find out which kind of error is it.
+上面这一切都很棒，但是你如何在实践中利用它呢？在一个小型 REST API 微服务中，我们通过 `errors.New` 和 `fmt.Errorf` 处理来自 DAO 包（数据库）、REST 客户端（其他后端服务）和其他包的各种错误。返回的 HTTP 状态代码应该是 2xx、4xx 或 5xx，具体取决于错误状态以遵循最佳 REST API 实践。实现此过程的一种方法是解开主 HTTP 处理程序中的错误并找出它是哪种错误。
 
-However, with the multiple error wrapping, it is now possible to wrap both the root cause (e.g. database returning “no records found”) and also preferred HTTP code to return to the user (404 in this case). A working example could look like this:
+然而，通过多重错误包装，现在可以包装根本原因（例如数据库返回 "未找到记录" ）和返回给用户 HTTP 代码（在本例中为 404）。一个工作示例可能如下所示：
 
 ```
 package main
@@ -232,7 +232,7 @@ func main() {
 }
 ```
 
-This will print:
+这将打印：
 
 ```
 Will return 404
@@ -241,17 +241,18 @@ Will return 401
 unauthorized to call other service: HTTP client: unauthorized (401)
 ```
 
-What may not look obvious from such artificial code snippet is that errors declarations are typically spread across many packages and it is not easy to keep track of all possible errors ensuring the required HTTP status codes. In this approach, all application-level wrapping errors declared in a single place also have HTTP codes wrapped inside them.
+从这样的人工代码片段中可能看起来不太明显的是，实际上的错误声明通常分布在许多包中，并且不容易跟踪所有可能的错误以确保所需的 HTTP 状态代码。在这种方法中，所有在一个地方声明的应用程序级包装错误也包含了 HTTP 代码。
 
-Note this was previously not possible in Go 1.19 or older because the `fmt.Errorf` function would only wrap the first error. The code does compile on 1.19 and does not even generate runtime panic, it won’t work however.
+请注意，这在 Go 1.19 或更早版本中是不可能的，因为 `fmt.Errorf` 函数只会包装第一个错误。该代码确实在 1.19 上可以编译，甚至不会产生运行时恐慌，但它实际上不会工作。
 
-Obviously, the common HTTP status codes could easily be a new error type (based on `int` type) so the actual code could be easily extracted via `errors.As`, but I want to keep the example simple.
+显然，常见的 HTTP 状态代码很容易成为一种新的错误类型（基于 `int` 类型），因此可以通过 `errors.As` 轻松提取实际代码，但我想让示例保持简单。
 
 Feel free to play around with the code on Go Playground. Make sure to use “dev branch” or 1.20+ version of Go.
+可以在 Go Playground 上免费运行上述代码。确保使用 "dev branch" 或 Go 的 1.20+ 版本。
 
-## Existing applications
+## 现有应用
 
-When implementing the new feature into your application, beware of `errors.Unwrap` function. For error types that has `Unwrap() []error` it always returns `nil`:
+在您的应用程序中实施新功能时，请注意 `errors.Unwrap` 函数。对于具有 `Unwrap() []error` 的错误类型，它总是返回 `nil`：
 
 ```
 err1 := errors.New("err1")
@@ -263,7 +264,6 @@ unwrapped := errors.Unwrap(err)
 fmt.Println(unwrapped)
 ```
 
-This prints `nil` and it is expected because of the Go 1.X compatibility promise. Just make sure to review unwrapping code when you introduce multiple wrapped errors. Luckily, most of error checking in typical Go code is done using `errors.Is` and `errors.As`.
+由于 Go 1.X 兼容性承诺，这会打印出“nil”。当您引入多个包装错误时，请确保检查展开代码。幸运的是，典型 Go 代码中的大部分错误检查都是使用 `errors.Is` 和 `errors.As` 完成的。
 
-Error wrapping is not the ultimate solution for all error handling in Go. It provides a clean approach to handle errors in typical Go applications tho and it might actually be all you need for simple application.
-
+错误包装并不是 Go 中所有错误处理的最终解决方案。它只是提供了一种干净的方法来处理典型 Go 应用程序中的错误，对于简单应用程序来说也许就完全足够了。
