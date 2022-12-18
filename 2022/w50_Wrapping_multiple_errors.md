@@ -28,7 +28,7 @@ func (e *err) Error() string {
 }
 ```
 
-要检查 Go 中的错误，您只需比较一个值（在本例中为 `int` 值）：
+要检查 Go 中的错误，你只需比较一个值（在本例中为 `int` 值）：
 
 ```
 if err == io.EOF {
@@ -48,7 +48,7 @@ if nerr, ok := err.(net.Error) {
 
 ## 错误包装
 
-从 Go 1.13 开始，引入了错误包装。包装允许将错误嵌入到其他错误中，就像在其他语言中包装异常一样。这非常实用：比如函数遇到 "未找到记录" 错误时，可以向错误信息中添加更多上下文信息，例如 "未知用户：未找到记录"。
+从 Go 1.13 开始，引入了错误包装。包装允许将错误嵌入到其他错误中，就像在其他语言中包装异常一样。这非常实用：比如函数遇到 "record not found" 错误时，可以向错误信息中添加更多上下文信息，例如 "unknown user: record not found"。
 
 Go 中错误包装设计背后的有趣想法是，契约不用关心错误类型、结构或它们是如何创建的。而唯一关注的是解包过程和转换为字符串，因为这两者是必须的。这就非常容易实现：支持解包的错误类型必须实现 `Unwrap() error` 方法。标准库中没有（命名的）接口可以向您展示，因为接口是隐式实现的，没有必要单独写一个。这里我们写一个只是为了更好说明这篇文章：
 
@@ -75,7 +75,7 @@ func (e *wrapError) Unwrap() error {
 }
 ```
 
-由于上面错误实现了 `Error() string` 的类型，所以说 Go 中的错误实际上最终是 `字符串` 并没有错，因此需要一种创建这些字符串的良好机制。这就是标准库中的函数 `fmt.Errorf` 发挥作用的地方：
+由于上面错误类型实现了 `Error() string` 方法，所以说 Go 中的错误实际上最终是 `字符串` 并没有错，因此需要一种创建这些字符串的良好机制。这就是标准库中的函数 `fmt.Errorf` 发挥作用的地方：
 
 ```
 var RecordNotFoundErr = errors.New("not found")
@@ -92,7 +92,7 @@ fmt.Println(werr.Error())
 unknown user "lzap" (id 13): not found
 ```
 
-如您所见，错误包装本质上是一个链表。要解包错误，请使用 `errors.Unwrap` 函数，该函数将为列表中的最后一个错误值返回 `nil`。要检查错误类型或值，需要遍历整个列表，这对于需要进行频繁的错误检查不太实用。幸运的是，有两个辅助函数可以做到这一点。
+如你所见，错误包装本质上是一个链表。要解包错误，请使用 `errors.Unwrap` 函数，该函数将为链表中的最后一个错误值返回 `nil`。要检查错误类型或值，需要遍历整个列表，这对于需要进行频繁的错误检查不太实用。幸运的是，有两个辅助函数可以做到这一点。
 
 检查包装错误列表中的值：
 
@@ -187,7 +187,7 @@ type MultiWrappedError interface {
 
 上面这一切都很棒，但是你如何在实践中利用它呢？在一个小型 REST API 微服务中，我们通过 `errors.New` 和 `fmt.Errorf` 处理来自 DAO 包（数据库）、REST 客户端（其他后端服务）和其他包的各种错误。返回的 HTTP 状态代码应该是 2xx、4xx 或 5xx，具体取决于错误状态以遵循最佳 REST API 实践。实现此过程的一种方法是解开主 HTTP 处理程序中的错误并找出它是哪种错误。
 
-然而，通过多重错误包装，现在可以包装根本原因（例如数据库返回 "未找到记录" ）和返回给用户 HTTP 代码（在本例中为 404）。一个工作示例可能如下所示：
+然而，通过多重错误包装，现在可以包装根本原因（例如数据库返回 "no records found" ）和返回给用户 HTTP 代码（在本例中为 404）。一个工作示例可能如下所示：
 
 ```
 package main
@@ -248,11 +248,11 @@ unauthorized to call other service: HTTP client: unauthorized (401)
 显然，常见的 HTTP 状态代码很容易成为一种新的错误类型（基于 `int` 类型），因此可以通过 `errors.As` 轻松提取实际代码，但我想让示例保持简单。
 
 Feel free to play around with the code on Go Playground. Make sure to use “dev branch” or 1.20+ version of Go.
-可以在 Go Playground 上免费运行上述代码。确保使用 "dev branch" 或 Go 的 1.20+ 版本。
+可以在 Go Playground 上自由运行上述代码。确保使用 "dev branch" 或 Go 的 1.20+ 版本。
 
 ## 现有应用
 
-在您的应用程序中实施新功能时，请注意 `errors.Unwrap` 函数。对于具有 `Unwrap() []error` 的错误类型，它总是返回 `nil`：
+在你的应用程序中实施新功能时，请注意 `errors.Unwrap` 函数。对于具有 `Unwrap() []error` 的错误类型，它总是返回 `nil`：
 
 ```
 err1 := errors.New("err1")
@@ -264,6 +264,6 @@ unwrapped := errors.Unwrap(err)
 fmt.Println(unwrapped)
 ```
 
-由于 Go 1.X 兼容性承诺，这会打印出“nil”。当您引入多个包装错误时，请确保检查展开代码。幸运的是，典型 Go 代码中的大部分错误检查都是使用 `errors.Is` 和 `errors.As` 完成的。
+由于 Go 1.X 兼容性承诺，这会打印出 "nil"。当你引入多个包装错误时，请确保检查展开代码。幸运的是，典型 Go 代码中的大部分错误检查都是使用 `errors.Is` 和 `errors.As` 完成的。
 
 错误包装并不是 Go 中所有错误处理的最终解决方案。它只是提供了一种干净的方法来处理典型 Go 应用程序中的错误，对于简单应用程序来说也许就完全足够了。
