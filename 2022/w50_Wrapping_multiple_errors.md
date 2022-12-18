@@ -4,7 +4,7 @@ GO 1.20 新功能：多重错误包装
 - 原文作者：Lukáš Zapletal
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2022/w50_Wrapping_multiple_errors
 - 译者：[haoheipi](https://github.com/haoheipi)
-- 校对：
+- 校对：[watermelo](https://github.com/watermelo)
 
 预计将于 2023 年 2 月发布的 Go 1.20 有一个小的变化，对于那些大量使用错误包装的应用程序来说，可能会有效的改进它们的错误处理方法。让我们看一下它的用法，但首先，需要简要回顾一下什么是错误包装。如果已经掌握了可以直接跳到下面的 "Go 1.20 新功能" 部分以获取新的信息。
 
