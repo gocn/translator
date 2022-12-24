@@ -1,558 +1,74 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   id="svg8"
-   version="1.1"
-   viewBox="0 0 455.5824 259.45797"
-   height="259.45798mm"
-   width="455.5824mm"
-   sodipodi:docname="queue-system.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1276"
-     inkscape:window-height="2122"
-     id="namedview2031"
-     showgrid="false"
-     inkscape:zoom="0.35355339"
-     inkscape:cx="518.5597"
-     inkscape:cy="-734.7375"
-     inkscape:window-x="10240"
-     inkscape:window-y="18"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="svg8" />
-  <defs
-     id="defs2">
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker2574"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path2572"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
+<?xml version="1.0" encoding="utf-8"?>
+<svg id="svg8" version="1.1" viewBox="0 0 455.5824 259.45797" height="259.45798mm" width="455.5824mm" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs id="defs2">
+    <marker orient="auto" refY="0" refX="0" id="marker2574" style="overflow:visible">
+      <path id="path2572" d="M 0,0 5,-5 -12.5,0 5,5 Z" style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1" transform="matrix(-0.8,0,0,-0.8,-10,0)"/>
     </marker>
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker2568"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path2566"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
+    <marker orient="auto" refY="0" refX="0" id="marker2568" style="overflow:visible">
+      <path id="path2566" d="M 0,0 5,-5 -12.5,0 5,5 Z" style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1" transform="matrix(-0.8,0,0,-0.8,-10,0)"/>
     </marker>
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker2562"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path2560"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
+    <marker orient="auto" refY="0" refX="0" id="marker2562" style="overflow:visible">
+      <path id="path2560" d="M 0,0 5,-5 -12.5,0 5,5 Z" style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1" transform="matrix(-0.8,0,0,-0.8,-10,0)"/>
     </marker>
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker2554"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path2552"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
+    <marker orient="auto" refY="0" refX="0" id="marker2554" style="overflow:visible">
+      <path id="path2552" d="M 0,0 5,-5 -12.5,0 5,5 Z" style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1" transform="matrix(-0.8,0,0,-0.8,-10,0)"/>
     </marker>
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker2548"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path2546"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
-    </marker>
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect2540"
-       is_visible="true"
-       offset_points="0,0.13229166"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       end_linecap_type="zerowidth" />
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect2536"
-       is_visible="true"
-       offset_points="0,0.13229166"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       end_linecap_type="zerowidth" />
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect2522"
-       is_visible="true"
-       offset_points="0,0.13229166"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       end_linecap_type="zerowidth" />
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker2500"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path2198"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
-    </marker>
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect2497"
-       is_visible="true"
-       offset_points="0,0.12718704"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       end_linecap_type="zerowidth" />
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect2193"
-       is_visible="true"
-       offset_points="0,0.13229166"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       end_linecap_type="zerowidth" />
-    <linearGradient
-       inkscape:collect="always"
-       id="linearGradient2077">
-      <stop
-         style="stop-color:#009292;stop-opacity:1"
-         offset="0"
-         id="stop2073" />
-      <stop
-         style="stop-color:#00ffff;stop-opacity:1"
-         offset="1"
-         id="stop2075" />
+    <linearGradient id="linearGradient2077">
+      <stop style="stop-color:#009292;stop-opacity:1" offset="0" id="stop2073"/>
+      <stop style="stop-color:#00ffff;stop-opacity:1" offset="1" id="stop2075"/>
     </linearGradient>
-    <marker
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker1627"
-       style="overflow:visible">
-      <path
-         id="path1625"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         inkscape:connector-curvature="0" />
-    </marker>
-    <marker
-       style="overflow:visible"
-       id="Arrow1Lend"
-       refX="0"
-       refY="0"
-       orient="auto">
-      <path
-         transform="matrix(-0.8,0,0,-0.8,-10,0)"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path1338"
-         inkscape:connector-curvature="0" />
-    </marker>
-    <linearGradient
-       id="linearGradient829">
-      <stop
-         id="stop825"
-         offset="0"
-         style="stop-color:#d9769d;stop-opacity:1" />
-      <stop
-         id="stop827"
-         offset="1"
-         style="stop-color:#eec0d2;stop-opacity:1" />
+    <linearGradient id="linearGradient829">
+      <stop id="stop825" offset="0" style="stop-color:#d9769d;stop-opacity:1"/>
+      <stop id="stop827" offset="1" style="stop-color:#eec0d2;stop-opacity:1"/>
     </linearGradient>
-    <linearGradient
-       gradientTransform="matrix(0.87386222,0,0,0.87386222,-88.661728,11.194762)"
-       gradientUnits="userSpaceOnUse"
-       y2="82.309525"
-       x2="27.214285"
-       y1="148.07738"
-       x1="70.303574"
-       id="linearGradient831"
-       xlink:href="#linearGradient829" />
-    <linearGradient
-       gradientTransform="matrix(0.87386222,0,0,0.87386222,175.68758,11.194775)"
-       gradientUnits="userSpaceOnUse"
-       y2="82.309525"
-       x2="27.214285"
-       y1="148.07738"
-       x1="70.303574"
-       id="linearGradient831-4"
-       xlink:href="#linearGradient829" />
-    <linearGradient
-       gradientTransform="matrix(0.87386222,0,0,0.87386222,276.82663,11.194766)"
-       gradientUnits="userSpaceOnUse"
-       y2="82.309525"
-       x2="27.214285"
-       y1="148.07738"
-       x1="70.303574"
-       id="linearGradient831-4-9"
-       xlink:href="#linearGradient829" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient2077"
-       id="linearGradient2079"
-       x1="77.201958"
-       y1="265.16016"
-       x2="50.499523"
-       y2="231.37669"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(68.675787,26.229932)" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient2077"
-       id="linearGradient2133"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(68.675787,14.743556)"
-       x1="77.201958"
-       y1="265.16016"
-       x2="50.499523"
-       y2="231.37669" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient2077"
-       id="linearGradient2137"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(68.675787,2.5815116)"
-       x1="77.201958"
-       y1="265.16016"
-       x2="50.499523"
-       y2="231.37669" />
+    <linearGradient gradientTransform="matrix(0.87386222,0,0,0.87386222,-88.661728,11.194762)" gradientUnits="userSpaceOnUse" y2="82.309525" x2="27.214285" y1="148.07738" x1="70.303574" id="linearGradient831" xlink:href="#linearGradient829"/>
+    <linearGradient gradientTransform="matrix(0.87386222,0,0,0.87386222,175.68758,11.194775)" gradientUnits="userSpaceOnUse" y2="82.309525" x2="27.214285" y1="148.07738" x1="70.303574" id="linearGradient831-4" xlink:href="#linearGradient829"/>
+    <linearGradient id="linearGradient2079" x1="77.201958" y1="265.16016" x2="50.499523" y2="231.37669" gradientUnits="userSpaceOnUse" gradientTransform="translate(68.675787,26.229932)" xlink:href="#linearGradient2077"/>
+    <linearGradient id="linearGradient2133" gradientUnits="userSpaceOnUse" gradientTransform="translate(68.675787,14.743556)" x1="77.201958" y1="265.16016" x2="50.499523" y2="231.37669" xlink:href="#linearGradient2077"/>
+    <linearGradient id="linearGradient2137" gradientUnits="userSpaceOnUse" gradientTransform="translate(68.675787,2.5815116)" x1="77.201958" y1="265.16016" x2="50.499523" y2="231.37669" xlink:href="#linearGradient2077"/>
   </defs>
-  <metadata
-     id="metadata5">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     id="g1138"
-     transform="translate(128.17921,-71.275508)">
-    <g
-       transform="translate(0.80984034,4.3180566)"
-       id="g1089" />
+  <g id="g1138" transform="translate(128.17921,-71.275508)">
+    <g transform="translate(0.80984034,4.3180566)" id="g1089"/>
   </g>
-  <g
-     id="g1138-3"
-     transform="translate(266.14051,-71.275508)">
-    <g
-       transform="translate(0.80984034,4.3180566)"
-       id="g1089-7" />
+  <g id="g1138-3" transform="translate(266.14051,-71.275508)">
+    <g transform="translate(0.80984034,4.3180566)" id="g1089-7"/>
   </g>
-  <g
-     id="g1138-3-1"
-     transform="translate(406.67214,-71.275508)">
-    <g
-       transform="translate(0.80984034,4.3180566)"
-       id="g1089-7-9" />
+  <g id="g1138-3-1" transform="translate(406.67214,-71.275508)">
+    <g transform="translate(0.80984034,4.3180566)" id="g1089-7-9"/>
   </g>
-  <g
-     id="g2189"
-     transform="translate(56.584133,-33.10779)">
-    <g
-       transform="translate(76.886741,-41.737749)"
-       id="g973">
-      <circle
-         style="opacity:1;fill:url(#linearGradient831);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="path815"
-         cx="-53.319717"
-         cy="118.46395"
-         r="23.451237" />
+  <g id="g2189" transform="translate(56.584133,-33.10779)">
+    <g transform="translate(76.886741,-41.737749)" id="g973">
+      <circle style="opacity:1;fill:url(#linearGradient831);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="path815" cx="-53.319717" cy="118.46395" r="23.451237"/>
     </g>
-    <text
-       id="text1234"
-       y="42.108963"
-       x="10.011756"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         y="42.108963"
-         x="10.011756"
-         id="tspan1232">API</tspan></text>
+    <text id="text1234" y="42.108963" x="10.011756" style="font: 10.5833px / 1.25 &quot;DejaVu Sans&quot;; font-feature-settings: normal; text-align: start; letter-spacing: 0px; word-spacing: 0px; writing-mode: lr-tb; text-anchor: start; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; stroke-width: 0.264583; white-space: pre;"><tspan style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332" y="42.108963" x="10.011756" id="tspan1232">API</tspan></text>
   </g>
-  <g
-     id="g1287"
-     transform="translate(133.47087,-74.845539)">
-    <g
-       transform="translate(6.5875313)"
-       id="g979">
-      <circle
-         style="opacity:1;fill:url(#linearGradient831-4);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="path815-7"
-         cx="211.0296"
-         cy="118.46395"
-         r="23.451237" />
+  <g id="g1287" transform="translate(133.47087,-74.845539)">
+    <g transform="translate(6.5875313)" id="g979">
+      <circle style="opacity:1;fill:url(#linearGradient831-4);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="path815-7" cx="211.0296" cy="118.46395" r="23.451237"/>
     </g>
-    <g
-       id="g1278">
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         x="178.0795"
-         y="85.674614"
-         id="text1234-6"><tspan
-           id="tspan1232-2"
-           x="178.0795"
-           y="85.674614"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">Init Worker</tspan></text>
+    <g id="g1278">
+      <text style="font: 10.5833px / 1.25 &quot;DejaVu Sans&quot;; font-feature-settings: normal; text-align: start; letter-spacing: 0px; word-spacing: 0px; writing-mode: lr-tb; text-anchor: start; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; stroke-width: 0.264583; white-space: pre;" x="178.0795" y="85.674614" id="text1234-6"><tspan id="tspan1232-2" x="178.0795" y="85.674614" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">初始化 Worker</tspan></text>
     </g>
   </g>
-  <g
-     id="g1327"
-     transform="translate(140.41988,-74.845539)">
-    <g
-       id="g1317" />
+  <g id="g1327" transform="translate(140.41988,-74.845539)">
+    <g id="g1317"/>
   </g>
-  <g
-     id="g2165"
-     transform="translate(56.584133,-33.10779)">
-    <ellipse
-       ry="11.148541"
-       rx="26.688932"
-       cy="280.91721"
-       cx="136.58054"
-       id="path2071"
-       style="opacity:1;fill:url(#linearGradient2079);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <ellipse
-       style="opacity:1;fill:url(#linearGradient2133);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="ellipse2131"
-       cx="136.58054"
-       cy="269.43085"
-       rx="26.688932"
-       ry="11.148541" />
-    <ellipse
-       ry="11.148541"
-       rx="26.688932"
-       cy="257.2688"
-       cx="136.58054"
-       id="ellipse2135"
-       style="opacity:1;fill:url(#linearGradient2137);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="106.40689"
-       y="233.65594"
-       id="text1234-6-9"><tspan
-         id="tspan1232-2-9"
-         x="106.40689"
-         y="233.65594"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">Postgres</tspan><tspan
-         id="tspan2157"
-         x="106.40689"
-         y="233.65594"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332" /></text>
+  <g id="g2165" transform="translate(56.584133,-33.10779)">
+    <ellipse ry="11.148541" rx="26.688932" cy="280.91721" cx="136.58054" id="path2071" style="opacity:1;fill:url(#linearGradient2079);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/>
+    <ellipse style="opacity:1;fill:url(#linearGradient2133);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="ellipse2131" cx="136.58054" cy="269.43085" rx="26.688932" ry="11.148541"/>
+    <ellipse ry="11.148541" rx="26.688932" cy="257.2688" cx="136.58054" id="ellipse2135" style="opacity:1;fill:url(#linearGradient2137);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/>
+    <text style="font: 10.5833px / 1.25 &quot;DejaVu Sans&quot;; font-feature-settings: normal; text-align: start; letter-spacing: 0px; word-spacing: 0px; writing-mode: lr-tb; text-anchor: start; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; stroke-width: 0.264583; white-space: pre;" x="106.40689" y="233.65594" id="text1234-6-9"><tspan id="tspan1232-2-9" x="106.40689" y="233.65594" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">Postgres</tspan><tspan id="tspan2157" x="106.40689" y="233.65594" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"/></text>
   </g>
-  <path
-     style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.96098053;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 78.849203,74.98447 c 0,0 -0.127187,0 -0.127187,0 0,22.086384 2.865357,44.74629 11.044373,64.73833 6.169892,15.08111 14.585361,26.71872 24.300251,35.36825 16.70213,14.87052 35.03565,18.1149 35.34611,17.71814 2.01931,0.23597 4.0398,0.47209 5.04795,0.60591 -1.00815,-0.13382 -3.02027,-0.43298 -5.03239,-0.73214 0.009,-0.0128 -18.73263,-3.03001 -35.22582,-17.7443 -9.6813,-8.63712 -18.067969,-20.25209 -24.217118,-35.30538 C 81.832698,119.67529 78.97639,97.051591 78.97639,74.98447 c 0,0 -0.127187,0 -0.127187,0 z"
-     id="path2495"
-     inkscape:connector-curvature="0"
-     inkscape:path-effect="#path-effect2497"
-     inkscape:original-d="m 78.849203,74.98447 c 0,109.73233 70.570737,117.76153 70.570737,117.76153 l 5.04076,0.6691" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-     x="98.137787"
-     y="111.48643"
-     id="text2512"><tspan
-       sodipodi:role="line"
-       id="tspan2510"
-       x="98.137787"
-       y="111.48643"
-       style="stroke-width:0.26458332">1. API calls</tspan><tspan
-       sodipodi:role="line"
-       x="98.137787"
-       y="124.71559"
-       style="stroke-width:0.26458332"
-       id="tspan2514">INSERT</tspan></text>
-  <path
-     style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 155.48257,221.71412 c 0,0 0,-0.13229 0,-0.13229 -5.86929,0 -11.79196,0.52683 -16.80939,2.02998 -3.78588,1.1342 -6.57721,2.6825 -8.52439,4.47389 -1.72151,1.58377 -2.60267,3.19287 -3.03377,4.48476 -0.40386,1.21028 -0.37444,2.0378 -0.36476,2.04591 l 4.1e-4,-0.0102 c 0.006,0.0103 -0.0403,0.53992 0.31525,1.31053 0.38089,0.82555 1.17958,1.85793 2.78192,2.89955 1.81252,1.17824 4.44376,2.23312 8.0522,3.06281 4.7848,1.10018 10.47736,1.62021 16.14922,1.81248 -5.67046,-0.19222 -11.36581,-0.71935 -16.14505,-1.83052 -3.60575,-0.83833 -6.22915,-1.90307 -8.02776,-3.08848 -1.58963,-1.04767 -2.36765,-2.08018 -2.72737,-2.89342 -0.32578,-0.7365 -0.28638,-1.29194 -0.26703,-1.25749 l 4.1e-4,-0.0102 c 0.007,0.006 -0.01,-0.80808 0.39669,-1.98528 0.43556,-1.26084 1.31041,-2.83369 3.01301,-4.38385 1.92657,-1.75408 4.68946,-3.27709 8.45137,-4.39473 4.9889,-1.48216 10.88152,-2.0012 16.73904,-2.0012 0,0 0,-0.13229 0,-0.13229 z"
-     id="path2520"
-     inkscape:connector-curvature="0"
-     inkscape:path-effect="#path-effect2522"
-     inkscape:original-d="m 155.48257,221.71412 c -29.14398,0 -28.66621,12.8998 -28.66621,12.8998 0,0 -0.95554,8.1221 27.2329,9.07764" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-     x="-0.77514648"
-     y="219.28993"
-     id="text2526"><tspan
-       sodipodi:role="line"
-       id="tspan2524"
-       x="-0.77514648"
-       y="219.28993"
-       style="stroke-width:0.26458332">2. Postgres trigger fired</tspan><tspan
-       sodipodi:role="line"
-       x="-0.77514648"
-       y="232.5191"
-       style="stroke-width:0.26458332"
-       id="tspan2528">by INSERT, notifies</tspan><tspan
-       sodipodi:role="line"
-       x="-0.77514648"
-       y="245.74826"
-       style="stroke-width:0.26458332"
-       id="tspan2530">postgres channel</tspan></text>
-  <path
-     style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 334.51453,76.859409 c 0,0 -0.13056,-0.02136 -0.13056,-0.02136 -2.47769,15.141481 -7.85499,33.613344 -19.55776,52.935774 -8.60251,14.20361 -19.05109,26.26502 -29.93491,36.27816 -12.35428,11.36596 -23.90566,18.83334 -30.52351,22.74027 -6.9799,4.12067 -8.90746,4.81049 -8.90746,4.81049 0,0 1.93367,-0.67502 8.92842,-4.77486 6.63346,-3.88807 18.20486,-11.32728 30.59202,-22.67845 10.91059,-9.9981 21.39277,-22.0554 30.027,-36.26547 11.74592,-19.33128 17.15551,-37.836608 19.63732,-53.003187 0,0 -0.13056,-0.02136 -0.13056,-0.02136 z"
-     id="path2534"
-     inkscape:connector-curvature="0"
-     inkscape:path-effect="#path-effect2536"
-     inkscape:original-d="M 334.51453,76.859409 C 321.04414,159.17842 245.46033,193.60274 245.46033,193.60274" />
-  <path
-     style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 353.2234,77.607765 c 0,0 -0.13224,0.0036 -0.13224,0.0036 0.68849,25.198772 -2.36254,54.526202 -15.57335,81.578872 -9.71078,19.88542 -23.14087,34.90164 -37.93507,46.05267 -14.46143,10.9002 -28.82489,17.046 -38.66094,20.40911 -13.72759,4.6937 -17.70653,4.62009 -17.70653,4.62009 0,0 3.98024,0.0945 17.72338,-4.57064 9.84633,-3.34235 24.23102,-9.4649 38.72361,-20.35284 14.8264,-11.13872 28.29844,-26.15792 38.04631,-46.06511 13.26056,-27.08084 16.33622,-56.45656 15.64707,-81.679378 0,0 -0.13224,0.0036 -0.13224,0.0036 z"
-     id="path2538"
-     inkscape:connector-curvature="0"
-     inkscape:path-effect="#path-effect2540"
-     inkscape:original-d="M 353.2234,77.607765 C 356.96517,214.55667 243.21527,230.27212 243.21527,230.27212" />
-  <path
-     style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2554)"
-     d="m 154.04926,243.69156 h 3.10522"
-     id="path2550"
-     inkscape:connector-curvature="0" />
-  <path
-     style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2562)"
-     d="m 154.4607,193.4151 4.2893,0.42618"
-     id="path2558"
-     inkscape:connector-curvature="0" />
-  <path
-     style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2568)"
-     d="m 237.22843,193.60274 -4.11595,1.12253"
-     id="path2564"
-     inkscape:connector-curvature="0" />
-  <path
-     style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2574)"
-     d="m 243.21527,230.27212 -5.61266,0.74835"
-     id="path2570"
-     inkscape:connector-curvature="0" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-     x="241.71634"
-     y="96.361801"
-     id="text2580"><tspan
-       sodipodi:role="line"
-       id="tspan2578"
-       x="241.71634"
-       y="96.361801"
-       style="stroke-width:0.26458332">3. Init Worker</tspan><tspan
-       sodipodi:role="line"
-       x="241.71634"
-       y="109.59097"
-       style="stroke-width:0.26458332"
-       id="tspan2582">notified by</tspan><tspan
-       sodipodi:role="line"
-       x="241.71634"
-       y="122.82014"
-       style="stroke-width:0.26458332"
-       id="tspan2584">channel</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-     x="326.10419"
-     y="195.23808"
-     id="text2588"><tspan
-       sodipodi:role="line"
-       id="tspan2586"
-       x="326.10419"
-       y="195.23808"
-       style="stroke-width:0.26458332">4. Init worker</tspan><tspan
-       sodipodi:role="line"
-       x="326.10419"
-       y="208.46725"
-       style="stroke-width:0.26458332"
-       id="tspan2590">claims row with</tspan><tspan
-       sodipodi:role="line"
-       x="326.10419"
-       y="221.69641"
-       style="stroke-width:0.26458332"
-       id="tspan2592">UPDATE (...) </tspan><tspan
-       sodipodi:role="line"
-       x="326.10419"
-       y="234.92558"
-       style="stroke-width:0.26458332"
-       id="tspan2594">SET status='initializing' </tspan></text>
+  <path style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.96098053;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 78.849203,74.98447 c 0,0 -0.127187,0 -0.127187,0 0,22.086384 2.865357,44.74629 11.044373,64.73833 6.169892,15.08111 14.585361,26.71872 24.300251,35.36825 16.70213,14.87052 35.03565,18.1149 35.34611,17.71814 2.01931,0.23597 4.0398,0.47209 5.04795,0.60591 -1.00815,-0.13382 -3.02027,-0.43298 -5.03239,-0.73214 0.009,-0.0128 -18.73263,-3.03001 -35.22582,-17.7443 -9.6813,-8.63712 -18.067969,-20.25209 -24.217118,-35.30538 C 81.832698,119.67529 78.97639,97.051591 78.97639,74.98447 c 0,0 -0.127187,0 -0.127187,0 z" id="path2495"/>
+  <text style="font-family: &quot;DejaVu Sans&quot;; font-size: 8.5833px; line-height: 13.2292px; stroke-width: 0.264583px; white-space: pre;" id="text2512"><tspan x="98.1378" y="111.486">1. API 调用</tspan><tspan x="98.1378" y="124.716">INSERT</tspan></text>
+  <path style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 155.48257,221.71412 c 0,0 0,-0.13229 0,-0.13229 -5.86929,0 -11.79196,0.52683 -16.80939,2.02998 -3.78588,1.1342 -6.57721,2.6825 -8.52439,4.47389 -1.72151,1.58377 -2.60267,3.19287 -3.03377,4.48476 -0.40386,1.21028 -0.37444,2.0378 -0.36476,2.04591 l 4.1e-4,-0.0102 c 0.006,0.0103 -0.0403,0.53992 0.31525,1.31053 0.38089,0.82555 1.17958,1.85793 2.78192,2.89955 1.81252,1.17824 4.44376,2.23312 8.0522,3.06281 4.7848,1.10018 10.47736,1.62021 16.14922,1.81248 -5.67046,-0.19222 -11.36581,-0.71935 -16.14505,-1.83052 -3.60575,-0.83833 -6.22915,-1.90307 -8.02776,-3.08848 -1.58963,-1.04767 -2.36765,-2.08018 -2.72737,-2.89342 -0.32578,-0.7365 -0.28638,-1.29194 -0.26703,-1.25749 l 4.1e-4,-0.0102 c 0.007,0.006 -0.01,-0.80808 0.39669,-1.98528 0.43556,-1.26084 1.31041,-2.83369 3.01301,-4.38385 1.92657,-1.75408 4.68946,-3.27709 8.45137,-4.39473 4.9889,-1.48216 10.88152,-2.0012 16.73904,-2.0012 0,0 0,-0.13229 0,-0.13229 z" id="path2520"/>
+  <text style="font-family: &quot;DejaVu Sans&quot;; font-size: 10.5833px; line-height: 13.2292px; stroke-width: 0.264583px; white-space: pre;" id="text2526"><tspan x="-0.775146" y="219.29" style="font-size: 8.5833px;"> 2.</tspan><tspan> </tspan><tspan style="font-size: 8.5833px;">由 INSERT 触发 Postgres trigger，</tspan><tspan x="-0.7751460075378418" dy="1em">​</tspan><tspan style="font-size: 8.5833px;">     通知 postgres 通道</tspan></text>
+  <path style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 334.51453,76.859409 c 0,0 -0.13056,-0.02136 -0.13056,-0.02136 -2.47769,15.141481 -7.85499,33.613344 -19.55776,52.935774 -8.60251,14.20361 -19.05109,26.26502 -29.93491,36.27816 -12.35428,11.36596 -23.90566,18.83334 -30.52351,22.74027 -6.9799,4.12067 -8.90746,4.81049 -8.90746,4.81049 0,0 1.93367,-0.67502 8.92842,-4.77486 6.63346,-3.88807 18.20486,-11.32728 30.59202,-22.67845 10.91059,-9.9981 21.39277,-22.0554 30.027,-36.26547 11.74592,-19.33128 17.15551,-37.836608 19.63732,-53.003187 0,0 -0.13056,-0.02136 -0.13056,-0.02136 z" id="path2534"/>
+  <path style="fill:#000000;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 353.2234,77.607765 c 0,0 -0.13224,0.0036 -0.13224,0.0036 0.68849,25.198772 -2.36254,54.526202 -15.57335,81.578872 -9.71078,19.88542 -23.14087,34.90164 -37.93507,46.05267 -14.46143,10.9002 -28.82489,17.046 -38.66094,20.40911 -13.72759,4.6937 -17.70653,4.62009 -17.70653,4.62009 0,0 3.98024,0.0945 17.72338,-4.57064 9.84633,-3.34235 24.23102,-9.4649 38.72361,-20.35284 14.8264,-11.13872 28.29844,-26.15792 38.04631,-46.06511 13.26056,-27.08084 16.33622,-56.45656 15.64707,-81.679378 0,0 -0.13224,0.0036 -0.13224,0.0036 z" id="path2538"/>
+  <path style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2554)" d="m 154.04926,243.69156 h 3.10522" id="path2550"/>
+  <path style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2562)" d="m 154.4607,193.4151 4.2893,0.42618" id="path2558"/>
+  <path style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2568)" d="m 237.22843,193.60274 -4.11595,1.12253" id="path2564"/>
+  <path style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2574)" d="m 243.21527,230.27212 -5.61266,0.74835" id="path2570"/>
+  <text style="font-family: &quot;DejaVu Sans&quot;; font-size: 8.5833px; line-height: 13.2292px; stroke-width: 0.264583px; white-space: pre;" id="text2580" transform="matrix(1, 0, 0, 1, 2.644542, 15.233173)"><tspan x="241.716" y="96.3618">3. 初始化 Worker </tspan><tspan x="241.71600341796875" dy="1em">​</tspan><tspan>    被通道通知</tspan></text>
+  <text style="font-family: &quot;DejaVu Sans&quot;; font-size: 8.5833px; line-height: 13.2292px; stroke-width: 0.264583px; white-space: pre;" id="text2588"><tspan x="326.104" y="195.238">4. 初始化 Worker 抢夺行</tspan><tspan x="326.104" y="208.467"> with</tspan><tspan x="326.104" y="221.696">UPDATE (...) </tspan><tspan x="326.104" y="234.926">SET status='initializing' </tspan></text>
 </svg>
