@@ -1,4 +1,4 @@
-# 系统设计技巧：使用`Postgres`作为发布/订阅和作业服务器
+# 系统设计技巧：使用`Postgres`作为`发布/订阅`和`作业`服务器
 
 - 原文地址：https://webapp.io/blog/postgres-is-the-answer/
 - 原文作者：Colin Chartier
