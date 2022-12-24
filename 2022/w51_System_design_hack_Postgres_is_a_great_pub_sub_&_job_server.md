@@ -1,3 +1,5 @@
+# System design hack: Postgres is a great pub/sub & job server
+
 **If you need a publish/subscribe or job server at any point in your project, try using Postgres. It'll give you lots of data integrity and performance guarantees, and it doesn't require you or your team learning any new technology.**
 
 If you're making any project of sufficient complexity, you'll need a [publish/subscribe](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) server to process events. This article will introduce you to Postgres, explain the alternatives, and walk you through an example use case of pub/sub and its solution.
