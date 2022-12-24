@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 374.57187 188.13387"
+   height="188.13387mm"
+   width="374.57187mm">
+  <defs
+     id="defs2">
+    <marker
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker1627"
+       style="overflow:visible;">
+      <path
+         id="path1625"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+    <marker
+       style="overflow:visible;"
+       id="Arrow1Lend"
+       refX="0.0"
+       refY="0.0"
+       orient="auto">
+      <path
+         transform="scale(0.8) rotate(180) translate(12.5,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path1338" />
+    </marker>
+    <linearGradient
+       id="linearGradient829">
+      <stop
+         id="stop825"
+         offset="0"
+         style="stop-color:#d9769d;stop-opacity:1" />
+      <stop
+         id="stop827"
+         offset="1"
+         style="stop-color:#eec0d2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       gradientTransform="matrix(0.87386222,0,0,0.87386222,5.9319548,11.194762)"
+       gradientUnits="userSpaceOnUse"
+       y2="82.309525"
+       x2="27.214285"
+       y1="148.07738"
+       x1="70.303574"
+       id="linearGradient831"
+       xlink:href="#linearGradient829" />
+    <linearGradient
+       gradientTransform="matrix(0.87386222,0,0,0.87386222,137.85011,11.194775)"
+       gradientUnits="userSpaceOnUse"
+       y2="82.309525"
+       x2="27.214285"
+       y1="148.07738"
+       x1="70.303574"
+       id="linearGradient831-4"
+       xlink:href="#linearGradient829" />
+    <linearGradient
+       gradientTransform="matrix(0.87386222,0,0,0.87386222,276.82663,11.194766)"
+       gradientUnits="userSpaceOnUse"
+       y2="82.309525"
+       x2="27.214285"
+       y1="148.07738"
+       x1="70.303574"
+       id="linearGradient831-4-9"
+       xlink:href="#linearGradient829" />
+  </defs>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(3.8191043,-32.49505)"
+     id="layer1">
+    <g
+       id="g973">
+      <circle
+         style="opacity:1;fill:url(#linearGradient831);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="path815"
+         cx="41.273964"
+         cy="118.46395"
+         r="23.451237" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="2.6458325"
+         y="67.214241"
+         id="text835"><tspan
+           x="2.6458325"
+           y="67.214241"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           id="tspan837">creates &quot;CI run&quot; </tspan><tspan
+           id="tspan1226"
+           x="2.6458325"
+           y="80.443405"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">object</tspan></text>
+    </g>
+    <g
+       transform="translate(-5.2916667,3.5700308)"
+       id="g1138">
+      <rect
+         style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect1057"
+         width="86.934525"
+         height="61.232143"
+         x="1.9725624"
+         y="155.32674" />
+      <g
+         id="g1089"
+         transform="translate(0.80984034,4.3180566)">
+        <text
+           id="text1061"
+           y="173.09161"
+           x="3.8624439"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="173.09161"
+             x="3.8624439"
+             id="tspan1059">Run ID: 101</tspan></text>
+        <text
+           id="text1065"
+           y="199.17198"
+           x="12.611267"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="stroke-width:0.26458332"
+             y="199.17198"
+             x="12.611267"
+             id="tspan1063">Status: New</tspan></text>
+      </g>
+    </g>
+    <g
+       transform="translate(132.66964,3.5700308)"
+       id="g1138-3">
+      <rect
+         style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect1057-0"
+         width="86.934525"
+         height="61.232143"
+         x="1.9725624"
+         y="155.32674" />
+      <g
+         id="g1089-7"
+         transform="translate(0.80984034,4.3180566)">
+        <text
+           id="text1061-7"
+           y="173.09161"
+           x="3.8624439"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="173.09161"
+             x="3.8624439"
+             id="tspan1059-7">Run ID: 101</tspan></text>
+        <text
+           id="text1065-6"
+           y="199.17198"
+           x="12.611267"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="stroke-width:0.26458332"
+             y="199.17198"
+             x="12.611267"
+             id="tspan1063-9">Status: Init</tspan></text>
+      </g>
+    </g>
+    <g
+       transform="translate(273.20127,3.5700308)"
+       id="g1138-3-1">
+      <rect
+         style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:1.02396476;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect1057-0-1"
+         width="91.186874"
+         height="61.208179"
+         x="-0.15361135"
+         y="155.33871" />
+      <g
+         id="g1089-7-9"
+         transform="translate(0.80984034,4.3180566)">
+        <text
+           id="text1061-7-0"
+           y="173.09161"
+           x="3.8624439"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="173.09161"
+             x="3.8624439"
+             id="tspan1059-7-8">Run ID: 101</tspan></text>
+        <text
+           id="text1065-6-9"
+           y="199.70653"
+           x="2.455025"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="stroke-width:0.26458332"
+             y="199.70653"
+             x="2.455025"
+             id="tspan1063-9-8">Status: Running</tspan></text>
+      </g>
+    </g>
+    <text
+       id="text1234"
+       y="50.738922"
+       x="27.718699"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+         y="50.738922"
+         x="27.718699"
+         id="tspan1232">API</tspan></text>
+    <g
+       id="g1287">
+      <g
+         id="g979"
+         transform="translate(6.5875313)">
+        <circle
+           r="23.451237"
+           cy="118.46395"
+           cx="173.19212"
+           id="path815-7"
+           style="opacity:1;fill:url(#linearGradient831-4);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      </g>
+      <g
+         id="g1278">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           x="127.61351"
+           y="67.377022"
+           id="text835-8"
+           transform="translate(6.5875339,-1.0625e-6)"><tspan
+             x="127.61351"
+             y="67.377022"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan910">clones repository</tspan></text>
+        <text
+           id="text1234-6"
+           y="52.566826"
+           x="140.24202"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="52.566826"
+             x="140.24202"
+             id="tspan1232-2">Init Worker</tspan></text>
+      </g>
+    </g>
+    <g
+       transform="translate(6.9490077)"
+       id="g1327">
+      <g
+         id="g1317">
+        <text
+           id="text835-8-8"
+           y="58.289856"
+           x="259.95996"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           xml:space="preserve"><tspan
+             id="tspan935"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="58.289856"
+             x="259.95996">starts VM, and</tspan><tspan
+             id="tspan937"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="71.51902"
+             x="259.95996">continually updates</tspan><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             y="84.748192"
+             x="259.95996"
+             id="tspan1230">status</tspan></text>
+        <circle
+           r="23.451237"
+           cy="118.46395"
+           cx="312.16867"
+           id="path815-7-6"
+           style="opacity:1;fill:url(#linearGradient831-4-9);fill-opacity:1;fill-rule:nonzero;stroke:#1e1e1e;stroke-width:0.23157348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="274.02371"
+         y="41.876045"
+         id="text1234-6-1"><tspan
+           id="tspan1232-2-5"
+           x="274.02371"
+           y="41.876045"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12.34722233px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">VM Worker</tspan></text>
+    </g>
+    <path
+       id="path1333"
+       d="M 80.638064,116.3938 H 138.90282"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#Arrow1Lend)" />
+    <path
+       id="path1617"
+       d="m 215.34191,118.53196 h 66.81737"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#marker1627)" />
+  </g>
+</svg>
