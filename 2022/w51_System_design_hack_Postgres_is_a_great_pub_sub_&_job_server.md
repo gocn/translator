@@ -8,11 +8,11 @@
 
 **如果在项目中需要`发布/订阅和作业`服务器，可以尝试使用 `Postgres`。它将为您提供大量数据完整性和性能保证，并且不需要您或您的团队学习任何新技术。**
 
-如果你正在做任何足够复杂的项目，你将需要一个[发布/订阅](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)服务器来处理事件。本文将向你介绍 `Postgres`，解释替代方案，并引导你了解 `发布/订阅` 的一个用例及其解决方案。
+如果你正在做任何足够复杂的项目，你将需要一个[发布/订阅](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern)服务器来处理事件。本文将向你介绍 `Postgres` 实现的可行方案，并引导你了解 `发布/订阅` 的一个用例及其解决方案。
 
 **Postgres 是一个了不起的关系型数据库**
 
-如果你对[Postgres](https://www.postgresql.org/)不太熟悉，它是一个功能丰富的关系型数据库，许多公司将其作为传统的中央数据存储。通过在 `Postgres` 中存储你的 `user` 表，你可以立即为每个活着的人扩展到 100 列每行。
+如果你对[Postgres](https://www.postgresql.org/)不太熟悉，它是一个功能丰富的关系型数据库，许多公司将其作为传统的中央数据存储。通过在 `Postgres` 中存储你的 `user` 表，你可以立即为每个 `user` 扩展到 100 列每行。
 
 这是有可能的将 `Postgres` 扩展到完全在内存中存储 10 亿条 `1KB` 的行 - 这意味着你可以在商用硬件上快速执行针对地球上所有人的全名的查询，而且几乎不需要微调。
 
@@ -27,7 +27,7 @@
 - [Kafka](https://kafka.apache.org/)
 - [RabbitMQ](https://www.rabbitmq.com/)
 - [Redis PUB/SUB](https://redis.io/topics/pubsub)
-- 一个[供应商](https://aws.amazon.com/sqs/)[绑定的](https://cloud.google.com/pubsub/docs/overview)[云](https://docs.microsoft.com/en-us/azure/event-grid/)[供应商](https://docs.microsoft.com/en-us/azure/event-grid/)[解决方案](https://docs.microsoft.com/en-us/azure/service-bus-messaging/)
+- 一个[供应商](https://aws.amazon.com/sqs/)[绑定的](https://cloud.google.com/pubsub/docs/overview)[云](https://docs.microsoft.com/en-us/azure/event-grid/)[服务](https://docs.microsoft.com/en-us/azure/event-grid/)[解决方案](https://docs.microsoft.com/en-us/azure/service-bus-messaging/)
 - Postgres?
 
 很少有使用场景需要像 `Kafka` 那样的专业的`发布/订阅`服务器。`Postgres` 可以[很容易地处理每秒 10,000 次的插入](https://severalnines.com/blog/benchmarking-postgresql-performance)，而且它可以被调整到更高的数字。如果你从`Postgres`开始，然后在时机成熟时换掉系统中最关键的性能部分, 在这个过程中很少会出错。
@@ -38,7 +38,7 @@
 
 - [Celery](http://www.celeryproject.org/)
 - [Gearman](http://gearman.org/)
-  事实证明，Postgres 通常也会取代`作业`服务器。你可以让你的工人`监听``新事件`通道，并在有新的工作被推送时尝试`申请`一个工作。好处是，`Postgres`让其他服务观察`事件`的状态，而不增加任何复杂性。
+  事实证明，Postgres 通常也会取代`作业`服务器。你可以让你的工人` 监听``新事件 `通道，并在有新的工作被推送时尝试`申请`一个工作。好处是，`Postgres`让其他服务观察`事件`的状态，而不增加任何复杂性。
 
 ### 我们的用例：CI 运行着按照顺序处理的工作
 
