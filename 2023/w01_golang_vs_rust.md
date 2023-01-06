@@ -1,4 +1,4 @@
-# Golang vs Rust- Which Language to be choose for Server-Side Programming
+# Golang vs Rust —— 服务端编程应该选择哪种语言
 
 - 原文地址：<https://medium.com/@golang_company/golang-vs-rust-which-language-to-be-choose-for-server-side-programming-628cd81c1184>
 - 原文作者：Golang Company
@@ -7,71 +7,71 @@
 
 ![title_pic](../static/images/2023/w01_golang_vs_rust/title_pic.jpeg)
 
-Choosing a language for server-side programming should be based on your long-term goals and the requirements of the project. So, asking should I hire a Go developer or should I opt for Rust development aimlessly won’t help you out. However, if you find yourself to be in a spot of bother, then this blog will clear the air for you. So, let us get started.
+为服务端编程选择一种语言应该基于你的长期目标和项目的要求，因此，盲目地问我应该雇用 Go 开发人员还是应该选择 Rust 进行开发并不能帮助你解决问题。然而，如果你发现自己陷入了困境，那么这篇博客将为你解惑。那么，让我们开始吧。
 
-Go is a statically typed, AOT-compiled language. On the other hand, Rust is a statically, strongly typed and AOT-compiled language. Rust is a multi-paradigm, high-level and general purpose language.
+Go 是一种静态类型的、AOT 编译的语言，而 Rust 是一种静态、强类型与 AOT 编译的语言，也是一种多范式、高级和通用的语言。
 
-Let us assess both the languages on the basis of various parameters.
+让我们在各种参数的基础上评估这两种语言。
 
-## 1. Simplicity in Go vs Rust
+## 1. Go 与 Rust 的简单性比较
 
-- Simplicity is one of the major Go selling points. Whereas a development process could take hours or days in the case of Golang, it could take upto weeks for Rust. This has a significant influence over collaborations.
-- Go programs are easy to decipher, easy to write and simple to manage in large teams. On the other hand, Rust is a very complex language to learn. It takes hours to become productive in Rust.
-- Furthermore, various useful features like generics which were at one time missing in Golang, have been incorporated in the version 1.18.
+- 简单性是 Go 的主要卖点之一。Golang 开发通常需要数小时或数天，而 Rust 则可能需要数周，这会对团队合作产生很大的影响。
+- Go 程序容易解读、编写，便于在大型团队中进行管理。而 Rust 是一门非常复杂的语言，需要学习成本。要想熟练运用 Rust，需要几个小时。
+- 此外，各种有用的功能已被纳入 1.18 版本中，如 Golang 中一度缺失的泛型。
 
-## 2. Go vs Rust Performance
+## 2. Go 与 Rust 的性能比较
 
-- When it comes to performance, both Golang and Rust are highly sought-after. They have great internal, high-performance tools for managing dependencies and standard builds. Due to its perfectly alright control over how threads operate and how resources are shared across threads, Rust will nearly always defeat Go in run-time benchmarks.
-- Both the languages- Rust and Go- make use of a similar formatting tool. You have rustfmt for Rust and you have gofmt for Go. They automatically reformat your code in accordance with canonical style.
-- Go abstracts away from the architectural specifics to help programmers focus on the issue at hand. This is completely opposite to what we observe in Go.
-- While Go lacks the runtime speed in comparison to Rust, it has faster development and compilation. This is because Rust compiler performs a number of optimizations and checks. This makes Rust unsuitable for large projects.
-- However, in the case of deployment, both of them are the same. They produce static binary as an output. In order to run it, you won’t need an interpreter.
+- 说到性能，Golang 和 Rust 都是非常受欢迎的。它们有很好的内部高性能工具来管理依赖关系与编译。由于其对线程运行方式和线程间资源共享方式的完美控制，Rust 几乎总是能在运行时基准测试中击败 Go。
+- 两种语言 -- Rust 和 Go -- 使用了类似的格式化工具。Rust 有 rustfmt，Go 有 gofmt，它们会自动按照规范的风格重新格式化你的代码。
+- Go 对架构的细节进行了抽象，以帮助程序员集中精力解决手头的问题，这与我们在 Rust 中了解到的情况完全相反。
+- 虽然 Go 与 Rust 相比运行速度较为逊色，但它的开发和编译速度更快。这是因为 Rust 编译器进行了大量的优化和检查，这也使得 Rust 不适合于大型项目。
+- 然而，在部署时，它们都是一样的。它们产生静态的二进制文件作为输出。你并不需要一个解释器来运行它。
 
-Meanwhile, if you are stuck with microservice development or building a server in Golang, you should [hire Go developers](https://golang.company/go-developers) from Golang.Company. They will assist you with various steps and build you a scalable and robust application.
+同时，如果你被微服务开发或用 Golang 构建服务端程序所困扰，你应该从 Golang.Company [雇佣 Go 开发者](https://golang.company/go-developers)，他们会协助你完成各个环节，并为你建立一个可扩展的、强大的应用程序。
 
-The graph below depicts the state of benchmark test between Rust and Go.
+下图描述了 Rust 和 Go 之间的基准测试状况。
 
 ![compare_graph](../static/images/2023/w01_golang_vs_rust/compare_graph.png)
 
-## 3. Go vs Rust Concurrency
+## 3. Go 与 Rust 的并发比较
 
-- Go has great support for concurrency. Most developers admit that goroutines and channels are the best features of Golang. However, these features are also available in Rust, that are accessible via the standard library or third-party libraries like Tokio.
-- The Rust concurrency model is deemed to be ‘correct’. This means that the compiler is able to catch a class of thread safety bugs at the time compilation, before the execution of the program. This allows developers to avoid mistakes like writing it to the same shared variable without any synchronization.
-- Goroutines are basically lightweight threads. These are run-time-managed Go objects that are scheduled across OS threads. Goroutines are very easy to create and cheaply, and the stack’s size can be adjusted over time. Because OS threads are far more expensive than goroutines, developers can build thousands of goroutines instead.
-- This solution’s drawback is that it increases CPU and memory overhead in the case of Go. However, Rust has a solution for this issue as it strives to minimize even minor overheads.
+- Go 对并发性有很好的支持，大多数开发者认可 goroutines 和 channel 是 Golang 最好的功能。然而，这些特性在 Rust 中也有，可以通过标准库或第三方库（如 Tokio）使用。
+- Rust 的并发模型被视为“正确的”，这意味着编译器在编译时，在程序执行之前，就能够捕捉到一类线程安全的错误。这使得开发者可以避免一些错误，比如在没有任何同步的情况下将其写入同一个共享变量中。
+- Goroutines 可以理解为轻量级的线程，是运行时管理的 Go 对象，并在操作系统线程之间进行调度。goroutines 非常容易创建，而且消耗很低，堆栈的大小可以随时间调整。因为操作系统线程的成本远高于 goroutines，开发者可以建立成千上万的 goroutines 来代替。
+- Go 的这种解决方案的缺点是增加了 CPU 和内存开销。然而，Rust 对这个问题有一个解决方案，它努力将即使是微小的开销也降到最低。
 
-## 4. Rust vs Go Error Handling
+## 4. Go 与 Rust 的错误处理比较
 
-- Both programming languages have a similar approach to handling errors. In Golang, the functions return several values in addition to the error. The dedicated type, the enum, is introduced by Rust and has two subtypes: result type and error type.
-- Error handling may be made less verbose than in Golang by unwrapping it with a question mark (? ). For both the languages, the handling is detailed and cleaner.
-- These approaches help developers look for functions where the error is not handled properly. This makes code writing easier and safer in Rust and Go.
+- 这两种编程语言在处理错误方面使用类似的方式。在 Golang 中，除了错误之外，函数还将返回几个值。而 Rust 引入了专用类型，即枚举，其有两个子类型：结果类型和错误类型。
+- 错误处理可以通过用问号（?）来解开，使其不像 Golang 那样冗长。对于这两种语言来说，处理方式都很详细和清晰。
+- 这些方法可以帮助开发者定位没有得到正确处理的方法，这也使得 Rust 和 Go 中的代码编写更容易、更安全。
 
-If you are willing to know the trend involving the interest over the languages, then you should take a look at the graph below.
+如果你想知道语言流行度趋势，可以看如下图表。
 
 ![interest_graph](../static/images/2023/w01_golang_vs_rust/interest_graph.png)
 
-## 5. Memory Safety and Security
+## 5. 内存安全和安全性
 
-- In Rust, one has to perform a lot of tasks in order to ensure that the code is secure. This is because the language ensures memory safety at the time of compilation utilizing innovative ownership mechanisms. The compiler is extremely ‘stringent’ as it does not let any unsafe memory code to pass through. Rust also presents multiple concurrency models to ensure that there are no lapses in memory safety.
-- Go, on the other hand, is not memory safe. In Go, non-atomic multi word structs implement interfaces and slices. Furthermore, data races lead to invalid values which at times lead to memory corruption.
-- However, Go, like Rust, can be considered safe for handling use-after-free and dangling pointers. Go uses an automated garbage collector to limit the issues related to memory leaks. On the other hand, the ownership and borrowing functionality is a great feature of Rust. According to this principle, every item has an owner which has the option of lending it out or giving it to someone else.
-- Rust also allows us to build numerous immutable references or ONE AND ONLY changeable references. With this method, Rust fixes frequent memory issues without the need of a garbage collector, outperforming Golang in terms of performance.
-- However, there is one point that you have to keep in mind. Even though the Rust compiler is extremely efficient in catching memory bugs and helps you write very performant code, it comes at a price. This is the Peter Parker principle, which means you have to be very careful when you use Rust.
+- 在 Rust 中，为了确保代码的安全性，开发者必须进行许多操作，这是因为该语言在编译时创新性地使用所有权机制来确保内存安全。编译器是非常“严格”的，因为它不会让任何不安全的内存代码通过。Rust 还提出了多种并发模型，以确保在内存安全方面没有漏洞。
+- 而 Go 并不是内存安全的，在 Go 中，非原子性的多字结构实现了接口和分片。此外，数据竞赛会导致无效值，有时甚至会导致内存损坏。
+- 然而，Go 和 Rust 都可以被认为在处理 use-after-free 和悬空指针方面是安全的。Go 使用自动垃圾收集器来限制与内存泄漏有关的问题。另一方面，所有权和借用功能是 Rust 的一大特色。根据这个原则，每个项目都有一个所有者，该所有者可以借出或将其转交给其他人。
+- Rust 还允许我们建立许多不可变的引用或有且只有一个的可变引用。通过这种方法，Rust 无需垃圾收集器就能解决内存问题，在性能上优于 Golang。
+- 然而，有一点是你必须记住的。即使 Rust 编译器在捕捉内存错误方面非常高效，并帮助你写出了性能非常好的代码，它也是有代价的。这就是彼得-帕克原则，这意味着你在使用 Rust 时必须非常小心。
 
-Below is a graph that depicts the memory usage between Go and Rust (and Java).
+下面是一张描述 Go 和 Rust（以及 Java）之间内存使用情况的图表。
 
 ![memory_compare](../static/images/2023/w01_golang_vs_rust/memory_compare.png)
 
-## 6. Community
+## 6. 社区
 
-- While Golang came into the scene in 2009, Rust made the entry in the year 2013. So, coupled with Golang’s simplicity, it is one of the most popular languages among developers.
-- Moreover, the libraries and frameworks are more mature in Go than in the case of Rust, especially the ones that are associated with web development.
-- However, the developers of Rust are extremely communicative and being an open-source language like Go, is subject to further developments.
+- Golang 是在 2009 年出现的，而 Rust 是在 2013 年开始的，再加上 Golang 的简单性，它因此成为了最受开发者欢迎的语言之一。
+- 此外，Go 中的库和框架比 Rust 更成熟，尤其是与网络开发有关的库和框架。
+- 然而，Rust 的开发者非常善于沟通，而且作为一种像 Go 一样的开源语言，会有进一步的发展。
 
-## 7. Career Opportunities
+## 7. 职业前景
 
-- Last but not the least, career opportunity is an aspect that you have to consider. If your goal is to get hired, you should look at the market that has the most jobs. One hand, if you see, you have next to no jobs in Rust. On the other hand, you have lots of jobs in Golang.
-- Companies that are using Golang are Google, Uber, Twitch, Dailymotion, SendGrid, Dropbox, Soundcloud, etc. On the contrary, companies that are using Rust are Brave (Github), Atlassian, Amazon, Discord, etc.
-- The average salary per annum of a Rust developer is around $120k per year. However, the average developer salary for Golang is around $135k per year.
+- 最后，职业前景是你必须考虑的一个方面。如果你的目标是被雇用，你应该看一下拥有最多工作机会的市场。你可以看到几乎没有 Rust 相关的工作，却有很多 Golang 的。
+- 使用 Golang 的公司有谷歌、Uber、Twitch、Dailymotion、SendGrid、Dropbox、Soundcloud 等，而使用 Rust 的公司有则有 Brave（Github）、Atlassian、Amazon、Discord 等。
+- Rust 开发者的平均年薪约为 12 万美金。然而，Golang 开发者的平均年薪约为 13.5 万美元。
 
-If your project involves web development, distributable servers, then it is recommended that you opt for Go. The programming part is extremely easy and the concurrency model will help you out a lot. But if you are going for the development of a CLI application, then you should choose Rust because of string processing, the libraries it contains. Having said that, Rust is not one of the easiest languages to master.
+如果你的项目涉及到 Web 开发及可分发的服务器，那么建议你选择 Go。编程部分非常简单，而且并发模型会对你有很大的帮助。但是如果你要开发一个 CLI 应用程序，那么你应该选择 Rust，因为它包含了字符串处理相关库。虽然如此，Rust 并不是一门那么容易掌握的语言。
