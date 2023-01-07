@@ -4,6 +4,7 @@
 - 原文作者：Golang Company
 - 本文永久链接：<https://github.com/gocn/translator/blob/master/2023/w01_golang_vs_rust.md>
 - 译者：[pseudoyu](https://github.com/pseudoyu)
+- 校对：[小超人](https://github.com/focozz)
 
 ![title_pic](../static/images/2023/w01_golang_vs_rust/title_pic.jpeg)
 
