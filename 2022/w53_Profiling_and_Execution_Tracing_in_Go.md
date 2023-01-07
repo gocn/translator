@@ -4,27 +4,26 @@
 - 译者：[Fivezh](https://github.com/fivezh)
 - 校对：[]()
 
-# Profiling and Execution Tracing in Go
+# Go 中的性能分析和执行跟踪
 
 ![img](https://miro.medium.com/max/1400/1*bLoSnDEA_rlqTZjBE88fQg.png)
 
-Go offers a few excellent diagnostics tools to help us get insights into how an application performs. This post focuses on the most important ones: profiling and the execution tracer. Both tools are so important that they should be part of the core toolset of any Go developer who is interested in optimization. First, let’s discuss profiling.
+Go 提供了一些优秀的诊断工具来帮助我们深入分析应用程序的执行情况。 这篇文章核心关注点是：分析和执行跟踪器。 这两个工具都非常重要，它们应该成为任何对优化感兴趣的 Go 开发人员的核心工具集的一部分。 首先，我们来讨论下性能分析。
+# 性能分析 Profiling
 
-# Profiling
+分析工具提供了对应用程序执行的洞察力。 它使我们能够解决性能问题、检测竞争、定位内存泄漏等。 这些信息可以通过几个分析工具来收集：
 
-Profiling provides insights into the execution of an application. It allows us to resolve performance issues, detect contention, locate memory leaks, and more. These insights can be collected via several profiles:
+- `CPU`— 确定应用程序的时间花在了哪里
+- `Goroutine`— 报告正在运行的 goroutines 堆栈跟踪
+- `Heap`— 报告堆内存分配以监视当前内存使用情况并检查可能的内存泄漏
+- `Mutex`— 报告锁争情况来分析代码中互斥锁使用行为以及应用程序是否在锁定调用上花费了太多时间
+- `Block`— 显示 goroutines 阻塞等待同步原语的位置
 
-- `CPU`— Determines where an application spends its time
-- `Goroutine`— Reports the stack traces of the ongoing goroutines
-- `Heap`— Reports heap memory allocation to monitor current memory usage and check for possible memory leaks
-- `Mutex`— Reports lock contentions to see the behaviors of the mutexes used in our code and whether an application spends too much time in locking calls
-- `Block`— Shows where goroutines block waiting on synchronization primitives
+性能分析是通过 `分析器(profiler)` 工具进行检测来实现的，在 Go 中使用称为 `pprof`。 首先，让我们了解如何和何时启用 `pprof`，然后再讨论最关键的配置分析类型。
 
-Profiling is achieved via instrumentation using a tool called a profiler, in Go: `pprof`. First, let’s understand how and when to enable `pprof`; then, we discuss the most critical profile types.
+## 开启 pprof
 
-## Enabling pprof
-
-There are several ways to enable `pprof`. For example, we can use the `net/http/pprof` package to serve the profiling data via HTTP:
+有几种方法可以启用 `pprof`。 例如，我们可以使用 `net/http/pprof` 包通过 HTTP 提供分析数据：
 
 ```
 package main
@@ -45,11 +44,11 @@ func main() {
 }
 ```
 
-Importing `net/http/pprof` leads to a side effect that allows us to reach the pprof URL: http://host/debug/pprof. Note that enabling `pprof` is safe even in production (https://go.dev/doc/diagnostics#profiling). The profiles that impact performance, such as CPU profiling, aren’t enabled by default, nor do they run continuously: they are activated only for a specific period.
+导入 `net/http/pprof` 的作用是，我们可以通过`http://host/debug/pprof` 来访问 pprof。 请注意，即使在生产环境中启用 `pprof` 也是安全的 (https://go.dev/doc/diagnostics#profiling)。 影响性能的分析，比如 CPU 分析，默认情况下是不启用的，也不会连续运行。它们仅在特定时间段内被激活。
 
-Now that we have seen how to expose a `pprof` endpoint, let’s discuss the most common profiles.
+现在我们已经了解了如何公开 `pprof` 访问路由，接下来讨论最常见的几种分析。
 
-## CPU Profiling
+## CPU 分析
 
 The CPU profiler relies on the OS and signaling. When it is activated, the application asks the OS to interrupt it every 10 ms by default via a `SIGPROF` signal. When the application receives a `SIGPROF`, it suspends the current activity and transfers the execution to the profiler. The profiler collects data such as the current goroutine activity and aggregates execution statistics that we can retrieve. Then it stops, and the execution resumes until the next `SIGPROF`.
 
@@ -105,7 +104,7 @@ These are the kinds of insights we can get from the CPU profiler. It’s valuabl
 
 ![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
 
-## Heap Profiling
+## 堆分析
 
 Heap profiling allows us to get statistics about the current heap usage. Like CPU profiling, heap profiling is sample-based. We can change this rate, but we shouldn’t be too granular because the more we decrease the rate, the more effort heap profiling will require to collect data. By default, samples are profiled at one allocation for every 512 KB of heap allocation.
 
@@ -158,7 +157,7 @@ Figure 4 shows the kind of data we can access. For example, the amount of heap m
 
 ![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
 
-## Goroutine Profiling
+## Goroutine 分析
 
 The `goroutine` profile reports the stack trace of all the current goroutines in an application. We can download a file using [/debug/pprof/goroutine/?debug=0](https://teivah.medium.com/debug/pprof/goroutine/?debug=0) and use go tool again. Figure 5 shows the kind of information we can get.
 
@@ -197,7 +196,7 @@ github.com/Shopify/sarama.(*syncProducer).SendMessages(0xc00071a090,
 
 ![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
 
-## Mutex Profiling
+## Mutex 互斥锁分析
 
 The last profile type is related to blocking but only regarding mutexes. If we suspect that our application spends significant time waiting for locking mutexes, thus harming execution, we can use mutex profiling. It’s accessible via [/debug/pprof/mutex](https://teivah.medium.com/debug/pprof/mutex).
 
@@ -213,7 +212,7 @@ We have seen the most important profiles that we can enable to help us understan
 
 Let’s now look at the execution tracer.
 
-# Execution Tracer
+# 执行跟踪器（Execution Tracer）
 
 The execution tracer is a tool that captures a wide range of runtime events with `go tool` to make them available for visualization. It is helpful for the following:
 
