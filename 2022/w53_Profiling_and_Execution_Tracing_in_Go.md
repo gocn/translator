@@ -6,9 +6,10 @@
 
 # Go 中的性能分析和执行跟踪
 
-![img](https://miro.medium.com/max/1400/1*bLoSnDEA_rlqTZjBE88fQg.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/11.webp)
 
 Go 提供了一些优秀的诊断工具来帮助我们深入分析应用程序的执行情况。 这篇文章核心关注点是：分析和执行跟踪器。 这两个工具都非常重要，它们应该成为任何对优化感兴趣的 Go 开发人员的核心工具集的一部分。 首先，我们来讨论下性能分析。
+
 # 性能分析 Profiling
 
 分析工具提供了对应用程序执行的洞察力。 它使我们能够解决性能问题、检测竞争、定位内存泄漏等。 这些信息可以通过几个分析工具来收集：
@@ -50,71 +51,59 @@ func main() {
 
 ## CPU 分析
 
-The CPU profiler relies on the OS and signaling. When it is activated, the application asks the OS to interrupt it every 10 ms by default via a `SIGPROF` signal. When the application receives a `SIGPROF`, it suspends the current activity and transfers the execution to the profiler. The profiler collects data such as the current goroutine activity and aggregates execution statistics that we can retrieve. Then it stops, and the execution resumes until the next `SIGPROF`.
+CPU 分析器依赖于操作系统和信号。 当它被激活时，应用程序默认通过 `SIGPROF` 信号要求操作系统每 10 毫秒中断一次。 当应用程序收到 `SIGPROF` 时，它会暂停当前活动并将执行转移到分析器。 分析器收集诸如当前 goroutine 活动之类的数据，并汇总可以检索的执行统计信息；然后停止分析并继续执行直到下一次的 `SIGPROF`。
 
-We can access the [/debug/pprof/profile](https://teivah.medium.com/debug/pprof/profile) endpoint to activate CPU profiling. Accessing this endpoint executes CPU profiling for 30 seconds by default. For 30 seconds, our application is interrupted every 10 ms. Note that we can change these two default values: we can use the `seconds` parameter to pass to the endpoint how long the profiling should last (for example, [/debug/pprof/profile?seconds=15](https://teivah.medium.com/debug/pprof/profile?seconds=15)), and we can change the interruption rate (even to less than 10 ms). But in most cases, 10 ms should be enough, and in decreasing this value (meaning increasing the rate), we should be careful not to harm performance. After 30 seconds, we download the results of the CPU profiler.
+我们可以访问 [/debug/pprof/profile](https://teivah.medium.com/debug/pprof/profile) 路由来激活 CPU 分析。 默认情况下，访问此路由会执行 30 秒的 CPU 分析。 在 30 秒内，我们的应用程序每 10 毫秒中断一次。 请注意，可以更改这两个默认值：使用 `seconds` 参数将分析应该持续多长时间传递给路由（例如 [/debug/pprof/profile?seconds=15](https://teivah.medium.com/debug/pprof/profile?seconds=15)），也可以更改中断率（甚至小于 10 毫秒）。 但多数情况下，10 毫秒应该足够了，在减小这个值（意味着增加频率）时，我们应该注意不要对性能产生影响。 30 秒后，就可以下载 CPU 分析器的结果。
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
-**NOTE:** *We can also enable the CPU profiler using the* `-cpuprofile` *flag, such as when running a benchmark. For example, the following command produces the same type of file that can be downloaded via /debug/ pprof/profile.*
+**注意：** 也可以通过  `-cpuprofile` 标志来开启 CPU 分析器，比如在运行基准测试时就可以用这种方式。 例如，执行以下命令后可通过 `/debug/pprof/profile` 下载到相同的分析结果文件。
 
 ```
 $ go test -bench=. -cpuprofile profile.out
 ```
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
-From this file, we can navigate to the results using `go tool`:
+从这个文件，我们可以使用 `go tool` 来查看结果分析：
 
 ```
 $ go tool pprof -http=:8080 <file>
 ```
 
-This command opens a web UI showing the call graph. Figure 1 shows an example taken from an application. The larger the arrow, the more it was a hot path. We can then navigate into this graph and get execution insights.
+此命令会打开一个显示调用图的 Web UI。 图 1 显示了一个示例。 箭头越大，这条分支就越是热路径。 通过可以分析此图表就可以进一步分析程序的执行情况。
 
-![img](https://miro.medium.com/max/1400/1*FLSaTa2suS-X_8DPWIgxOw.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/12.webp)
 
-**Figure 1:** The call graph of an application during 30 seconds
+**图1:** 程序在30秒内的调用图
 
-For example, the graph in figure 2 tells us that during 30 seconds, 0.06 seconds were spent in the `decode` method (`*FetchResponse` receiver). Of these 0.06 seconds, 0.02 were spent in `RecordBatch.decode` and 0.01 in `makemap` (creating a map).
+例如，图2 中的图表告诉我们，在 30 秒内，`*FetchResponse` 接收者的`decode`方法花费了 0.06 秒。 在这 0.06 秒中，0.02 秒用于`RecordBatch.decode`，0.01 秒用于`makemap`（创建一个map）。
 
-![img](https://miro.medium.com/max/844/1*7ucMKdoBYl3F2PmCQiIYIQ.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/13.webp)
 
-**Figure 2:** Example call graph
+**图2:** 调用图示例
 
-We can also access this kind of information from the web UI with different representations. For example, the Top view sorts the functions per execution time, and Flame Graph visualizes the execution time hierarchy. The UI can even display the expensive parts of the source code line by line.
+我们还可以从具有不同表示形式的 Web UI 访问此类信息。 例如，Top 视图按执行时间对函数进行排序，而 Flame Graph 可视化执行时间层次结构。 UI 甚至可以逐行显示源代码中执行最耗时的部分。
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
+**注意:** *我们还可以通过命令行深入分析数据。 然而，这篇文章中专注于 Web UI。*
 
-**NOTE:** *We can also delve into profiling data via a command line. However, we focus on the web UI in this post.*
+多亏了这些数据，我们可以大致了解应用程序的行为方式：
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
+- 对 runtime.mallogc 的调用过多，意味着我们可以尝试减少过多的小堆分配。
+- 在通道操作或互斥锁上花费太多时间，可能表明过度竞争正在损害应用程序的性能。
+- 在 `syscall.Read` 或 `syscall.Write` 上花费太多时间，意味着应用程序在内核模式下花费了大量时间。 处理 I/O 缓冲可能是改进的途径。
 
-Thanks to this data, we can get a general idea of how an application behaves:
+这些是可以从 CPU 分析器中获得的信息。 了解最频繁的代码路径和识别程序瓶颈是很有价值，但它不会确定超过特定频率，因为 CPU 分析器是以固定速度执行分析的（默认情况下为 10 毫秒）。 为了获得更细粒度的分析数据，我们应该使用跟踪器(`tracing`)，将在本文后面讨论。
 
-- Too many calls to `runtime.mallogc` can mean an excessive number of small heap allocations that we can try to minimize.
-- Too much time spent in channel operations or mutex locks can indicate excessive contention that is harming the application’s performance.
-- Too much time spent on `syscall.Read` or `syscall.Write` means the application spends a significant amount of time in Kernel mode. Working on I/O buffering may be an avenue for improvement.
-
-These are the kinds of insights we can get from the CPU profiler. It’s valuable to understand the hottest code path and identify bottlenecks. But it won’t determine more than the configured rate because the CPU profiler is executed at a fixed pace (by default, 10 ms). To get finer-grained insights, we should use tracing, which we discuss later in this post.
-
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
-**NOTE:** *We can also attach labels to the different functions. For example, imagine a common function called from different clients. To track the time spent for both clients, we can use pprof.Labels.*
-
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
+**注意:** *我们还可以为不同的功能附加标签。 例如，想象一个从不同客户端调用的通用函数，要跟踪两个客户端花费的时间，可以使用 pprof.Labels。*
 
 ## 堆分析
 
-Heap profiling allows us to get statistics about the current heap usage. Like CPU profiling, heap profiling is sample-based. We can change this rate, but we shouldn’t be too granular because the more we decrease the rate, the more effort heap profiling will require to collect data. By default, samples are profiled at one allocation for every 512 KB of heap allocation.
+堆分析允许我们获得有关当前堆使用情况的统计信息。 与 CPU 分析一样，堆分析也是基于采样的。 可以改变采样频率，但不应该过于细化，因为采样频率提升越多，堆分析收集数据所需的额外工作就越多。 默认情况下，样本在每 512 KB 堆分配一次就执行一次。
 
-If we reach [/debug/pprof/heap/](https://teivah.medium.com/debug/pprof/heap/), we get raw data that can be hard to read. However, we can download a heap profile using [/debug/pprof/heap/?debug=0](https://teivah.medium.com/debug/pprof/heap/?debug=0) and then open it with `go tool` (the same command as in the previous section) to navigate into the data using the web UI.
+访问 [/debug/pprof/heap/](https://teivah.medium.com/debug/pprof/heap/)，会得到难以阅读的原始数据。 但是，可以使用 [/debug/pprof/heap/?debug=0](https://teivah.medium.com/debug/pprof/heap/?debug=0) 下载堆分析文件，然后使用  `go tool`（与上一节中的命令相同）打开，就可以使用 Web UI 来分析数据。
 
-Figure 3 shows an example of a heap graph. Calling the `MetadataResponse.decode` method leads to allocating 1536 KB of heap data (which represents 6.32% of the total heap). However, 0 out of these 1536 KB were allocated by this function directly, so we need to inspect the second call. The `TopicMetadata.decode` method allocated 512 KB out of the 1536 KB; the rest — 1024 KB — were allocated in another method.
+图3 显示了堆图的示例。 调用`MetadataResponse.decode`方法会导致分配 1536 KB 的堆数据（占总堆的 6.32%）。 但是，这 1536 KB 中有 0 块是由该函数直接分配的，因此我们需要检查第二层的调用。 `TopicMetadata.decode` 方法分配了 1536 KB 中的 512 KB； 其余的——1024 KB——是用另一种方法分配的。
 
-![img](https://miro.medium.com/max/1154/1*X4l1c9X8KW6992VUWjaa3Q.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/14.webp)
 
-**Figure 3:** A heap graph
+**图3:** 堆分配图示
 
 This is how we can navigate the call chain to understand what part of an application is responsible for most of the heap allocations. We can also look at different sample types:
 
@@ -151,11 +140,7 @@ Figure 4 shows the kind of data we can access. For example, the amount of heap m
 
 **Figure 4:** The differences between the two heap profiles
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
 **NOTE:** *Another type of profiling related to the heap is* `allocs`*, which reports allocations. Heap profiling shows the current state of the heap memory. To get insights about past memory allocations since the application started, we can use allocations profiling. As discussed, because stack allocations are cheap, they aren’t part of this profiling, which only focuses on the heap.*
-
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
 
 ## Goroutine 分析
 
