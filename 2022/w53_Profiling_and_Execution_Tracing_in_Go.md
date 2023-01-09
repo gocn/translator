@@ -105,72 +105,71 @@ $ go tool pprof -http=:8080 <file>
 
 **图3:** 堆分配图示
 
-This is how we can navigate the call chain to understand what part of an application is responsible for most of the heap allocations. We can also look at different sample types:
+这就是我们如何通过调用链分析应用程序哪个部分占用了大量堆分配。 还可以查看不同的采样类型：
 
-- `alloc_objects`— Total number of objects allocated
-- `alloc_space`— Total amount of memory allocated
-- `inuse_objects` — Number of objects allocated and not yet released
-- `inuse_space`— Amount of memory allocated and not yet released
+- `alloc_objects`— 分配的对象总数
+- `alloc_space`— 分配的内存总量
+- `inuse_objects`— 已分配但尚未释放的对象数
+- `inuse_space`— 已分配但尚未释放的内存量
 
-Another very helpful capability with heap profiling is tracking memory leaks. With a GC-based language, the usual procedure is the following:
+堆分析的另一个非常有用的功能是跟踪内存泄漏。 基于 GC 类的语言，通常的过程如下：
 
-1. Trigger a GC.
-2. Download heap data.
-3. Wait for a few seconds/minutes.
-4. Trigger another GC.
-5. Download another heap data.
-6. Compare.
+1. 触发GC。
+2. 下载堆数据。
+3. 等待几秒/分钟。
+4. 触发另一个GC。
+5. 下载另一个堆数据。
+6. 比较。
 
-Forcing a GC before downloading data is a way to prevent false assumptions. For example, if we see a peak of retained objects without running a GC first, we cannot be sure whether it’s a leak or objects that the next GC will collect.
+在下载数据之前强制执行 GC 是一种防止错误假设的方法。 如果在没有先运行 GC 的情况下看到保留对象的峰值，我们无法确定这是泄漏还是下一次 GC 将收集的对象。
 
-Using `pprof`, we can download a heap profile and force a GC in the meantime. The procedure in Go is the following:
+使用 `pprof`，可以下载堆分析文件并同时强制执行 GC。 Go中的过程如下：
 
-1. Go to [/debug/pprof/heap?gc=1](https://teivah.medium.com/debug/pprof/heap?gc=1) (trigger the GC and download the heap profile).
-2. Wait for a few seconds/minutes.
-3. Go to [/debug/pprof/heap?gc=1](https://teivah.medium.com/debug/pprof/heap?gc=1) again.
-4. Use go tool to compare both heap profiles:
+1. 访问 [/debug/pprof/heap?gc=1](https://teivah.medium.com/debug/pprof/heap?gc=1)（触发 GC 并下载堆分析文件）
+2. 等待几秒/分钟
+3. 再次访问 [/debug/pprof/heap?gc=1](https://teivah.medium.com/debug/pprof/heap?gc=1)
+4. 使用 go tool 比较两个堆配置文件：
 
 ```
 $ go tool pprof -http=:8080 -diff_base <file2> <file1>
 ```
 
-Figure 4 shows the kind of data we can access. For example, the amount of heap memory held by the `newTopicProducer` method (top left) has decreased (–513 KB). In contrast, the amount held by `updateMetadata` (bottom right) has increased (+512 KB). Slow increases are normal. The second heap profile may have been calculated in the middle of a service call, for example. We can repeat this process or wait longer; the important part is to track steady increases in allocations of a specific object.
+图4 显示了可以访问的数据类型。 例如，`newTopicProducer`方法（左上角）占用的堆内存量减少了 (–513 KB)。 相比之下，`updateMetadata`（右下角）持有的数量增加了（+512 KB）。 缓慢增加是正常的。 例如，第二个堆分析文件可能是在服务调用过程中计算出来的。 可以重复此过程或等待更长时间； 重要的部分是跟踪特定对象分配的稳步增长。
 
-![img](https://miro.medium.com/max/1400/1*Y7TZjGIdxWSJJN9X4rOmjA.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/15.png)
 
-**Figure 4:** The differences between the two heap profiles
 
-**NOTE:** *Another type of profiling related to the heap is* `allocs`*, which reports allocations. Heap profiling shows the current state of the heap memory. To get insights about past memory allocations since the application started, we can use allocations profiling. As discussed, because stack allocations are cheap, they aren’t part of this profiling, which only focuses on the heap.*
+**图4:** 两份堆分析文件的差异
+
+**注意:** *与堆相关的另一种分析类型是* `allocs`*，它报告分配。 堆分析显示堆内存的当前状态。 要了解自应用程序启动以来过去的内存分配情况，我们可以使用分配分析。 如前所述，由于堆栈分配的成本很低，因此它不是此分析的一部分，该分析仅关注堆。*
 
 ## Goroutine 分析
 
-The `goroutine` profile reports the stack trace of all the current goroutines in an application. We can download a file using [/debug/pprof/goroutine/?debug=0](https://teivah.medium.com/debug/pprof/goroutine/?debug=0) and use go tool again. Figure 5 shows the kind of information we can get.
+`goroutine` 分析可以反映出应用程序中所有当前 goroutine 的堆栈跟踪。 可以使用 [/debug/pprof/goroutine/?debug=0](https://teivah.medium.com/debug/pprof/goroutine/?debug=0) 下载文件并再次使用 go tool。 图5 显示了可以获得的信息类型。
 
-![img](https://miro.medium.com/max/1400/1*aDyJKIuEXYHIXRsXkptYZA.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/16.png)
 
-**Figure 5:** Goroutine graph
+**图5:** Goroutine图示
 
-We can see the current state of the application and how many goroutines were created per function. In this case, `withRecover` has created 296 ongoing goroutines (63%), and 29 were related to a call to `responseFeeder`.
+我们可以看到应用程序的当前状态以及每个函数创建了多少 goroutine。 在这种情况下，`withRecover` 创建了 296 个正在进行的 goroutines (63%)，其中 29 个与调用 `responseFeeder` 有关。
 
-This kind of information is also beneficial if we suspect goroutine leaks. We can look at goroutine profiler data to know which part of a system is the suspect.
+如果怀疑 goroutine 泄漏，这种信息也很有用。 可以查看 goroutine 分析器数据以了解系统的哪一部分是可疑的。
 
-## Block Profiling
+## Block 阻塞分析
 
-The `block` profile reports where ongoing goroutines block waiting on synchronization primitives. Possibilities include
+`block` 分析可以反映出正在进行的 goroutines 阻塞等待同步原语的位置。 可能性包括：
 
-- Sending or receiving on an unbuffered channel
-- Sending to a full channel
-- Receiving from an empty channel
-- Mutex contention
-- Network or filesystem waits
+- 在无缓冲通道上发送或接收
+- 向已满的通道发送数据
+- 从空通道接收数据
+- 互斥锁竞争
+- 网络或文件系统等待
 
-Block profiling also records the amount of time a goroutine has been waiting and is accessible via [/debug/pprof/block](https://teivah.medium.com/debug/pprof/block). This profile can be extremely helpful if we suspect that performance is being harmed by blocking calls.
+块分析还记录了 goroutine 等待的时间，可以通过 [/debug/pprof/block](https://teivah.medium.com/debug/pprof/block) 访问。 如果我们怀疑性能因阻塞调用而受到损害，此分析文件可能会非常有用。
 
-The `block` profile isn’t enabled by default: we have to call `runtime.SetBlockProfileRate` to enable it. This function controls the fraction of goroutine blocking events that are reported. Once enabled, the profiler will keep collecting data in the background even if we don’t call the [/debug/pprof/block endpoint](https://teivah.medium.com/debug/pprof/block endpoint). Let’s be cautious if we want to set a high rate so we don’t harm performance.
+默认情况下不启用 `block` 分析，必须显式调用 `runtime.SetBlockProfileRate` 来启用它。 此函数控制报告的 goroutine 阻塞事件的比例。 启用后，即使我们不调用 [/debug/pprof/block](https://teivah.medium.com/debug/pprof/block)，分析器也会继续在后台收集数据。 如果我们想设置高速率，请谨慎行事，以免对性能产生影响。
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
-**NOTE:** *If we face a deadlock or suspect that goroutines are in a blocked state, the full goroutine stack dump (*[*/debug/pprof/goroutine/?debug=2*](https://teivah.medium.com/debug/pprof/goroutine/?debug=2)*) creates a dump of all the current goroutine stack traces. This can be helpful as a first analysis step. For example, the following dump shows a Sarama goroutine blocked for 1,420 minutes on a channel-receive operation:*
+**注意:** *如果我们遇到死锁或怀疑 goroutines 处于阻塞状态，完整的 goroutine 堆栈转储 (*[*/debug/pprof/goroutine/?debug=2*](https://teivah.medium.com/debug/ pprof/goroutine/?debug=2)*) 创建所有当前 goroutine 堆栈跟踪的转储，作为分析的第一步，这将是很有帮助的。 例如，以下转储显示 Sarama goroutine 在通道接收操作中阻塞了 1,420 分钟：*
 
 ```
 goroutine 2494290 [chan receive, 1420 minutes]:
@@ -179,47 +178,41 @@ github.com/Shopify/sarama.(*syncProducer).SendMessages(0xc00071a090,
     /app/vendor/github.com/Shopify/sarama/sync_producer.go:117 +0x149
 ```
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
 ## Mutex 互斥锁分析
 
-The last profile type is related to blocking but only regarding mutexes. If we suspect that our application spends significant time waiting for locking mutexes, thus harming execution, we can use mutex profiling. It’s accessible via [/debug/pprof/mutex](https://teivah.medium.com/debug/pprof/mutex).
+最后一个分析类型与阻塞有关，但仅与互斥锁有关。 当我们怀疑应用程序花费大量时间等待互斥锁而影响了正常执行时，可以使用互斥量分析。 它可以通过 [/debug/pprof/mutex](https://teivah.medium.com/debug/pprof/mutex) 访问。
 
-This profile works in a manner similar to that for blocking. It’s disabled by default: we have to enable it using `runtime.SetMutexProfileFraction`, which controls the fraction of mutex contention events reported.
+此分析的工作方式类似于阻塞。 默认情况下它是禁用的：必须使用 `runtime.SetMutexProfileFraction` 来启用，并控制报告中互斥锁争用事件的比例。
 
-Following are a few additional notes about profiling:
+以下是关于分析的一些附加说明：
 
-- We haven’t mentioned the `threadcreate` profile because it’s been broken since 2013 (https://github.com/golang/go/issues/6104).
-- Be sure to enable only one profiler at a time: for example, do not enable CPU and heap profiling simultaneously. Doing so can lead to erroneous observations.
-- `pprof` is extensible, and we can create our own custom profiles using `pprof.Profile`.
+- 这里没有提及 `threadcreate` 分析，因为它自 2013 年以来已经无法使用 (https://github.com/golang/go/issues/6104)。
+- 确保一次只启用一个分析器：例如，不要同时启用 CPU 和堆分析器。 这样做会导致错误的观察。
+- `pprof` 是可扩展的，我们可以使用 `pprof.Profile` 创建自定义分析。
 
-We have seen the most important profiles that we can enable to help us understand how an application performs and possible avenues for optimization. In general, enabling `pprof` is recommended, even in production, because in most cases it offers an excellent balance between its footprint and the amount of insight we can get from it. Some profiles, such as the CPU profile, lead to performance penalties but only during the time they are enabled.
+至此，已经看到了可以启用的最重要的分析，它们可以帮助了解应用程序的执行方式和可能的优化途径。 通常，建议启用 `pprof`，即使在生产中也是如此，因为在大多数情况下，它在其足迹和可以从中获得的分析能力之间提供了极好的平衡。 某些分析（例如 CPU 分析）会导致性能下降，但仅在启用它们期间才会发生。
 
-Let’s now look at the execution tracer.
+现在让我们看看执行跟踪器。
 
 # 执行跟踪器（Execution Tracer）
 
-The execution tracer is a tool that captures a wide range of runtime events with `go tool` to make them available for visualization. It is helpful for the following:
+执行跟踪器是一种工具，可以使用 `go tool` 捕获各种运行时事件，使它们可用于可视化。 它对以下方面有帮助：
 
-- Understanding runtime events such as how the GC performs
-- Understanding how goroutines execute
-- Identifying poorly parallelized execution
+- 了解运行时事件，例如 GC 如何执行
+- 理解 goroutines 是如何执行的
+- 识别不良的并行执行
 
-Let’s try it with an example given the [Concurrency isn’t Always Faster in Go](https://medium.com/@teivah/concurrency-isnt-always-faster-in-go-de325168907c) post. We discussed two parallel versions of the merge sort algorithm. The issue with the first version was poor parallelization, leading to the creation of too many goroutines. Let’s see how the tracer can help us in validating this statement.
+让我们以 [Go 中的并发并不总是更快](https://medium.com/@teivah/concurrency-isnt-always-faster-in-go-de325168907c) 帖子为例来尝试一下。 这里讨论了归并排序算法的两个并行版本。 第一个版本的问题是并行化不佳，导致创建了太多的 goroutine。 让我们看看跟踪器如何帮助验证这一说法。
 
-We will write a benchmark for the first version and execute it with the -trace flag to enable the execution tracer:
+为第一个版本编写一个基准测试，并使用 `-trace` 标志执行以开启执行跟踪器：
 
 ```
 $ go test -bench=. -v -trace=trace.out
 ```
 
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
+**NOTE:** 还可以使用 [/debug/pprof/trace?debug=0](https://teivah.medium.com/debug/pprof/trace?debug=0) 路由下载远程跟踪文件。
 
-**NOTE:** We can also download a remote trace file using the [/debug/pprof/ trace?debug=0](https://teivah.medium.com/debug/pprof/ trace?debug=0) pprof endpoint.
-
-![img](https://miro.medium.com/max/1400/1*Pui8Qco3znI5_2dVV94k-Q.png)
-
-This command creates a trace.out file that we can open using go tool:
+这一命令创建了一个 trace.out 文件，我们可以通过 `go tool` 来打开它：
 
 ```
 $ go tool trace trace.out
@@ -229,36 +222,36 @@ $ go tool trace trace.out
     http://127.0.0.1:54518
 ```
 
-The web browser opens, and we can click View Trace to see all the traces during a specific timeframe, as shown in figure 6. This figure represents about 150 ms. We can see multiple helpful metrics, such as the goroutine count and the heap size. The heap size grows steadily until a GC is triggered. We can also observe the activity of the Go application per CPU core. The timeframe starts with user-level code; then a “stop the
-world” is executed, which occupies the four CPU cores for approximately 40 ms.
+打开浏览器访问此地址，就可以单击 View Trace 查看特定时间范围内的所有轨迹，如图6 所示。该图表示了大约 150 毫秒。 我们可以看到多个有用的指标，例如 goroutine 数量和堆大小。 堆大小稳定增长，直到触发 GC。 还可以观察每个 CPU 内核的 Go 应用程序的活动。 时间范围从用户级代码开始； 然后执行STW，占用四个 CPU 内核大约 40 毫秒。
 
-![img](https://miro.medium.com/max/1400/1*pjaPOfbf0IkQyGk3WMu-dg.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/17.png)
 
-**Figure 6:** Showing goroutine activity and runtime events such as a GC phase
 
-Regarding concurrency, we can see that this version uses all the available CPU cores on the machine. However, figure 7 zooms in on a portion of 1 ms. Each bar corresponds to a single goroutine execution. Having too many small bars doesn’t look right: it means execution that is poorly parallelized.
+**图6:** 显示 goroutine 活动和运行时事件，例如 GC 阶段
 
-![img](https://miro.medium.com/max/1400/1*IfFZHlK-AgO9XtBD3v23CA.png)
+关于并发性，我们可以看到这个版本使用了机器上所有可用的 CPU 内核。 然而，图7 放大了 1 毫秒的一部分。 每个条对应于一个 goroutine 执行。 有太多的小条看起来不对：这意味着执行的并行化很差。
 
-**Figure 7:** Too many small bars mean poorly parallelized execution
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/18.png)
 
-Figure 8 zooms even closer to see how these goroutines are orchestrated. Roughly 50% of the CPU time isn’t spent executing application code. The white spaces represent the time the Go runtime takes to spin up and orchestrate new goroutines.
+**图7:** 太多的小条意味着并行执行不佳
 
-![img](https://miro.medium.com/max/1400/1*1upoAIA1TXjPX0ugz8wsEg.png)
+图8 进一步放大以查看这些 goroutine 是如何编排的。 大约 50% 的 CPU 时间没有花在执行应用程序代码上。 空白表示 Go 运行时启动和编排新 goroutine 所需的时间。
 
-**Figure 8:** About 50% of CPU time is spent handling goroutine switches
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/19.png)
 
-Let’s compare this with the second parallel implementation, which was about an order of magnitude faster. Figure 9 again zooms to a 1 ms timeframe.
+**图8:** 大约 50% 的 CPU 时间花在处理 goroutine 切换上
 
-![img](https://miro.medium.com/max/1400/1*PLJRdGUNGRqeso9ZLKXG1g.png)
+将其与第二个并行实现进行比较，后者快了大约一个数量级。 图9 再次放大到 1 毫秒的时间范围。
 
-**Figure 9:** The number of white spaces has been significantly reduced, proving that the CPU is more fully occupied.
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/20.png)
 
-Each goroutine takes more time to execute, and the number of white spaces has been significantly reduced. Hence, the CPU is much more occupied executing application code than it was in the first version. Each millisecond of CPU time is spent more efficiently, explaining the benchmark differences.
+**图9:** 空白的数量已明显减少，证明 CPU 已被更充分地占用
 
-Note that the granularity of the traces is per goroutine, not per function like CPU profiling. However, it’s possible to define user-level tasks to get insights per function or group of functions using the `runtime/trace` package.
+每个 goroutine 需要更多的时间来执行，并且空白的数量已经显着减少。 因此，CPU 比第一个版本更忙于执行应用程序代码。 CPU 时间的每一毫秒都得到了更有效的利用，这解释了基准测试的差异。
 
-For example, imagine a function that computes a Fibonacci number and then writes it to a global variable using atomic. We can define two different tasks:
+请注意，跟踪的粒度是每个 goroutine，而不是像 CPU 分析那样的每个函数。 但是，可以使用 `runtime/trace` 包定义用户级任务以获取每个函数或函数组的分析能力。
+
+例如，假设一个函数计算斐波那契数，然后使用原子操作将其写入全局变量。可以定义两个不同的任务：
 
 ```
 var v int64
@@ -277,33 +270,30 @@ trace.WithRegion(ctx, "main", func() {
 fibStore.End()
 ```
 
-Using `go tool`, we can get more precise information about how these two tasks perform. In the previous trace UI (figure 12.42), we can see the boundaries for each task per goroutine. In User-Defined Tasks, we can follow the duration distribution (see figure 10).
+使用 `go tool` 可以获得关于这两个任务如何执行的更精确的信息。 在前面的跟踪 UI（图 12）中我们可以看到每个 goroutine 的每个任务的边界。 在用户定义的任务中，我们可以遵循持续时间分布（见图 10）。
 
-![img](https://miro.medium.com/max/1400/1*Ndr0ZNXLY7qyxTPiWTcBSg.png)
+![img](../static/images/2022/w53_Profiling_and_Execution_Tracing_in_Go/21.png)
 
-**Figure 10:** Distribution of user-level tasks
+**图10:** 用户级别任务分布
 
-We see that in most cases, the `fibonacci` task is executed in less than 15 microseconds, whereas the `store` task takes less than 6309 nanoseconds.
+我们看到，在大多数情况下，`fibonacci` 任务的执行时间不到 15 微秒，而 `store` 任务的执行时间不到 6309 纳秒。
 
-In the previous section, we discussed the kinds of information we can get from CPU profiling. What are the main differences compared to the data we can get from user-level traces?
+在上一节中，我们讨论了可以从 CPU 分析中获得的不同分类信息。 与用户级跟踪中获得的数据相比，主要区别是什么？
 
-- CPU profiling:
-  – Sample-based
-  – Per function
-  – Doesn’t go below the sampling rate (10 ms by default)
-- User-level traces:
-  – Not sample-based
-  – Per-goroutine execution (unless we use the `runtime/trace` package)
-  – Time executions aren’t bound by any rate
+- CPU 分析：
+   – 基于采样
+   – 每个函数
+   – 不低于采样率（默认为 10 毫秒）
+- 用户级跟踪：
+   – 不是基于样本的
+   – 每个 goroutine 执行（除非使用 `runtime/trace` 包）
+   – 时间执行不受任何速率的约束
 
-In summary, the execution tracer is a powerful tool for understanding how an application performs. As we have seen with the merge sort example, we can identify poorly parallelized execution. However, the tracer’s granularity remains per goroutine unless we manually use `runtime/trace` compared to a CPU profile, for example. We can use both profiling and the execution tracer to get the most out of the standard Go diagnostics tools when optimizing an application.
+总之，执行跟踪器是了解应用程序如何执行的强大工具。 正如在归并排序示例中看到的那样，可以识别出并行执行不佳的情况。 然而，跟踪器的粒度仍然是每个 goroutine，除非手动使用 `runtime/trace` 与 CPU 分析进行比较，例如。 在优化应用程序时，可以同时使用分析和执行跟踪器来充分利用标准的 Go 诊断工具。
 
-![img](https://miro.medium.com/max/384/1*03RQSWDABp4MbzmPjlWK5A.png)
+这篇文章摘自我的书，[*100 个 Go 错误以及如何避免它们*](https://www.manning.com/books/100-go-mistakes-and-how-to-avoid-them)， 于 2022 年 8 月发布（错误 *#98*）。
 
-This post is taken from my book, [*100 Go Mistakes and How to Avoid Them*](https://www.manning.com/books/100-go-mistakes-and-how-to-avoid-them), which was released in August 2022 (mistake *#98*).
-
-> 100 Go Mistakes and How to Avoid Them *shows you how to replace common programming problems in Go with idiomatic, expressive code. In it, you’ll explore dozens of interesting examples and case studies as you learn to spot mistakes that might appear in your own applications.*
+> 100 个 Go 错误以及如何避免它们。*展示如何用惯用的、富有表现力的代码替换 Go 中的常见编程问题。 在其中，将探索许多有趣的示例和案例研究，同时学习如何发现自己的应用程序中可能出现的错误。*
 >
-> Save 35% with the code **au35har**.
 
-Meanwhile, here’s the GitHub repository summarizing all the mistakes in the book: https://github.com/teivah/100-go-mistakes.
+同时，这里是 GitHub 存储库，总结了本书中的所有错误：https://github.com/teivah/100-go-mistakes
