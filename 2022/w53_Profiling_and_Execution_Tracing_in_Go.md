@@ -296,4 +296,4 @@ fibStore.End()
 > 100 个 Go 错误以及如何避免它们。*展示如何用惯用的、富有表现力的代码替换 Go 中的常见编程问题。 在其中，将探索许多有趣的示例和案例研究，同时学习如何发现自己的应用程序中可能出现的错误。*
 >
 
-同时，这里是 GitHub 存储库，总结了本书中的所有错误：https://github.com/teivah/100-go-mistakes
+同时，这里是 GitHub 存库，总结了本书中的所有错误：https://github.com/teivah/100-go-mistakes
