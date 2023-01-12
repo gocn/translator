@@ -66,7 +66,7 @@ func (m myerr) Error() string {
 ```go
 var err1 error = myerr(func() string { return "err1" })
 var err2 error = myerr(func() string { return "err2" })
-fmt.Println(err1 != nil, err2 != nil)  // 正确
+fmt.Println(err1 != nil, err2 != nil)  // true true
 
 fmt.Println(err1 == err2)
 // panic：运行时错误：对 main.myerr 不可比类型进行比较
