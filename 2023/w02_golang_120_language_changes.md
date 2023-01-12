@@ -1,7 +1,7 @@
-# Go 1.20 的新变化！第一部分：语言
+# Go 1.20 新变化！第一部分：语言特性
 
 - 原文地址：<https://blog.carlmjohnson.net/post/2023/golang-120-language-changes/>
-- 原文作者：Carl M. Johnson
+- 原文作者：[Carl M. Johnson](https://carlmjohnson.net/)
 - 本文永久链接：<https://github.com/gocn/translator/blob/master/2023/w02_golang_120_language_changes.md>
 - 译者：[pseudoyu](https://github.com/pseudoyu)
 - 校对：[小超人](https://github.com/focozz)
