@@ -1,115 +1,157 @@
-# Go 🐿 Application Security and AppSec Automation Made Easy
+# Go 🐿 应用程序安全和 AppSec 自动化变得简单
 
-GoLang is one of the most popular languages for cloud applications, it even builds up most of [Kubernetes](https://kubernetes.io/) ⎈.
+- [原文链接](https://awkwardferny.medium.com/go-application-security-and-appsec-automation-made-easy-36bd2f3d520b)
+- 原文作者：Fernando Diaz
+- [本文永久链接](https://github.com/gocn/translator/blob/master/static/images/2023/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy.md)
+- 译者：[司镜233](https://github.com/sijing233)
+- 校对：
 
-With that being said, according to the [Nautilus 2022 Cloud Native Threat report](https://info.aquasec.com/cloud-native-threat-report-2022?keyword=cloud attacks&campaignID=13175856474&matchtype=e&adgroupID=139880821361&device=c&utm_source=adwords&utm_campaign=Threats_US&utm_medium=cpc&utm_term=cloud attacks&utm_content=139880821361&utm_content=596105541264&hsa_acc=4069508776&hsa_src=g&hsa_ad=596105541264&hsa_kw=cloud attacks&hsa_ver=3&hsa_mt=e&hsa_grp=139880821361&hsa_net=adwords&hsa_cam=13175856474&hsa_tgt=kwd-320040970222), threat actors broadened their targets to include CI/CD environments and vulnerable Kubernetes deployments and applications.
+在云应用程序领域，Go是最流行的语言之一了，Kubernetes大部分的内容都是Go构建的。
 
-Over time the amount and types of attacks targeting Kubernetes environments has continued to *increase*. Based on attacks that [AquaSec](https://www.aquasec.com/) observed, the number of malicious images with the potential to target Kubernetes environments increased by **10%** from 2020 (***9%\***) to 2021 (***19%\***). This is why it’s more important than ever to secure your GoLang application!
+但即便如此，根据[Nautilus2022云原生威胁报告](https://info.aquasec.com/cloud-native-threat-report-2022)表明：具有恶意的个人或组织，也增加了更多目标和方式，包括CI/CD的环境、容易收到攻击的Kubernets部署、应用程序。
+
+随着时间的推移，针对Kubernets的攻击次数、攻击手段不断增加。根据[AquaSec]((https://www.aquasec.com/) )的观察显示：以Kubernets为目标的恶意攻击数量，从2020年的9%，增加到2021年的19%，增加了10%。这也说明，保护我们Golang应用程序的安全，越来越重要。
+
+在这篇文章中，我将用不同的方法，扫描应用程序源代码的漏洞。以及，如何将安全扫描器，集成到GitLab等CI/CD平台中。我将提供一份我创建的，不安全的微服务的真实示例。
 
 
 
-In this blog post, I will show different ways to scan your application source code for vulnerabilities, as well as how to integrate security scanners into a CI/CD platform like GitLab. I will provide real-world examples with an [**insecure microservice**](https://gitlab.com/awkwardferny/insecure-microservice) I have created.
 
-## **Prerequisites**
 
-- Basic understanding of the [Go programming language](https://go.dev/doc/tutorial/getting-started)
-- Basic knowledge of [Git](https://www.atlassian.com/git/tutorials)
-- Basic understanding of [application security](https://www.udemy.com/course/introduction-to-application-security-appsec/)
-- [GitLab account (Free)](https://gitlab.com/)
-- [Go version 1.19+](https://go.dev/dl/) (I used the below)
+## 先决条件
+
+- 基本了解Go编程语言
+- Git基础知识
+- 基本了解应用程序的安全性
+- Gitlab账户（免费）
+- Go 1.19+ 
 
 ```
 $ go versiongo version go1.19.1 darwin/amd64
 ```
 
-# **Security Scanners**
 
-By running security scanners before pushing code, we can detect and remediate vulnerabilities before we deploy our code to a production-level environment. I will go over how to use a variety of different security scanners for Go such as [***GoSec\***](https://github.com/securego/gosec), [***GoVulnCheck\***](https://go.dev/blog/vuln), and [***Fuzz\***](https://go.dev/security/fuzz/).
 
-First we can start by setting up a proper `GOPATH`, adding `GOPATH/bin` to our `PATH`, and cloning the [**insecure microservice**](https://gitlab.com/awkwardferny/insecure-microservice). Additional information on paths can be found [here](https://go.dev/doc/tutorial/compile-install).
+# 安全扫描器
 
-```
-# Set the appropriate GOPATH
-$ export GOPATH=/path/to/your/go/projects# Add your GOPATH bin directory to your PATH
-$ export PATH=$PATH:$GOPATH/bin# Go into your GOPATH
-$ cd $GOPATH# Create the proper directory structure
-$ mkdir -p src/gitlab.com/awkwardferny# Clone application which we will be scanning
-$ git clone git@gitlab.com:awkwardferny/insecure-microservice.git src/gitlab.com/awkwardferny/insecure-microservice# Go into the application root
+
+
+在推送代码之前，或是将代码部署到生产级环境之前，运行安全扫描器，检测并修复漏洞。我将介绍如何用Go，使用各种不同的安全扫描器：[GoSec](](https://github.com/securego/gosec))、[GoVulnCheck](https://go.dev/blog/vuln)、[Fuzz](](https://go.dev/security/fuzz/))
+
+
+
+首先，我们可以开始设置一个适当的GOPATH，添加GOPATH/bin到我们的PATH，并且git clone [不安全]((https://gitlab.com/awkwardferny/insecure-microservice))的微服务代码，可以在[此处](https://go.dev/doc/tutorial/compile-install)找到有关路径的详细信息。
+
+```shell
+# 设置合适的 GOPATH
+$ export GOPATH=/path/to/your/go/projects
+
+# 添加合适的 GOPATH bin 目录到你的 PATH
+$ export PATH=$PATH:$GOPATH/bin
+
+# 进入到你的 GOPATH
+$ cd $GOPATH
+
+# 创建正确的目录结构
+$ mkdir -p src/gitlab.com/awkwardferny
+
+# clone 我们用于测试扫描的应用程序
+$ git clone git@gitlab.com:awkwardferny/insecure-microservice.git src/gitlab.com/awkwardferny/insecure-microservice
+
+# 进入应用程序根目录
 $ cd src/gitlab.com/awkwardferny/insecure-microservice
 ```
 
-Now that we have the paths correctly setup and the application has been cloned, we can start running our security scanners!
+现在，我们已经正确设置了路径，并且已经clone了应用程序，我们可以开始运行我们的安全扫描器了。
 
-# **GoSec (Source Code Analysis)**
+# GoSec(源代码分析)
 
-The first security scanner we will cover is [GoSec](https://github.com/securego/gosec). It is a popular Go security scanner which scans your application’s source code and dependencies for vulnerabilities. It works by pattern matching your source code against a set of rules.
+我们将介绍的第一个安全扫描器是[GoSec](https://github.com/securego/gosec)。它是一种流行的Go安全扫描器，可以扫描应用程序的源代码和依赖项，检查到漏洞。它通过将您的源代码与一组规则进行模式匹配来工作。
 
+如果Go模块打开(e.g.`GO111MODULE=on`) ，或者明确下载依赖项(`go get -d`)，GoSec还可以自动扫描您的应用程序依赖项，来检查漏洞。现在，让我们在不安全的微服务上运行GoSec：
 
+```shell
+# 安装GoSec
+$ go install github.com/securego/gosec/v2/cmd/gosec@latest
 
-GoSec mascot 🚓
-
-GoSec will also automatically scan your application *dependencies* for vulnerabilities if the go module is turned on (e.g.`GO111MODULE=on`) or if you explicitly download the *dependencies* (`go get -d`). Now let’s run GoSec on our [**insecure microservice**](https://gitlab.com/awkwardferny/insecure-microservice):
-
-```
-# Install GoSec
-$ go install github.com/securego/gosec/v2/cmd/gosec@latest# Run GoSec
+# 运行GoSec
 $ gosec ./...
 ```
 
-After the scanner has run we can take a look at the vulnerabilities we found:
+扫描运行后，我们可以查看发现的漏洞：
 
+```shell
+G404 (CWE-338): Use of weak random number generator (math/rand instead of crypto/rand) (Confidence: MEDIUM, Severity: HIGH) #使用弱随机数生成器(math/rand，而不是crypto/rand) (置信度：中等，严重性：高)
+G114 (CWE): Use of net/http serve function that has no support for setting timeouts (Confidence: HIGH, Severity: MEDIUM) # 使用不支持设置超市的net/http服务功能（置信度：高，严重度：中）
+G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
+G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
+G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
+G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
 ```
-G404 (CWE-338): Use of weak random number generator (math/rand instead of crypto/rand) (Confidence: MEDIUM, Severity: HIGH)G114 (CWE): Use of net/http serve function that has no support for setting timeouts (Confidence: HIGH, Severity: MEDIUM)G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
-```
 
-These vulnerabilities show that our application has many *uncaught exceptions*, is *not setting timeouts*, and *uses a weak random number generator*. The scan returns the [***Rule Triggered\***](https://github.com/securego/gosec#available-rules), [***Common Weakness Enumeration(CWE)\***](https://cwe.mitre.org/), ***Confidence\***, ***Severity,\*** and the ***Affected Line of Code\*** (Not Pictured).
 
-In a typical developer workflow, after vulnerabilities are found, the developer can examine the *CWE* for tips on remediation, make code changes to the affected line(s) of code, and then re-run the scanner to check for resolution. Regression tests should be run to make sure our application logic is still sound.
 
-# **Govulncheck** **(Source Code Analysis)**
+这些漏洞表明我们的应用程序，有很多未捕获的异常：没有设置超时、使用了弱随机生成数。扫描返回规则出发、常见弱点枚举（CWE）、置信度、严重性和受影响的代码行。
 
-Next up is [Govulncheck](https://go.dev/blog/vuln)! Govulncheck is a security scanner for source code and application dependencies. It is under active development by the Go security team and is different than GoSec in a few ways:
+在典型的开发人员工作流中，发现漏洞后，开发人员可以检查CWE，获取改进提示，对受影响的代码进行代码更改，然后重新运行扫描程序，以检查解决方案。应该运行回归测试，以确保我们的应用程序逻辑仍然健全。
 
-***First\*** it is backed by the [Go vulnerability database](https://vuln.go.dev/).
 
-***Second\*** it only displays vulnerabilities which your code is actually calling. This reduces noise and lets you know what vulnerabilities actually affect your application.
 
-Below is the architecture diagram for Govulncheck, showing its *datasources*, the *vulnerability database*, *tools*, and *integrations*.
+# Govulncheck（源代码分析）
+
+接下来是Govulncheck！Govulncheck是一个针对源代码，和应用程序依赖项的安全扫描器。Go安全团队正在积极开发它，并且在几个方面，与GoSec不同：
+
+首先，它由[Go漏洞数据库]((https://vuln.go.dev/))支持。
+
+其次，它只显示您的代码，实际调用的漏洞。这会减少“噪音”，并且让您知道哪些漏洞实际影响了您的应用程序。
+
+下面是[Govulncheck]((https://go.dev/blog/vuln))的架构图，显示了它的*数据源、漏洞数据库、工具和集成。*
+
+
 
 ![img](../static/images/2023/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy/image-20230111155421980.png)
 
-Govulncheck architecture diagram
-
-Now let’s give it a spin! ⚙️
+现在，让我们试一试！
 
 ```
-# Install govulncheck
-$ go install golang.org/x/vuln/cmd/govulncheck@latest# Run govulncheck
+# 安装 govulncheck
+$ go install golang.org/x/vuln/cmd/govulncheck@latest
+
+# 运行 govulncheck
 $ govulncheck ./...
 ```
 
 After the scanner has run, let’s take a look at its findings:
 
-```
-Vulnerability #1: GO-2020-0016An attacker can construct a series of bytes such that calling Reader. Read on the bytes could cause an infinite loop. If
-parsing user supplied input, this may be used as a denial of service vector.Call stacks in your code:internal/logic/logic.go:63:8: gitlab.com/awkwardferny/insecure-microservice/internal/logic.insecure calls github.com/ulikunitz/xz.Reader.ReadFound in: github.com/ulikunitz/xz@v0.5.7
+```shell
+Vulnerability #1: GO-2020-0016
+
+An attacker can construct a series of bytes such that calling Reader. Read on the bytes could cause an infinite loop. If parsing user supplied input, this may be used as a denial of service vector.
+# 攻击者可以构造一系列字节，以便调用 Reader。读取字节可能会导致无限循环。如果解析用户提供的输入，这可能会用作拒绝服务向量。
+
+Call stacks in your code:
+internal/logic/logic.go:63:8: gitlab.com/awkwardferny/insecure-microservice/internal/logic.insecure calls github.com/ulikunitz/xz.Reader.Read
+
+Found in: github.com/ulikunitz/xz@v0.5.7
 Fixed in: github.com/ulikunitz/xz@v0.5.8
 More info: https://pkg.go.dev/vuln/GO-2020-0016
 ```
 
-You can see that the scanners presents us with a ***Vulnerability Rule Reference\***, ***Description\***, ***Affected Line of Code\***, ***Vulnerable Dependency\***, ***Resolution\***, and a ***Link to Additional Info\***.
 
-Because I’m using ***github.com/ulikunitz/xz@v0.5.7\*** as a *dependency* in my application and calling ***xz.Reader.Read\***, my application is vulnerable to [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) attacks. This vulnerability was detected by the [GO-2020–016](https://github.com/golang/vulndb/blob/master/data/reports/GO-2020-0016.yaml) rule from the Go vulnerability database.
 
-In a typical workflow, a developer would update the dependency version and then rerun the scanner as well as ***unit\*** and ***functional\*** tests in order to ensure the application does not break.
+您可以看到扫描器，向我们提供了漏洞规则参考、说明、受影响的代码行、漏洞依赖项、解决方案以及附加信息的链接。因为我在我的应用程序中使用***github.com/ulikunitz/xz@v0.5.7作为*依赖*项并调用***xz.Reader.Read，所以我的应用程序容易受到[DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/)攻击。这个漏洞是由Go 漏洞数据库中的[GO-2020-016规则检测到的。](https://github.com/golang/vulndb/blob/master/data/reports/GO-2020-0016.yaml)
 
-# **Fuzz (Fuzz-Testing)**
+在典型的工作流程中，开发人员会更新依赖版本，然后重新运行扫描器以及*单元*和*功能*测试，以确保应用程序不会中断。
 
-And last we are going to go over fuzz testing. Fuzz testing is the practice of inputing ***random/malformed\*** data into an application in an attempt to reveal security issues or bugs. Go has a native fuzzing library called [fuzz](https://go.dev/security/fuzz/).
 
-[Fuzz](https://go.dev/security/fuzz/) performs ***coverage-based\*** fuzz tests which are written similar to *unit-tests* and are performed on application functions. They are good at finding edge-cases/bugs you may miss in your own *unit-tests*. Let’s look at this fuzz test example below:
 
-```
+# Fuzz（模糊测试）
+
+最后我们将进行模糊测试。模糊测试，是将随机格式**错误的数据**输入应用程序，看是否有安全的问题或错误的写法。Go 有一个名为[fuzz](https://go.dev/security/fuzz/)的本地模糊测试库。
+
+[Fuzz](https://go.dev/security/fuzz/)执行***基于覆盖的***模糊测试，其编写类似于*单元测试*，并在应用程序功能上执行。他们擅长发现您在自己的*单元测试*中可能遗漏的边缘案例/错误。让我们看看下面这个模糊测试示例：
+
+```go
 func FuzzAdd(f *testing.F) {
   f.Add("1", "2")
   f.Fuzz(func(t *testing.T, a string, b string) {
@@ -122,7 +164,9 @@ func FuzzAdd(f *testing.F) {
       t.Errorf(fmt.Sprintf("expected %v, got %v", expected, result))
     }
   })
-}func add(a string, b string) (c int, e error) {
+}
+
+func add(a string, b string) (c int, e error) {
   intA, err := strconv.Atoi(a)
   if err != nil {
     return 0, nil
@@ -133,20 +177,22 @@ func FuzzAdd(f *testing.F) {
 }
 ```
 
-We can see that ***FuzzAdd()\*** is written similar to a unit test. We enable fuzz testing by adding **f.Fuzz(func(t \*testing.T, a string, b string)**, which calls the ***add(\*a string, b string\*)\*** function, supplying random data for variables ***a\*** and ***b\***. Then it compares the *result* against the *expected* value.
 
-The ***add()\*** function, simply converts 2 strings into integers and then adds them up and returns the result.
 
-The ***FuzzAdd()\*** test runs correctly with the [***seeded data\***](https://go.dev/security/fuzz/#glos-seed-corpus)`f.Add("1", “2”),`but what happens when there’s malformed or random data? Let’s run our fuzz test and find out:
+我们可以看到 `FuzzAdd() `的编写类似于单元测试。我们通过添加`f.Fuzz(func(t \*testing.T, a string, b string)`来启用模糊测试，它调用`add( a string, b string )`函数，为变量`a`和`b`提供随机数据。然后，将它和预期值结果，进行比较。
+
+`add()`函数，简单地将2 个字符串转换为整数，然后将它们相加并返回结果。
+
+`FuzzAdd ()`测试可以使用[种子数据](https://go.dev/security/fuzz/#glos-seed-corpus)`f.Add("1", “2”),`正确运行，但是当存在格式错误或随机数据时会发生什么情况？让我们运行模糊测试并找出：
 
 ```
-# Run the fuzz tests
+# 运行 fuzz 测试
 $ go test ./internal/logic -fuzz FuzzAdd
 ```
 
-We can see that the scanner detected an error:
+我们可以看到扫描仪检测到一个错误：
 
-```
+```shell
 --- FAIL: FuzzAdd (0.10s)
     --- FAIL: FuzzAdd (0.00s)
         logic_test.go:44: expected 1, got 0
@@ -157,13 +203,13 @@ We can see that the scanner detected an error:
 FAIL
 ```
 
-This error was caused because an ***actual letter (A)\*** was passed instead of a string that can be converted into an integer. Fuzz also generated a *seed corpus* under the ***testdata\*** directory, which can be used to test this particular failure again.
+导致这个错误，是因为传递了字母A，而不是可以转换为整数的字符串。Fuzz还在testdata目录下，生成了一个种子语料库，可以用来再次测试这个特定的故障。
 
-An idea to resolve this would be to simply return ***err\*** instead of ***nil\*** in the ***add()\*** function and expect the error for non-integer convertible strings in ***FuzzAdd().\***
+解决这个问题的一个方式，是在add()函数中，简单地返回err，而不是nil。并期望在FuzzAdd()中，返回非整数可转换字符串的错误。
 
-We can also consider just making the integer value a 0 and logging the error as seen below. It Just depends on what we are trying to achieve.
+我们还可以考虑，仅将整数值设置为0，并记录错误。如下所示，这仅仅取决于，我们要实现的目标。
 
-```
+```go
 func add(a string, b string) (c int, e error) {
   intA, err := strconv.Atoi(a)
   if err != nil {
@@ -179,17 +225,23 @@ func add(a string, b string) (c int, e error) {
 }
 ```
 
-For more advanced usage of fuzz, checkout the [Go fuzz-testing tutorial](https://go.dev/doc/tutorial/fuzz).
+有关模糊测试的更多高级用法，请查看 [Go模糊测试教程](https://go.dev/doc/tutorial/fuzz).
 
-# Automation of Scanners with GitLab
 
-Running the security scanners to search for vulnerabilities in your Go application can be automated so that we can run the scanners on a *feature branch* each time code is pushed.
 
-This allows us to address security issues before we push code into production and saves us time by not having to run the scanners manually each time we make a code change.
 
-These scanners can be automated by creating a CI/CD pipeline in GitLab 🦊. The pipeline can automatically run these scans on each code push to any branch. We will be looking at the [GitLab CI yaml](https://gitlab.com/awkwardferny/insecure-microservice/-/blob/master/.gitlab-ci.yml), which generates a CI/CD pipeline below.
 
-First thing we see are the stages which will run within the pipeline in the order provided:
+# 使用GitLab实现自动化扫描
+
+如果可以自动运行安全扫描器来搜索Go应用程序中的漏洞，这样我们就可以在每次推送代码时，在功能分支上运行扫描器。
+
+这会在代码投入生产之前，解决安全问题，并且不必在每次更改代码时，都手动运行扫描程序，从而节省了我们的时间。
+
+这些扫描器，可以通过在GitLab中，创建CI/CD管道来实现自动化。管道可以在每次将代码推送到分支时，自动运行这些扫描。我们将查看[GitLab CI yaml](https://gitlab.com/awkwardferny/insecure-microservice/-/blob/master/.gitlab-ci.yml)，它在下面生成了一个CI/CD管道。
+
+
+
+首先，我们看到的是，将按照提供的顺序，在管道中运行的阶段：
 
 ```
 stages:
@@ -198,6 +250,8 @@ stages:
 ```
 
 The **build** stage makes sure the application even builds before proceeding. If you’ve containerized your application, in this stage you would ideally also test if a container image can be built as well:
+
+构建阶段，确保是在构建应用程序之前。如果您已经容器化了您的应用程序，那么在这个阶段，您最好也测试一下，是否可以构建容器镜像：
 
 ```
 build:
@@ -208,9 +262,11 @@ build:
     - go build .
 ```
 
-Then the **test** stage will run ***unit-tests\***, ***fuzz-tests\***, as well as the ***security scanners\*** described in this blog. The appropriate dependencies for running these jobs are also installed.
+然后**测试阶段**，将运行*单元测试、模糊测试*，以及在本博客中描述的*安全扫描器*。还安装了运行这些流程的适当依赖项。
 
-We can see under **fuzz**, that we have an ***artifact\*** directive with a ***path\*** that runs whenever the job fails. This is done so that we can [download](https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#download-job-artifacts) the *seed corpus* to run locally:
+我们可以在**fuzz**下看到，我们有一个**artifact**指令，其中包含了一个在作业失败时，运行的**path**，这样做，是为了让我们可以[下载](https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#download-job-artifacts) 种子语料库在本地运行：
+
+
 
 ```
 unit:
@@ -252,58 +308,59 @@ fuzz:
     when: on_failure
 ```
 
-All the above described in the [GitLab CI yaml](https://gitlab.com/awkwardferny/insecure-microservice/-/blob/master/.gitlab-ci.yml), generates the following pipeline where we can see ***fuzz\***, ***gosec\***, and ***govulncheck\*** all fail, showing there are vulnerabilities and bugs detected within our code:
+[GitLab CI yaml](https://gitlab.com/awkwardferny/insecure-microservice/-/blob/master/.gitlab-ci.yml)中，描述的所有内容，生成以下的管道，我们可以在其中看到**fuzz、gosec、govulncheck**全部失败，表明我们的代码中，检测到漏洞和错误。
 
 ![img](../static/images/2023/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy/1_2E0sq-gDjk5s1HoxlM740w.png)
 
-Insecure microservice pipeline running in GitLab
 
-If we click on a test we can see the output of our job. For example when clicking on the ***govulncheck\*** job, we see the following:
+
+如果点击一个测试，我们可以看到我们工作的输出。例如，当单机**govulncheck**作业时，我们会看到以下内容：
+
+
 
 ![img](../static/images/2023/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy/1_5B2fV6vh8sdPPx1rb8wo4g.png)
 
-Govulncheck job ouput
-
-And that is how you can integrate *unit-tests*, *fuzz-tests* and *security scanners* into your CI/CD pipeline. This makes life way easier and removes the need for running everything manually each time!
-
-# Code Reviews and Secure Coding Practices
-
-Last, but not least, in order to enhance application security, you should always perform *code reviews*. This is crucial because others can find issues that you may miss. Scanners may find vulnerabilities, but they cannot detect incorrect logic.
-
-[Secure Coding Practices](https://github.com/OWASP/Go-SCP) are provided by the [Open Web Application Security Project (OWASP](https://owasp.org/)). These practices should be reviewed in order to provide great feedback on enhancing security within a code review.
-
-Some examples of these Secure Coding Practices include [Database Security](https://github.com/OWASP/Go-SCP/tree/master/src/database-security), [Output Encoding](https://github.com/OWASP/Go-SCP/tree/master/src/output-encoding), [Error Handling and Logging](https://github.com/OWASP/Go-SCP/blob/master/src/error-handling-logging/logging.md), and much more.
-
-# Other Considerations
-
-# **Separation of duties**
-
-Another way to reduce insecure code from making it to production is to enforce [s*eparation of duties*](https://www.totem.tech/cmmc-separation-of-duties/#:~:text=Continuing with NIST definitions, separation,privilege to perpetrate damaging fraud.). Separation of duties is the concept where developers should only have access to the functions which are necessary for their job. Some examples of this would be:
-
-- Don’t allow developers to merge their own commits
-- Require security team or team-lead ***approval\*** if a vulnerability is found
-- Don’t allow security scans to be disabled by developers
-- Implement [CODEOWNERS](https://docs.gitlab.com/ee/user/project/code_owners.html) functionality
-
-# **Other attack vectors**
-
-There are other aspects of an application which can be susceptible to attack which are not part of the application source code. Some examples of this include:
-
-- Container images
-- Application dependencies in other languages
-- Restrictive licenses
-- Configurations within the running application/server
-
-These items can be remedied with *additional security scanners* as well as *implementing security policies* and *providing reviews around configurations*. I use GitLab Ultimate security [policies](https://docs.gitlab.com/ee/user/application_security/policies/) and [scanners](https://docs.gitlab.com/ee/user/application_security/configuration/#security-testing) for my day-to-day.
-
-# **Visibility into security posture**
-
-Another thing to consider is how great your visibility into your application’s [*security posture*](https://csrc.nist.gov/glossary/term/security_posture#:~:text=Definition(s)%3A,react as the situation changes.) is. You should have insight on which projects have the most concerning vulnerabilities and what is being done about them.
 
 
+这就是将单元测试、模糊测试和安全扫描器，集成到CI/CD管道中的方法。这让生活变的更轻松，并且无需每次都手动运行所有内容。
 
-A dashboard type of view would be ideal, that way you can effectively triage and manage vulnerabilities, guiding you to what you should be address first.
+# 代码审查和安全编码实践
 
-And there you have it, Go 🐿 application security and AppSec automation made easy! Thanks for reading and I hope you enjoyed this article.
+最后但同样重要的是，为了增强应用程序安全性，您应该始终执行*代码审查*。这很重要，因为其他人可以找到您可能遗漏的问题。扫描器可能会发现漏洞，但它们无法检测到不正确的逻辑。
 
-If you want to see similar articles like this, checkout [my other stories](https://awkwardferny.medium.com/) and do share this with others! Also feel free to find me on [twitter](https://twitter.com/awkwardferny) 🐦, my posts consist of travel, philosophy, tech, comedy, and some cool things I find.
+[安全编码实践](https://github.com/OWASP/Go-SCP)由[开放 Web 应用程序安全项目 (OWASP](https://owasp.org/) ) 提供。应审查这些做法，以便在代码审查中提供有关增强安全性的重要反馈。
+
+这些安全编码实践的一些示例包括[数据库安全](https://github.com/OWASP/Go-SCP/tree/master/src/database-security)、[输出编码](https://github.com/OWASP/Go-SCP/tree/master/src/output-encoding)、[错误处理和日志记录](https://github.com/OWASP/Go-SCP/blob/master/src/error-handling-logging/logging.md)等等。
+
+# 其他注意事项
+
+# **职责分离**
+
+另一种减少不安全代码进入生产环境的方法是强制[职责*分离*](https://www.totem.tech/cmmc-separation-of-duties/#:~:text=Continuing with NIST definitions, separation,privilege to perpetrate damaging fraud.)。职责分离的意思是，开发人员只能访问其工作所必需的部分。这方面的一些例子是：
+
+- 不允许开发人员合并他们自己的提交
+- 如果发现漏洞，需要安全团队或团队领导的***批准\***
+- 不允许开发人员禁用安全扫描
+- 实现[CODEOWNERS](https://docs.gitlab.com/ee/user/project/code_owners.html)功能
+
+# **其他攻击媒介**
+
+应用程序的其他方面可能容易受到攻击，这些方面不是应用程序源代码的一部分。这方面的一些例子包括：
+
+- 容器镜像
+- 其他语言的应用依赖
+- 限制性许可
+- 正在运行的应用程序/服务器中的配置
+
+这些项目可以通过*额外的安全扫描器*以及*实施安全策略*和*提供有关配置的审查*来修复。我在日常工作中使用 GitLab Ultimate 安全[策略](https://docs.gitlab.com/ee/user/application_security/policies/)和[扫描器](https://docs.gitlab.com/ee/user/application_security/configuration/#security-testing)
+
+# **安全态势的可见性**
+
+另一件需要考虑的事情是您对应用程序[*安全*](https://csrc.nist.gov/glossary/term/security_posture#:~:text=Definition(s)%3A,react as the situation changes.)状况的可见性。您应该了解哪些项目具有最令人担忧的漏洞以及针对这些漏洞正在采取的措施。
+
+
+
+仪表板类型的视图将是理想的，这样您就可以有效地分类和管理漏洞，引导您找到应该首先解决的问题。
+
+好了，Go 🐿 应用程序安全和 AppSec 自动化变得简单！感谢阅读，希望您喜欢这篇文章。
+
