@@ -1,18 +1,18 @@
-# Go 🐿 应用程序安全和 AppSec 自动化变得简单
+# 自动化检查Go代码中的漏洞
 
 - [原文链接](https://awkwardferny.medium.com/go-application-security-and-appsec-automation-made-easy-36bd2f3d520b)
 - 原文作者：Fernando Diaz
 - [本文永久链接](https://github.com/gocn/translator/blob/master/static/images/2023/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy.md)
 - 译者：[司镜233](https://github.com/sijing233)
-- 校对：
+- 校对：[刘思家](https://github.com/lsj1342)
 
 在云应用程序领域，Go是最流行的语言之一了，Kubernetes大部分的内容都是Go构建的。
 
-但即便如此，根据[Nautilus2022云原生威胁报告](https://info.aquasec.com/cloud-native-threat-report-2022)表明：具有恶意的个人或组织，也增加了更多目标和方式，包括CI/CD的环境、容易收到攻击的Kubernets部署、应用程序。
+但即便如此，根据[Nautilus2022云原生威胁报告](https://info.aquasec.com/cloud-native-threat-report-2022)表明：具有恶意的个人或组织，也增加了更多目标和方式，包括CI/CD的环境、容易收到攻击的Kubernets部署和应用程序。
 
-随着时间的推移，针对Kubernets的攻击次数、攻击手段不断增加。根据[AquaSec]((https://www.aquasec.com/) )的观察显示：以Kubernets为目标的恶意攻击数量，从2020年的9%，增加到2021年的19%，增加了10%。这也说明，保护我们Golang应用程序的安全，越来越重要。
+随着时间的推移，针对Kubernets的攻击次数、攻击手段不断增加。根据[AquaSec](https://www.aquasec.com/)的观察显示：以Kubernets为目标的恶意攻击数量，从2020年的9%到2021年的19%，增加了10%。这也说明，保护我们Golang应用程序的安全，越来越重要。
 
-在这篇文章中，我将用不同的方法，扫描应用程序源代码的漏洞。以及，如何将安全扫描器，集成到GitLab等CI/CD平台中。我将提供一份我创建的，不安全的微服务的真实示例。
+在这篇文章中，我将展示用扫描应用程序源代码漏洞的各种方法，以及如何将安全扫描器集成到GitLab等CI/CD平台中。我将提供一份我创建的，不安全的微服务的真实示例。
 
 
 
@@ -40,7 +40,7 @@ $ go versiongo version go1.19.1 darwin/amd64
 
 
 
-首先，我们可以开始设置一个适当的GOPATH，添加GOPATH/bin到我们的PATH，并且git clone [不安全]((https://gitlab.com/awkwardferny/insecure-microservice))的微服务代码，可以在[此处](https://go.dev/doc/tutorial/compile-install)找到有关路径的详细信息。
+首先，我们可以开始设置一个适当的GOPATH，添加GOPATH/bin到我们的PATH，并且git clone [不安全](https://gitlab.com/awkwardferny/insecure-microservice)的微服务代码，可以在[此处](https://go.dev/doc/tutorial/compile-install)找到有关路径的详细信息。
 
 ```shell
 # 设置合适的 GOPATH
@@ -103,7 +103,7 @@ G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
 
 首先，它由[Go漏洞数据库]((https://vuln.go.dev/))支持。
 
-其次，它只显示您的代码，实际调用的漏洞。这会减少“噪音”，并且让您知道哪些漏洞实际影响了您的应用程序。
+其次，它只显示您的代码，实际调用的漏洞。这会减少“噪声”，并且让您知道哪些漏洞实际影响了您的应用程序。
 
 下面是[Govulncheck]((https://go.dev/blog/vuln))的架构图，显示了它的*数据源、漏洞数据库、工具和集成。*
 
@@ -264,7 +264,7 @@ build:
 
 然后**测试阶段**，将运行*单元测试、模糊测试*，以及在本博客中描述的*安全扫描器*。还安装了运行这些流程的适当依赖项。
 
-我们可以在**fuzz**下看到，我们有一个**artifact**指令，其中包含了一个在作业失败时，运行的**path**，这样做，是为了让我们可以[下载](https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#download-job-artifacts) 种子语料库在本地运行：
+我们可以在**fuzz**下看到，我们有一个**artifact**指令，其中包含了一个在作业失败时，运行的**path**，这样做，是为了让我们可以[下载](https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#download-job-artifacts)种子语料库在本地运行：
 
 
 
@@ -328,7 +328,7 @@ fuzz:
 
 最后但同样重要的是，为了增强应用程序安全性，您应该始终执行*代码审查*。这很重要，因为其他人可以找到您可能遗漏的问题。扫描器可能会发现漏洞，但它们无法检测到不正确的逻辑。
 
-[安全编码实践](https://github.com/OWASP/Go-SCP)由[开放 Web 应用程序安全项目 (OWASP](https://owasp.org/) ) 提供。应审查这些做法，以便在代码审查中提供有关增强安全性的重要反馈。
+[安全编码实践](https://github.com/OWASP/Go-SCP)由[开放 Web 应用程序安全项目 (OWASP)](https://owasp.org/) 提供。应审查这些做法，以便在代码审查中提供有关增强安全性的重要反馈。
 
 这些安全编码实践的一些示例包括[数据库安全](https://github.com/OWASP/Go-SCP/tree/master/src/database-security)、[输出编码](https://github.com/OWASP/Go-SCP/tree/master/src/output-encoding)、[错误处理和日志记录](https://github.com/OWASP/Go-SCP/blob/master/src/error-handling-logging/logging.md)等等。
 
@@ -362,5 +362,5 @@ fuzz:
 
 仪表板类型的视图将是理想的，这样您就可以有效地分类和管理漏洞，引导您找到应该首先解决的问题。
 
-好了，Go 🐿 应用程序安全和 AppSec 自动化变得简单！感谢阅读，希望您喜欢这篇文章。
+好了，自动化检查Go代码中的漏洞！感谢阅读，希望您喜欢这篇文章。
 
