@@ -18,9 +18,9 @@
 
 Go 1.20 引入了一个实验性的内存管理概念 "arenas"，可以用来提高Go程序的性能。在本博客文章中，我们将探讨：
 
-- 什么是arenas
+- 什么是 arenas
 - 它们是如何工作的
-- 如何确定你的程序是否可以从使用arenas中受益
+- 如何确定你的程序是否可以从使用 arenas 中受益
 - 我们如何使用arenas优化我们的一项服务
 
 ## 什么是内存 Arenas
@@ -59,7 +59,7 @@ Arenas 提供了一种解决这个问题的方法，通过减少与许多小分�
 
 ## 我们做出的优化
 
-如果您对此感兴趣，您可以在Pyroscope存储库中找到[公共拉取请求](https://github.com/pyroscope-io/pyroscope/pull/1804)作为参考。
+如果您对此感兴趣，您可以在 Pyroscope 存储库中找到[公共拉取请求](https://github.com/pyroscope-io/pyroscope/pull/1804)作为参考。
 
 - 首先，我们创建了[一个包装组件](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-70ab4bbe796a97ad1a47d7970504296eff36b5307527ae2806d2b50f94f83a45)，负责处理切片或结构的分配。如果启用了竞技场，此组件使用竞技场分配切片，否则使用标准“make”函数。我们通过使用构建标记（`//go：build goexperiment.arenas`）实现此目的。这允许在构建时轻松地在竞技场分配和标准分配之间切换
 - 然后，我们在解析器代码周围添加了[初始化](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-32bf8c53a15c8a5f7eb424b21c8502dc4905ec3caa28fac50f64277361ae746fR417)和[清理](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-34edf37e55842273380ee6cb31c9245f31ed25aa6d7898b0f2c25145f17d8ea0R170)调用竞技场
@@ -70,11 +70,11 @@ Arenas 提供了一种解决这个问题的方法，通过减少与许多小分�
 
 ![4](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\4.png)
 
-上面的火焰图表示我们实施更改后的配置文件。您可以看到，许多`runtime.mallocgc`调用现在已经消失，但被竞技场特定的等效项（`runtime.(*userArena).alloc`）替代，您也可以看到垃圾回收开销减少了一半。仅从火焰图上看准确的节省量很难看出，但是当我们查看结合了火焰图和AWS指标的CPU使用情况的Grafana仪表板时，我们发现CPU使用率大约减少了8％。这直接转化为该特定服务的云账单上的8％费用节省，使其成为一项有价值的改进。
+上面的火焰图表示我们实施更改后的配置文件。您可以看到，许多`runtime.mallocgc`调用现在已经消失，但被竞技场特定的等效项（`runtime.(*userArena).alloc`）替代，您也可以看到垃圾回收开销减少了一半。仅从火焰图上看准确的节省量很难看出，但是当我们查看结合了火焰图和AWS指标的CPU使用情况的 Grafana 仪表板时，我们发现CPU使用率大约减少了8％。这直接转化为该特定服务的云账单上的8％费用节省，使其成为一项有价值的改进。
 
 ![5](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\5.png)
 
-这可能看起来不多，但重要的是要注意，这是一项已经被优化得相当多的服务。例如，我们使用的Protobuf解析器根本不会分配任何额外的内存，垃圾回收开销（5％）也在我们服务的开销范围的低端。我们认为代码库的其他部分还有很多改进的空间，因此我们很高兴继续尝试竞技场。
+这可能看起来不多，但重要的是要注意，这是一项已经被优化得相当多的服务。例如，我们使用的 Protobuf 解析器根本不会分配任何额外的内存，垃圾回收开销（5％）也在我们服务的开销范围的低端。我们认为代码库的其他部分还有很多改进的空间，因此我们很高兴继续尝试竞技场。
 
 ## 权衡弊端
 
@@ -82,7 +82,7 @@ Arenas 提供了一种解决这个问题的方法，通过减少与许多小分�
 
 - 未能正确释放内存可能导致内存泄漏
 
-- 尝试从已释放的场馆访问对象可能导致程序崩溃 
+- 尝试从已释放的场馆访问对象可能导致程序崩溃
 
 以下是我们的建议：
 
@@ -110,6 +110,6 @@ Go团队已经收到了关于竞技场的大量反馈，我们想要回应社区
 
 ## 总结
 
-Go程序的优化工具，特别适用于处理大量protobuf或JSON块的情况。它们有可能带来显著的性能改进，但是需要注意的是它们是一个实验性的功能，不保证兼容性或在未来版本中的存在。
+Go 程序的优化工具，特别适用于处理大量 protobuf 或 JSON 块的情况。它们有可能带来显著的性能改进，但是需要注意的是它们是一个实验性的功能，不保证兼容性或在未来版本中的存在。
 
-我们建议您对应用程序进行分析，并在代码库的有限部分尝试使用arenas，并将您的结果[报告给go团队](https://github.com/golang/go/issues/51317)。
+我们建议您对应用程序进行分析，并在代码库的有限部分尝试使用arenas，并将您的结果[报告给 Go 团队](https://github.com/golang/go/issues/51317)。
