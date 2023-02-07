@@ -27,7 +27,7 @@ Arenas offer a solution to this problem, by reducing the overhead associated wit
 
 Once parsing is completed, the entire arena can be freed at once, further reducing the overhead of freeing many small objects.
 
-![image-20230206230708896](./1.png)
+![1](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/1.png)
 
 ## Identifying Code That Could Benefit From Arenas
 
@@ -35,11 +35,11 @@ Any code that allocates a lot of small objects could potentially benefit from ar
 
 Using Pyroscope we were able to get an allocations profile (`alloc_objects`) of one of our [cloud services](https://pyroscope.io/pricing/):
 
-![image-20230206230824611](./2.png)
+![2](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/2.png)
 
 You can see that the majority of allocations (`533.30 M`) come from one area of code — it's the purple node at the bottom where it calls function `InsertStackA`. Given that it represents 65% of allocations this is a good candidate for using arenas. But is there enough of a performance benefit to be gained by cutting down these allocations? Let's take a look at the CPU profile (`cpu`) of the same service:
 
-![image-20230206230902055](./3.png)
+![3](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/3.png)
 
 A few things stand out:
 
@@ -60,11 +60,11 @@ If you're interested in following along, there's a [public pull request in the P
 
 ## Results of Our Arenas Experimentation
 
-![image-20230206231003047](./4.png)
+![4](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/4.png)
 
 The flamegraph above represents a profile after we've implemented the changes. You can see that many of the `runtime.mallocgc` calls are now gone, but are replaced with arena-specific equivalent (`runtime.(*userArena).alloc`), you can also see that garbage collection overhead is cut in half. It is hard to see the exact amount of savings from solely looking at the flamegraphs, but when looking at our Grafana dashboard which combines our flamegraph with CPU utilization from AWS metrics we saw approximately a 8% reduction in CPU usage. This translates directly into 8% cost savings on cloud bills for that particular service, making it a worthwhile improvement.
 
-![image-20230206231037311](./5.png)
+![5](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/5.png)
 
 This may not seem like a lot, but it's important to note that this is a service that has already been optimized quite a bit. For example, the protobuf parser that we use doesn't allocate any extra memory at all, garbage collection overhead (5%) is also on the lower end of the spectrum for our services. We think that there's a lot more room for improvement in other parts of the codebase and so we're excited to continue our experiments with arenas.
 
