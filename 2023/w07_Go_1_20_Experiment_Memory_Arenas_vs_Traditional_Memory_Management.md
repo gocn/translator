@@ -1,102 +1,115 @@
-# Go 1.20 Experiment: Memory Arenas vs Traditional Memory Management
+# Go 1.20 实验：内存 Arenas vs 传统内存管理
 
-##### CAUTION
+- 原文地址：[Go 1.20 Experiment: Memory Arenas vs Traditional Memory Management | Open Source Continuous Profiling Platform (pyroscope.io)](https://pyroscope.io/blog/go-1-20-memory-arenas/)
+- 原文作者：[Dmitry Filimonov](https://github.com/petethepig)
+- 本文永久链接：[translator/w07_Go_1_20_Experiment_Memory_Arenas_vs_Traditional_Memory_Management.md at master · gocn/translator (github.com)](https://github.com/gocn/translator/blob/master/2023/w07_Go_1_20_Experiment_Memory_Arenas_vs_Traditional_Memory_Management.md)
+- 译者：[zxmfke](https://github.com/zxmfke)
+- 校对：
 
-Go arenas are an experimental feature. The API and implementation is completely unsupported and go team makes no guarantees about compatibility or whether it will even continue to exist in any future release.
+![6](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\6.png)
 
-See [this Github discussion](https://github.com/golang/go/issues/51317#issuecomment-1385623024) for more details.
+> **注意**
+>
+> Go arenas 是一个实验性功能。API 和实现完全不受支持，Go 团队不保证兼容性，也不保证在任何未来版本中继续存在。
+>
+> 请通过[这个 github 讨论区](https://github.com/golang/go/issues/51317#issuecomment-1385623024)来了解更多信息。
 
-## Introduction
+## 简介
 
-Go 1.20 introduces an experimental concept of "arenas" for memory management, which can be used to improve the performance of your Go programs. In this blog post, we'll take a look at:
+Go 1.20 引入了一个实验性的内存管理概念 "arenas"，可以用来提高Go程序的性能。在本博客文章中，我们将探讨：
 
-- What are arenas
-- How do they work
-- How can you determine if your programs could benefit from using arenas
-- How we used arenas to optimize one of our services
+- 什么是arenas
+- 它们是如何工作的
+- 如何确定你的程序是否可以从使用arenas中受益
+- 我们如何使用arenas优化我们的一项服务
 
-## What Are Memory Arenas?
+## 什么是内存 Arenas
 
-Go is a programming language that utilizes garbage collection, meaning that the runtime automatically manages memory allocation and deallocation for the programmer. This eliminates the need for manual memory management, but it comes with a cost:
+Go语言是一种利用垃圾回收机制的编程语言，这意味着运行时会自动管理程序员的内存分配和释放。这消除了手动内存管理的需求，但也带来了代价：
 
-**The Go runtime must keep track of \*every\* object that is allocated, leading to increased performance overhead.**
+**Go 运行时必须跟踪 \*每个\* 分配的对象，导致性能开销增加。**
 
-In certain scenarios, such as when an HTTP server processes requests with large protobuf blobs (which contain many small objects), this can result in the Go runtime spending a significant amount of time tracking each of those individual allocations, and then deallocating them. As a result this also causes signicant performance overhead.
+在某些情形下，例如 HTTP 服务器处理具有大量 protobuf blob（其中包含许多小对象）的请求时，Go 运行时可能会花费大量时间跟踪每个分配，然后释放它们。因此，这也导致了明显的性能开销。
 
-Arenas offer a solution to this problem, by reducing the overhead associated with many smaller allocations. In this protobuf blob example, a large chunk of memory (an arena) can be allocated before parsing enabling all parsed objects to then be placed within the arena and tracked as a collective unit.
+Arenas 提供了一种解决这个问题的方法，通过减少与许多小分配相关的开销。在这个 protobuf blob 示例中，可以在解析之前分配一大块内存（Arenas），以便所有已解析的对象可以放置在竞技场内并作为一个整体单元进行跟踪。
 
-Once parsing is completed, the entire arena can be freed at once, further reducing the overhead of freeing many small objects.
+一旦解析完成，整个竞技场可以一次性释放，进一步减少释放许多小对象的开销。
 
-![1](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/1.png)
+![1](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\1.png)
 
-## Identifying Code That Could Benefit From Arenas
+## 了解可从竞技场中受益的代码
 
-Any code that allocates a lot of small objects could potentially benefit from arenas. But how do you know if your code allocates too many? In our experience, the best way to do that is to profile your program.
+任何分配大量小对象的代码都有可能从竞技场中受益。但是如何知道代码分配的过多？根据我们的经验，最好的方法是对程序进行分析。
 
-Using Pyroscope we were able to get an allocations profile (`alloc_objects`) of one of our [cloud services](https://pyroscope.io/pricing/):
+使用 Pyroscope，我们可以获得其中一个[云服务](https://pyroscope.io/pricing/)的分配配置文件（`alloc_objects`）。
 
-![2](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/2.png)
+![2](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\2.png)
 
-You can see that the majority of allocations (`533.30 M`) come from one area of code — it's the purple node at the bottom where it calls function `InsertStackA`. Given that it represents 65% of allocations this is a good candidate for using arenas. But is there enough of a performance benefit to be gained by cutting down these allocations? Let's take a look at the CPU profile (`cpu`) of the same service:
+你可以看到大部分分配（`533.30 M`）来自代码的一个区域 - 这是在底部调用函数`InsertStackA`的紫色节点。鉴于它代表65％的分配，这是使用竞技场的好候选者。但是，通过减少这些分配是否可以获得足够的性能收益？让我们看看同一服务的CPU分析（`cpu`）：
 
-![3](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/3.png)
+![3](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\3.png)
 
-A few things stand out:
+几件事情很突出：
 
-- The program spends a lot of CPU time in the same `InsertStackA` function, so there definitely is potential for meaningful performance gains
-- If you search for `runtime.mallocgc` (multiple pink nodes at the bottom) you will see that that function is called frequently in various different places and it takes about 14% our total execution time
-- About 5% of the CPU time is spent in `runtime.gcBgMarkWorker` (pink nodes located in the right section of the flamegraph)
+- 程序在相同的`InsertStackA`函数中花费了很多CPU时间，因此显然有潜在的重要性能改进潜力。
+- 如果搜索`runtime.mallocgc`（底部的多个粉色节点），你会发现该函数在各种不同的地方频繁调用，它占用了我们总执行时间的约14％。
+- 大约5％的CPU时间花费在`runtime.gcBgMarkWorker`（位于火焰图右侧的粉色节点）上。
 
-So in theory, if we optimized all allocations in this program, we could cut about 14% + 5% = 19% of CPU time. This would translate in 19% cost savings and latency improvements for all of our customers. In practice, it's unlikely that we could truly get these numbers down to zero, but this is still a significant chunk of work that the application performs and it might be worth it to optimize it.
+因此，理论上，如果我们优化了这个程序中的所有分配，我们可以减少14％+5％= 19％的CPU时间。这将转化为我们所有客户的19％成本节约和延迟改进。在实践中，不太可能真正使这些数字降到零，但这仍然是应用程序执行的重要工作，可能值得优化。
 
-## Optimizations We've Made
+## 我们做出的优化
 
-If you're interested in following along, there's a [public pull request in the Pyroscope repository](https://github.com/pyroscope-io/pyroscope/pull/1804) that you can use as a reference.
+如果您对此感兴趣，您可以在Pyroscope存储库中找到[公共拉取请求](https://github.com/pyroscope-io/pyroscope/pull/1804)作为参考。
 
-- To begin, we created [a wrapper component](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-70ab4bbe796a97ad1a47d7970504296eff36b5307527ae2806d2b50f94f83a45) that is responsible for dealing with allocations of slices or structs. If arenas are enabled, this component allocates the slices using an arena, otherwise it uses the standard `make` function. We do this by using build tags (`//go:build goexperiment.arenas`). This allows for easy switching between arena allocation and standard allocation at build time
-- We then added [initialization](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-32bf8c53a15c8a5f7eb424b21c8502dc4905ec3caa28fac50f64277361ae746fR417) and [cleanup](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-34edf37e55842273380ee6cb31c9245f31ed25aa6d7898b0f2c25145f17d8ea0R170) calls for arenas around the parser code
-- After that we [replaced regular `make` calls with make calls from our wrapper component](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-abe15b6d3634170650f86bb7283aa15265de2197cffa969deda2dd5b26fcecd9R89-R92)
-- Finally, we built pyroscope with arenas enabled and gradually deployed it to our production environment of [Pyroscope Cloud](https://pyroscope.io/pricing).
+- 首先，我们创建了[一个包装组件](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-70ab4bbe796a97ad1a47d7970504296eff36b5307527ae2806d2b50f94f83a45)，负责处理切片或结构的分配。如果启用了竞技场，此组件使用竞技场分配切片，否则使用标准“make”函数。我们通过使用构建标记（`//go：build goexperiment.arenas`）实现此目的。这允许在构建时轻松地在竞技场分配和标准分配之间切换
+- 然后，我们在解析器代码周围添加了[初始化](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-32bf8c53a15c8a5f7eb424b21c8502dc4905ec3caa28fac50f64277361ae746fR417)和[清理](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-34edf37e55842273380ee6cb31c9245f31ed25aa6d7898b0f2c25145f17d8ea0R170)调用竞技场
+- 接下来，我们[用我们的包装组件中的make调用替换了常规的`make`调用](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-abe15b6d3634170650f86bb7283aa15265de2197cffa969deda2dd5b26fcecd9R89-R92)
+- 最后，我们在启用了 arenas 的情况下构建了 pyroscope，并逐渐部署到了我们的 [Pyroscope Cloud](https://pyroscope.io/pricing) 生产环境中。
 
-## Results of Our Arenas Experimentation
+## 我们 Arenas 实验的结论
 
-![4](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/4.png)
+![4](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\4.png)
 
-The flamegraph above represents a profile after we've implemented the changes. You can see that many of the `runtime.mallocgc` calls are now gone, but are replaced with arena-specific equivalent (`runtime.(*userArena).alloc`), you can also see that garbage collection overhead is cut in half. It is hard to see the exact amount of savings from solely looking at the flamegraphs, but when looking at our Grafana dashboard which combines our flamegraph with CPU utilization from AWS metrics we saw approximately a 8% reduction in CPU usage. This translates directly into 8% cost savings on cloud bills for that particular service, making it a worthwhile improvement.
+上面的火焰图表示我们实施更改后的配置文件。您可以看到，许多`runtime.mallocgc`调用现在已经消失，但被竞技场特定的等效项（`runtime.(*userArena).alloc`）替代，您也可以看到垃圾回收开销减少了一半。仅从火焰图上看准确的节省量很难看出，但是当我们查看结合了火焰图和AWS指标的CPU使用情况的Grafana仪表板时，我们发现CPU使用率大约减少了8％。这直接转化为该特定服务的云账单上的8％费用节省，使其成为一项有价值的改进。
 
-![5](../static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/5.png)
+![5](C:\Users\zhengxm\Documents\notes\翻译\static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\5.png)
 
-This may not seem like a lot, but it's important to note that this is a service that has already been optimized quite a bit. For example, the protobuf parser that we use doesn't allocate any extra memory at all, garbage collection overhead (5%) is also on the lower end of the spectrum for our services. We think that there's a lot more room for improvement in other parts of the codebase and so we're excited to continue our experiments with arenas.
+这可能看起来不多，但重要的是要注意，这是一项已经被优化得相当多的服务。例如，我们使用的Protobuf解析器根本不会分配任何额外的内存，垃圾回收开销（5％）也在我们服务的开销范围的低端。我们认为代码库的其他部分还有很多改进的空间，因此我们很高兴继续尝试竞技场。
 
-## Tradeoffs and Drawbacks
+## 权衡弊端
 
-While arenas can provide performance benefits, it's important to consider the tradeoffs before using them. The main drawback of using arenas is that when you use arenas you now have to manage memory manually and if you're not careful that may lead to serious problems:
+虽然 arenas 可以提供性能上的好处，但在使用它们之前有必要考虑利弊。使用 arenas 的主要缺点是，一旦使用 arenas，您现在必须手动管理内存，如果您不小心，这可能导致严重问题：
 
-- Failing to properly free memory can lead to **memory leaks**
-- Attempting to access objects from a previously freed arena may cause **program crashes**
+- 未能正确释放内存可能导致内存泄漏
 
-Here's our recommendations:
+- 尝试从已释放的场馆访问对象可能导致程序崩溃 
 
-- Only use arenas in critical code paths. Do not use them everywhere
-- Profile your code before and after using arenas to make sure you're adding arenas in areas where they can provide the most benefit
-- Pay close attention to the lifecycle of the objects created on the arena. Make sure you don't leak them to other components of your program where objects may outlive the arena
-- Use `defer a.Free()` to make sure that you don't forget to free memory
-- Use `arena.Clone()` to clone objects back to the heap if you want to use them after an arena was freed
+以下是我们的建议：
 
-The other major drawback at the moment is that Go arenas are an experimental feature. The API and implementation is completely unsupported and go team makes no guarantees about compatibility or whether it will even continue to exist in any future release. We recommend that you extract all arena-related code into a separate package and use build tags to make sure that it's easy to remove it from your codebase if you decide to stop using arenas. [Our code](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-70ab4bbe796a97ad1a47d7970504296eff36b5307527ae2806d2b50f94f83a45) can serve as a demonstration of this approach.
+- 仅在关键代码路径中使用 arenas。不要在所有地方使用它们
 
-## Addressing Community Concerns
+- 在使用 arenas 前后对代码进行分析，以确保您在 arenas 可以提供最大效益的地方添加 arenas
 
-The go team has received a lot of feedback about arenas and we'd like to address some of the concerns that we've seen in the community. The most frequently mentioned issue with arenas is that they make the language more complicated by adding an implicit and not immediately obvious way for programs to crash.
+- 密切关注在 arenas 上创建的对象的生命周期。确保不要将它们泄漏到程序的其他组件，其中对象可能超出 arenas 的生命周期
 
-Most of the criticism is well-founded but misdirected. We do not anticipate arenas becoming widespread. We view arenas as a powerful tool, but one that is only suitable for specific situations. In our view, arenas should be included in the standard library, however, their usage should be discouraged, much like the use of `unsafe`, `reflect`, or `cgo`.
+- 使用`defer a.Free()`确保不会忘记释放内存
 
-Our experience with arenas has been very positive and we were able to show that arenas can significantly reduce the amount of time spent in garbage collection and memory allocations. The experiment described in this article focused on a single, already highly optimized service, and we were still able to squeeze 8% of extra performance by using arenas. We think that many users could benefit a lot more from using arenas in their codebases.
+- 使用`arena.Clone()`将对象克隆回堆上，如果您在 arenas 被释放后想要使用它们
 
-In addition to that we also find that arenas are easier to implement compared to other optimizations that we've tried in the past, such as using buffer pools or writing custom allocation-free protobuf parsers. And compared to the other types of optimizations, they share the same drawbacks, but provide more benefits — so in our view arenas are a net win. We're hoping to see arenas become a part of the standard library (and part of commonly used packages like protobuf or JSON parsers) in the future.
+Go arenas 目前的一个主要缺点是它是一项实验性特性。 API 和实现是完全不受支持的，Go 团队不对其兼容性或将来是否会继续存在进行任何保证。我们建议您将所有与 arenas 相关的代码提取到单独的包中，并使用 build tags 以确保如果您决定停止使用 arenas，它很容易从您的代码库中删除。[我们的代码](https://github.com/pyroscope-io/pyroscope/pull/1804/files#diff-70ab4bbe796a97ad1a47d7970504296eff36b5307527ae2806d2b50f94f83a45)可作为此方法的演示。
 
-## Conclusion
+## 解决社区关注的问题
 
-Arenas are a powerful tool for optimizing Go programs, particularly in scenarios where your programs spend significant amount of time parsing large protobuf or JSON blobs. They have the potential to provide significant performance improvements, but it is important to note that they are an experimental feature and there are no guarantees of compatibility or continued existence in future releases.
+Go团队已经收到了关于竞技场的大量反馈，我们想要回应社区中我们所看到的一些关切。有关竞技场最常见的问题是它们添加了一种隐式且不立即显现问题的程序崩溃方式，使语言变得更加复杂。
 
-We recommend that you profile your applications and try using arenas on a limited portion of your codebase and [report your findings to the go team](https://github.com/golang/go/issues/51317).
+大部分的批评是明确的但误导性的。我们不预期竞技场会变得普遍。我们认为竞技场是一个强大的工具，但只适用于特定情况。在我们看来，竞技场应该包含在标准库中，但它们的使用应该受到警惕，就像使用`unsafe`，`reflect`或`cgo`一样。
+
+我们对竞技场的经验非常充分，我们能够证明竞技场可以显着减少垃圾回收和内存分配的时间。本文描述的实验关注的是一个单独的、已经高度优化的服务，我们仍然能够通过使用竞技场获得8%的额外性能。我们认为许多用户可以从在代码库中使用竞技场中获益更多。
+
+此外，我们还发现，相比我们过去尝试的其他优化（如使用缓冲池或编写自定义无分配 protobuf 解析器），竞技场的实现更容易。与其他类型的优化相比，它们具有相同的缺点，但提供了更多的好处 - 因此，在我们看来，竞技场是一个净赢。我们希望未来能看到竞技场成为标准库的一部分（并且是常用包如 protobuf 或 JSON 解析器的一部分）。
+
+## 总结
+
+Go程序的优化工具，特别适用于处理大量protobuf或JSON块的情况。它们有可能带来显著的性能改进，但是需要注意的是它们是一个实验性的功能，不保证兼容性或在未来版本中的存在。
+
+我们建议您对应用程序进行分析，并在代码库的有限部分尝试使用arenas，并将您的结果[报告给go团队](https://github.com/golang/go/issues/51317)。
