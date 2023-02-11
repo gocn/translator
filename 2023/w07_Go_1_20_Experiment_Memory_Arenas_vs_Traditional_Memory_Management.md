@@ -6,7 +6,7 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：[cvley](https://github.com/cvley)
 
-![6](../static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\6.png)
+![6](https://github.com/gocn/translator/blob/master/static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/6.png)
 
 > **注意**
 >
@@ -35,7 +35,7 @@ Arenas 提供了一种解决这个问题的方法，通过减少与许多小分�
 
 一旦解析完成，整个  arenas 可以一次性释放，进一步减少释放许多小对象的开销。
 
-![1](../static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\1.png)
+![1](https://github.com/gocn/translator/blob/master/static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/1.png)
 
 ## 判断可以从  arenas 中受益的代码
 
@@ -43,11 +43,11 @@ Arenas 提供了一种解决这个问题的方法，通过减少与许多小分�
 
 使用 Pyroscope，我们可以获得其中一个[云服务](https://pyroscope.io/pricing/)的分配配置文件（`alloc_objects`）。
 
-![2](../static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\2.png)
+![2](https://github.com/gocn/translator/blob/master/static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/2.png)
 
 你可以看到内存分配（`533.30 M`）的大部分来自代码的一个区域 - 这是在底部调用函数`InsertStackA`的紫色节点。鉴于它代表65％的分配，这是使用  arenas 的好候选者。但是，通过减少这些分配是否可以获得足够的性能收益？让我们看看同一服务的CPU分析（`cpu`）：
 
-![3](../static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\3.png)
+![3](https://github.com/gocn/translator/blob/master/static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/3.png)
 
 几件事情很突出：
 
@@ -68,11 +68,11 @@ Arenas 提供了一种解决这个问题的方法，通过减少与许多小分�
 
 ## 我们 Arenas 实验的结论
 
-![4](../static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\4.png)
+![4](https://github.com/gocn/translator/blob/master/static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/4.png)
 
 上面的火焰图表示我们实施更改后的配置文件。您可以看到，许多`runtime.mallocgc`调用现在已经消失，但被  arenas 特定的等效项（`runtime.(*userArena).alloc`）替代，您也可以看到垃圾回收开销减少了一半。仅从火焰图上看准确的节省量很难看出，但是当我们查看结合了火焰图和AWS指标的CPU使用情况的 Grafana 仪表板时，我们发现CPU使用率大约减少了8％。这直接转化为该特定服务的云账单上的8％费用节省，使其成为一项有价值的改进。
 
-![5](../static\images\2023\w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management\5.png)
+![5](https://github.com/gocn/translator/blob/master/static/images/2023/w07-Go-1-20-Experiment-Memory-Arenas-vs-Traditional-Memory-Management/5.png)
 
 这可能看起来不多，但重要的是要注意，这是一项已经被优化得相当多的服务。例如，我们使用的 Protobuf 解析器根本不会分配任何额外的内存，垃圾回收开销（5％）也在我们服务的开销范围的低端。我们认为代码库的其他部分还有很多改进的空间，因此我们很高兴继续尝试  arenas 。
 
