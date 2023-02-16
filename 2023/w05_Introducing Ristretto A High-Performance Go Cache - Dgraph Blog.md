@@ -1,5 +1,10 @@
 # Ristretto 简介： 一个高性能GO缓存
 
+- 原文地址：[Introducing Ristretto: A High-Performance Go Cache](https://dgraph.io/blog/post/introducing-ristretto-high-perf-go-cache/)
+- 原文作者：[Dmitry Filimonov](https://github.com/petethepig)
+- 本文永久链接：[Ristretto 简介： 一个高性能GO缓存](https://github.com/gocn/translator/blob/master/2023/w05_Introducing%20Ristretto%20A%20High-Performance%20Go%20Cache%20-%20Dgraph%20Blog.md)
+- 译者：[784909593](https://github.com/784909593)
+- 校对：[b8kings0ga](https://github.com/b8kings0ga)
 
 **这个博客登上了 Golang [subreddit](https://www.reddit.com/r/golang/comments/d6taoq/introducing_ristretto_a_highperformance_go_cache/) 的顶部，并且在 [Hacker News](https://news.ycombinator.com/item?id=21023949) 的trending上排在前十位。 一定要在那里参与讨论，并通过给我们一个 [star](https://github.com/dgraph-io/dgraph)，表达对我们的喜欢。**
 
