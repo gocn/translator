@@ -181,7 +181,6 @@ cpu: Intel(R) Xeon(R) W-2135 CPU @ 3.70GHz
 Load-12   393.8µ ± 1%   383.6µ ± 1%  -2.59% (p=0.000 n=20)
 ```
 
-The new version is around 2.6% faster! In Go 1.20, workloads typically get between 2% and 4% CPU usage improvements from enabling PGO. Profiles contain a wealth of information about application behavior and Go 1.20 just begins to crack the surface by using this information for inlining. Future releases will continue improving performance as more parts of the compiler take advantage of PGO.
 新版本快了大约 2.6%！ 在 Go 1.20 中，工作负载通常会通过启用 PGO 获得 2% 到 4% 的 CPU 使用率改进。 性能分析文件包含有关应用程序行为的大量信息，Go 1.20 刚刚开始使用这些信息进行内联。随着编译器的更多部分利用 PGO，未来的版本将继续提高性能。
 
 ## 下一步
