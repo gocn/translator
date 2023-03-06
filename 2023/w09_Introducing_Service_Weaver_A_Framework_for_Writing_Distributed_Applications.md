@@ -2,7 +2,7 @@
 
 - 原文地址：[Introducing Service Weaver: A Framework for Writing Distributed Applications | Google Open Source Blog (googleblog.com)](https://opensource.googleblog.com/2023/03/introducing-service-weaver-framework-for-writing-distributed-applications.html)
 - 原文作者：Srdjan Petrovic and Garv Sawhney
-- 本文永久链接：
+- 本文永久链接：[w09_Introducing_Service_Weaver_A_Framework_for_Writing_Distributed_Applications](https://github.com/gocn/translator/blob/master/2023/w09_Introducing_Service_Weaver_A_Framework_for_Writing_Distributed_Applications.md)
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
