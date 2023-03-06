@@ -14,7 +14,7 @@ More concretely, Service Weaver consists of two core pieces:
 
 2. A set of deployers, which let you configure the runtime topology of your application and deploy it as a set of microservices, either locally or on the cloud of your choosing.
 
-   ![](../static\images\2023\w09_Introducing_Service_Weaver_A_Framework_for_Writing_Distributed_Applications\1.png)
+   ![](../static/images/2023/w09_Introducing_Service_Weaver_A_Framework_for_Writing_Distributed_Applications/1.png)
 
 By decoupling the process of writing the application from runtime considerations such as how the application is split into microservices, what data serialization formats are used, and how services are discovered, Service Weaver aims to improve distributed application development velocity and performance.
 
@@ -59,7 +59,7 @@ To make a change to the above application, such as adding an unbounded number of
 
 When it is time to run your application, Service Weaver allows you to run it anywhere—on your local desktop environment or on your local rack of machines or in the cloud—without any changes to your application code. This level of portability is achieved by a clear separation of concerns built into the Service Weaver framework. On one end, we have the programming framework, used for application development. On the other end, we have various **deployer** implementations, one per deployment environment.
 
-![](../static\images\2023\w09_Introducing_Service_Weaver_A_Framework_for_Writing_Distributed_Applications\2.png)
+![](../static/images/2023/w09_Introducing_Service_Weaver_A_Framework_for_Writing_Distributed_Applications/2.png)
 
 This separation of concerns allows you to run your application locally in a single process via go run .; or run it on Google Cloud via weaver gke deploy; or enable and run it on other platforms. In all of these cases, you get the same application behavior without the need to modify or re-compile your application.
 
