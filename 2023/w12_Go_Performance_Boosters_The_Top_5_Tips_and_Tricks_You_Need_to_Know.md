@@ -1,28 +1,24 @@
-# Go Performance Boosters: The Top 5 Tips and Tricks You Need to Know
+# Go性能加速器：你需要知道的5个诀窍和技巧
 
 - 原文地址：<https://medium.com/@func25/go-performance-boosters-the-top-5-tips-and-tricks-you-need-to-know-e5cf6e5bc683>
-- 原文作者：Go Performance Boosters: The Top 5 Tips and Tricks You Need to Know
+- 原文作者：Aiden (@func25)
 - 本文永久链接：<https://github.com/gocn/translator/blob/master/2023/w12_Go_Performance_Boosters_The_Top_5_Tips_and_Tricks_You_Need_to_Know.md>
 - 译者：[小超人](https://github.com/focozz)
 - 校对：[]()
 
->  How to turn your slow and clunky Go applications into lean, mean, code-crunching machines with these top 5 tips and tricks for optimizing your Go code
+> 通过这 5个诀窍和技巧来将那些运行缓慢，低效的 go 代码变成精简，高效，快速的机器代码。
 
-![](../static/images/2023/w12_Go_Performance_Boosters_The_Top_5_Tips_and_Tricks_You_Need_to_Know/1_7pKdwB_c5boKS_235L9DRQ.png)
+![Go性能加速器：你需要知道的5个诀窍和技巧](../static/images/2023/w12_Go_Performance_Boosters_The_Top_5_Tips_and_Tricks_You_Need_to_Know/1_7pKdwB_c5boKS_235L9DRQ.png)
 
-Go Performance Boosters: The Top 5 Tips and Tricks You Need to Know
+Go性能加速器：你需要知道的5个诀窍和技巧
+各位 Go 大师和初学者们，你们是否已经厌倦了那些慢得让你想要抓狂的 Go 应用程序？别担心，我们有解决方案。
+在这篇文章中，我将分享将 Go 应用程序变成精简、高效的前5个诀窍和技巧。
+所以拿杯咖啡，放松一下，准备把你的 Go 技能提升到更高的水平。
 
-Attention Go gurus and beginners alike! Are you tired of slow, clunky Go applications that make you want to pull your hair out? Well, fear not, because we’ve got the solution.
+## 1. 避免使用反射。
 
-In this post, I’m sharing the top 5 tips and tricks for optimizing your Go applications and turning them into lean, mean, code-crunching machines.
-
-So grab a cup of coffee, sit back, and get ready to take your Go skills to the next level.
-
-## 1. Avoid reflection
-
-Reflection is a powerful feature of Go that allows a program to introspect and modify its own structure and behavior at runtime.
-
-You can use reflection to determine the type of a value, access its fields, and call its methods.
+反射是 Go 中一个强大的特性，它允许程序在运行时自我检查和修改自身的结构和行为。
+你可以使用反射来确定一个值的类型，访问其字段，并调用其方法。
 
 ``` go
 
@@ -32,7 +28,7 @@ import (
 	"fmt"
 	"reflect"
 )
-
+// 通过反射来获取 x 的类型
 func main() {
 	x := 100
 	v := reflect.ValueOf(x)
@@ -42,19 +38,16 @@ func main() {
 
 ```
 
-**But!**
+**但是！** 反射是在运行时进行值的自我检查和操作，而不是编译时。
+Go运行时必须执行额外的工作来确定反射值的类型和结构，这可能会增加开销并减慢程序速度。
+反射还会使代码更难以阅读和理解而使影响生产力受到影响。
 
-When using reflection, it involves introspection and manipulation of values at runtime, rather than at compile time.
+## 2. 避免使用字符串拼接。
 
-The Go runtime must perform additional work to determine the type and structure of the reflected value, which can add overhead and slow down the program.
+通常使用 `bytes.Buffer` 类型来构建字符串比使用 `+` 操作符连接字符串更有效率。
 
-Reflection can also make code more difficult to read and understand, which can impact productivity.
+看看这个性能较差的代码：
 
-## 2. Avoid string concatenation
-
-It is generally more efficient to use the `bytes.Buffer` type to build strings rather than concatenating strings using the `+` operator.
-
-Look at this poor performance code:
 
 ``` go
 
@@ -66,12 +59,12 @@ fmt.Println(s)
 
 ```
 
-This code will create a new string on each iteration of the loop, which can be inefficient and may lead to poor performance.
+这段代码每次循环都会创建一个新的字符串，这会使效率低下且导致性能变差。
 
-Instead, you can use the `bytes.Buffer` to build the string more efficiently:
+相反地，你可以使用 `bytes.Buffer` 更高效地构建字符串：
 
 ``` go
-
+// 使用 bytes.Buffer 来构建字符串
 var buffer bytes.Buffer
 for i := 0; i < 100000; i++ {
 	buffer.WriteString("x")
@@ -81,12 +74,11 @@ fmt.Println(s)
 
 ```
 
-Thanks to
-
-suggestion, here is **another solution**: using `strings.Builder`. Its usage is similar to `bytes.Buffer`, but it provides even better performance:
+另一个解决方案是使用 `strings.Builder`。它的用法类似于 `bytes.Buffer`，但提供更好的性能：
 
 ``` go
 
+// 使用 strings.Builder 来构建字符串
 var builder strings.Builder
 
 for i := 0; i < 100000; i++ {
@@ -97,26 +89,28 @@ fmt.Println(s)
 
 ```
 
-> “Where is the benchmark (or something)?”
+> 以下是基础测试
 
-I have compared these 2 solutions and the result is…
+我已经比较了这两种解决方案，结果如下:
 
--   Using `bytes.Buffer` is significantly faster than using string concatenation, with a performance boost of **over 250x** in some cases.
--   Using `strings.Builder` is approximately 1.5 times faster than `bytes.Buffer`
+- 使用 `bytes.Buffer` 比使用字符串拼接快得多，在某些情况下性能提升超过 250 倍。
+- 使用 `strings.Builder` 大约比 `bytes.Buffer` 快1.5倍。
 
-It is important to note that the exact performance boost may vary depending on factors such as the specific CPU and running context of the code
+需要注意的是，实际的性能提升可能因为特定的 CPU 和代码运行环境等因素而有所差异。
 
-> Why strings.Builder is faster than `bytes.Buffer`?
+> strings.Builder比bytes.Buffer更快的原因有几个。
 
-This is because `strings.Builder` is specifically optimized for building strings. By contrast, `bytes.Buffer` is a more general-purpose buffer that can be used to build any type of data, but it may not be as optimized for building strings as `strings.Builder`
 
-## 3. Pre-Allocating for slice, map
+这是因为 `strings.Builder` 专门针对字符串的构建进行了优化。相比之下，`bytes.Buffer` 是一个更通用的缓冲区，可以用于构建任何类型的数据，但它可能没有像 `strings.Builder` 那样专门优化字符串构建的性能。
 
-Allocating a slice with a capacity that is suitable for the number of elements it is expected to hold can improve performance in Go.
+## 3. 预分配切片和 map 的空间。
 
-This is because allocating a slice with a larger capacity can reduce the number of times that the slice needs to be resized as elements are added.
 
-Here is the benchmark:
+在Go中，为预期容纳的元素数量适当分配切片的容量可以提高性能。
+
+这是因为分配具有更大容量的切片可以减少在添加元素时需要调整切片大小的次数。
+
+下面是压力测试:
 
 ``` go
 
@@ -139,17 +133,17 @@ func main() {
 
 ```
 
-Yes, we were able to boost the speed X3 FASTER with pre-allocation.
+是的，通过预分配，我们能够将速度提升3倍。
 
-If you want to understand [why pre-allocation is faster](https://medium.com/@func25/go-secret-slice-a-deep-dive-into-slice-6bd7b0b70ec4), I have written a detailed explanation in a post about slices
+我已经在一篇关于切片的文章中对于[为什么预分配更快](https://medium.com/@func25/go-secret-slice-a-deep-dive-into-slice-6bd7b0b70ec4)写了一个详细的解释，你可以直接点击链接查看。
 
-## 4. Avoid using interfaces with a single concrete type
+## 4. 避免使用只有一个具体类型的接口。
 
-If you know that an interface will only ever have a single concrete type, you can use the concrete type directly to avoid the overhead of the interface.
+如果你知道一个接口只会有一个具体类型，你可以直接使用该具体类型，以避免接口的开销。
 
-Using the concrete type directly can be more efficient than using the interface because it avoids the overhead of storing the type and value in the interface.
+直接使用具体类型可以比使用接口更高效，因为它避免了在接口中存储类型和值的开销。
 
-Here is an example compares the performance of using an interface versus using a concrete type directly in Go:
+这里有一个例子，比较了在 Go 中使用接口和直接使用具体类型的性能：
 
 ``` go
 
@@ -172,17 +166,19 @@ func main() {
 
 ```
 
-Using interface costs **358μs**, concrete type costs **342μs.**
+使用接口的耗时为358微秒，而使用具体类型的耗时为342微秒。
 
-It’s important to note that this technique should only be used when you are certain that an interface will only ever have a single concrete type.
+需要注意的是，只有当你确信一个接口只会有一个具体类型时，才应该使用这种技术。
 
 ## 5. Using go vet
+## 5. 使用 go vet
 
-The `govet` tool is a static analysis tool without running code that can help you find potential issues in your Go code.
 
-`govet` checks your code for all sorts of problems that could cause bugs or lead to poor performance. It's like a code quality police, constantly checking to make sure you're not doing anything stupid.
+govet 工具是一种静态分析工具，它可以在不运行代码的情况下帮助你找到 Go 代码中可能存在的问题。
 
-To use `govet`, you can run the `go tool vet` command and pass the names of the Go source files you want to check as arguments:
+`govet` 检查您的代码以查找可能导致错误或性能问题的各种问题。它就像是一个代码质量警察，不断检查以确保你没有犯任何低级错误。
+
+要使用 `govet`，可以运行 `go tool vet` 命令，并将要检查的 Go 源文件的名称作为参数传递:
 
 ```go
 
@@ -190,7 +186,8 @@ go tool vet main.go
 
 ```
 
-You can also pass the `-all` flag to `go tool vet` to check all the Go source files in the current directory and its subdirectories:
+你也可以在 `go tool vet` 命令中加入 `-all` 标志，以检查当前目录及其子目录中的所有 Go 源文件：
+
 
 ``` go
 
@@ -198,22 +195,24 @@ go tool vet -all
 
 ```
 
-> The govet is too noisy. Some problems don’t need to be reported.
+> govet 可能会不断地报告不需要报告的问题。
 
-You can customize the behavior of `govet` by writing "vet comments" in your code. Vet comments are special comments that tell `govet` to ignore certain issues or to check for additional issues
+你可以通过在代码中编写 "vet comments" 来自定义 `govet` 的行为。Vet 注释是特殊的注释，告诉 `govet` 忽略某些问题或检查其他问题。
 
-Here is an example of a vet comment that tells `govet` to ignore an unused variable:
+以下是一个 vet 注释的例子，告诉 `govet` 忽略未使用的变量：
 
 ``` go
 
 func main() {
-	var x int  _ = x
+ var x int
+ //go:noinline
+ _ = x
 }
 
 ```
 
-## Ending on a High Note
+## 总结
 
-Remember to keep an eye on memory allocation, interface, pre-allocating,… And if you want to take your Go code to the next level, there are plenty of other tips and tricks out there to explore.
+记得要密切关注内存分配、接口、预分配等问题。如果你想将你的 Go 代码提升到更高的水平，还有很多其他的技巧和窍门可以探索。
 
-Just remember to always keep learning and have fun with it, **happy coding**!
+只要保持学习的态度，并享受编程的乐趣，就可以了！祝编程愉快！
