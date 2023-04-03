@@ -4,7 +4,7 @@
 - 原文作者：Aiden (@func25)
 - 本文永久链接：<https://github.com/gocn/translator/blob/master/2023/w12_Go_Performance_Boosters_The_Top_5_Tips_and_Tricks_You_Need_to_Know.md>
 - 译者：[小超人](https://github.com/focozz)
-- 校对：[]()
+- 校对：[784909593](https://github.com/784909593)
 
 > 通过这 5个诀窍和技巧来将那些运行缓慢，低效的 go 代码变成精简，高效，快速的机器代码。
 
