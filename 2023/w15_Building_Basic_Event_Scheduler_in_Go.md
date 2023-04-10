@@ -1,23 +1,23 @@
 - 原文地址：https://medium.com/wesionary-team/building-basic-event-scheduler-in-go-134c19f77f84
 - 原文作者：Dipesh Dulal
-- 本文永久链接：https://github.com/gocn/translator/blob/master/2021/
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w15_Building_Basic_Event_Scheduler_in_Go.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[cvley](https://github.com/cvley)
 
-## Building Basic Event Scheduler in Go
-![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*gBs7tyig8N5eeHNMOwIG8w.png)
+## Go构建基础的事件调度器
+![](https://github.com/gocn/translator/raw/master/static/images/2023/w15_Building_Basic_Event_Scheduler_in_Go//1_gBs7tyig8N5eeHNMOwIG8w.webp)
 
-When we need to run a task after certain period of time, at a given time, on intervals etc, we need to use task scheduling system that is responsible for running tasks like; sending emails, push notifications, closing accounts at midnight, clearing tables etc.
+当我们需要在一段时间后的特定时间或间隔运行任务时，我们需要使用任务调度系统来运行任务：例如发送电子邮件、推送通知、午夜关闭账户、清空表格等
 
-In this story, we will build basic event scheduler that can schedule event to run after certain period of time using database as a persisting layer that will give us some understanding how event scheduling system might work. The basic working mechanism is that;
+在本文中，我们将构建一个基本的事件调度程序，使用数据库作为持久层来调度事件在特定时间段运行，这将使我们了解事件调度系统的工作原理。基本的工作机制是；
 
-Whenever we need to schedule the event, the scheduled job is added to database to run at given time. Another task is always running periodically to check if some task has been expired from database and run the event if found expired in the database (polling).
+每当我们需要调度事件时，计划作业就会添加到数据库中以在特定时间运行。另一个任务始终定期运行以检查数据库中的某些任务是否已过期， 如果在数据库中发现已过期任务（轮询）则运行计划作业。
 
-![Implementation Details](https://miro.medium.com/max/1122/1*WVOKKAJBbWlmOL2dEgOCOQ.png)
+![Implementation Details](https://github.com/gocn/translator/raw/master/static/images/2023/w15_Building_Basic_Event_Scheduler_in_Go/1_WVOKKAJBbWlmOL2dEgOCOQ.png)
 
 
 
-Let’s start by creating database schema (in postgresql) that we will use to store our events.
+让我们从创建用于存储事件的数据库（在 postgresql 中）开始。
 
 ```sql
 CREATE TABLE IF NOT EXISTS "public"."jobs" (     
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS "public"."jobs" (
 )
 ```
 
-Now, let’s define data structure for;
+现在，我们来定义数据结构；
 
 -   `Event` : 调度事件
 -   `Listeners` : 事件监听器列表
@@ -49,7 +49,7 @@ type Event struct {
 }
 ```
 
-Also define `Scheduler` struct that we will use to schedule events and run the listeners.
+还需要定义 `Scheduler` 结构，用于调度事件和运行侦听器。
 ```go
 // Scheduler data structure
 type Scheduler struct {
@@ -66,9 +66,9 @@ func NewScheduler(db *sql.DB, listeners Listeners) Scheduler {
 }
 ```
 
-In line #8 to #13, we are creating new scheduler by passing `sql.DB` instance and initial listeners to the scheduler.
+在第 8 行到第 13 行中，我们通过将sql.DB实例和初始侦听器传递给调度程序来创建新的调度程序。
 
-Now, we need to add schedule function implementation that will insert our event into `jobs` table which is shown below;
+现在，我们实现调度函数，并将我们的事件插入到 `jobs` 表中；
 ```go
 // Schedule sechedules the provided events
 func (s Scheduler) Schedule(event string, payload string, runAt time.Time) {
@@ -85,11 +85,11 @@ func (s Scheduler) AddListener(event string, listenFunc ListenFunc) {
 }
 ```
 
-Here, in `AddListener` function we are simply assigning listener function to event name.
+在 `AddListener` 函数中，我们为事件分配监听函数。
 
-We have completed first part of puzzle adding to the job table. We now need to get the jobs that have been expired from the database, execute and then delete them.
+我们已经首先完成了添加 `jobs` 表。现在需要从数据库中获取已经过期的作业，执行然后删除它们。
 
-The function implementation below shows how we can check for the expired events in the table and serializing the event into our `Event` struct.
+下面的函数实现显示了我们如何检查表中的过期事件并将事件序列化到 `Event` 结构中。
 ```go
 // checkDueEvents checks and returns due events
 func (s Scheduler) checkDueEvents() []Event {
@@ -108,7 +108,7 @@ func (s Scheduler) checkDueEvents() []Event {
 }
 ```
 
-Second part of the puzzle is calling the registered event listeners found from the database as shown below;
+第二步是调用从数据库中找到的已注册事件侦听器，如下所示；
 ```go
 // callListeners calls the event listener of provided event
 func (s Scheduler) callListeners(event Event) {
@@ -126,9 +126,9 @@ func (s Scheduler) callListeners(event Event) {
 }
 ```
 
-Here, we are checking if there is event function attached, and if found we are calling the event listener function. Line #6 to #9 deletes the job from database so that the listener is not found another time when polling the database.
+在这里，我们正在检查是否有绑定的事件函数，如果找到则调用事件的监听器函数。第 6 行到第 9 行将从数据库中删除事件，以便在下次轮询数据库时不会再找到。
 
-Now, the final part is (polling) to check if some event has been expired in the given interval. For running tasks in interval we are using ticker function of `time` library that will give a channel which receives a new tick in provided interval.
+最后一步是（轮询）检查某个事件是否在给定时间间隔内过期。对于间隔运行的任务，我们使用 `time` 库的 `ticker` 函数，该函数将提供一个通道，该通道在提供的间隔内接收新的 `tick`。
 ```go
 // CheckEventsInInterval checks the event in given interval
 func (s Scheduler) CheckEventsInInterval(ctx context.Context, duration time.Duration) {
@@ -152,9 +152,9 @@ func (s Scheduler) CheckEventsInInterval(ctx context.Context, duration time.Dura
 }
 ```
 
-In line #7 and #10, we are checking if context is closed or ticker channel is receiving the ticks. Upon receiving ticks in #11, we check for due events and then for all the events we call the listeners.
+在第 7 行和第 10 行中，我们检查上下文是否已关闭或 `ticker`通道是否正在接收新的 `tick`。在 11 行接收到 `tick` 后，我们检查到期事件，然后调用所有事件的侦听器函数。
 
-The next part is the actually use all the functions that we defined previously in `main.go` file as shown below;
+下一步就是在 `main.go` 中，实际使用我们前面定义的那些函数，如下所示
 ```go
 package main
 
@@ -198,13 +198,13 @@ func main() {
 }
 ```
 
-In line #13 to #16, we are attaching event listeners to the event name `SendEmail` and `PayBills` so that, these functions will be called when new event has occurred.
+在第 13 行到第 16 行中，我们将侦听函数绑定到事件 `SendEmail` 和 `PayBills`上，以便在发生新事件时调用这些函数。
 
-In line #22 and #32 to #37, we are attaching interrupt channel with `os.Interrupt` and when interrupt occurs in the program we cancel the context provided in #19.
+在 22行 和 32 到 37 行中，我们添加了中断信号(os.Interrupt)通道，当程序中发生中断时，我们执行 19 行中的上下文取消函数。
 
-From line #26 to #30, we are defining event scheduler, running polling function and scheduling the event `SendEmail` to run after a minute and `PayBills` to run after two minute.
+从第 26 行到第 30 行，我们定义事件调度程序、运行轮询函数并将在一分钟后运行 `SendEmail` ，两分钟后运行 `PayBills`。
 
-The output of the given program will look like;
+程序的输出将如下所示；
 ```
 
 2021/01/16 11:58:49 💾 Seeding database with table...
@@ -221,8 +221,8 @@ The output of the given program will look like;
 ❌ Interrupt received closing...
 ```
 
-From the output, we can see that the event `SendEmail` was triggered after a minute and event `PayBills` after second minute.
+从输出中，我们可以看到 `SendEmail` 在一分钟后触发，事件 `PayBills` 在第二分钟后触发。
 
-In this way, we built a basic event scheduling system that will schedule events after certain time interval. Full example for this code can be found at:
+通过这种方式，我们构建了一个基本的事件调度系统，它将在一定时间间隔后调度事件。
 
-This example only shows basic implementation of event scheduling which doesn’t cover things like; how to handle if overlap that occurs between two polling interval, how to not use polling, etc. We can use rabbitmq , kafka etc for some serious event scheduling that might scale eventually.
+这个例子只展示了事件调度程度的基本实现，并未覆盖诸如：如果两个轮询间隔之间发生重叠，如何处理，如何不使用轮询等。我们可以使用 `rabbitmq`，`kafka` 等完成一个最终严谨的事件调度程度。
