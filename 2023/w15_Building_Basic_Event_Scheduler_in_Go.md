@@ -7,11 +7,11 @@
 ## Go构建基础的事件调度器
 ![](https://github.com/gocn/translator/raw/master/static/images/2023/w15_Building_Basic_Event_Scheduler_in_Go//1_gBs7tyig8N5eeHNMOwIG8w.webp)
 
-当我们需要在一段时间后的特定时间或间隔运行任务时，我们需要使用任务调度系统;来运行任务：例如发送电子邮件、推送通知、午夜关闭账户、清算表等
+当我们需要在一段时间后的特定时间或间隔运行任务时，我们需要使用任务调度系统来运行任务：例如发送电子邮件、推送通知、午夜关闭账户、清空表格等
 
 在本文中，我们将构建一个基本的事件调度程序，使用数据库作为持久层来调度事件在特定时间段运行，这将使我们了解事件调度系统的工作原理。基本的工作机制是；
 
-每当我们需要调度事件时，计划作业就会添加到数据库中以在特定时间运行。另一个任务始终定期运行以检查某些任务是否已从数据库中过期，如果在数据库中发现已过期任务（轮询）则运行。
+每当我们需要调度事件时，计划作业就会添加到数据库中以在特定时间运行。另一个任务始终定期运行以检查数据库中的某些任务是否已过期， 如果在数据库中发现已过期任务（轮询）则运行计划作业。
 
 ![Implementation Details](https://github.com/gocn/translator/raw/master/static/images/2023/w15_Building_Basic_Event_Scheduler_in_Go/1_WVOKKAJBbWlmOL2dEgOCOQ.png)
 
@@ -126,7 +126,7 @@ func (s Scheduler) callListeners(event Event) {
 }
 ```
 
-在这里，我们正在检查是否有绑定的事件函数，如果找到正在调用事件的监听器函数。第 6 行到第 9 行将从数据库中删除事件，以便在下次轮询数据库时不会再找到。
+在这里，我们正在检查是否有绑定的事件函数，如果找到则调用事件的监听器函数。第 6 行到第 9 行将从数据库中删除事件，以便在下次轮询数据库时不会再找到。
 
 最后一步是（轮询）检查某个事件是否在给定时间间隔内过期。对于间隔运行的任务，我们使用 `time` 库的 `ticker` 函数，该函数将提供一个通道，该通道在提供的间隔内接收新的 `tick`。
 ```go
@@ -154,7 +154,7 @@ func (s Scheduler) CheckEventsInInterval(ctx context.Context, duration time.Dura
 
 在第 7 行和第 10 行中，我们检查上下文是否已关闭或 `ticker`通道是否正在接收新的 `tick`。在 11 行接收到 `tick` 后，我们检查到期事件，然后调用所有事件的侦听器函数。
 
-下面是实际在文件中定义的所有函数，`main.go`  如下所示；
+下一步就是在 `main.go` 中，实际使用我们前面定义的那些函数，如下所示
 ```go
 package main
 
