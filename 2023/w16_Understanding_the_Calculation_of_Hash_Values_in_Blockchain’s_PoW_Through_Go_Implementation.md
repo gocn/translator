@@ -4,7 +4,7 @@
 - 原文作者：Shuntaro
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w16_Understanding_the_Calculation_of_Hash_Values_in_Blockchain’s_PoW_Through_Go_Implementation.md
 - 译者：[haoheipi](https://github.com/haoheipi)
-- 校对：[]()
+- 校对：[watermelo](https://github.com/watermelo)
 
 在本文中，我将通过具体的例子解释区块链中工作量证明（PoW）算法的计算方法，并展示一个 Go 语言的实现示例。
 
