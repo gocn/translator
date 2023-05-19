@@ -1,38 +1,38 @@
-## Random testing in Go
+## Go 中的随机性测试
 
 - 原文地址：[[Random testing in Go — Bitfield Consulting](https://bitfieldconsulting.com/golang/random-testing)](https://vidhyanshu.medium.com/implementing-clean-architecture-in-go-56aca59311b3)
 - 原文作者：[John Arundel](https://bitfieldconsulting.com/golang?author=5e10bdc11264f20181591485)
-- 本文永久链接：
+- 本文永久链接：[translator/w18_Random_testing_in_Go.md at master · gocn/translator · GitHub](https://github.com/gocn/translator/blob/master/2023/w18_Random_testing_in_Go.md)
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
-> *I shot an arrow into the air,*
-> *It fell to earth, I knew not where.*
+> *我瞄准天空发射了一支箭，
+> *它落到了地面，我不知道落在何处。*
 >
-> —Henry Wadsworth Longfellow, [“The Arrow and the Song”](https://www.poetryfoundation.org/poems/44624/the-arrow-and-the-song)
+> -Henry Wadsworth Longfellow,["那支箭与那首歌"](https://www.poetryfoundation.org/poems/44624/the-arrow-and-the-song)
 
-This is the first of a four-part tutorial series on test fuzzing in Go:
+这是关于 Go 语言模糊测试的四部分教程系列的第一部分:
 
-1. Random testing in Go
-2. [Fuzz tests in Go](https://bitfieldconsulting.com/golang/fuzz-tests)
-3. Writing a Go fuzz target (coming soon)
-4. Finding bugs with fuzzing (coming soon)
+1. Go 语言中的随机测试
+2. [Go 语言中的模糊测试](https://bitfieldconsulting.com/golang/fuzz-tests)
+3. 写一个 Go 语言的模糊测试目标(即将推出)
+4. 通过模糊化发现漏洞(即将推出)
 
-Choosing good test cases for our Go programs can be a bit hit-and-miss. Sometimes we get lucky and find an input that causes incorrect behaviour, or even a crash, but in general, picking inputs at random isn’t a good way to find bugs.
+为我们的 Go 程序选择好的测试用例有点看运气。有时我们很幸运找到一个错误的输入或者甚至造成崩溃，但通常来说，随机选择输入不是一个发现 bug 的好方法。
 
-Or is it? What if we leaned into that idea a little and used a *lot* of different inputs? Say, a million, or even a billion. With that many inputs, our chances of finding the one weird value that triggers a problem start to look pretty good.
+或者说有可能吗？如果我们把这个想法发挥到极致，使用很多不同的输入呢？比如一百万个，或者十亿个。有这么多的输入，找到一个触发问题的奇怪值的可能性变得相当大。
 
-Sounds like too much typing? I agree with you, so let’s get the computer to do the work instead. Isn’t that what they’re for, after all?
+听起来太多重复的输入工作了？我同意你的观点，所以让计算机来做这项工作吧。毕竟，那不就是它们的用途吗?
 
-## Generating random test inputs
+## 生成随机测试的输入值
 
-Well, we know how to generate random numbers in Go: we can use `math/rand` (or, for a more cosmic level of randomness, [`bitfield/qrand`](https://github.com/bitfield/qrand)). Let’s give it a try.
+好的，我们知道如何在 Go 中生成随机数：我们可以使用 `math/rand`（或者，对于更高级别的随机性，[`bitfield/qrand`](https://github.com/bitfield/qrand)）。让我们试试看。
 
-Suppose we have a pair of functions `Encode` and `Decode`. It doesn’t matter what they do exactly, but we can assume that if you `Encode` something, then `Decode` the result, you should get back what you started with… if the functions are working correctly, that is.
+假设我们有一对函数 `Encode` 和 `Decode`。它们确切地做什么并不重要，但我们可以假设如果你对某些东西进行了 `Encode`，然后对结果进行 `Decode`。只要这些函数正常工作，你应该得到你最初的数据。
 
-Here’s a test that generates a random integer between 0 and 9 and sends it on a *round trip* through two functions, `Encode` and `Decode`:
+这里有一个测试，它生成一个介于 0 和 9 之间的随机整数，并将其通过两个函数 `Encode` 和 `Decode` 进行 *往返处理*：
 
-```
+```go
 import "math/rand"
 
 func TestEncodeFollowedByDecodeGivesStartingValue(t *testing.T) {
@@ -51,19 +51,19 @@ func TestEncodeFollowedByDecodeGivesStartingValue(t *testing.T) {
 
 ([Listing `codec/1`](https://github.com/bitfield/tpg-tests/blob/main/codec/1/codec_test.go))
 
-You might worry that, if the value is *truly* random, then we could end up with a flaky test. If there’s a bug in `Encode` or `Decode` that’s only triggered by certain inputs, then won’t a test like this sometimes pass and sometimes fail?
+你可能会担心，如果这个值是 *真正* 随机的，那么我们可能会得到一个不稳定的测试结果。如果 `Encode` 或 `Decode` 中存在某些输入触发的 bug，那么像这样的测试有时会通过，有时会失败，对吗？
 
-That’s definitely a possibility. One way to avoid it is to *seed* the random number generator with some fixed value: that way, the generated sequence will always be the same, making our tests deterministic.
+这确实是一种可能性。避免这种情况的一种方法是使用某个固定值对随机数生成器进行 *种子*（seed）处理：这样，生成的序列将始终相同，使我们的测试具有确定性。
 
-For example, we could write something like this, which will create a new random generator just for the tests, seeded with the value 1:
+例如，我们可以编写以下代码，它将为测试创建一个新的随机生成器，种子的值为 1：
 
-```
+```go
 var rng = rand.New(rand.NewSource(1))
 ```
 
-We don’t have to use 1 as the seed; any fixed value would do. The point is that, given a certain seed, calling `rng.Intn` will always produce the same sequence of values:
+我们不必使用 1 作为种子；任何固定值都可以。关键是，给定某个特定的种子，调用 `rng.Intn` 将始终产生相同的值序列：
 
-```
+```go
 fmt.Println(rng.Intn(10)) // 1
 fmt.Println(rng.Intn(10)) // 7
 fmt.Println(rng.Intn(10)) // 7
@@ -71,42 +71,42 @@ fmt.Println(rng.Intn(10)) // 9
 fmt.Println(rng.Intn(10)) // 1
 ```
 
-If we *did* happen to want a different sequence every time we run the tests, we could instead use some seed value that *isn’t* fixed. For example, the current wall-clock time:
+如果我们确实希望每次运行测试时都获得不同的序列，那么我们可以使用一些 *不固定* 的种子值。例如，当前的时钟时间：
 
-```
+```go
 var rng = rand.New(rand.NewSource(time.Now().Unix()))
 ```
 
-## Randomly permuting a set of known inputs
+## 对一组已知的输入进行随机置换
 
-A nice way to use randomness without causing flaky tests, or having to manually seed the random generator, is to *permute* a set of inputs—that is, rearrange them in some random order.
+使用随机性的一个好方法，不会导致不稳定的测试或需要手动设置随机数生成器的种子，是对一组输入进行 *排列* ——即以某种随机顺序重新排列它们。
 
-For example, the following code generates a slice containing the integers from 0 to 99, ordered randomly:
+例如，以下代码生成一个包含从 0 到 99 的整数的切片，以随机顺序排序：
 
-```
+```go
 inputs := rand.Perm(100)
 for _, n := range inputs {
     ... // test with input n
 }
 ```
 
-The sequence of 100 integers generated by `rand.Perm(100)` is not random *itself*, since each value from 0 to 99 will be represented exactly once. That wouldn’t be true of randomly *chosen* numbers, where some values would occur many times and others not at all.
+`rand.Perm(100)` 生成的 100 个整数序列本身并不是随机的，因为从 0 到 99 的每个值都将恰好出现一次。这对于随机 *选择* 的数字来说是不成立的，因为某些值会多次出现，而其他值则不会出现。
 
-Instead, this sequence is randomly *permuted* (that is, randomly ordered). It’s like shuffling a deck of cards: you know that each card will still show up exactly once, you just don’t know when.
+相反，这个序列是随机 *排列* 的（即随机排序）。这就像洗牌一副牌：你知道每张牌仍然会出现恰好一次，只是不知道出现的顺序。
 
-Just like `rand.Intn`, the result will be different for every test run, unless you create your own random generator initialised with a known seed.
+与 `rand.Intn` 一样，每次测试运行的结果都会不同，除非你创建一个使用已知种子初始化的自己的随机数生成器。
 
-## Property-based testing
+## 基于属性的测试
 
-Randomness can be a good way of finding interesting new test cases that you might not come up with by yourself. For example, if your function takes integers, you might have tried testing it with 1, 5, 7, and so on. You might not have thought of trying *zero* as an input, but the random generator would likely produce that at some point. And if your function breaks when given zero, that’s something you’d certainly want to know.
+随机性可以是发现有趣的新测试用例的好方法，这些测试用例可能是你自己想不到的。例如，如果您的函数接受整数，您可能已经尝试使用 1、5、7 等进行测试。您可能没有想到尝试将 *零* 作为输入，但随机生成器很可能会在某个时候产生它。如果您的函数在给定零时出现问题，那么这是您肯定想知道的。
 
-Good testers, in general, are good at suggesting inputs that break the program because the *programmer* didn’t think of them. Randomness can help with that process.
+通常，好的测试人员擅长提出打破程序的输入，因为 *程序员* 没有考虑到它们。随机性可以帮助这个过程。
 
-One problem with randomised test inputs that may already have occurred to you is this: if we don’t know in advance what input we’re going to use, we can’t know what answer to *expect* as the result.
+随机测试输入的一个问题可能已经出现在您的脑海中：如果我们事先不知道要使用什么输入，我们就无法知道期望的结果是什么。
 
-For example:
+例如：
 
-```
+```go
 func TestSquareGivesCorrectResult(t *testing.T) {
     t.Parallel()
     input := rand.Intn(100)
@@ -114,17 +114,17 @@ func TestSquareGivesCorrectResult(t *testing.T) {
     want := ... // uh-oh, what to put here?
 ```
 
-What’s our `want` value here? We don’t know, because we don’t know what the value of `input` will be when the test runs, and thus what its square would be. If we knew that `input` would be 10, for example, then we could have the test expect the answer 100, but we *don’t* know that. We’re stuck.
+这里的 `want` 值是什么？我们不知道，因为我们不知道在测试运行时 `input` 的值将是什么，以及它的平方将是什么。如果我们知道 `input` 将是 10，那么我们可以让测试期望答案为 100，但我们 *不知道*。我们陷入了困境。
 
-And we don’t want to try to *compute* the expected result in the test, because clearly we could get that computation wrong. In the most pernicious case, we might end up using the same code path to compute it in the test as we do in the *system*, so we’d end up testing nothing at all.
+我们不想在测试中尝试 *计算* 期望结果，因为很明显我们可能会计算错误。在最恶劣的情况下，我们可能会在测试中使用与 *系统* 中相同的代码路径来计算它，因此我们最终什么也没测试到。
 
-If we can’t predict what the *exact* result of `Square` will be for a given input, is there anything we can say about it in general terms?
+如果我们无法预测对于给定的输入 `Square` 的 *确切* 结果，那么有没有任何一般性的描述呢？
 
-Actually, there is something we can say: it shouldn’t be negative! No matter what the input, if `Square` returns a negative result, something’s gone wrong. So although we can’t predict the *exact* result if the system is correct, we can still identify some *properties* it should have.
+实际上，有一些我们可以说的东西：它不应该是负数！无论输入是什么，如果 `Square` 返回一个负数，那么就有问题了。因此，尽管如果系统正确，我们无法预测 `Square` 的 *确切* 结果，但我们仍然可以确定它应该具有的一些 *属性*。
 
-So we could write a test that calls `Square` with lots of different inputs, and checks that the result is never negative:
+因此，我们可以编写一个测试，调用 `Square` 并使用许多不同的输入，检查结果是否为负数：
 
-```
+```go
 func TestSquareResultIsAlwaysNonNegative(t *testing.T) {
     t.Parallel()
     inputs := rand.Perm(100)
@@ -141,12 +141,12 @@ func TestSquareResultIsAlwaysNonNegative(t *testing.T) {
 
 ([Listing `square/1`](https://github.com/bitfield/tpg-tests/blob/main/square/1/square_test.go))
 
-This approach is sometimes called *property-based testing*, to distinguish it from what we’ve been doing up to now, which we might call *example-based testing*.
+这种方法有时被称为 *基于属性的测试*，以区别于到目前为止我们一直在做的 *基于示例的测试*。
 
-Another way to think about it is that property-based tests describe the behaviour of the system, not in terms of exact values, but in terms of *invariants*: things that don’t change about the result, no matter what the input is. In the case of `Square`, for example, its result should invariably be positive.
+另一种思考方法是，基于属性的测试描述系统的行为，不是根据确切的值，而是根据 *不变量*：不论输入是什么，结果中不会改变的东西。例如，对于 `Square`，其结果应该始终为正数。
 
-Randomised, property-based testing helps to fix the problem that maybe the function only works for the specific examples we thought of. And although we *generate* the inputs randomly, once we find some value that triggers a bug, it should then simply become part of our conventional example-based tests.
+基于属性的随机测试有助于解决函数可能仅适用于我们考虑的特定示例的问题。虽然我们会随机 *生成* 输入，但一旦我们找到一些触发错误的值，它就应该成为常规基于示例的测试的一部分。
 
-We could do this by manually adding such values to the set of inputs in a table test, for example, but there’s no need. Go provides an automated way to turn randomly-generated breaking inputs into static test cases for us, using what’s called *fuzz testing*.
+我们可以通过在表格测试的输入集中手动添加这些值来实现这一点，但没有必要。Go 提供了一种自动将随机生成的破坏性输入转换为静态测试用例的方法，称为 *模糊测试*。
 
-In [Part 2](https://bitfieldconsulting.com/golang/fuzz-tests) of this series, we’ll introduce Go fuzz tests and see how they can be used to find rare inputs that trigger bugs. Stay tuned!
+在本系列的 [第二部分](https://bitfieldconsulting.com/golang/fuzz-tests) 中，我们将介绍 Go 模糊测试，并了解它们如何用于查找难以发现的能够触发错误的输入。敬请关注！
