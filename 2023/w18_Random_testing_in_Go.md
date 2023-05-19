@@ -4,7 +4,7 @@
 - 原文作者：[John Arundel](https://bitfieldconsulting.com/golang?author=5e10bdc11264f20181591485)
 - 本文永久链接：[translator/w18_Random_testing_in_Go.md at master · gocn/translator · GitHub](https://github.com/gocn/translator/blob/master/2023/w18_Random_testing_in_Go.md)
 - 译者：[zxmfke](https://github.com/zxmfke)
-- 校对：
+- 校对：[fivezh](https://github.com/fivezh)
 
 > *我瞄准天空发射了一支箭，
 > *它落到了地面，我不知道落在何处。*
