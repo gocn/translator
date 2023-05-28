@@ -1,0 +1,227 @@
+https://grafana.com/blog/2023/04/19/how-to-troubleshoot-memory-leaks-in-go-with-grafana-pyroscope/
+
+
+
+# How to troubleshoot memory leaks in Go with Grafana Pyroscope
+
+• April 19, 2023 • 8 min
+
+------
+
+Memory leaks can be a significant issue in any programming language, and Go is no exception. Despite being a garbage-collected language, Go is still susceptible to memory leaks, which can lead to performance degradation and cause your operating system to run out of memory.
+
+To defend itself, the Linux operating system implements an Out-of-Memory (OOM) killer that identifies and terminates processes that consume too much memory and cause the system to become unresponsive.
+
+In this blog post, we’ll explore the most common causes of memory leaks in Go and demonstrate how to use [Grafana Pyroscope](https://grafana.com/blog/2023/03/15/pyroscope-grafana-phlare-join-for-oss-continuous-profiling/?pg=blog&plcmt=body-txt), an open source continuous profiling solution, to find and fix these leaks.
+
+## Traditional observability signals
+
+Memory leaks are typically detected by monitoring the memory usage of a program or system over time.
+
+[![A Grafana dashboard displays memory leak.](https://grafana.com/media/blog/go-memory-leak-pyroscope/go-memory-leak-pyroscope-1.png)*Memory leak visible via using Kubernetes Monitoring in Grafana Cloud.*](https://grafana.com/media/blog/go-memory-leak-pyroscope/go-memory-leak-pyroscope-1.png)
+
+Nowadays, system complexity can make it hard to narrow down where in the code a memory leak is occurring. However, these leaks can cause significant issues:
+
+1. **Reduced performance.** As memory leaks occur, the system has less and less available memory, which can cause programs to slow down or crash, leading to reduced performance.
+2. **System instability.** If a memory leak is severe enough, it can cause the entire system to become unstable, leading to crashes or other system failures.
+3. **Increased cost and resource usage.** As memory leaks occur, the system may use more resources to manage memory, which can reduce the overall availability of system resources for other programs.
+
+For those reasons, it is important to detect and fix them as soon as possible.
+
+## Common causes of memory leaks in Go
+
+Developers often create memory leaks by failing to close resources correctly or by avoiding unbounded resource creation, and this can apply to goroutines as well. Goroutines can be considered a resource in the sense that they consume system resources (such as memory and CPU time) and can potentially cause memory leaks if they are not managed properly.
+
+Goroutines are lightweight threads of execution that are managed by the Go runtime, and they can be created and destroyed dynamically during the execution of a Go program.
+
+In Go, you can theoretically create an unlimited number of goroutines, as the Go runtime can create and manage millions of goroutines without significant performance overhead. However, the practical limit is determined by the available system resources such as memory, CPU, and I/O resources.
+
+One common mistake that developers make when using goroutines is to create too many of them without properly managing their lifecycles. This can lead to memory leaks, as unused goroutines may continue to consume system resources even after they are no longer needed.
+
+If a goroutine is created and never terminated, it can continue to execute indefinitely and hold references to objects in memory, preventing them from being [garbage collected](https://tip.golang.org/doc/gc-guide). This can cause the memory usage of the program to grow over time, potentially leading to a memory leak.
+
+In a situation where you want to parallelize the work done by a single HTTP request, it’s legitimate to create multiple goroutines and dispatch the work to them.
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+	"time"
+
+	_ "net/http/pprof"
+)
+
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		responses := make(chan []byte)
+		go longRunningTask(responses)
+           // do some other tasks in parallel
+	})
+	log.Fatal(http.ListenAndServe(":8081", nil))
+}
+
+func longRunningTask(responses chan []byte) {
+	// fetch data from database
+	res := make([]byte, 100000)
+	time.Sleep(500 * time.Millisecond)
+	responses <- res
+}
+```
+
+Go
+
+
+The simple code above shows an example of leaking goroutines and memory from an HTTP server connecting to a database in parallel. Since the HTTP request doesn’t wait for the response channel, the `longRunningTask` stays blocked forever, essentially leaking the goroutine and the resource created with it.
+
+To prevent this, it’s important to ensure that all goroutines are properly terminated when they are no longer needed. This can be done using various techniques such as using channels to signal when a goroutine should exit, using context cancellation to propagate cancellation signals to goroutines, and using `sync.WaitGroup` to ensure that all goroutines have completed before exiting the program.
+
+To avoid unlimited creation of goroutines I would also suggest using a [worker pool](https://gobyexample.com/worker-pools). When the application is under pressure, creating too many goroutines can lead to poor performance since the Go runtime has to manage their lifecycles.
+
+Another common manifestation of goroutines and resources leaking in Go is not releasing a Timer or a Ticker properly. The Go documentation [regarding the `time.After` function](https://pkg.go.dev/time#After) actually hints at this possibility:
+
+> “After waits for the duration to elapse and then sends the current time on the returned channel. It is equivalent to NewTimer(d).C. The underlying Timer is not recovered by the garbage collector until the timer fires. If efficiency is a concern, use NewTimer instead and call Timer.Stop if the timer is no longer needed.”
+
+As shown below, I suggest you always stick with [`timer.NewTimer`](https://pkg.go.dev/time#NewTimer) and [`timer.NewTicker`](https://pkg.go.dev/time#NewTicker) when using them in goroutines so that you can correctly release the resource when the request ends.
+
+## How to find and fix memory leaks with Pyroscope
+
+Continuous profiling can be a useful way to find memory leaks, particularly in cases where the memory leak is happening over a long period of time or is happening too fast to be observed manually. Continuous profiling involves regularly sampling the program’s memory and goroutines usage over time to identify patterns and anomalies that may indicate a memory leak.
+
+By analyzing goroutine and memory profiles, you can identify memory leaks in your Go applications. Here are the steps to follow to do just that using Pyroscope. 
+
+(Note: While this blog post focuses on Go, Pyroscope also supports memory profiling in other languages as well.)
+
+### Step 1: Identify the source of the memory leak
+
+Assuming you already have monitoring in place, the first step is to figure out which part of your system is having problems using logs, metrics, or traces.
+
+This can manifest in multiple ways:
+
+- Application or Kubernetes logs a restart.
+- Alerting on applications or host memory usage.
+- SLO breach with exemplar traces.
+
+Once you have identified the part of the system and the time, you can use continuous profiling to pin down the problematic function.
+
+### Step 2: Integrate Pyroscope with your application
+
+To start profiling a Go application, you need to include our Go module in your app:
+
+```go
+go get github.com/pyroscope-io/client/pyroscope
+```
+
+Go
+
+Then add the following code to your application:
+
+```go
+package main
+
+import "github.com/pyroscope-io/client/pyroscope"
+
+func main() {
+    // These 2 lines are only required if you're using mutex or block profiling
+    // Read the explanation below for how to set these rates:
+    runtime.SetMutexProfileFraction(5)
+    runtime.SetBlockProfileRate(5)
+
+    pyroscope.Start(pyroscope.Config {
+        ApplicationName: "simple.golang.app",
+
+        // replace this with the address of pyroscope server
+        ServerAddress: "http://pyroscope-server:4040",
+
+        // you can disable logging by setting this to nil
+        Logger: pyroscope.StandardLogger,
+
+        // optionally, if authentication is enabled, specify the API key:
+        // AuthToken:    os.Getenv("PYROSCOPE_AUTH_TOKEN"),
+
+        // you can provide static tags via a map:
+        Tags: map[string] string {
+            "hostname": os.Getenv("HOSTNAME")
+        },
+
+        ProfileTypes: [] pyroscope.ProfileType {
+            // these profile types are enabled by default:
+            pyroscope.ProfileCPU,
+                pyroscope.ProfileAllocObjects,
+                pyroscope.ProfileAllocSpace,
+                pyroscope.ProfileInuseObjects,
+                pyroscope.ProfileInuseSpace,
+
+                // these profile types are optional:
+                pyroscope.ProfileGoroutines,
+                pyroscope.ProfileMutexCount,
+                pyroscope.ProfileMutexDuration,
+                pyroscope.ProfileBlockCount,
+                pyroscope.ProfileBlockDuration,
+        },
+    })
+
+    // your code goes here
+}
+```
+
+Go
+
+To learn more, check out the [Pyroscope documentation](https://pyroscope.io/docs/golang/).
+
+### Step 3: Drilling down into the associated profiles
+
+I suggest you first take a look at goroutines over time first to see if anything raises concern and then switch to memory investigations.
+
+<iframe frameborder="0" width="100%" height="400" src="https://flamegraph.com/share/dee1210a-ddff-11ed-9b0d-d641223b6af4/iframe?colorMode=light&amp;onlyDisplay=flamegraph&amp;showToolbar=true" style="box-sizing: border-box;"></iframe>
+
+In this case, it’s pretty obvious that our `longRunningTask` is the problem and we should probably take a look at this. But in real life, you’ll have to explore and correlate what you see on the flamegraph with what you expect from your application.
+
+It’s interesting to note that the goroutine stacktraces in the flamegraph actually show the current state of the function — in our example, it’s blocked from sending to a channel. This is yet another piece of information that helps you understand what your code is doing.
+
+> For memory, profiles will show you the function that has allocated the memory and how much, but it won’t show who is retaining it. It’s up to you to figure out where in your code you are mistakenly retaining the memory.
+
+To learn more about Go performance profiles I suggest you read [this great blog post from Julia Evans](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/).
+
+### Step 4: Confirm and prevent by testing.
+
+Assuming you have pinpointed where the problem is by now, you probably want to jump into fixing it — but I would suggest that you first write a test showcasing the problem.
+
+This way you can avoid having another engineer make the same mistake again. And since you’re sure that you have indeed found the problem, you’ll have a solid feedback loop to prove it is actually solved.
+
+Go has a powerful testing framework you can use to write benchmarks or tests to reproduce your scenario.
+
+During a [benchmark](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go) you can even leverage `-benchmem`
+
+```go
+go test -bench=. -benchmem
+```
+
+Go
+
+To output memory allocations, you can also write some custom logic using [runtime.ReadMemStats](https://pkg.go.dev/runtime#ReadMemStats) if needed.
+
+You can also verify that no goroutines are leaked after execution using the [goleak](https://github.com/uber-go/goleak) package.
+
+```go
+func TestA(t *testing.T) {
+	defer goleak.VerifyNone(t)
+
+	// test logic here.
+}
+```
+
+Go
+
+### Step 5: Fix the memory leak
+
+Now that you can reproduce and understand your problem, it’s time to iterate on the fix and deploy it for testing. You can again leverage continuous profiling to monitor your change and confirm your expectations.
+
+## Get to know Pyroscope
+
+Finally, after all this investigation and work, you can spread the word about your win with your colleagues by sharing a screenshot of a memory usage drop in [Grafana](https://grafana.com/grafana/?pg=blog&plcmt=body-txt). 
+
+And if you haven’t tried [Pyroscope](http://pyroscope.io/) before, it’s a great time to get started. Now that the Pyroscope team is part of Grafana Labs, we’re in the process of merging the project with Grafana Phlare. Check out the [blog post](https://grafana.com/blog/2023/03/15/pyroscope-grafana-phlare-join-for-oss-continuous-profiling/?pg=blog&plcmt=body-txt) where we announced the news, and [follow the progress on GitHub](https://github.com/grafana/pyroscope).
+
+*Want to learn more? [Register now](https://grafana.com/about/events/grafanacon/2023/?pg=blog&plcmt=button) for GrafanaCon 2023 for free, and hear directly from the Grafana Pyroscope project leads in their session, [Continuous profiling with Grafana Pyroscope: developer experience, flame graphs, and more](https://grafana.com/about/events/grafanacon/2023/session/continuous-profiling-with-grafana-pyroscope/?pg=blog&plcmt=body-txt).*
