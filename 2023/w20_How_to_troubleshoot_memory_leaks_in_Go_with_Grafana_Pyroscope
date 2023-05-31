@@ -11,7 +11,7 @@
 
 在任何编程语言中，内存泄露都是一个严重的问题，Go 也不例外。虽然 Go 有内存回收机制，但是也容易受到内存泄露的影响，从而导致性能下降、操作系统内存耗尽。
 
-为了防止这样的情况发生，Linux 操作系统实现了一种保护机制 OOM Killer(Out-of-Memory)，这种机制会识别出并终止那些占用内存过多和导致操作系统无法响应的进程。
+为了防止这样的情况发生，Linux 操作系统实现了一种保护机制 OOM Killer (Out-of-Memory)，这种机制会识别出并终止那些占用内存过多和导致操作系统无法响应的进程。
 
 在这篇博文中，我们将探讨 Go 语言中，最常见的内存泄露原因，并演示如何使用 [Grafana Pyroscope](https://grafana.com/blog/2023/03/15/pyroscope-grafana-phlare-join-for-oss-continuous-profiling/?pg=blog&plcmt=body-txt)，一个开源的持续分析解决方案，来发现和修复这些漏洞。
 
@@ -34,9 +34,9 @@
 
 ## Go 中内存泄漏的常见原因
 
-开发人员通常会因未能正确关闭资源或未能避免无限创建资源而造成内存泄漏，这也适用于 goroutines 协程。Goroutines 协程可以被认为是一种资源，因为它们会消耗系统资源（例如内存和 CPU 时间），如果管理不当，可能就会导致内存泄漏。
+开发人员通常会因未能正确关闭资源或未能避免无限创建资源而造成内存泄漏，这也适用于 goroutines 协程。 Goroutines 协程可以被认为是一种资源，因为它们会消耗系统资源（例如内存和 CPU 时间），如果管理不当，可能就会导致内存泄漏。
 
-Go 协程是由Go运行时管理的轻量级执行线程，它们可以在Go程序执行期间动态创建和销毁。  
+Go 协程是由 Go 运行时管理的轻量级执行线程，它们可以在 Go 程序执行期间动态创建和销毁。  
 
 理论上来说，在 Go 中我们可以创建无数个协程，GO 运行时可以创建和管理数百万个协程，而不会产生显著的性能开销。但实际上，系统资源是固定的（如内存、CPU 和 I/O 资源），协程的限制由可用的系统资源决定。
 
@@ -112,7 +112,7 @@ Go 中另一个常见的协程和资源泄漏的情况是没有正确释放 Time
 
 ### 步骤2:将 Pyroscope 与您的应用程序集成
 
-要开始分析 Go 应用程序，你需要在应用程序中包含我们的Go模块: 
+要开始分析 Go 应用程序，你需要在应用程序中包含我们的 Go 模块: 
 
 ```go
 go get github.com/pyroscope-io/client/pyroscope
@@ -198,7 +198,7 @@ func main() {
 
 Go 有一个强大的测试框架，您可以使用它来编写基准测试或测试来重现您的场景。  
 
-在[基准](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)期间，您甚至可以使用 '-benchmem '.
+在[基准](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)期间，您甚至可以使用 `-benchmem`.
 
 ```go
 go test -bench=. -benchmem
