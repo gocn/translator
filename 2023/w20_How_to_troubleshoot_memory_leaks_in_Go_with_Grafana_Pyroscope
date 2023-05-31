@@ -186,7 +186,7 @@ func main() {
 
 有趣的是，火焰图中的 goroutine 堆栈跟踪，实际上显示了函数的当前状态——在我们的示例中，它被阻止发送到 channel。这是一条可以帮助您理解代码正在做什么的信息。
 
-> 对于内存，配置文件将显示分配了内存的函数及其数量，但它不会显示谁在保留内存。这取决于您来找出代码中错误地保留了内存的位置。
+> 对于内存，已分配内存的函数以及分配了多少内存，但不会显示谁在保留它。这依靠您来找出代码中错误地保留了内存的位置。
 
 要了解更多关于 Go 的性能分析，我建议您阅读 [Julia Evans 的这篇很棒的博客文章](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/)。
 
@@ -198,7 +198,7 @@ func main() {
 
 Go 有一个强大的测试框架，您可以使用它来编写基准测试或测试来重现您的场景。  
 
-在[基准](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)期间，您甚至可以使用 `-benchmem`.
+在[基准测试](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)期间，您甚至可以使用 `-benchmem`.
 
 ```go
 go test -bench=. -benchmem
