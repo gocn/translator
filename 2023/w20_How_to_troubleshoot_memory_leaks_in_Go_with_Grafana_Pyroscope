@@ -188,7 +188,7 @@ func main() {
 
 > 对于内存，配置文件将显示分配了内存的函数及其数量，但它不会显示谁在保留内存。这取决于您来找出代码中错误地保留了内存的位置。
 
-要了解更多关于 Go 的性能分析，我建议您阅读 [Julia Evans的这篇很棒的博客文章](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/)。
+要了解更多关于 Go 的性能分析，我建议您阅读 [Julia Evans 的这篇很棒的博客文章](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/)。
 
 ### 第四步:通过测试确认和预防
 
@@ -226,6 +226,6 @@ func TestA(t *testing.T) {
 
 最后，在所有这些调查和工作之后，您可以通过分享 [Grafana] 内存使用下降的截图 (https://grafana.com/grafana/?pg=blog&plcmt=body-txt) 与您的同事分享您的胜利。  
 
-如果你以前没有尝试过 [Pyroscope](http://pyroscope.io/)，这是一个开始的好时机。 现在，Pyroscope 团队是 Grafana实验室的一部分，我们正在将这个项目与 Grafana Phlare 合并。 查看我们发布消息的[博客文章](https://grafana.com/blog/2023/03/15/pyroscope-grafana-phlare-join-for-oss-continuous-profiling/?pg=blog&plcmt=body-txt)，以及[在 GitHub 上关注进展](https://github.com/grafana/pyroscope)。  
+如果你以前没有尝试过 [Pyroscope](http://pyroscope.io/)，这是一个开始的好时机。 现在，Pyroscope 团队是 Grafana 实验室的一部分，我们正在将这个项目与 Grafana Phlare 合并。 查看我们发布消息的[博客文章](https://grafana.com/blog/2023/03/15/pyroscope-grafana-phlare-join-for-oss-continuous-profiling/?pg=blog&plcmt=body-txt)，以及[在 GitHub 上关注进展](https://github.com/grafana/pyroscope)。  
 
-想了解更多? [现在注册](https://grafana.com/about/events/grafanacon/2023/?pg=blog&plcmt=button)免费参加 GrafanaCon 2023，并直接听取 Grafana Pyroscope 项目负责人的会议，[持续分析与 Grafana Pyroscope :开发人员经验，火焰图，以及更多](https://grafana.com/about/events/grafanacon/2023/session/continuous-profiling-with-grafana-pyroscope/?pg=blog&plcmt=body-txt).) 
+想了解更多? [现在注册](https://grafana.com/about/events/grafanacon/2023/?pg=blog&plcmt=button)免费参加 GrafanaCon 2023，并直接听取 Grafana Pyroscope 项目负责人的会议，[持续分析与 Grafana Pyroscope: 开发人员经验，火焰图，以及更多](https://grafana.com/about/events/grafanacon/2023/session/continuous-profiling-with-grafana-pyroscope/?pg=blog&plcmt=body-txt).) 
