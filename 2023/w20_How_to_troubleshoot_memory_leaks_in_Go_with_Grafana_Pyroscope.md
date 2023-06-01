@@ -20,13 +20,14 @@
 一般来说，通过长期监视程序或系统的内存使用情况，可以检测到内存泄露。
 
 ![A Grafana dashboard displays memory leak.](../static/images/2023/w20/go-memory-leak-pyroscope-1.png)
+
 *通过在 Grafana Cloud 中使用 Kubernets 监控可以看到内存泄露.*
 
 如今，由于系统的复杂性，很难确定代码中发生内存泄漏的位置。 然而，这些泄漏可能会导致严重的问题:  
 
 1. **会降低性能。** 随着内存泄漏的发生，系统可用内存越来越少，这可能导致程序变慢或崩溃，从而导致性能下降。  
 2. **系统不稳定。** 如果内存泄漏足够严重，可能会导致整个系统变得不稳定，导致崩溃或其他系统故障。  
-3. **增加成本和资源使用。 **当内存泄漏发生时，系统可能会使用更多的资源来管理内存，这会降低系统资源对其他程序的总体可用性。  
+3. **增加成本和资源使用。** 当内存泄漏发生时，系统可能会使用更多的资源来管理内存，这会降低系统资源对其他程序的总体可用性。  
 
  
 
@@ -82,9 +83,9 @@ func longRunningTask(responses chan []byte) {
 
  
 
-Go 中另一个常见的协程和资源泄漏的情况是没有正确释放 Timer 或 Ticker。 Go 文档[regarding the time.After function](https://pkg.go.dev/time#After)表明了这种可能性:  
+Go 中另一个常见的协程和资源泄漏的情况是没有正确释放 Timer 或 Ticker。 Go 文档 [regarding the time.After function](https://pkg.go.dev/time#After) 表明了这种可能性:  
 
-> " After 等待持续时间结束，然后在返回的通道上发送当前时间。 它相当于 NewTimer(d).C。 在计时器触发之前，垃圾收集器不会恢复底层计时器。 如果关注效率，则使用 NewTimer 并调用Timer。 如果不再需要计时器，则停止 ”  
+> " After 等待持续时间结束，然后在返回的通道上发送当前时间。 它相当于 NewTimer(d).C。 在计时器触发之前，垃圾收集器不会恢复底层计时器。 如果关注效率，则使用 NewTimer 并调用 Timer。 如果不再需要计时器，则停止 ”  
 
  
 
