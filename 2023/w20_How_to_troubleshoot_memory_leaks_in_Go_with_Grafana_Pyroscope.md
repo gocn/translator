@@ -19,7 +19,7 @@
 
 一般来说，通过长期监视程序或系统的内存使用情况，可以检测到内存泄露。
 
-![A Grafana dashboard displays memory leak.](../static/images/2023/w20/go-memory-leak-pyroscope-1.png)
+![A Grafana dashboard displays memory leak.](https://github.com/gocn/translator/raw/master/static/images/2023/w20/go-memory-leak-pyroscope-1.png)
 
 *通过在 Grafana Cloud 中使用 Kubernets 监控可以看到内存泄露.*
 
@@ -176,7 +176,7 @@ func main() {
 
 我建议你先看看 goroutines 随时间推移，是否有任何值得关注的问题，然后切换到内存调查。
 
-![](../static/images/2023/w20/huoyantu.png)
+![](https://github.com/gocn/translator/raw/master/static/images/2023/w20/huoyantu.png)
 ```html
 <iframe frameborder="0" width="100%" height="400" src="https://flamegraph.com/share/dee1210a-ddff-11ed-9b0d-d641223b6af4/iframe?colorMode=light&amp;onlyDisplay=flamegraph&amp;showToolbar=true" style="box-sizing: border-box;"></iframe>
 ```
