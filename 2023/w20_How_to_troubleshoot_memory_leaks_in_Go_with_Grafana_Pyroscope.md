@@ -2,10 +2,10 @@
 # 如何用 Grafana Pyroscope 解决 Go 中的内存泄漏问题  
 
 - 原文地址：https://grafana.com/blog/2023/04/19/how-to-troubleshoot-memory-leaks-in-go-with-grafana-pyroscope/
-- 原文作者：Cyril Tovena
+- 原文作者：[Cyril Tovena](https://grafana.com/author/cyril/)
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w20_How_to_troubleshoot_memory_leaks_in_Go_with_Grafana_Pyroscope
-- 译者：sijing233
-- 校对：lsj1342
+- 译者：[sijing233](https://github.com/sijing233)
+- 校对：[lsj1342](https://github.com/lsj1342)
 
 ------
 
