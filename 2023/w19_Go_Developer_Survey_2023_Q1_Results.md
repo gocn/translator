@@ -1,190 +1,198 @@
-# Go Developer Survey 2023 Q1 Results
+# 2023年第一季度 Go 开发者调查结果 
 
-## Thank you respondents for bringing us these insights!
+- 原文地址：https://go.dev/blog/survey2023-q1-results
+- 原文作者：***Alice Merrick***
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w19_Go_Developer_Survey_2023_Q1_Results.md
+- 译者：[朱亚光](https://github.com/zhuyaguang)
+- 校对：
 
-We’re excited to share with you the results of the 2023 January edition of the Go Developer Survey. Thank you to the 5,844 respondents who shared with us how they’re using Go, their biggest challenges in using Go, and their top priorities for future improvements. These results help the Go team focus our efforts on areas that matter most to the community, and we hope these insights also help inform others who contribute to and support the Go ecosystem.
+## 感谢调查参与者给我们带来了这些洞察！ 
 
-### Key findings
+我们非常高兴与您分享2023年1月份 Go 开发者调查的结果。感谢 5844 位回应者与我们分享他们如何使用 Go，他们在使用 Go 时面临的最大挑战，以及他们对未来改进的首要课题。这些结果帮助 Go 团队将我们的工作重点放在社区最关心的领域，我们希望这些洞察也能帮助其他为 Go 生态系统做出贡献和支持的人了解相关信息。
 
--   **Novice Go developers are interested in web development**. We introduced a new segmentation this year based on self-identified experience levels. Novices expressed some interesting differences from other experience levels. Most notably they showed greater interest in using Go for web development.
--   **Error handling and learning are respondents’ top challenges**. Historically, lack of generics was the biggest challenge to using Go, but since the introduction of generics, we’ve seen comments about generics decline. Comments about error handling (with respect to readability and verbosity) and difficulty learning best practices are now the most commonly reported challenges.
--   **An optimization guide was the most valued way to improve Go’s performance**. When asked how they would spend resources on various improvements to Go’s compile and runtime, respondents spent the most on an optimization guide rather than specific performance improvements, demonstrating how much documentation is valued in this area.
--   **Managing dependencies and versioning are the top challenges for open source Go module maintainers**. Open source module maintainers face challenges in keeping their dependencies up to date and avoiding disruptions due to versioning and breaking changes. This is an area we’ll explore further to help maintainers provide a stable and healthy ecosystem.
+### 主要发现 
 
-### How to read these results
+-   **新手 Go 开发者对 Web 开发感兴趣。**我们今年新引入了一个基于自我识别的经验水平的划分。新手表达出了一些与其他经验级别相比的有趣差异。最值得注意的是他们对使用 Go 进行 web 开发的兴趣更大。
+-   **错误处理和学习是参与者面临的最大挑战。**历史上，缺乏泛型是使用Go的最大挑战，但自从引入泛型后，我们看到关于泛型的评论有所下降。现在最常被报告的挑战是关于错误处理（与可读性和冗长性有关）和学习最佳实践的困难。
+-   **优化指南被认为是最有价值的提升 Go 性能的方式。**当被问及如何在 Go 的编译和运行时的各种改进上投入资源时，参与者最多的选择是优化指南，而不是具体的性能改进，这证明了在这一领域，文档的价值有多大。
+-   **管理依赖和版本是开源 Go 模块维护者面临的最大挑战。**开源模块维护者在保持他们的依赖关系更新和避免因版本和突发改变引起的中断方面面临挑战。这是我们将进一步探索的领域，以帮助维护者提供稳定和健康的生态系统。
 
-Throughout this post, we use charts of survey responses to provide supporting evidence for our findings. All of these charts use a similar format. The title is the exact question that survey respondents saw. Unless otherwise noted, questions were multiple choice and participants could only select a single response choice; each chart’s subtitle will tell you if the question allowed multiple response choices or was an open-ended text box instead of a multiple choice question. For charts of open-ended text responses, a Go team member read and manually categorized all of the responses. Many open-ended questions elicited a wide variety of responses; to keep the chart sizes reasonable, we condensed them to the top 10-15 themes, with additional themes all grouped under “Other”. We also included a category for “None” where applicable.
+### 如何阅读调查结果 
 
-To help readers understand the weight of evidence underlying each finding, we include error bars showing the 95% confidence interval for responses; narrower bars indicate increased confidence. Sometimes two or more responses have overlapping error bars, which means the relative order of those responses is not statistically meaningful (i.e., the responses are effectively tied). The lower right of each chart shows the number of people whose responses are included in the chart, in the form “_n = \[number of respondents\]_”.
+在这篇文章中，我们使用调查问卷的图表来为我们的发现提供证据支持。所有这些图表都使用类似的格式。标题是调查参与者看到的确切问题。除非另有说明，问题都是选择题，参与者只能选择一个答案；每个图表的子标题将告诉你问题是否允许多个答案，或者是开放式文本框而不是选择题。对于开放式文本回答的图表，Go 团队的成员阅读并手动分类了所有的回答。许多开放式问题引发了各种各样的回答；为了保持图表的合理大小，我们将它们压缩到了前10-15个主题，其他的主题都归类为“其他”。在适用的地方，我们还包含了一个“无”的类别。
 
-### A note on methodology
+为了帮助读者理解每项发现背后的证据的权重，我们在图表中包含了显示回答的 95% 置信区间的误差条；条状越窄，置信度越大。有时，两个或更多的回答的误差条可能会重叠，这意味着这些回答的相对顺序在统计上没有意义（也就是说，这些回答实际上是平手的）。每个图表的右下角显示了在图表中包含的人数，以“n = [回答者人数]”的形式。
 
-Most survey respondents “self-selected” to take the survey by accessing it through a link on [the Go blog](https://go.dev/blog), [@golang on Twitter](https://twitter.com/golang), or other social Go channels. People who don’t follow these channels might respond differently from people who _do_ closely follow them. About a quarter of respondents were randomly sampled, meaning they responded to the survey after seeing a prompt for it in VS Code (everyone using the VS Code Go plugin between Jan 18 - Feb 8, 2023 had a 10% chance of receiving this random prompt). This randomly sampled group helps us generalize these findings to the larger community of Go developers. Most survey questions showed no meaningful difference between these groups, but in the few cases with important differences, readers will see charts that break down responses into “Random sample” and “Self-selected” groups.
+### 关于方法论的说明 
 
-## Taking a closer look at different groups of respondents
+大多数调查回答者通过在 [Go 博客](https://go.dev/blog)、[@golang推特](https://twitter.com/golang)或其他 Go 社交渠道上的链接“自我选择”参加了这次调查。那些不关注这些渠道的人可能会与那些密切关注这些渠道的人有不同的回答。大约四分之一的回答者是随机抽样的，也就是说他们在 VS Code 中看到调查提示后回答了调查（在2023年1月18日至2月8日期间使用VS Code Go插件的每个人都有10%的机会收到这个随机提示）。这个随机抽样的群体帮助我们将这些发现推广到更大的 Go 开发者社区。大多数调查问题在这两个群体之间没有显示出有意义的差异，但在少数有重要差异的情况下，读者会看到将回答分为“随机样本”和“自选样本”群体的图表。
 
-Our respondent demographics did not change significantly from [our last survey](https://go.dev/blog/survey2022-q2-results). Consistent with previous cycles, Go is primarily used in the tech industry, and about 80% of respondents said they program in Go at work. Overall, survey respondents tended to be satisfied with Go over the past year, with 92% saying they were somewhat or very satisfied.
+## 深入研究不同群体的回答者
+
+我们的受访者人口统计数据与[上次调查](https://go.dev/blog/survey2022-q2-results)相比没有显著变化。与以往的周期一致，Go 主要用于技术行业，约80%的受访者表示他们在工作中使用 Go 编程。总体而言，调查受访者在过去一年中对 Go 感到满意，92%的人表示他们在某种程度上或非常满意。
 
 ![Bar chart
 showing where respondents use Go](https://go.dev/blog/survey2023q1/where.svg) ![Bar chart showing proportion of satisfied
 respondents](https://go.dev/blog/survey2023q1/csat.svg)
 
-Our respondents spend a lot of time programming in Go compared to other languages. About a third of respondents even maintain an open source Go module. We recognize that our survey audience is made up of those who successfully adopted Go, use Go often, and are mostly satisfied using Go. To identify potential gaps in meeting community needs, we look at different sub-groups of respondents to see how they might be using Go differently or have different priorities. For example, this year we looked at how responses differ between different sample sources (i.e., the Go Blog or through the VS Code plugin), different job roles, organization sizes, and levels of Go experience. The most interesting differences were between experience levels.
+相比其他语言，我们的受访者花费了很多时间在 Go 编程上。大约三分之一的受访者甚至维护着一个开源的 Go 模块。我们认识到我们的调查对象是那些成功采用Go、经常使用 Go 并且大多数人使用 Go 都感到满意的人。为了确定满足社区需求的潜在差距，我们查看不同的受访者子群体，看看他们可能如何不同地使用 Go 或有不同的优先事项。例如，今年我们查看了不同样本来源（即 Go 博客或通过VS Code插件）、不同的工作角色、组织规模和 Go 经验水平之间的差异。最有趣的差异在于经验水平之间。
 
-## Insights from novice respondents
+## 来自新手调查对象的洞察
 
 ![Bar chart of years of experience using
 Go](https://go.dev/blog/survey2023q1/go_exp.svg)
 
-Previously, we used how much time (in months / years) respondents have used Go as a proxy to gain insight into how results vary between levels of experience. This year we experimented with a new segmentation question, “What is your level of experience with Go?”, to see if self-identification might be a more useful way of examining Go experience than lumping together various intervals of time. Since categorical terms like “novice” or “expert” might vary from person to person, we provided a description to help make these buckets more objective. The options were:
+过去，我们以回答者使用 Go 的时间（以月/年为单位）为根据，以洞察不同经验级别的结果如何变化。今年我们尝试了一个新的分段问题，“你的Go经验级别是什么？”，看看自我认定相比将各种时间间隔混合在一起，是否可能是一种检查 Go 经验更有用的方式。由于像“初学者”或“专家”这样的分类术语可能因人而异，我们提供了描述以帮助使这些分类更具客观性。选项包括：
 
--   Awareness: I’m aware of Go, but could not write a simple Go program without assistance
--   Novice: I can complete simple programming projects in Go, possibly with assistance
--   Intermediate: I can complete significant programming projects in Go with some assistance
--   Advanced: I can complete significant programming projects in Go without assistance
--   Expert: I can provide guidance, troubleshoot, and answer questions related to Go from other engineers
+- 了解：我知道 Go，但是如果没有帮助，我不能写一个简单的 Go 程序
+- 初学者：我可以在可能需要帮助的情况下完成 Go 的简单编程项目
+- 中级：我可以在一些帮助下完成 Go 的重要编程项目
+- 高级：我可以在没有帮助的情况下完成 Go 的重要编程项目
+- 专家：我可以提供关于 Go 的指导，解决问题，并回答其他工程师的问题
 
 ![Bar chart of levels of experience
 using Go](https://go.dev/blog/survey2023q1/exp_level.svg)
 
-We found a moderate correlation (⍴ = .66) between how long respondents had been using Go and their self-identified experience level. This means that the experience level scale, although similar to the time scale, may give us some new insights into how respondents differ by experience. For instance, the proportion of time that a respondent spends writing in Go compared to how much time they spend writing in other languages is more strongly correlated with their self-identified experience level than with how long they’ve been using Go.
+我们发现回答者使用 Go 的时间长短与他们自我认定的经验等级之间存在中等程度的相关性（⍴ = .66）。这意味着，虽然经验等级尺度与时间尺度类似，但它可能会给我们提供一些关于不同经验等级的回答者之间的差异的新洞见。例如，一个回答者花在 Go 编程上的时间比例与他们花在其他语言编程上的时间比较，与他们自我认定的经验等级的相关性比他们使用 Go 的时间长短的相关性更强。
 
-In analyses where we use this segmentation we typically exclude the Awareness category since they wouldn’t be considered to have the experience necessary to answer the question and only represented about 1% of respondents.
+在我们使用这种分段的分析中，我们通常会排除“了解”类别，因为他们被认为没有回答问题所必需的经验，并且只占回答者的约1%。
 
-### Novice respondents are more likely to prefer Windows than more experienced respondents
+### 初学回答者更可能比更有经验的回答者更喜欢Windows 
 
-Our randomly sampled group had a higher proportion of novice respondents than the self-selected group, suggesting that there are more new Gophers out there that we don’t tend to hear from as often. Because they are sampled through the Go VS Code plugin, we might expect this group to be more likely to prefer using VS Code or to develop on Windows more than other experience levels. While this is true, novices are also more likely to develop on Windows than other experience levels, regardless of whether they responded through the VS Code plugin.
+我们随机抽样的群体中，初学者的比例比自选群体高，这表明我们不常听到的新 Gopher 更多。因为他们是通过 Go VS Code 插件进行抽样的，我们可能期望这个群体更喜欢使用 VS Code 或比其他经验等级更喜欢在 Windows 上开发。虽然这是真的，但无论他们是否通过VS Code 插件回答，初学者也更可能在 Windows 上开发。
 
 ![Bar chart of levels of experience
 using Go for self-selected and random samples](https://go.dev/blog/survey2023q1/exp_level_s.svg) ![Bar chart of editor
 preference broken down by experience levels for self-selected group only](https://go.dev/blog/survey2023q1/editor_self_select_exp.svg) ![Bar chart of
 levels of experience using Go](https://go.dev/blog/survey2023q1/os_dev_exp_s.svg)
 
-There could be a number of reasons why we don’t see higher proportions of Windows users at higher experience levels. For example, Windows users may be more likely to experience difficulties and stop using Go, or there could be wider trends in OS usage that have nothing to do with Go. In any case, we should include more Windows users in future research around getting started with Go to make sure we provide an inclusive onboarding experience.
+我们在更高的经验等级中看不到更多 Windows 用户的比例，可能有多种原因。例如，Windows用户可能更容易遇到困难并停止使用Go，或者可能存在与 Go 无关的操作系统使用的更广泛的趋势。无论如何，我们应该在未来关于开始使用 Go 的研究中包括更多的Windows 用户，以确保我们提供一个包容性的入门体验。
 
-### How different experience levels currently use Go (and other areas where they would like to)
+### 不同经验等级的用户当前如何使用Go（以及他们希望使用的其他领域）
 
 ![Bar chart of use cases](https://go.dev/blog/survey2023q1/go_app.svg) ![Bar chart of use
 cases broken down by experience level](https://go.dev/blog/survey2023q1/go_app_exp.svg)
 
-According to how respondents use Go right now, more experienced Gophers tend to be using Go for more types of applications. For example, the average expert used Go in at least four areas while the average novice used Go in only two areas. That’s why there are large differences in the proportion of novices and experts using Go for each use case. The top two uses, API / RPC services and CLIs, however, are the top use cases across all experience levels.
+根据调查者目前如何使用Go，更有经验的 Gopher 倾向于使用 Go 进行更多类型的应用。例如，平均每个专家至少在四个领域使用Go，而平均每个初学者只在两个领域使用Go。这就是为什么在每个使用案例中，使用 Go 的初学者和专家的比例有很大的差异。然而，前两大应用，API / RPC服务和CLI，都是所有经验等级的主要用例。
 
-We see more interesting trends for GUIs and Website / Web services (returning HTML). All experience levels used Go for Desktop / GUI apps at about the same rate. This gives us evidence the desire for GUIs isn’t just coming from new Gophers looking for a fun starter project, but from across the experience spectrum.
+我们在 GUI 和 Website / Web 服务（返回HTML）中看到更有趣的趋势。所有经验等级都以大约相同的比例使用 Go 进行桌面/ GUI 应用。这为我们提供了证据，GUI 的需求并不仅仅来自寻找有趣的入门项目的新 Gopher，而是来自整个经验谱。
 
-Websites / services returning HTML show a similar trend. One explanation could be that this is a common use case early in someone’s Go journey (since it is in the top 3 most common for novices), or that novices are more likely to be doing work on websites or web services returning HTML. Later in the survey, we asked respondents, “In which area (if any) are you not using Go, but would most like to?” Although many respondents (29%) said they already use Go everywhere they would like to, the top two areas for expanding usage were GUI / Desktop and AI / ML applications. This was consistent across groups at different organization sizes and job roles, but not experience levels. The number one area where novices would like to use Go more is for websites / web services returning HTML.
+返回 HTML 的 Website / Web 服务显示出类似的趋势。一种解释可能是这是某人开始 Go 之旅早期的一个常见用例（因为它是初学者中最常用的前3个），或者初学者更可能在返回 HTML 的 Website / Web 服务上工作。在调查的后期，我们问回答者，“在哪个领域（如果有的话）你没有使用 Go，但最想使用？”虽然许多回答者（29%）表示他们已经在他们希望的地方使用Go，但扩大使用的前两个领域是GUI / 桌面和AI / ML应用。这在不同组织规模和工作角色的群体中保持一致，但在经验等级上并非如此。初学者最想更多使用 Go的领域是网站/返回HTML的 websites / web 服务 。
 
 ![Bar chart of levels of
 experience using Go](https://go.dev/blog/survey2023q1/app_opportunities_exp.svg)
 
-In an open text question, 12 out of 29 respondents who said they would like to use Go for websites / web services returning HTML said they were blocked because other languages had frameworks to better support this use case. It could be that more experienced Go developers don’t try or expect to use Go for this use case when other languages already have frameworks that meet those needs. As one respondent put it,
+在一个开放式文本问题中，有29位回答者表示他们希望使用 Go 进行返回HTML的 websites / web 服务，其中12位表示他们被阻碍了，因为其他语言有更好支持这个用例的框架。更有经验的 Go 开发者可能在其他语言已经有满足这些需求的框架时，不会尝试或期望使用Go进行这个用例。正如一位回答者所说，
 
-> “It’s usually easier to accomplish this in other languages such as PHP or Ruby. Partly due to the excellent frameworks that exist in those languages.”
+> “通常在其他语言如 PHP 或 Ruby 中实现这个更容易。部分原因是这些语言中存在的优秀框架。”
 
-Another contributing explanation for novices’ interest in web development may be related to their usage of JavaScript / TypeScript. Novices spend more of their time writing in JavaScript / TypeScript than more experienced respondents. The higher interest in web could have something to do with what novice respondents currently work on in other languages or could indicate a general interest in web technologies. In the future we’d like to learn more about this use case and how we can help new Gophers get started using Go in areas most useful to them.
+初学者对 web 开发的兴趣可能与他们使用 JavaScript / TypeScript 的情况有关。初学者花费在 JavaScript / TypeScript 上的时间比更有经验的回答者多。对 web 的高度兴趣可能与初学者目前在其他语言上工作的内容有关，或者可能仅仅表明对 web 技术感兴趣。在未来，我们希望更多地了解这个用例，以及我们如何可以帮助新的 Gopher 开始在对他们最有用的领域使用Go。
 
 ![Bar chart of levels of
 experience using Go](https://go.dev/blog/survey2023q1/language_time_exp.svg)
 
-## Respondents face a long tail of challenges
+## 调查者面临一系列长期挑战 
 
-Every survey cycle we ask respondents what their biggest challenge is when using Go. Historically, lack of generics was the most commonly cited challenge—for example, it was the most common response in 2020, and mentioned by about 18% of respondents. Since the introduction of generics, error handling (12%) and learning / best practices / docs (11%) have emerged at the front of a long tail of issues rather than any single issue becoming more frequent.
+在每个调查周期，我们都会询问回应者在使用 Go 时最大的挑战是什么。从历史来看，缺乏泛型是最常被引用的挑战——例如，这是2020年最常见的回应，约18%的回答者提到了这一点。自从引入了泛型以来，错误处理（12%）和学习/最佳实践/文档（11%）已经在一系列长期问题中脱颖而出，而不是任何单一问题变得更加频繁。
 
 ![Bar chart of
 biggest challenges](https://go.dev/blog/survey2023q1/text_biggest_challenge.svg)
 
-### Why is error handling such a challenge?
+### 为什么错误处理如此具有挑战性？ 
 
-Feedback on error handling often describes the problem as verbosity. On the surface, this could reflect that writing repetitive code is boring or annoying. More than just an annoyance of writing boilerplate, however, error handling may also impact respondents’ ability to debug.
+关于错误处理的反馈通常将问题描述为冗长。从表面上看，这可能反映出编写重复代码是无聊或烦人的。然而，错误处理不仅仅是编写样板代码的烦恼，还可能影响调查者的调试能力。
 
-One respondent succinctly illustrated this issue:
+一位调查者简洁地阐述了这个问题：
 
-> “Error handling creates clutter and easily masks problems if not done correctly (no stack traces)”
+> “错误处理会造成混乱，并且如果没有正确处理（没有堆栈跟踪）就很容易掩盖问题。”
 
-### The struggle to learn best practices
+### 学习最佳实践的挑战 
 
-> “Using Go effectively. Easy to learn, hard to master.”
+> “有效地使用Go。容易学习，难以掌握。”
 
-We’ve heard that Go is easy to learn, and a [previous survey showed that over 70%](https://go.dev/blog/survey2020-results#TOC_6.2) of respondents feel productive using Go within their first year, but learning Go best practices came up as one of the biggest challenges to using Go. Respondents this year told us that best practices around **code structure** and **recommended tools and libraries** aren’t well documented, creating challenges for beginners and teams to keep code consistent. Learning to write idiomatic Go can be especially challenging to those coming from other programming paradigms. Respondents who were more experienced with Go attested that when developers don’t follow best practices for writing idiomatic Go, it hurts the consistency and quality of shared projects.
+我们听到Go语言易于学习，而且[之前的一项调查显示](https://go.dev/blog/survey2020-results#TOC_6.2)，超过70%的回应者在第一年内使用 Go 就感到了效率，但是学习 Go 的最佳实践被提出作为使用 Go 的最大挑战之一。今年的回应者告诉我们，关于**代码结构**和**推荐工具和库**的最佳实践文档不足，这给初学者和团队保持代码一致性带来了挑战。对于来自其他编程范式的人来说，学习写符合惯用方式的 Go 尤其具有挑战性。对 Go 经验更丰富的回应者证实，当开发者不遵循编写符合惯用方式的 Go 的最佳实践时，这会损害共享项目的一致性和质量。
 
-## The biggest challenges for module maintainers
+### 模块维护者面临的最大挑战 
 
-Go module maintainers are critical members of the Go community, helping to grow and sustain the health of our package ecosystem. This year we plan to conduct research with module maintainers to identify opportunities to support stability and growth of the package ecosystem and help grow Go adoption within organizations. To inform this research, we introduced a question on the survey to get an idea of the current top challenges for open source maintainers.
+Go模块维护者是 Go 社区的关键成员，帮助发展并维持我们的包生态系统的健康。今年我们计划与模块维护者进行研究，以确定支持包生态系统的稳定性和增长，以及寻找在组织内推广 Go 的机会。为了为这项研究提供信息，我们在调查中引入了一个问题，以了解当前开源维护者面临的最大挑战。
 
 ![Bar chart of
 challenges for open source module maintainers](https://go.dev/blog/survey2023q1/text_maintainer_challenge.svg)
 
-The top challenges for maintainers are keeping dependencies up to date and difficulties around versioning, including avoiding, identifying, or knowing when to introduce breaking changes. These insights, along with the results of future research, will help inform strategies to support maintainers in keeping the Go ecosystem stable and secure.
+对于维护者来说，最大的挑战是保持依赖项的更新和围绕版本控制的困难，包括避免、识别或知道何时引入破坏性变化。这些洞察，以及未来研究的结果，将有助于制定策略，支持维护者保持 Go 生态系统的稳定和安全。
 
-## The biggest challenges when deploying Go code
+### 部署 Go 代码时面临的最大挑战 
 
-This year we asked what respondents’ biggest challenge was when deploying Go code. Being “easy to deploy” is often cited as a reason for using Go, but we received conflicting feedback during a recent study that prompted us to explore potential issues when deploying Go code. In our open text responses, by far the most common theme was difficulty cross-compiling with cgo (16%), and support for WebAssembly or WASI was a distant second (7%).
+今年我们询问了回应者在部署 Go 代码时遇到的最大挑战是什么。Go 通常因为“易于部署”而被选用，但我们在最近的一项研究中收到了相互矛盾的反馈，这促使我们探索部署 Go 代码时可能遇到的问题。在我们的开放文本回应中，最常见的主题是使用 cgo 进行跨编译的困难（16%），对 WebAssembly 或 WASI 的支持是次要问题（7%）。
 
 ![Bar chart of challenges
 for open source module maintainers](https://go.dev/blog/survey2023q1/text_deploy_challenge.svg)
 
-This year we used a prioritization question we’ve used in previous surveys based on the buy-a-feature method of prioritization. Respondents were given 10 “gophercoins” and asked to distribute them to areas where they want to see improvements. Respondents were randomly assigned one of three possible questions, each containing seven items related to tooling, security, or compiler & runtime. This approach allowed us to ask about items relevant to each focus area without overburdening respondents with three sets of cognitively-demanding prioritization questions.
+## 社区优先级：受访者最关心的问题
 
-At the end of the exercise, we gave respondents an open text prompt to tell us about any area they thought should be the Go team’s top priority in the next year, regardless of which items they spent their coins on. For example, if a respondent was shown the security section, but they didn’t care all that much about security, they still had the opportunity to tell us that in the open text area.
+今年我们使用了一种在以往调查中使用过的基于 buy-a-feature 优先级问题。我们给予受访者10个“gopher币”，并让他们将这些币分配给他们希望看到改进的领域。受访者被随机分配三个可能的问题，来自于七个与工具、安全或编译器和运行时相关的项目。这种方法让我们能够在不让受访者承受三组认知要求高的优先级问题的负担的情况下，询问每个重点领域相关的项目。
 
-### Security
+在这个练习的最后，我们给了受访者一个开放文本提示，让他们告诉我们他们认为在明年 Go 团队应该优先考虑的任何领域，无论他们在哪些项目上花费了他们的币。例如，如果一个受访者被展示了安全部分，但他们对安全并不是很关心，他们仍然有机会在开放文本区域中告诉我们这一点。
 
-We chose these items to test assumptions we held on the relative importance of security practices to the community. These were the seven items as described to participants:
+### 安全
 
--   pkg.go.dev identifies packages that are poorly maintained (e.g., unresponsive to issues, fail to keep their dependencies updated, remain vulnerable for long periods of time)
--   pkg.go.dev identifies packages that make breaking API changes (i.e., requires fixing uses of those APIs when upgrading those packages to newer versions)
--   Support for suppressing vulnerabilities in govulncheck
--   A tool to track how sensitive data flows through a Go program (detect PII leaks)
--   A security best practices guide (e.g., how to choose and update dependencies; how to set up fuzzing, vulnerability checking, and thread sanitizer; how to use crypto)
--   Secure-by-default Web & SQL libraries that help users avoid introducing vulnerabilities in web server code
--   FIPS-140-compliant cryptographic libraries
+我们选择了这些项目，以测试我们社区对安全实践的相对重要性的假设。以下是向参与者描述的七个项目：
+
+* pkg.go.dev 识别出维护不良的包（例如，对问题无反应，未能更新其依赖关系，长期保持易受攻击） 
+* pkg.go.dev 识别出进行了破坏性 API 更改的包（即，当升级这些包到新版本时，需要修复使用这些 API 的地方） 
+* 支持在 govulncheck 中抑制漏洞 
+* 跟踪敏感数据如何流经 Go 程序的工具（检测PII泄露） 
+* 安全最佳实践指南（例如，如何选择和更新依赖项；如何设置模糊测试、漏洞检查和线程消毒器；如何使用crypto） 
+* 默认安全的 Web 和 SQL 库，帮助用户避免在 web 服务器代码中引入漏洞 
+* 符合 FIPS-140 标准的密码学库
 
 ![Bar chart of where
 respondents spent the most on security issues](https://go.dev/blog/survey2023q1/prioritization_security.svg)
 
-The highest funded security feature was for web & SQL libraries to be secure by default to avoid introducing vulnerabilities in web server code, but the top four features all relate to avoiding the introduction of vulnerabilities. The desire for secure defaults is consistent with previous security research that showed developers want to “shift left” on security: development teams often don’t have time or resources to spend on addressing security issues, and thus value tooling that reduces the likelihood of introducing them in the first place. The second most common item was a security best practices guide, highlighting the high value of best practices documentation compared to new tools or features to the majority of respondents.
+安全性方面，得到资金支持最多的特性是让 Web 和 SQL 库默认为安全，以避免在 Web 服务器代码中引入漏洞，但排在前四位的特性都与避免引入漏洞有关。对默认安全设置的需求与以前的安全研究一致，那些研究表明开发人员希望在安全性上进行“左移”：开发团队往往没有时间或资源花在解决安全问题上，因此他们更看重那些能够减少一开始就引入问题的工具。第二个最常见的项目是安全最佳实践指南，这突显出相比于新工具或特性，大多数受访者更看重最佳实践文档的价值。
 
-### Tools
+### 工具
 
-Items we included in this question were inspired by feedback from VS Code plugin users. We wanted to know which tooling and IDE improvements would be most helpful to a wider audience who may use other IDEs or editors.
+我们在这个问题中包含的项目是受 VS Code 插件用户反馈的启发。我们想知道哪些工具和 IDE 改进对可能使用其他 IDE 或编辑器的更广泛的受众最有帮助。
 
--   Better refactoring tools (e.g., support for automatic code transformation: renamings, function extraction, API migration, etc.)
--   Better support for testing in your code editor/IDE (e.g., robust and scalable Test Explorer UI, 3rd party test framework, subtest support, code coverage)
--   Better support for working on multiple modules in your code editor/IDE (e.g., editing modules A and B, where module A depends on module B)
--   Dependency insights in pkg.go.dev (e.g., vulnerabilities, breaking changes, scorecards)
--   Dependency insights in your code editor/IDE (e.g., vulnerabilities, breaking changes, scorecards)
--   Support for publishing modules with new module paths (e.g., repo ownership handoff)
--   Support finding types that implement an interface & interfaces implemented by a type in your code editor/IDE
+* 更好的重构工具（例如，支持自动代码转换：重命名，函数提取，API迁移等） 
+* 在你的代码编辑器/IDE 中更好地支持测试（例如，健壮且可扩展的Test Explorer UI，第三方测试框架，子测试支持，代码覆盖率）
+*  在你的代码编辑器/IDE中更好地支持多模块工作（例如，编辑模块A和B，其中模块A依赖于模块B） 
+* 在pkg.go.dev中的依赖性洞察（例如，漏洞，破坏性变化，评分卡） 
+* 在你的代码编辑器/IDE中支持依赖性洞察（例如，漏洞，破坏性变化，评分卡） 
+* 支持使用新的模块路径发布模块（例如，仓库所有权移交） 
+* 在你的代码编辑器/IDE中支持找到实现了一个接口的类型以及由一个类型实现的接口
 
 ![Bar chart of where
 respondents spent the most on tooling](https://go.dev/blog/survey2023q1/prioritization_tooling.svg)
 
-The most funded editor feature was _support for finding types that implement an interface and interfaces implemented by a type_ and _refactoring tools_. We also saw an interesting difference in how respondents spent their gophercoins according to preferred editor usage. Most notably, VS Code users spent more gophercoins on refactoring than GoLand users, suggesting that automatic code transformations are currently better supported in GoLand than in VS Code.
+编辑器特性中得到资金支持最多的是，找到实现了接口的类型以及由一个类型实现的接口的支持，以及重构工具。我们还看到受访者根据他们偏好的编辑器使用方式，在如何使用"gophercoins"上存在有趣的差异。最值得注意的是，VS Code 用户在重构上花费的"gophercoins"比 GoLand 用户多，这暗示了在 VS Code 中，自动代码转换的支持不如在 GoLand 中好。
 
-### Compiler & runtime
+### 编译器和运行时
 
-Our key question for this section was to determine whether respondents wanted better performance by default, better optimization tooling, or just a better understanding of how to write performant Go code.
+我们在这一部分的关键问题是，想要确定受访者是希望默认有更好的性能，更好的优化工具，还是只是希望更好地理解如何编写高性能的Go 代码。
 
--   Reduce compute costs
--   Reduce memory use
--   Reduce binary size
--   Reduce build times
--   Better performance debugging tools
--   An optimization guide (how to improve performance and reduce costs, covering Go’s implementation and performance debugging tools)
--   Better support for using cgo when cross-compiling
+* 降低计算成本 
+* 减少内存使用 
+* 减少二进制文件大小 
+* 减少构建时间 
+* 更好的性能调试工具 
+* 优化指南（如何提高性能和降低成本，包括Go的实现和性能调试工具） 
+* 在交叉编译时更好地支持使用cgo
 
 ![Bar chart of where
 respondents spent the most on compiler and runtime improvements](https://go.dev/blog/survey2023q1/prioritization_core.svg)
 
-By far the most funded item in this list was an optimization guide. This was consistent across organization size, job role, and experience level. We asked an additional question about whether respondents had resource costs concerns. Most respondents (55%) said they did not have any cost concerns, but those who had concerns about resource costs spent more gophercoins (on average, 2.0) on reducing compute costs and memory costs than those who did not. However, even those who were concerned about resource costs still spent about as much on the optimization guide (on average 1.9 gophercoins). This is a strong signal that providing guidance for Go developers to understand and optimize Go performance is currently more valuable than additional compiler and runtime performance improvements.
+这个列表中得到最多资金支持的是优化指南。这在组织规模、工作角色和经验水平上都是一致的。我们还问了一个关于受访者是否对资源成本有所担忧的额外问题。大多数受访者（55%）表示他们没有任何成本担忧，但是那些对资源成本有所担忧的人在降低计算成本和内存成本上花费了更多的"gophercoins"（平均为2.0），比那些没有担忧的人多。然而，即使是那些对资源成本有所担忧的人，他们在优化指南上的花费也差不多（平均为1.9个"gophercoins"）。这是一个强烈的信号，提供指导 Go 开发者理解和优化 Go 性能的指南，目前比额外的编译器和运行时性能改进更有价值。
 
-## Conclusion
+## 总结
 
-Thank you for joining us in reviewing the results of our first developer survey of 2023! Understanding developers’ experiences and challenges helps us prioritize how to best serve the Go community. Some takeaways we found particularly useful:
+感谢你加入我们一起回顾2023年第一次开发者调查的结果！理解开发者的经验和挑战有助于我们确定如何最好地服务 Go 社区。我们发现的一些特别有用的收获包括：
 
--   Novice Go developers have more of an affinity for web development than respondents of other levels of experience. This is an area we’d like to explore further to make sure we’re meeting the needs of new Go developers.
--   Secure defaults, best practice guidance on security and optimization, and more refactoring assistance in IDEs would be valuable additions to the community.
--   Error handling is a high priority issue for the community and creates challenges in terms of verbosity and debuggability. The Go team doesn’t have a public proposal to share at this time but is continuing to explore options to improve error handling.
--   Onboarding and learning best practices are among the top challenges for respondents and will be areas of future research.
--   For Go module maintainers, keeping dependencies up to date, module versioning, and identifying or avoiding breaking changes are the biggest challenges. Helping maintainers provide a stable and healthy ecosystem is another topic of interest for further UX research.
+* Go初学者对网页开发有更高的亲和力，比其他经验水平的受访者更为如此。这是我们希望进一步探索的一个领域，以确保我们满足新的Go开发者的需求。 
+* 默认安全、安全和优化的最佳实践指导，以及在IDE中更多的重构帮助，将是对社区的有价值的补充。 
+* 错误处理是社区的高优先级问题，它在冗长性和可调试性上带来了挑战。Go团队目前没有公开提案，但正在继续探索改进错误处理的选项。 
+* 对受访者来说，入门和学习最佳实践是最大的挑战之一，将是未来研究的领域。 
+* 对于Go模块维护者来说，保持依赖项更新、模块版本控制，以及识别或避免破坏性变化是最大的挑战。帮助维护者提供稳定和健康的生态系统是另一个感兴趣的进一步 UX 研究的话题。 
 
-Thanks again to everyone who responded and contributed to this survey—we couldn’t have done it without you. We hope to see you later this year for the next survey.
+再次感谢所有参与并为这次调查做出贡献的人——没有你们我们无法完成这项工作。我们希望在今年晚些时候的下一次调查中再见到你。
