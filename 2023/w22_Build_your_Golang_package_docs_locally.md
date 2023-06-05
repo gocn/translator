@@ -1,38 +1,45 @@
-# Build your Golang package docs locally
+# 在本地构建你的 Golang 包文档
 
-Previewing the HTML of your go docs from localhost
+- 原文地址：https://mdaverde.com/posts/golang-local-docs/
+- 原文作者：***Milan***
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w22_Build_your_Golang_package_docs_locally.md
+- 译者：[朱亚光](https://github.com/zhuyaguang)
+- 校对：
 
-## Writing Golang docs
+从本地主机预览你的 Golang  HTML 文档。
 
-For my recent focus on [eBPF](https://bpfdeploy.io/), I've been needing to write more than I ever have before. This also means composing [docs](https://mdaverde.com/posts/hot-reloading-cargo-docs) for variety of ecosystems. While certain tools vary in friction for writers to do their jobs, this post is for a workflow I currently have set up for writing Golang docs.
+## 编写 Golang 文档
 
-### `godoc` has been deprecated
+最近我专注于 [eBPF](https://bpfdeploy.io/)，需要写比以前更多的东西。这也意味着要为各种生态系统撰写[文档](https://mdaverde.com/posts/hot-reloading-cargo-docs)。虽然某些工具在作者完成工作时产生阻力，但本文介绍我目前为编写 Golang 文档而设置的工作流程。
 
-Similar to my Rust setup, I wanted to see a rendering of my module docs as they would on [pkg.go.dev](https://pkg.go.dev/) **locally** before publishing. This was [possible](https://stackoverflow.com/a/13530336/1879774) with `godoc` but it's been [deprecated](https://github.com/golang/go/issues/49212) since then with no official solution.
+###  `godoc` 已被弃用
 
-The recommendation now is to point users to [pkgsite](https://github.com/golang/pkgsite/tree/master/cmd/pkgsite) (the tool used to render pkg.go.dev) but it's left as an [exercise to the user](https://github.com/golang/go/issues/40371) on exactly what the setup should be.
+与我的 Rust 设置类似，我想在发布之前本地查看我的模块文档在 [pkg.go.dev](https://pkg.go.dev/) 上的呈现方式。这是[可能的](https://stackoverflow.com/a/13530336/1879774)，但自那时起 `godoc` 就已被[弃用](https://github.com/golang/go/issues/49212)，没有官方解决方案。
 
-So let's do the exercise.
+现在的建议是指导用户使用 [pkgsite](https://github.com/golang/pkgsite/tree/master/cmd/pkgsite)（用于渲染 pkg.go.dev 的工具），但确切的设置方式留给用户来[练习](https://github.com/golang/go/issues/40371)。
 
-## `pkgsite` cmd
+那我们开始练习吧。
+
+## `pkgsite` 命令
 
 [golang/pkgsite](https://github.com/golang/pkgsite) hosts the cli pkg.go.dev uses for docs rendering. The comments of the `pkgsite` cmd are [concise](https://github.com/golang/pkgsite/blob/master/cmd/pkgsite/main.go#L5) but can get us started:
 
+[golang/pkgsite](https://github.com/golang/pkgsite) 托管了用于渲染文档的 `pkg.go.dev` 命令行界面。 `pkgsite` 命令的[注释](https://github.com/golang/pkgsite/blob/master/cmd/pkgsite/main.go#L5)虽然简洁，但可以让我们开始：
+
 ```
-// Pkgsite extracts and generates documentation for Go programs.
-// It runs as a web server and presents the documentation as a
-// web page.
+// Pkgsite 提取和生成 Go 程序的文档。
+// 它作为 Web 服务器运行，将文档呈现为 Web 页面。
 //
-// To install, run `go install ./cmd/pkgsite` from the pkgsite repo root.
+// 要安装，请从 pkgsite 存储库根目录运行 `go install ./cmd/pkgsite`。
 ```
 
-We'll use this to set up a local server version of pkg.go.dev that contains the documentation rendering functionality for Golang packages. So let's install it. The recommendation I've seen elsewhere is to locally clone this repo, build it and install it somewhere in your `$PATH` but this `go install` should just work:
+我们将使用它来设置一个本地服务器版本的 `pkg.go.dev`，其中包含 Golang 包的文档渲染功能。所以让我们安装它。我在其他地方看到的建议是本地克隆此存储库，构建它并将其安装在 `$PATH` 中的某个位置，但这个 `go install` 应该就可以工作：
 
 ```
 $ go install golang.org/x/pkgsite/cmd/pkgsite@latest
 ```
 
-Once we have it installed, it should be as easy as running it where our go package repo lives:
+一旦安装完成，只需将其运行在我们的 Go 包仓库所在的位置即可：
 
 ```
 $ cd /path/to/go/pkg
@@ -40,31 +47,33 @@ $ pkgsite
 2022/06/16 10:13:55 Info: Listening on addr http://localhost:8080
 ```
 
-You can customize the bound port with `-http localhost:3030`
+你可以使用 `-http localhost:3030` 自定义绑定端口。
 
-Opening up the localhost site will show you a page similar to pkg.go.dev with the search bar and everything. Of course, you won't see any packages if you search because we're rendering just the local package (although there are flags to change this).
+打开本地站点将显示一个类似于 pkg.go.dev 的页面，包含搜索栏和其他内容。当然，如果你进行搜索，你不会看到任何包，因为我们只渲染了本地包（虽然有一些参数可以更改这个行为）。
 
-### Your local docs
+### 你的本地文档
 
-Now, similar to pkg.go.dev, you can check your local module's documentation by appending the module path from your `go.mod` to the url:
+现在，类似于 pkg.go.dev，你可以通过将 `go.mod` 中的模块路径附加到 URL 上来检查本地模块的文档：
 
-`http://localhost:8080/my/local/module/path`
+```
+http://localhost:8080/my/local/module/path
+```
 
-And that's it. You can now see the docs you wrote for your module in web form. With just that `pkgsite` install you can now preview what the docs for your Go project will look like before publishing.
+就是这样。现在你可以以 Web 形式查看你编写的模块文档了。只需安装 `pkgsite`，你就可以在发布之前预览 Go 项目的文档长什么样了。
 
-Yet, can we push it further? I don't want to have to manually save the file, kill the server, start it again and refresh the page between thoughts. I want to just have a browser tab open rendering the page as I type from my text editor.
+但是，我们能不能进一步推动它呢？我不想手动保存文件，在思考之间杀死服务器，再重新启动服务器并刷新页面。我希望只需打开一个浏览器标签即可在我的文本编辑器中输入时渲染页面。
 
-## Hot reload
+## 热加载
 
-For this, we'll need a couple of more tools. One that watches when our Go files change and another to communicate to our browser when to reload. Ideally, there would be a _single_ tool to do this (maybe even one day we can have `pkgsite` come with this functionality built in...). If you're from the frontend JavaScript world, this is table stakes and it usually comes with the framework's tooling. Now we'll work for it.
+为此，我们需要更多的工具。一个用于监视我们的 Go 文件何时发生更改，另一个用于与我们的浏览器通信何时重新加载页面。理想情况下，这应该是一个_单独的_工具来完成（也许有一天 `pkgsite` 会内置这个功能...）。如果你来自前端 JavaScript 的世界，这是基本操作，通常会伴随着框架的工具。现在我们要开始工作了。
 
-My tool of choice for file watching is [nodemon](https://nodemon.io/). It does its job well and lets me configure it when I need to (and we'll need to). At first, I wanted to find a Go-based file watcher but I couldn't find any that could do what I wanted. I even tried to shoehorn [cosmtrek/air](https://github.com/cosmtrek/air) into this, but didn't work out.
+我选择的文件监视工具是 [nodemon](https://nodemon.io/)。它的工作表现很好，并且在需要时可以配置它（我们将需要这样做）。起初，我想找一个基于 Go 的文件监视器，但我找不到任何一个能满足我的需求。我甚至尝试将 [cosmtrek/air](https://github.com/cosmtrek/air) 强行塞进这个角色，但没有成功。
 
-Now that we have a file watcher, we'll want to tell the browser when to reload the page. We'll use [browser-sync](https://browsersync.io/) for this.
+现在我们有了一个文件监视器，我们希望告诉浏览器何时重新加载页面。我们将使用 [browser-sync](https://browsersync.io/) 来实现这一点。
 
-### Terminal commands
+### 终端命令
 
-Here are the key commands we'll use. Open up a new terminal for each process or just background one of them:
+以下是我们将使用的关键命令。为每个进程打开一个新终端，或者只是将其中一个放在后台：
 
 ```
 $ browser-sync start --proxy "localhost:8080"
@@ -79,7 +88,7 @@ $ browser-sync start --proxy "localhost:8080"
  --------------------------------------
 ```
 
-The reason we need to set up this proxy is because we need an automatic way to communicate to the browser that something has changed. To do this, `browser-sync` injects a bit of javascript into our requests that listens to a signal as to when to reload.
+我们需要设置这个代理的原因是，我们需要一种自动通知浏览器某些东西已经改变的方式。为此，`browser-sync` 在我们的请求中注入了一小段 JavaScript 代码，它会监听一个信号以确定何时重新加载。
 
 ```
 $ nodemon --signal SIGTERM --watch my-mod.go --exec "browser-sync reload && pkgsite ."
@@ -89,12 +98,12 @@ $ nodemon --signal SIGTERM --watch my-mod.go --exec "browser-sync reload && pkgs
 [nodemon] starting `browser-sync reload && pkgsite .`
 ```
 
-And this is how we create that signal. `nodemon` watches `my-mod.go` for file changes and auto-restarts the `pkgsite` process while sending a signal to `browser-sync`.
+这就是我们创建该信号的方式。`nodemon` 监视 `my-mod.go` 的文件更改，并自动重新启动 `pkgsite` 进程，同时向 `browser-sync` 发送信号。
 
-## Conclusion
+## 总结
 
-With both of these running in parallel, you should now have automated documentation reloading. I can now write my [go doc](https://go.dev/doc/comment) comments in my text editor, save the file and see the tab reload.
+当这两个工具并行运行时，你现在应该具备了自动化的文档重载功能。我现在可以在我的文本编辑器中编写[go doc](https://go.dev/doc/comment) 注释，保存文件并查看选项卡重新加载。
 
-There are less excuses to not write now but the developer experience could still be better. Obviously besides just the pain of setting this up, the reloading is slower than necessary. We shouldn't have to wait for the entire process to start and then wait again for it to render my local module before seeing it in my browser tab.
+现在没有借口不写注释了，但开发体验仍可以更好。显然除了设置这个痛苦之外，重新加载的速度也比必要的慢。我们不应该等待整个进程启动，然后再等待它渲染我的本地模块，才能在浏览器标签中看到它。
 
-Perhaps by the time you read this article, that [pkgsite issue](https://github.com/golang/go/issues/40371) will be resolved and more doc-focused tooling will exist. Or maybe I'll have a free weekend and send some PRs.
+也许当你阅读这篇文章时，那个 [pkgsite 问题](https://github.com/golang/go/issues/40371) 已经解决了，并且会存在更多针对文档的工具。或者也许我会有一个空闲的周末，可以发送一些 PR。
