@@ -1,3 +1,11 @@
+- 原文地址：https://go.dev/doc/toolchain
+- 原文作者：**Go Team**
+- 本文永久链接：
+- 译者：[cvley](https://github.com/cvley)
+- 校对：[]()
+
+
+
 ## Introduction
 
 Starting in Go 1.21, the Go distribution consists of a `go` command and a bundled Go toolchain, which is the standard library as well as the compiler, assembler, and other tools. The `go` command can use its bundled Go toolchain as well as other versions that it finds in the local `PATH` or downloads as needed.
@@ -89,11 +97,11 @@ Before Go 1.21, toolchains did not require a module or workspace to have a `go` 
 The `go` command selects the Go toolchain to use based on the `GOTOOLCHAIN` setting. To find the `GOTOOLCHAIN` setting, the `go` command uses the standard rules for any Go environment setting:
 
 -   If `GOTOOLCHAIN` is set to a non-empty value in the process environment (as queried by [`os.Getenv`](https://go.dev/pkg/os/#Getenv)), the `go` command uses that value.
-    
+
 -   Otherwise, if `GOTOOLCHAIN` is set in the user’s environment default file (managed with [`go env -w` and `go env -u`](https://go.dev/cmd/go/#hdr-Print_Go_environment_information)), the `go` command uses that value.
-    
+
 -   Otherwise, if `GOTOOLCHAIN` is set in the bundled Go toolchain’s environment default file (`$GOROOT/go.env`), the `go` command uses that value.
-    
+
 
 In standard Go toolchains, the `$GOROOT/go.env` file sets the default `GOTOOLCHAIN=auto`, but repackaged Go toolchains may change this value.
 
