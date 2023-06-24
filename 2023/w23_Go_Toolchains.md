@@ -5,196 +5,195 @@
 - 校对：[]()
 
 
+## 介绍
 
-## Introduction
+从 Go 1.21 开始，Go 发行版包括一个 `go` 命令和一个捆绑的 Go 工具链，其中包括标准库以及编译器、汇编器和其他工具。`go` 命令可以使用其捆绑的 Go 工具链以及在本地 `PATH` 中找到的其他版本或根据需要下载的版本。
 
-Starting in Go 1.21, the Go distribution consists of a `go` command and a bundled Go toolchain, which is the standard library as well as the compiler, assembler, and other tools. The `go` command can use its bundled Go toolchain as well as other versions that it finds in the local `PATH` or downloads as needed.
+使用的 Go 工具链的选择取决于 `GOTOOLCHAIN` 环境设置以及主模块的 `go.mod` 文件或当前工作区的 `go.work` 文件中的 `go` 和 `toolchain` 行。当您在不同的主模块和工作区之间移动时，使用的工具链版本可能会有所不同，就像模块依赖版本一样。
 
-The choice of Go toolchain being used depends on the `GOTOOLCHAIN` environment setting and the `go` and `toolchain` lines in the main module’s `go.mod` file or the current workspace’s `go.work` file. As you move between different main modules and workspaces, the toolchain version being used can vary, just as module dependency versions do.
+在标准配置中，当该工具链至少与主模块或工作区的 `go` 或 `toolchain` 行一样新时，`go` 命令使用其自己捆绑的工具链。例如，在使用 Go 1.21.3 捆绑的 `go` 命令中，主模块指定 `go 1.21.0` 时，`go` 命令使用 Go 1.21.3。当 `go` 或 `toolchain` 行比捆绑的工具链更新时，`go` 命令将运行更新的工具链。例如，在使用Go 1.21.3捆绑的go命令中，主模块指定 `go 1.21.9` 时，go 命令会查找并运行 `Go 1.21.9`。它首先在PATH中查找名为 `go1.21.9` 的程序，否则会下载并缓存 Go 1.21.9 工具链。可以禁用此自动工具链切换，但在这种情况下，为了更精确的向前兼容性，`go` 命令将拒绝在 `go` 行要求更高版本的 Go 的主模块或工作区中运行。也就是说，`go` 行设置了使用模块或工作区所需的最低 Go 版本。
 
-In the standard configuration, the `go` command uses its own bundled toolchain when that toolchain is at least as new as the `go` or `toolchain` lines in the main module or workspace. For example, when using the `go` command bundled with Go 1.21.3 in a main module that says `go 1.21.0`, the `go` command uses Go 1.21.3. When the `go` or `toolchain` line is newer than the bundled toolchain, the `go` command runs the newer toolchain instead. For example, when using the `go` command bundled with Go 1.21.3 in a main module that says `go 1.21.9`, the `go` command finds and runs Go 1.21.9 instead. It first looks in the PATH for a program named `go1.21.9` and otherwise downloads and caches a copy of the Go 1.21.9 toolchain. This automatic toolchain switching can be disabled, but in that case, for more precise forwards compatibility, the `go` command will refuse to run in a main module or workspace in which the `go` line requires a newer version of Go. That is, the `go` line sets the minimum required Go version necessary to use a module or workspace.
+作为其他模块的依赖项的模块可能需要将最低Go版本要求设置为低于在该模块中直接工作时要使用的首选工具链。在这种情况下，`go.mod` 或 `go.work` 中的 `toolchain` 行设置了一个首选工具链，该工具链优先于 `go` 行，当 `go` 命令决定使用哪个工具链时。
 
-Modules that are dependencies of other modules may need to set a minimum Go version requirement lower than the preferred toolchain to use when working in that module directly. In this case, the `toolchain` line in `go.mod` or `go.work` sets a preferred toolchain that takes precedence over the `go` line when the `go` command is deciding which toolchain to use.
+可以将 `go` 和 `toolchain` 行视为指定模块对 Go 工具链本身的依赖关系的版本要求，就像 `go.mod` 中的 `require` 行指定对其他模块的依赖关系的版本要求一样。`go get` 命令管理 Go 工具链依赖关系，就像管理对其他模块的依赖关系一样。例如，`go get go@latest` 会更新模块以要求最新发布的Go工具链。
 
-The `go` and `toolchain` lines can be thought of as specifying the version requirements for the module’s dependency on the Go toolchain itself, just as the `require` lines in `go.mod` specify the version requirements for dependencies on other modules. The `go get` command manages the Go toolchain dependency just as it manages dependencies on other modules. For example, `go get go@latest` updates the module to require the latest released Go toolchain.
-
-The `GOTOOLCHAIN` environment setting can force a specific Go version, overriding the `go` and `toolchain` lines. For example, to test a package with Go 1.21rc3:
+`GOTOOLCHAIN` 环境设置可以强制使用特定的Go版本，覆盖 `go` 和 `toolchain` 行。例如，要使用 Go 1.21rc3 测试一个包：
 
 ```
 GOTOOLCHAIN=go1.21rc3 go test
 ```
 
-The default `GOTOOLCHAIN` setting is `auto`, which enables the toolchain switching described earlier. The alternate form `<name>+auto` sets the default toolchain to use before deciding whether to switch further. For example `GOTOOLCHAIN=go1.21.3+auto` directs the `go` command to begin its decision with a default of using Go 1.21.3 but still use a newer toolchain if directed by `go` and `toolchain` lines. Because the default `GOTOOLCHAIN` setting can be changed with `go env -w`, if you have Go 1.21.0 or later installed, then
+默认的 `GOTOOLCHAIN` 设置为 `auto`，这启用了之前描述的工具链切换。另一种形式的 `<name>+auto` 设置默认的工具链，在决定是否进一步切换之前使用。例如，`GOTOOLCHAIN=go1.21.3+auto` 指示 `go` 命令从默认使用 Go 1.21.3 开始做出决策，但如果由 `go` 和 `toolchain` 行指示，则仍然使用更新的工具链。由于默认的 `GOTOOLCHAIN` 设置可以通过 `go env -w` 更改，因此如果您安装了Go 1.21.0或更高版本，那么：
 
 ```
 go env -w GOTOOLCHAIN=go1.21.3+auto
 ```
 
-is equivalent to replacing your Go 1.21.0 installation with Go 1.21.3.
+将您的 Go 1.21.0 安装替换为 Go 1.21.3。
 
-The rest of this document explains how Go toolchains are versioned, chosen, and managed in more detail.
+本文档的其余部分将更详细地解释Go工具链的版本控制、选择和管理。
 
-## Go versions
+## Go 版本
 
-Released versions of Go use the version syntax ‘1._N_._P_’, denoting the _P_th release of Go 1._N_. The initial release is 1._N_.0, like in ‘1.21.0’. Later releases like 1._N_.9 are often referred to as patch releases.
+发布的 Go 版本使用版本语法 “1.N.P”，表示 Go 1.N 的第 P 个发布版本。初始版本为 1.N.0，例如 “1.21.0”。后续版本如 1.N.9 通常被称为补丁版本。
 
-Go 1._N_ release candidates, which are issued before 1._N_.0, use the version syntax ‘1._N_rc_R_’. The first release candidate for Go 1._N_ has version 1._N_rc1, like in `1.23rc1`.
+Go 1.N 发布候选版是在 1.N.0 之前发布的，使用版本语法 “1.NrcR”。Go 1.N 的第一个发布候选版版本为 1.Nrc1，就像 `1.23rc1` 一样。
 
-The syntax ‘1._N_’ is called a “language version”. It denotes the overall family of Go releases implementing that version of the Go language and standard library.
+语法“1.N”被称为“语言版本”。它表示实现该版本Go语言和标准库的Go发布的整个系列。
 
-The language version for a Go version is the result of truncating everything after the _N_: 1.21, 1.21rc2, and 1.21.3 all implement language version 1.21.
+Go版本的语言版本是将N之后的所有内容截断的结果：1.21、1.21rc2和1.21.3都实现了语言版本1.21。
 
-Released Go toolchains such as Go 1.21.0 and Go 1.21rc1 report that specific version (for example, `go1.21.0` or `go1.21rc1`) from `go version` and \[`runtime.Version](/pkg/runtime/#Version). Unreleased (still in development) Go toolchains built from the Go development repository instead report only the language version (for example,` go1.21\`).
+发布的Go工具链如 Go 1.21.0 和 Go 1.21rc1 报告特定版本（例如 `go1.21.0` 或 `go1.21rc1`）从 `go version` 和`[runtime.Version](/pkg/runtime/#Version)`中。未发布（仍在开发中）的Go工具链从Go开发存储库构建，只报告语言版本（例如 `go1.21`）。
 
-Any two Go versions can be compared to decide whether one is less than, greater than, or equal to the other. If the language versions are different, that decides the comparison: 1.21.9 < 1.22. Within a language version, the ordering from least to greatest is: the language version itself, then release candidates ordered by _R_, then releases ordered by _P_.
+任何两个Go版本都可以进行比较，以确定一个是否小于、大于或等于另一个。如果语言版本不同，那么就决定了比较：1.21.9 < 1.22。在语言版本内，从最小到最大的排序是：语言版本本身，然后按_R_排序的发布候选版本，然后按_P_排序的发布版本。
 
-For example, 1.21 < 1.21rc1 < 1.21rc2 < 1.21.0 < 1.21.1 < 1.21.2.
+例如，1.21 < 1.21rc1 < 1.21rc2 < 1.21.0 < 1.21.1 < 1.21.2。
 
-Before Go 1.21, the initial release of a Go toolchain was version 1._N_, not 1._N_.0, so for _N_ < 21, the ordering is adjusted to place 1._N_ after the release candidates.
+在 Go 1.21 之前，Go 工具链的初始版本是1._N_，而不是1._N_.0，因此对于 _N_ < 21，排序会调整为将1._N_放在发布候选版本之后。
 
-For example, 1.20rc1 < 1.20rc2 < 1.20rc3 < 1.20 < 1.20.1.
+例如，1.20rc1 < 1.20rc2 < 1.20rc3 < 1.20 < 1.20.1。
 
-Earlier versions of Go had beta releases, with versions like 1.18beta2. Beta releases are placed immediately before release candidates in the version ordering.
+早期版本的Go有beta版本，版本号为1.18beta2之类的版本。Beta版本放在版本排序中的发布候选版本之前。
 
-For example, 1.18beta1 < 1.18beta2 < 1.18rc1 < 1.18 < 1.18.1.
+例如，1.18beta1 < 1.18beta2 < 1.18rc1 < 1.18 < 1.18.1。
 
-## Go toolchain names
+## Go 工具链命名
 
-The standard Go toolchains are named `go_V_` where _V_ is a Go version denoting a beta release, release candidate, or release. For example, `go1.21rc1` and `go1.21.0` are toolchain names; `go1.21` and `go1.22` are not (the initial releases are `go1.21.0` and `go1.22.0`), but `go1.20` and `go1.19` are.
+标准的Go工具链命名为`go_V_`，其中 _V_ 是表示beta版本、发布候选版本或发布版本的Go版本。例如，`go1.21rc1`和`go1.21.0`是工具链名称；`go1.21`和`go1.22`不是（最初的发布版本是`go1.21.0`和`go1.22.0`），但`go1.20`和`go1.19`是。
 
-Non-standard toolchains use names of the form `go_V_-_suffix_` for any suffix.
+非标准工具链使用`go_V_-_suffix_`形式的名称，其中suffix可以是任何后缀。
 
-Toolchains are compared by comparing the version `_V_` embedded in the name (dropping the initial `go` and discarding off any suffix beginning with `-`). For example, `go1.21.0` and `go1.21.0-custom` compare equal for ordering purposes.
+通过比较嵌入在名称中的版本`_V_`（删除初始的`go`并丢弃任何以`-`开头的后缀）来比较工具链。例如，`go1.21.0`和`go1.21.0-custom`在排序目的上相等。
 
-## Module and workspace configuration
+## 模块和工作区配置
 
-Go modules and workspaces specify version\-related configuration in their `go.mod` or `go.work` files.
+Go模块和工作区在其`go. mod`或`go.work`文件中指定与版本相关的配置。
 
-The `go` line declares the minimum required Go version for using the module or workspace. For compatibility reasons, if the `go` line is omitted from a `go.mod` file, the module is considered to have an implicit `go 1.16` line, and if the `go` line is omitted from a `go.work` file, the workspace is considered to have an implicit `go 1.18` line.
+`go`行声明了使用模块或工作区所需的最低Go版本。出于兼容性原因，如果`go. mod`文件中省略了`go`行，则该模块被认为具有隐式`go 1.16`行，如果`go.work`文件中省略了go行，则该工作区被认为具有隐式`go 1.18`行。
 
-The `toolchain` line declares a suggested toolchain to use with the module or workspace. As described in “[Go toolchain selection](https://go.dev/doc/toolchain#select)” below, the `go` command may run this specific toolchain when operating in that module or workspace if the default toolchain’s version is less than the suggested toolchain’s version. If the `toolchain` line is omitted, the module or workspace is considered to have an implicit `toolchain go_V_` line, where _V_ is the Go version from the `go` line.
+`toolchain`行声明了与模块或工作区一起使用的建议工具链。如下面的“[Go工具链选择](https://go.dev/doc/toolchain#select])”中所述，如果默认工具链的版本小于建议工具链的版本，则`go`命令可以在该模块或工作区中运行此特定工具链。如果省略`toolchain`行，则模块或工作区被认为具有隐式`toolchain go_V_`行，其中_V_是`go`行的Go版本。
 
-For example, a `go.mod` that says `go 1.21.0` with no `toolchain` line is interpreted as if it had a `toolchain go1.21.0` line.
+例如，一个说`go 1.21.0`但没有`toolchain`行的`go. mod`被解释为它有一个`toolchain go1.21.0`行。
 
-The Go toolchain refuses to load a module or workspace that declares a minimum required Go version greater than the toolchain’s own version.
+Go工具链拒绝加载声明最低所需Go版本大于工具链自己版本的模块或工作区。
 
-For example, Go 1.21.2 will refuse to load a module or workspace with a `go 1.21.3` or `go 1.22` line.
+例如，Go 1.21.2将拒绝加载带有`go 1.21.3`或`go 1.22`行的模块或工作区。
 
-A module’s `go` line must declare a version greater than or equal to the `go` version declared by each of the modules listed in `require` statements. A workspace’s `go` line must declare a version greater than or equal to the `go` version declared by each of the modules listed in `use` statements.
+模块的`go`行必须声明一个版本大于或等于要求语句中列出的每个模块声明的`go`版本。工作区的`go`行必须声明一个版本大于或等于`use`语句中列出的每个模块声明的`go`版本。
 
-For example, if module _M_ requires a dependency _D_ with a `go.mod` that declares `go 1.22.0`, then _M_’s `go.mod` cannot say `go 1.21.3`.
+例如，如果模块_M_需要一个依赖项_D_和一个声明`go 1.22.0`的`go.mod`，那么_M_的`go.mod`不能说`go 1.21.3`。
 
-The `go` line for each module sets the language version the compiler enforces when compiling packages in that module. The language version can be changed on a per-file basis by using a [build constraint](https://go.dev/cmd/go#hdr-Build_constraints).
+每个模块的`go`行设置编译器在编译该模块中的包时强制执行的语言版本。可以使用[构建约束](https://go.dev/cmd/go#hdr-Buid_constraints)在每个文件的基础上更改语言版本。
 
-For example, a module containing code that uses the Go 1.21 language version should have a `go.mod` file with a `go` line such as `go 1.21` or `go 1.21.3`. If a specific source file should be compiled only when using a newer Go toolchain, adding `//go:build go1.22` to that source file both ensures that only Go 1.22 and newer toolchains will compile the file and also changes the language version in that file to Go 1.22.
+例如，包含使用Go 1.21语言版本的代码的模块应该有一个`go. mod`文件，其中包含`go`行，例如`go 1.21`或`go 1.21.3`。如果特定的源文件应该仅在使用较新的Go工具链时编译，则在该源文件中添加`//go：build go1.22`既可以确保只有Go 1.22和较新的工具链会编译该文件，又可以将该文件中的语言版本更改为Go 1.22。
 
-The `go` and `toolchain` lines are most conveniently and safely modified by using `go get`; see the [section dedicated to `go get` below](https://go.dev/doc/toolchain#get).
+使用`go get`可以最方便、最安全地修改`go`和`toolchain`行；请参阅[下面专门介绍go get的部分](https://go.dev/doc/toolchain#get)。
 
-Before Go 1.21, Go toolchains treated the `go` line as an advisory requirement: if builds succeeded the toolchain assumed everything worked, and if not it printed a note about the potential version mismatch. Go 1.21 changed the `go` line to be a mandatory requirement instead. This behavior is partly backported to earlier language versions: Go 1.19 releases starting at Go 1.19.11 and Go 1.20 releases starting at Go 1.20.6, refuse to load workspaces or modules declaring version Go 1.21 or later.
+在Go 1.21之前，Go工具链将`go`行视为一个建议性要求：如果构建成功，工具链会假设一切正常，如果没有，它会打印一个关于潜在版本不匹配的注释。Go 1.21将`go`行更改为强制性要求。这种行为部分向后移植到更早的语言版本：从Go 1.19.11开始的Go 1.19版本和从Go 1.20.6开始的Go 1.20版本，拒绝加载声明Go 1.21或更高版本的工作区或模块。
 
-Before Go 1.21, toolchains did not require a module or workspace to have a `go` line greater than or equal to the `go` version required by each of its dependency modules.
+在Go 1.21之前，工具链不要求模块或工作区的`go`行大于或等于其每个依赖模块所需的`go`版本。
 
-The `go` command selects the Go toolchain to use based on the `GOTOOLCHAIN` setting. To find the `GOTOOLCHAIN` setting, the `go` command uses the standard rules for any Go environment setting:
+`go`命令根据`GOTOOLCHAIN`设置选择要使用的Go工具链。要查找`GOTOOLCHAIN`设置，`go`命令使用任何Go环境设置的标准规则：
 
--   If `GOTOOLCHAIN` is set to a non-empty value in the process environment (as queried by [`os.Getenv`](https://go.dev/pkg/os/#Getenv)), the `go` command uses that value.
+- 如果`GOTOOLCHAIN`在进程环境中设置为非空值（由[os.Getenv](https://go.dev/pkg/os/#Getenv)查询），则`go`命令使用该值。
 
--   Otherwise, if `GOTOOLCHAIN` is set in the user’s environment default file (managed with [`go env -w` and `go env -u`](https://go.dev/cmd/go/#hdr-Print_Go_environment_information)), the `go` command uses that value.
+- 否则，如果在用户的环境默认文件（使用[`go env -w`和`go env -u`](https://go.dev/cmd/go/#hdr-Print_Go_environment_information)管理）中设置了`GOTOOLCHAIN`，则`go`命令使用该值。
 
--   Otherwise, if `GOTOOLCHAIN` is set in the bundled Go toolchain’s environment default file (`$GOROOT/go.env`), the `go` command uses that value.
+- 否则，如果在捆绑的Go工具链的环境默认文件（`$GOROOT/go. env）中设置了`GOTOOLCHAIN``，则`go`命令使用该值。
 
 
-In standard Go toolchains, the `$GOROOT/go.env` file sets the default `GOTOOLCHAIN=auto`, but repackaged Go toolchains may change this value.
+在标准Go工具链中，`$GOROOT/go.env`文件设置默认的`GOTOOLCHAIN=auto`，但重新打包的Go工具链可能会更改此值。
 
-If the `$GOROOT/go.env` file is missing or does not set a default, the `go` command assumes `GOTOOLCHAIN=local`.
+如果`$GOROOT/go.env`文件丢失或未设置默认值，则`go`命令假定`GOTOOLCHAIN=local`。
 
-Running `go env GOTOOLCHAIN` prints the `GOTOOLCHAIN` setting.
+运行`go env GOTOOLCHAIN`打印`GOTOOLCHAIN`设置。
 
-## Go toolchain selection
+## Go toolchain 选择
 
-At startup, the `go` command selects which Go toolchain to use. It consults the `GOTOOLCHAIN` setting, which takes the form `<name>`, `<name>+auto`, or `<name>+path`. `GOTOOLCHAIN=auto` is shorthand for `GOTOOLCHAIN=local+auto`; similarly, `GOTOOLCHAIN=path` is shorthand for `GOTOOLCHAIN=local+path`. The `<name>` sets the default Go toolchain: `local` indicates the bundled Go toolchain (the one that shipped with the `go` command being run), and otherwise `<name>` must be a specific Go toolchain name, such as `go1.21.0`. The `go` command prefers to run the default Go toolchain. As noted above, starting in Go 1.21, Go toolchains refuse to run in workspaces or modules that require newer Go versions. Instead, they report an error and exit.
+在启动时，`go`命令会选择要使用的Go工具链。它会查阅`GOTOOLCHAIN`设置，该设置采用`<name>`、`<name>+auto`或`<name>+path`的形式。`GOTOOLCHAIN=auto`是`GOTOOLCHAIN=local+auto`的简写；同样，`GOTOOLCHAIN=path`是`GOTOOLCHAIN=local+path`的简写。其中`<name>`设置默认的Go工具链：`local`表示捆绑的Go工具链（与运行go命令的工具链相同），否则`<name>`必须是特定的Go工具链名称，例如`go1.21.0`。`go`命令更喜欢运行默认的Go工具链。如上所述，从Go 1.21开始，Go工具链拒绝在需要更新的Go版本的工作区或模块中运行。相反，它们会报告错误并退出。
 
-When `GOTOOLCHAIN` is set to `local`, the `go` command always runs the bundled Go toolchain.
+当`GOTOOLCHAIN`设置为`local`时，`go`命令始终运行捆绑的Go工具链。
 
-When `GOTOOLCHAIN` is set to `<name>` (for example, `GOTOOLCHAIN=go1.21.0`), the `go` command always runs that specific Go toolchain. If a binary with that name is found in the system PATH, the `go` command uses it. Otherwise the `go` command uses a Go toolchain it downloads and verifies.
+当`GOTOOLCHAIN`设置为`<name>`（例如，`GOTOOLCHAIN=go1.21.0`）时，`go`命令始终运行该特定的Go工具链。如果在系统PATH中找到具有该名称的二进制文件，则`go`命令使用它。否则，`go`命令使用它下载并验证的Go工具链。
 
-When `GOTOOLCHAIN` is set to `<name>+auto` or `<name>+path` (or the shorthands `auto` or `path`), the `go` command selects and runs a newer Go version as needed. Specifically, it consults the `toolchain` and `go` lines in the current workspace’s `go.work` file or, when there is no workspace, the main module’s `go.mod` file. If the `go.work` or `go.mod` file has a `toolchain <tname>` line and `<tname>` is newer than the default Go toolchain, then the `go` command runs `<tname>` instead. If the file has a `toolchain default` line, then the `go` command runs the default Go toolchain, disabling any attempt at updating beyond `<name>`. Otherwise, if the file has a `go <version>` line and `<version>` is newer than the default Go toolchain, then the `go` command runs `go<version>` instead.
+当`GOTOOLCHAIN`设置为`<name>+auto`或`<name>+path`（或简写`auto`或`path`）时，`go`命令根据需要选择并运行更新的Go版本。具体来说，它会查阅当前工作区的`go.work`文件或（当没有工作区时）主模块的`go.mod`文件中的`toolchain`和`go`行。如果`go.work`或`go.mod`文件具有`toolchain <tname>`行，并且`<tname>`比默认的Go工具链更新，则`go`命令会运行`<tname>`。如果文件具有`toolchain default`行，则`go`命令会运行默认的Go工具链，禁用任何尝试更新到`<name>`之外的操作。否则，如果文件具有`go <version>`行，并且`<version>`比默认的Go工具链更新，则`go`命令会运行`go<version>`。
 
-To run a toolchain other than the bundled Go toolchain, the `go` command searches the process’s executable path (`$PATH` on Unix and Plan 9, `%PATH%` on Windows) for a program with the given name (for example, `go1.21.3`) and runs that program. If no such program is found, the `go` command [downloads and runs the specified Go toolchain](https://go.dev/doc/toolchain#download). Using the `GOTOOLCHAIN` form `<name>+path` disables the download fallback, causing the `go` command to stop after searching the executable path.
+要运行除捆绑的Go工具链之外的工具链，`go`命令会在进程的可执行路径（Unix和Plan 9上的`$PATH`，Windows上的`%PATH%`）中搜索具有给定名称的程序（例如`go1.21.3`），并运行该程序。如果找不到这样的程序，则`go`命令会下载并运行指定的Go工具链。使用`GOTOOLCHAIN`形式`<name>+path`会禁用下载回退，导致`go`命令在搜索可执行路径后停止。
 
-Running `go version` prints the selected Go toolchain’s version (by running the selected toolchain’s implementation of `go version`).
+运行`go version`会打印所选的Go工具链的版本（通过运行所选工具链的`go version`实现）。
 
-Running `GOTOOLCHAIN=local go version` prints the bundled Go toolchain’s version.
+运行`GOTOOLCHAIN=local go version`会打印捆绑的Go工具链的版本。
 
-## Go toolchain switches
+## Go toolchain 替换
 
-For most commands, the workspace’s `go.work` or the main module’s `go.mod` will have a `go` line that is at least as new as the `go` line in any module dependency, due to the version ordering [configuration requirements](https://go.dev/doc/toolchain#config). In this case, the startup toolchain selection runs a new enough Go toolchain to complete the command.
+对于大多数命令，工作区的 `go.work` 或主模块的 `go.mod` 将具有至少与任何模块依赖项中的 `go` 行一样新的 `go` 行，由于版本排序[配置要求](https://go.dev/doc/toolchain#config)。在这种情况下，启动工具链选择运行足够新的 Go 工具链以完成命令。
 
-Some commands incorporate new module versions as part of their operation: `go get` adds new module dependencies to the main module; `go work use` adds new local modules to the workspace; `go work sync` resynchronizes a workspace with local modules that may have been updated since the workspace was created; `go install package@version` and `go run package@version` effectively run in an empty main module and add `package@version` as a new dependency. All these commands may encounter a module with a `go.mod` `go` line requiring a newer Go version than the currently executed Go version.
+一些命令将新模块版本作为其操作的一部分：`go get` 将新模块依赖项添加到主模块；`go work use` 将新的本地模块添加到工作区；`go work sync` 重新同步工作区和可能自创建工作区以来已更新的本地模块；`go install package@version` 和 `go run package@version` 在空主模块中有效地运行并将 `package@version` 添加为新的依赖项。所有这些命令都可能遇到一个需要比当前执行的 Go 版本更新的 `go.mod` `go` 行的模块。
 
-When a command encounters a module requiring a newer Go version and `GOTOOLCHAIN` permits running different toolchains (it is one of the `auto` or `path` forms), the `go` command chooses and switches to an appropriate newer toolchain to continue executing the current command.
+当命令遇到需要更新的 Go 版本的模块并且 `GOTOOLCHAIN` 允许运行不同的工具链（它是`auto`或`path`形式之一）时，`go` 命令选择并切换到适当的更新工具链以继续执行当前命令。
 
-Any time the `go` command switches toolchains after startup toolchain selection, it prints a message explaining why. For example:
+每当 `go` 命令在启动工具链选择后切换工具链时，它都会打印一条解释原因的消息。例如：
 
 ```
 go: module example.com/widget@v1.2.3 requires go >= 1.24rc1; switching to go 1.27.9
 ```
 
-As shown in the example, the `go` command may switch to a toolchain newer than the discovered requirement. In general the `go` command aims to switch to a supported Go toolchain.
+如示例所示，`go` 命令可能会切换到比发现的要求更新的工具链。一般来说，`go` 命令旨在切换到受支持的 Go 工具链。
 
-To choose the toolchain, the `go` command first obtains a list of available toolchains. For the `auto` form, the `go` command downloads a list of available toolchains. For the `path` form, the `go` command scans the PATH for any executables named for valid toolchains and uses a list of all the toolchains it finds. Using that list of toolchains, the `go` command identifies up to three candidates:
+为选择工具链，`go` 命令首先获取可用工具链列表。对于`auto`形式，`go` 命令下载可用工具链列表。对于`path`形式，`go` 命令扫描 PATH 中任何命名为有效工具链的可执行文件，并使用它找到的所有工具链列表。使用该工具链列表，`go` 命令识别出最多三个候选项：
 
--   the latest release candidate of an unreleased Go language version (1._N_₃rc_R_₃),
--   the latest patch release of the most recently released Go language version (1._N_₂._P_₂), and
--   the latest patch release of the previous Go language version (1._N_₁._P_₁).
+- 未发布的 Go 语言版本的最新发布候选版本（1._N_₃rc_R_₃），
+- 最近发布的 Go 语言版本的最新补丁版本（1._N_₂._P_₂），以及
+- 上一个 Go 语言版本的最新补丁版本（1._N_₁._P_₁）。
 
-These are the supported Go releases according to Go’s [release policy](https://go.dev/doc/devel/release#policy). Consistent with [minimal version selection](https://research.swtch.com/vgo-mvs), the `go` command then conservatively uses the candidate with the _minimum_ (oldest) version that satisfies the new requirement.
+这些是根据 Go 的[发布政策](https://go.dev/doc/devel/release#policy)支持的 Go 发布版本。与[最小版本选择](https://research.swtch.com/vgo-mvs)一致，`go` 命令然后保守地使用满足新要求的_最小_（最旧）版本的候选项。
 
-For example, suppose `example.com/widget@v1.2.3` requires Go 1.24rc1 or later. The `go` command obtains the list of available toolchains and finds that the latest patch releases of the two most recent Go toolchains are Go 1.28.3 and Go 1.27.9, and the release candidate Go 1.29rc2 is also available. In this situation, the `go` command will choose Go 1.27.9. If `widget` had required Go 1.28 or later, the `go` command would choose Go 1.28.3, because Go 1.27.9 is too old. If `widget` had required Go 1.29 or later, the `go` command would choose Go 1.29rc2, because both Go 1.27.9 and Go 1.28.3 are too old.
+例如，假设 `example.com/widget@v1.2.3` 需要 Go 1.24rc1 或更高版本。`go` 命令获取可用工具链列表，并发现最近两个 Go 工具链的最新补丁版本是 Go 1.28.3 和 Go 1.27.9，还有发布候选版 Go 1.29rc2。在这种情况下，`go` 命令将选择 Go 1.27.9。如果 `widget` 需要 Go 1.28 或更高版本，则 `go` 命令将选择 Go 1.28.3，因为 Go 1.27.9 太旧了。如果 `widget` 需要 Go 1.29 或更高版本，则 `go` 命令将选择 Go 1.29rc2，因为 Go 1.27.9 和 Go 1.28.3 都太旧了。
 
-Commands that incorporate new module versions that require new Go versions write the new minimum `go` version requirement to the current workspace’s `go.work` file or the main module’s `go.mod` file, updating the `go` line. For [repeatability](https://research.swtch.com/vgo-principles#repeatability), any command that updates the `go` line also updates the `toolchain` line to record its own toolchain name. The next time the `go` command runs in that workspace or module, it will use that updated `toolchain` line during [toolchain selection](https://go.dev/doc/toolchain#select).
+命令集成了需要新的Go版本的新模块版本，将新的最小`go`版本要求写入当前工作区的`go.work`文件或主模块的`go.mod`文件，更新`go`行。为了[重复性](https://research.swtch.com/vgo-principles#repeatability)，任何更新`go`行的命令也会更新`toolchain`行以记录其自己的工具链名称。下次在该工作区或模块中运行`go`命令时，它将在[toolchain选择](https://go.dev/doc/toolchain#select)期间使用更新后的`toolchain`行。
 
-For example, `go get example.com/widget@v1.2.3` may print a switching notice like above and switch to Go 1.27.9. Go 1.27.9 will complete the `go get` and update the `toolchain` line to say `toolchain go1.27.9`. The next `go` command run in that module or workspace will select `go1.27.9` during startup and will not print any switching message.
+例如，`go get example.com/widget@v1.2.3`可能会打印类似上面的切换通知并切换到Go 1.27.9。Go 1.27.9将完成`go get`并更新工具链行以表示 `toolchain go1.27.9`。下一个在该模块或工作区中运行的`go`命令将在启动期间选择`go1.27.9`，并且不会打印任何切换消息。
 
-In general, if any `go` command is run twice, if the first prints a switching message, the second will not, because the first also updated `go.work` or `go.mod` to select the right toolchain at startup. The exception is the `go install package@version` and `go run package@version` forms, which run in no workspace or main module and cannot write a `toolchain` line. They print a switching message every time they need to switch to a newer toolchain.
+通常，如果运行任何`go`命令两次，如果第一个打印了切换消息，则第二个不会打印，因为第一个还更新了`go.work`或`go.mod`以在启动时选择正确的工具链。例外是`go install package@version`和`go run package@version`形式，它们在没有工作区或主模块的情况下运行，无法编写`toolchain`行。每次需要切换到较新工具链时，它们都会打印切换消息。
 
-## Downloading toolchains
+## 下载 toolchains
 
-When using `GOTOOLCHAIN=auto` or `GOTOOLCHAIN=<name>+auto`, the Go command downloads newer toolchains as needed. These toolchains are packaged as special modules with module path `golang.org/toolchain` and version `v0.0.1-go_VERSION_._GOOS_-_GOARCH_`. Toolchains are downloaded like any other module, meaning that toolchain downloads can be proxied by setting `GOPROXY` and have their checksums checked by the Go checksum database. Because the specific toolchain used depends on the system’s own default toolchain as well as the local operating system and architecture (GOOS and GOARCH), it is not practical to write toolchain module checksums to `go.sum`. Instead, toolchain downloads fail for lack of verification if `GOSUMDB=off`. `GOPRIVATE` and `GONOSUMDB` patterns do not apply to the toolchain downloads.
+当使用`GOTOOLCHAIN=auto`或`GOTOOLCHAIN=<name>+auto`时，Go命令会根据需要下载更新的工具链。这些工具链被打包为特殊模块，模块路径为`golang.org/toolchain`，版本为`v0.0.1-goVERSION.GOOS-GOARCH`。工具链像其他模块一样被下载，这意味着可以通过设置`GOPROXY`来代理工具链下载，并通过Go校验和数据库检查它们的校验和。由于使用的特定工具链取决于系统自己的默认工具链以及本地操作系统和架构（GOOS和GOARCH），因此在`go.sum`中编写工具链模块的校验和不实际。相反，如果`GOSUMDB=off`，则工具链下载失败缺乏验证。`GOPRIVATE`和`GONOSUMDB`模式不适用于工具链下载。
 
-## Managing Go version module requirements with `go get`
+## 使用 `go get` 管理 Go 版本模块的需求
 
-In general the `go` command treats the `go` and `toolchain` lines as declaring versioned toolchain dependencies of the main module. The `go get` command can manage these lines just as it manages the `require` lines that specify versioned module dependencies.
+通常，`go`命令将`go`和`toolchain`行视为声明主模块的版本化工具链依赖项。`go get`命令可以像管理指定版本化模块依赖项的`require`行一样管理这些行。
 
-For example, `go get go@1.22.1 toolchain@1.24rc1` changes the main module’s `go.mod` file to read `go 1.22.1` and `toolchain go1.24rc1`.
+例如，`go get go@1.22.1 toolchain@1.24rc1`会更改主模块的`go.mod`文件，以读取`go 1.22.1`和`toolchain go1.24rc1`。
 
-The `go` command understands that the `go` dependency requires a `toolchain` dependency with a greater or equal Go version.
+`go`命令理解`go`依赖项需要具有更高或等于Go版本的`toolchain`依赖项。
 
-Continuing the example, a later `go get go@1.25.0` will update the toolchain to `go1.25.0` as well. When the toolchain matches the `go` line exactly, it can be omitted and implied, so this `go get` will delete the `toolchain` line.
+继续上面的例子，稍后的`go get go@1.25.0`也会将工具链更新为`go1.25.0`。当工具链与`go`行完全匹配时，可以省略并暗示它，因此此`go get`将删除工具链行。
 
-The same requirement applies in reverse when downgrading: if the `go.mod` starts at `go 1.22.1` and `toolchain go1.24rc1`, then `go get toolchain@go1.22.9` will update only the `toolchain` line, but `go get toolchain@go1.21.3` will downgrade the `go` line to `go 1.21.3` as well. The effect will be to leave just `go 1.21.3` with no `toolchain` line.
+在降级时也适用相同的要求：如果`go.mod`从`go 1.22.1`和`toolchain go1.24rc1`开始，则`go get toolchain@go1.22.9`仅会更新工具链行，但`go get toolchain@go1.21.3`将同时将`go`行降级为`go 1.21.3`。效果将是只留下`go 1.21.3`而没有工具链行。
 
-The special form `toolchain@none` means to remove any `toolchain` line, as in `go get toolchain@none` or `go get go@1.25.0 toolchain@none`.
+特殊形式`toolchain@none`表示删除任何工具链行，例如`go get toolchain@none`或`go get go@1.25.0 toolchain@none`。
 
-The `go` command understands the version syntax for `go` and `toolchain` dependencies as well as queries.
+`go`命令理解`go`和`toolchain`依赖项的版本语法以及查询。
 
-For example, just as `go get example.com/widget@v1.2` uses the latest `v1.2` version of `example.com/widget` (perhaps `v1.2.3`), `go get go@1.22` uses the latest available release of the Go 1.22 language version (perhaps `1.22rc3`, or perhaps `1.22.3`). The same applies to `go get toolchain@go1.22`.
+例如，就像`go get example.com/widget@v1.2`使用`example.com/widget`的最新`v1.2`版本（可能是`v1.2.3`），`go get go@1.22`使用Go 1.22语言版本的最新可用版本（可能是`1.22rc3`，也可能是`1.22.3`）。对于`go get toolchain@go1.22`也是一样的。
 
-The `go get` and `go mod tidy` commands maintain the `go` line to be greater than or equal to the `go` line of any required dependency module.
+`go get`和`go mod tidy`命令维护`go`行大于或等于任何所需依赖模块的`go`行。
 
-For example, if the main module has `go 1.22.1` and we run `go get example.com/widget@v1.2.3` which declares `go 1.24rc1`, then `go get` will update the main module’s `go` line to `go 1.24rc1`.
+例如，如果主模块具有`go 1.22.1`，并且我们运行`go get example.com/widget@v1.2.3`，它声明`go 1.24rc1`，则`go get`将更新主模块的`go`行为`go 1.24rc1`。
 
-Continuing the example, a later `go get go@1.22.1` will downgrade `example.com/widget` to a version compatible with Go 1.22.1 or else remove the requirement entirely, just as it would when downgrading any other dependency of `example.com/widget`.
+继续上面的例子，稍后的`go get go@1.22.1`将降级`example.com/widget`到与Go 1.22.1兼容的版本，否则将完全删除`example.com/widget`的要求，就像降级example.com/widget的任何其他依赖项一样。
 
-Before Go 1.21, the suggested way to update a module to a new Go version (say, Go 1.22) was `go mod tidy -go=1.22`, to make sure that any adjustments specific to Go 1.22 were made to the `go.mod` at the same time that the `go` line is updated. That form is still valid, but the simpler `go get go@1.22` is now preferred.
+在Go 1.21之前，将模块更新到新的Go版本（例如Go 1.22）的建议方法是`go mod tidy -go=1.22`，以确保在更新`go`行的同时进行特定于Go 1.22的任何调整。该形式仍然有效，但现在更喜欢简单的`go get go@1.22`。
 
-When `go get` is run in a module in a directory contained in a workspace root, `go get` mostly ignores the workspace, but it does update the `go.work` file to upgrade the `go` line when the workspace would otherwise be left with too old a `go` line.
+当在工作区根目录中包含的目录中的模块中运行`go get`时，`go get`大多数情况下会忽略工作区，但它会更新`go.work`文件以在工作区的`go`行过时时升级`go`行。
 
-## Managing Go version workspace requirements with `go work`
+## 使用 `go work` 管理 Go 版本的工作区需求
 
-As noted in the previous section, `go get` run in a directory inside a workspace root will take care to update the `go.work` file’s `go` line as needed to be greater than or equal to any module inside that root. However, workspaces can also refer to modules outside the root directory; running `go get` in those directories may result in an invalid workspace configuration, one in which the `go` version declared in `go.work` is less than one or more of the modules in the `use` directives.
+如前所述，运行 `go get` 命令时，如果在工作区根目录内的目录中运行，它将更新 `go.work` 文件中的 `go` 行，使其大于或等于该根目录内的任何模块。但是，工作区还可以引用根目录之外的模块；在这些目录中运行 `go get` 命令可能会导致无效的工作区配置，其中 `go.work` 中声明的 `go` 版本小于一个或多个 `use` 指令中的模块。
 
-The command `go work use`, which adds new `use` directives, also checks that the `go` version in the `go.work` file is new enough for all the existing `use` directives. To update a workspace that has gotten its `go` version out of sync with its modules, run `go work use` with no arguments.
+命令 `go work use` 用于添加新的 `use` 指令，还会检查 `go.work` 文件中的 `go` 版本是否足够新，以适用于所有现有的 `use` 指令。要更新已与其模块的版本不同步的工作区，请运行不带参数的 `go work use` 命令。
 
-The commands `go work init` and `go work sync` also update the `go` version as needed.
+命令 `go work init` 和 `go work sync` 也会根据需要更新 `go` 版本。
 
-To remove the `toolchain` line from a `go.work` file, use `go work edit -toolchain=none`.
+要从 `go.work` 文件中删除 `toolchain` 行，请使用 `go work edit -toolchain=none` 命令。
