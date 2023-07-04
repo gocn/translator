@@ -4,7 +4,7 @@
 - 原文作者：***Milan***
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w22_Build_your_Golang_package_docs_locally.md
 - 译者：[朱亚光](https://github.com/zhuyaguang)
-- 校对：
+- 校对：[吴雨浩](https://github.com/haoheipi)
 
 从本地主机预览你的 Golang  HTML 文档。
 
