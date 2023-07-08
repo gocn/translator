@@ -33,7 +33,7 @@ In software engineering, Strategy is a behavioural design pattern that allows ob
 
 The typical use-case for a Strategy pattern is an endpoint request handler. The handler’s behaviour must differ according to the request parameters, yet the complexity does not warrant separate endpoints for each case.
 
-Let’s consider a microservice called **authorisations-report** as an example. It has a single endpoint */get-report*, which generates well… a report. Different types of reports can be requested, such as authorisation roles, authorisation policies or assignments (connections between users and their authorisations).
+Let’s consider a microservice called **authorisations-report** as an example. It has a single endpoint */get-report*, which generates well a report. Different types of reports can be requested, such as authorisation roles, authorisation policies or assignments (connections between users and their authorisations).
 
 ![Strategy design pattern diagram](../static/images/2023/w24/strategy_design.png)
 
