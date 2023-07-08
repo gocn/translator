@@ -1,3 +1,9 @@
+- 原文地址：https://medium.com/@opheliaandcat/top-3-design-patterns-for-a-large-go-codebase-79a324003b47
+- 原文作者：**Lula Leus**
+- 本文永久链接：
+- 译者：[iddunk](https://github.com/iddunk)
+- 校对：[]()
+
 # 大型 Go 代码库的 3 种最佳设计模式	
 
 # 有助于解决实际问题的设计模式
