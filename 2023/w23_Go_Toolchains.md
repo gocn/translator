@@ -1,6 +1,6 @@
 - 原文地址：https://go.dev/doc/toolchain
 - 原文作者：**Go Team**
-- 本文永久链接：
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w23_Go_Toolchains.md
 - 译者：[cvley](https://github.com/cvley)
 - 校对：[Cluas](https://github.com/Cluas)
 
