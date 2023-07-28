@@ -2,7 +2,7 @@
 - 原文作者：**Lula Leus**
 - 本文永久链接：
 - 译者：[iddunk](https://github.com/iddunk)
-- 校对：[]()
+- 校对：[pseudoyu](https://github.com/pseudoyu)
 
 # 大型 Go 代码库的 3 种最佳设计模式	
 
