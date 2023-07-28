@@ -1,6 +1,6 @@
 - 原文地址：[https://medium.com/@opheliaandcat/top-3-design-patterns-for-a-large-go-codebase-79a324003b47](https://www.featurebase.com/blog/range-encoded-bitmaps)
 - 原文作者：
-- 本文永久链接：
+- 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w25_Using_Bitmaps_to_Perform_Range_Queries.md
 - 译者：[784909593](https://github.com/784909593)
 - 校对：[zxmfke](https://github.com/zxmfke)
 
