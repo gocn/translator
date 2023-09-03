@@ -12,13 +12,13 @@
 
 Go 语言发布了 1.21 版本的第一个候选版本 (RC)，其中包含新的功能、改进和性能提升。本文概述了 Go 1.21 中的显著变化和功能，以及标准库中的一些令人兴奋的新增内容。
 
-## 工具改进：
+## 工具改进
 
 ## 配置文件引导优化 (PGO) 功能
 
 在 Go 1.21 中，启用 PGO 优化的过程已得到简化。默认情况下，标准方法是将文件名“default.pgo”的 pprof CPU 配置文件存储在分析二进制文件的主包目录中。go build 命令会自动检测此配置文件，从而在构建过程中启用 PGO 优化。
 
-```
+```plain
 # 将 default.pgo 配置文件存储在主包目录中
 $ go build
 # 如果存在 default.pgo，在构建过程中将会应用 PGO 优化
@@ -28,7 +28,7 @@ $ go build
 
 为了确保可重复且高性能的构建，建议将配置文件直接提交到源代码仓库中。这种方法简化了构建方式，因为除了获取源代码之外，不需要任何额外的步骤来获取配置文件。
 
-```
+```plain
 # 提交 default.pgo 配置文件到源代码仓库中
 ├── main.go
 └── default.pgo
@@ -40,7 +40,7 @@ $ go build
 
 在更复杂的场景中，`go build` 命令也提供了 `-pgo` 标识来控制 PGO 配置文件的选择。此标志默认为 `-pgo=auto`，将会使用 `default.pgo` 文件。
 
-```
+```plain
 # 使用 -pgo 标志手动指定配置文件
 $ go build -pgo=/tmp/foo.pprof
 ```
@@ -49,7 +49,7 @@ $ go build -pgo=/tmp/foo.pprof
 
 如果不需要 PGO 优化，可以将 `-pgo` 标志设置为 `-pgo=off` 来完全禁用它们。
 
-```
+```plain
 # 使用 -pgo 标志禁用 PGO 优化
 $ go build -pgo=off
 ```
@@ -64,7 +64,7 @@ Go 1.21 在 go 工具中引入了向后和向前的语言兼容性支持，使�
 
 示例：在 *_test.go 文件中使用 //go:debug 指令
 
-```
+```plain
 package mypackage_test
 ```
 
@@ -86,13 +86,13 @@ func TestMyFunction(t *testing.T)
 
 **列出 main 包的默认 GODEBUG 设置**
 
-```
+```plain
 go list -f '{{.DefaultGODEBUG}}' my/main/package
 ```
 
 执行此命令时，其中 my/main/package 是主包的路径，Go 工具链将列出会编译到主包的默认 GODEBUG 设置。此命令对于查看当前设置与基本 Go 工具链默认值的差异时非常有用。
 
-## 语言变化：
+## 语言变化
 
 ## 新的内置函数：min、max 和 clear
 
@@ -121,7 +121,7 @@ min 和 max 函数成为了 Go 中的内置函数，它们分别能够计算固�
 
 clear 函数是一个内置函数，它接受类型为 map、slice 或类型参数。它用于删除或清空所提供的数据结构中的所有元素。
 
-```
+```plain
 var a = [...]int{0, 1, 2, 3, 4, 5, 6, 7}
 ```
 
@@ -144,7 +144,7 @@ func main() {
 
 泛型函数的类型推断在 Go 1.21 中得到了多项改进。Go 说明中现在包含了对类型推断的扩充和清晰的描述，使开发人员更容易理解和利用这一强大的功能。
 
-```
+```plain
 // 泛型函数的类型推断的改进
 ```
 
@@ -181,17 +181,17 @@ for i := 1; i <= 10; i++ {
 
 ## 新引入的包
 
--   用于结构化日志记录的新 [log/slog包](https://pkg.go.dev/log/slog@master) 
--   用于切片常见操作的新 [slices包](https://pkg.go.dev/slices@master) 
--   字典常用操作的新 [map包](https://pkg.go.dev/maps@master) 
--   用于比较有序值的新 [cmp包](https://pkg.go.dev/cmp@master)
+-   用于结构化日志记录的新 [log/slog 包](https://pkg.go.dev/log/slog@master) 
+-   用于切片常见操作的新 [slices 包](https://pkg.go.dev/slices@master) 
+-   字典常用操作的新 [map 包](https://pkg.go.dev/maps@master) 
+-   用于比较有序值的新 [cmp 包](https://pkg.go.dev/cmp@master)
 
 
 ## 性能提升
 
 使用 PGO 改进性能：除了启用 PGO 带来的性能改进之外，Go 1.21 还对整体性能带来了额外的增强。
 
-## WebAssembly System Interface（WASI）的新实验端口：
+## WebAssembly System Interface（WASI）的新实验端口
 
 Go 1.21 引入了 WebAssembly System Interface (WASI)  的实验性端口 - Preview 1，这将允许开发人员为 WebAssembly 平台编译 Go 代码。
 
