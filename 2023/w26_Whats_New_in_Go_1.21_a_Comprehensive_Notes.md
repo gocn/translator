@@ -1,10 +1,10 @@
-# Go 1.21中新增功能的全面概述
+# Go 1.21 中新增功能的全面概述
 
 - 原文地址：https://younisjad.medium.com/whats-new-in-go-1-21-a-comprehensive-notes-96017750b390
 - 原文作者：Younis Jad
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2023/w26_Whats_New_in_Go_1.21_a_Comprehensive_Notes.md
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[zxmfke](https://github.com/zxmfke)
 ***
 
 ![Go 1.21 Exciting Updates and Enhancements: A Comprehensive Overview](https://github.com/gocn/translator/raw/master/static/images/2023/w26/1_OWUGPbMTINTQEZmSi3n-hQ.png)
@@ -19,9 +19,9 @@ Go 语言发布了 1.21 版本的第一个候选版本 (RC)，其中包含新的
 在 Go 1.21 中，启用 PGO 优化的过程已得到简化。默认情况下，标准方法是将文件名“default.pgo”的 pprof CPU 配置文件存储在分析二进制文件的主包目录中。go build 命令会自动检测此配置文件，从而在构建过程中启用 PGO 优化。
 
 ```
-# 将default.pgo配置文件存储在主包目录中
+# 将 default.pgo 配置文件存储在主包目录中
 $ go build
-# 如果存在default.pgo，在构建过程中将会应用PGO优化
+# 如果存在 default.pgo，在构建过程中将会应用 PGO 优化
 ```
 
 **在源代码仓库中提交配置文件**
@@ -29,7 +29,7 @@ $ go build
 为了确保可重复且高性能的构建，建议将配置文件直接提交到源代码仓库中。这种方法简化了构建方式，因为除了获取源代码之外，不需要任何额外的步骤来获取配置文件。
 
 ```
-# 提交default.pgo配置文件到源代码仓库中
+# 提交 default.pgo 配置文件到源代码仓库中
 ├── main.go
 └── default.pgo
 # 开发者可以直接使用提交的配置文件构建代码
@@ -96,7 +96,7 @@ go list -f '{{.DefaultGODEBUG}}' my/main/package
 
 ## 新的内置函数：min、max 和 clear
 
-Go 1.21引入了三个新的内置函数: min、max 和 clear，它们为对数值的操作提供了方便的选项。
+Go 1.21 引入了三个新的内置函数: min、max 和 clear，它们为对数值的操作提供了方便的选项。
 
 **最小、最大值函数**
 
