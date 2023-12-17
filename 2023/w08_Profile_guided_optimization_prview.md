@@ -25,14 +25,14 @@ Go 1.20 包含用于预览的 PGO 的初始支持。 完整文档请参阅[按�
 
 ### 建立开发环境
 
-```
+```plain
 $ go mod init example.com/markdown
 $ go get gitlab.com/golang-commonmark/markdown@bf3e522c626a
 ```
 
 在 `main.go`:
 
-```
+```plain
 package main
 
 import (
@@ -89,7 +89,7 @@ func main() {
 
 构建并运行服务器：
 
-```
+```plain
 $ go build -o markdown.nopgo.exe
 $ ./markdown.nopgo.exe
 2023/01/19 14:26:24 Serving on port 8080...
@@ -97,7 +97,7 @@ $ ./markdown.nopgo.exe
 
 让我们尝试从另一个终端发送一些 Markdown。我们可以将 Go 项目中的 README 文件作为示例文档：
 
-```
+```plain
 $ curl -o README.md -L "https://raw.githubusercontent.com/golang/go/c16c2c49e2fa98ae551fc6335215fadd62d33542/README.md"
 $ curl --data-binary @README.md http://localhost:8080/render
 <h1>The Go Programming Language</h1>
@@ -114,13 +114,13 @@ reliable, and efficient software.</p>
 
 通常，您希望从生产环境中收集性能分析文件，以便编译器获得生产环境中代表性行为。 由于此示例没有“生产”环境，因此我们将创建一个简单的程序来生成负载，以便收集性能分析文件。 复制此[程序](https://go.dev/play/p/yYH0kfsZcpL)的源代码到 `load/main.go` 中并启动负载生成器（确保服务器仍在运行！）。
 
-```
+```plain
 $ go run example.com/markdown/load
 ```
 
 在负载生成器还在运行中，从服务器上下载一个性能分析文件：
 
-```
+```plain
 $ curl -o cpu.pprof "http://localhost:8080/debug/pprof/profile?seconds=30"
 ```
 
@@ -134,7 +134,7 @@ $ curl -o cpu.pprof "http://localhost:8080/debug/pprof/profile?seconds=30"
 
 让我们构建：
 
-```
+```plain
 $ mv cpu.pprof default.pgo
 $ go build -pgo=auto -o markdown.withpgo.exe
 ```
@@ -145,31 +145,31 @@ $ go build -pgo=auto -o markdown.withpgo.exe
 
 首先，我们将对没有 PGO 的服务器进行基准测试。启动该服务器：
 
-```
+```plain
 $ ./markdown.nopgo.exe
 ```
 
 在服务器运行时，执行一些基准测试迭代：
 
-```
+```plain
 $ go test example.com/markdown/load -bench=. -count=20 -source ../README.md > nopgo.txt
 ```
 
 完成后，终止原服务器并启动 PGO 版本的服务器：
 
-```
+```plain
 $ ./markdown.withpgo.exe
 ```
 
 在服务器运行时，执行一些基准测试迭代：
 
-```
+```plain
 $ go test example.com/markdown/load -bench=. -count=20 -source ../README.md > withpgo.txt
 ```
 
 完成后，我们对比结果：
 
-```
+```plain
 $ go install golang.org/x/perf/cmd/benchstat@latest
 $ benchstat nopgo.txt withpgo.txt
 goos: linux

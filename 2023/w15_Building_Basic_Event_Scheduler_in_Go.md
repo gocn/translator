@@ -4,7 +4,7 @@
 - 译者：[lsj1342](https://github.com/lsj1342)
 - 校对：[cvley](https://github.com/cvley)
 
-## Go构建基础的事件调度器
+## Go 构建基础的事件调度器
 ![](https://github.com/gocn/translator/raw/master/static/images/2023/w15_Building_Basic_Event_Scheduler_in_Go//1_gBs7tyig8N5eeHNMOwIG8w.webp)
 
 当我们需要在一段时间后的特定时间或间隔运行任务时，我们需要使用任务调度系统来运行任务：例如发送电子邮件、推送通知、午夜关闭账户、清空表格等
@@ -66,7 +66,7 @@ func NewScheduler(db *sql.DB, listeners Listeners) Scheduler {
 }
 ```
 
-在第 8 行到第 13 行中，我们通过将sql.DB实例和初始侦听器传递给调度程序来创建新的调度程序。
+在第 8 行到第 13 行中，我们通过将 sql.DB 实例和初始侦听器传递给调度程序来创建新的调度程序。
 
 现在，我们实现调度函数，并将我们的事件插入到 `jobs` 表中；
 ```go
@@ -200,12 +200,12 @@ func main() {
 
 在第 13 行到第 16 行中，我们将侦听函数绑定到事件 `SendEmail` 和 `PayBills`上，以便在发生新事件时调用这些函数。
 
-在 22行 和 32 到 37 行中，我们添加了中断信号(os.Interrupt)通道，当程序中发生中断时，我们执行 19 行中的上下文取消函数。
+在 22 行 和 32 到 37 行中，我们添加了中断信号(os.Interrupt)通道，当程序中发生中断时，我们执行 19 行中的上下文取消函数。
 
 从第 26 行到第 30 行，我们定义事件调度程序、运行轮询函数并将在一分钟后运行 `SendEmail` ，两分钟后运行 `PayBills`。
 
 程序的输出将如下所示；
-```
+```plain
 
 2021/01/16 11:58:49 💾 Seeding database with table...
 2021/01/16 11:58:49 🚀 Scheduling event SendEmail to run at 2021-01-16 11:59:49.344904505 +0545 +0545 m=+60.004623549
