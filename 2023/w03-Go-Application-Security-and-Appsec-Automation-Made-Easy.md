@@ -1,18 +1,18 @@
-# 自动化检查Go代码中的漏洞
+# 自动化检查 Go 代码中的漏洞
 
 - [原文链接](https://awkwardferny.medium.com/go-application-security-and-appsec-automation-made-easy-36bd2f3d520b)
 - 原文作者：Fernando Diaz
 - [本文永久链接](https://github.com/gocn/translator/blob/master/static/images/2023/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy/w03-Go-Application-Security-and-Appsec-Automation-Made-Easy.md)
-- 译者：[司镜233](https://github.com/sijing233)
+- 译者：[司镜 233](https://github.com/sijing233)
 - 校对：[刘思家](https://github.com/lsj1342)
 
-在云应用程序领域，Go是最流行的语言之一了，Kubernetes大部分的内容都是Go构建的。
+在云应用程序领域，Go 是最流行的语言之一了，Kubernetes 大部分的内容都是 Go 构建的。
 
-但即便如此，根据[Nautilus2022云原生威胁报告](https://info.aquasec.com/cloud-native-threat-report-2022)表明：具有恶意的个人或组织，也增加了更多目标和方式，包括CI/CD的环境、容易收到攻击的Kubernets部署和应用程序。
+但即便如此，根据[Nautilus2022 云原生威胁报告](https://info.aquasec.com/cloud-native-threat-report-2022)表明：具有恶意的个人或组织，也增加了更多目标和方式，包括 CI/CD 的环境、容易收到攻击的 Kubernets 部署和应用程序。
 
-随着时间的推移，针对Kubernets的攻击次数、攻击手段不断增加。根据[AquaSec](https://www.aquasec.com/)的观察显示：以Kubernets为目标的恶意攻击数量，从2020年的9%到2021年的19%，增加了10%。这也说明，保护我们Golang应用程序的安全，越来越重要。
+随着时间的推移，针对 Kubernets 的攻击次数、攻击手段不断增加。根据[AquaSec](https://www.aquasec.com/)的观察显示：以 Kubernets 为目标的恶意攻击数量，从 2020 年的 9%到 2021 年的 19%，增加了 10%。这也说明，保护我们 Golang 应用程序的安全，越来越重要。
 
-在这篇文章中，我将展示用扫描应用程序源代码漏洞的各种方法，以及如何将安全扫描器集成到GitLab等CI/CD平台中。我将提供一份我创建的，不安全的微服务的真实示例。
+在这篇文章中，我将展示用扫描应用程序源代码漏洞的各种方法，以及如何将安全扫描器集成到 GitLab 等 CI/CD 平台中。我将提供一份我创建的，不安全的微服务的真实示例。
 
 
 
@@ -20,13 +20,13 @@
 
 ## 先决条件
 
-- 基本了解Go编程语言
-- Git基础知识
+- 基本了解 Go 编程语言
+- Git 基础知识
 - 基本了解应用程序的安全性
-- Gitlab账户（免费）
+- Gitlab 账户（免费）
 - Go 1.19+ 
 
-```
+```plain
 $ go versiongo version go1.19.1 darwin/amd64
 ```
 
@@ -36,11 +36,11 @@ $ go versiongo version go1.19.1 darwin/amd64
 
 
 
-在推送代码之前，或是将代码部署到生产级环境之前，运行安全扫描器，检测并修复漏洞。我将介绍如何用Go，使用各种不同的安全扫描器：[GoSec](](https://github.com/securego/gosec))、[GoVulnCheck](https://go.dev/blog/vuln)、[Fuzz](](https://go.dev/security/fuzz/))
+在推送代码之前，或是将代码部署到生产级环境之前，运行安全扫描器，检测并修复漏洞。我将介绍如何用 Go，使用各种不同的安全扫描器：[GoSec](](https://github.com/securego/gosec))、[GoVulnCheck](https://go.dev/blog/vuln)、[Fuzz](](https://go.dev/security/fuzz/))
 
 
 
-首先，我们可以开始设置一个适当的GOPATH，添加GOPATH/bin到我们的PATH，并且git clone [不安全](https://gitlab.com/awkwardferny/insecure-microservice)的微服务代码，可以在[此处](https://go.dev/doc/tutorial/compile-install)找到有关路径的详细信息。
+首先，我们可以开始设置一个适当的 GOPATH，添加 GOPATH/bin 到我们的 PATH，并且 git clone [不安全](https://gitlab.com/awkwardferny/insecure-microservice)的微服务代码，可以在[此处](https://go.dev/doc/tutorial/compile-install)找到有关路径的详细信息。
 
 ```shell
 # 设置合适的 GOPATH
@@ -62,13 +62,13 @@ $ git clone git@gitlab.com:awkwardferny/insecure-microservice.git src/gitlab.com
 $ cd src/gitlab.com/awkwardferny/insecure-microservice
 ```
 
-现在，我们已经正确设置了路径，并且已经clone了应用程序，我们可以开始运行我们的安全扫描器了。
+现在，我们已经正确设置了路径，并且已经 clone 了应用程序，我们可以开始运行我们的安全扫描器了。
 
 # GoSec(源代码分析)
 
-我们将介绍的第一个安全扫描器是[GoSec](https://github.com/securego/gosec)。它是一种流行的Go安全扫描器，可以扫描应用程序的源代码和依赖项，检查到漏洞。它通过将您的源代码与一组规则进行模式匹配来工作。
+我们将介绍的第一个安全扫描器是[GoSec](https://github.com/securego/gosec)。它是一种流行的 Go 安全扫描器，可以扫描应用程序的源代码和依赖项，检查到漏洞。它通过将您的源代码与一组规则进行模式匹配来工作。
 
-如果Go模块打开(e.g.`GO111MODULE=on`) ，或者明确下载依赖项(`go get -d`)，GoSec还可以自动扫描您的应用程序依赖项，来检查漏洞。现在，让我们在不安全的微服务上运行GoSec：
+如果 Go 模块打开(e.g.`GO111MODULE=on`) ，或者明确下载依赖项(`go get -d`)，GoSec 还可以自动扫描您的应用程序依赖项，来检查漏洞。现在，让我们在不安全的微服务上运行 GoSec：
 
 ```shell
 # 安装GoSec
@@ -93,15 +93,15 @@ G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
 
 这些漏洞表明我们的应用程序，有很多未捕获的异常：没有设置超时、使用了弱随机生成数。扫描返回规则出发、常见弱点枚举（CWE）、置信度、严重性和受影响的代码行。
 
-在典型的开发人员工作流中，发现漏洞后，开发人员可以检查CWE，获取改进提示，对受影响的代码进行代码更改，然后重新运行扫描程序，以检查解决方案。应该运行回归测试，以确保我们的应用程序逻辑仍然健全。
+在典型的开发人员工作流中，发现漏洞后，开发人员可以检查 CWE，获取改进提示，对受影响的代码进行代码更改，然后重新运行扫描程序，以检查解决方案。应该运行回归测试，以确保我们的应用程序逻辑仍然健全。
 
 
 
 # Govulncheck（源代码分析）
 
-接下来是Govulncheck！Govulncheck是一个针对源代码，和应用程序依赖项的安全扫描器。Go安全团队正在积极开发它，并且在几个方面，与GoSec不同：
+接下来是 Govulncheck！Govulncheck 是一个针对源代码，和应用程序依赖项的安全扫描器。Go 安全团队正在积极开发它，并且在几个方面，与 GoSec 不同：
 
-首先，它由[Go漏洞数据库]((https://vuln.go.dev/))支持。
+首先，它由[Go 漏洞数据库]((https://vuln.go.dev/))支持。
 
 其次，它只显示您的代码，实际调用的漏洞。这会减少“噪声”，并且让您知道哪些漏洞实际影响了您的应用程序。
 
@@ -113,7 +113,7 @@ G104 (CWE-703): Errors unhandled. (Confidence: HIGH, Severity: LOW)
 
 现在，让我们试一试！
 
-```
+```plain
 # 安装 govulncheck
 $ go install golang.org/x/vuln/cmd/govulncheck@latest
 
@@ -139,7 +139,7 @@ More info: https://pkg.go.dev/vuln/GO-2020-0016
 
 
 
-您可以看到扫描器，向我们提供了漏洞规则参考、说明、受影响的代码行、漏洞依赖项、解决方案以及附加信息的链接。因为我在我的应用程序中使用***github.com/ulikunitz/xz@v0.5.7作为*依赖*项并调用***xz.Reader.Read，所以我的应用程序容易受到[DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/)攻击。这个漏洞是由Go 漏洞数据库中的[GO-2020-016规则检测到的。](https://github.com/golang/vulndb/blob/master/data/reports/GO-2020-0016.yaml)
+您可以看到扫描器，向我们提供了漏洞规则参考、说明、受影响的代码行、漏洞依赖项、解决方案以及附加信息的链接。因为我在我的应用程序中使用***github.com/ulikunitz/xz@v0.5.7 作为*依赖*项并调用***xz.Reader.Read，所以我的应用程序容易受到[DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/)攻击。这个漏洞是由 Go 漏洞数据库中的[GO-2020-016 规则检测到的。](https://github.com/golang/vulndb/blob/master/data/reports/GO-2020-0016.yaml)
 
 在典型的工作流程中，开发人员会更新依赖版本，然后重新运行扫描器以及*单元*和*功能*测试，以确保应用程序不会中断。
 
@@ -179,13 +179,13 @@ func add(a string, b string) (c int, e error) {
 
 
 
-我们可以看到 `FuzzAdd() `的编写类似于单元测试。我们通过添加`f.Fuzz(func(t \*testing.T, a string, b string)`来启用模糊测试，它调用`add( a string, b string )`函数，为变量`a`和`b`提供随机数据。然后，将它和预期值结果，进行比较。
+我们可以看到 `FuzzAdd()`的编写类似于单元测试。我们通过添加`f.Fuzz(func(t \*testing.T, a string, b string)`来启用模糊测试，它调用`add( a string, b string )`函数，为变量`a`和`b`提供随机数据。然后，将它和预期值结果，进行比较。
 
-`add()`函数，简单地将2 个字符串转换为整数，然后将它们相加并返回结果。
+`add()`函数，简单地将 2 个字符串转换为整数，然后将它们相加并返回结果。
 
 `FuzzAdd ()`测试可以使用[种子数据](https://go.dev/security/fuzz/#glos-seed-corpus)`f.Add("1", “2”),`正确运行，但是当存在格式错误或随机数据时会发生什么情况？让我们运行模糊测试并找出：
 
-```
+```plain
 # 运行 fuzz 测试
 $ go test ./internal/logic -fuzz FuzzAdd
 ```
@@ -203,11 +203,11 @@ $ go test ./internal/logic -fuzz FuzzAdd
 FAIL
 ```
 
-导致这个错误，是因为传递了字母A，而不是可以转换为整数的字符串。Fuzz还在testdata目录下，生成了一个种子语料库，可以用来再次测试这个特定的故障。
+导致这个错误，是因为传递了字母 A，而不是可以转换为整数的字符串。Fuzz 还在 testdata 目录下，生成了一个种子语料库，可以用来再次测试这个特定的故障。
 
-解决这个问题的一个方式，是在add()函数中，简单地返回err，而不是nil。并期望在FuzzAdd()中，返回非整数可转换字符串的错误。
+解决这个问题的一个方式，是在 add()函数中，简单地返回 err，而不是 nil。并期望在 FuzzAdd()中，返回非整数可转换字符串的错误。
 
-我们还可以考虑，仅将整数值设置为0，并记录错误。如下所示，这仅仅取决于，我们要实现的目标。
+我们还可以考虑，仅将整数值设置为 0，并记录错误。如下所示，这仅仅取决于，我们要实现的目标。
 
 ```go
 func add(a string, b string) (c int, e error) {
@@ -225,25 +225,25 @@ func add(a string, b string) (c int, e error) {
 }
 ```
 
-有关模糊测试的更多高级用法，请查看 [Go模糊测试教程](https://go.dev/doc/tutorial/fuzz).
+有关模糊测试的更多高级用法，请查看 [Go 模糊测试教程](https://go.dev/doc/tutorial/fuzz).
 
 
 
 
 
-# 使用GitLab实现自动化扫描
+# 使用 GitLab 实现自动化扫描
 
-如果可以自动运行安全扫描器来搜索Go应用程序中的漏洞，这样我们就可以在每次推送代码时，在功能分支上运行扫描器。
+如果可以自动运行安全扫描器来搜索 Go 应用程序中的漏洞，这样我们就可以在每次推送代码时，在功能分支上运行扫描器。
 
 这会在代码投入生产之前，解决安全问题，并且不必在每次更改代码时，都手动运行扫描程序，从而节省了我们的时间。
 
-这些扫描器，可以通过在GitLab中，创建CI/CD管道来实现自动化。管道可以在每次将代码推送到分支时，自动运行这些扫描。我们将查看[GitLab CI yaml](https://gitlab.com/awkwardferny/insecure-microservice/-/blob/master/.gitlab-ci.yml)，它在下面生成了一个CI/CD管道。
+这些扫描器，可以通过在 GitLab 中，创建 CI/CD 管道来实现自动化。管道可以在每次将代码推送到分支时，自动运行这些扫描。我们将查看[GitLab CI yaml](https://gitlab.com/awkwardferny/insecure-microservice/-/blob/master/.gitlab-ci.yml)，它在下面生成了一个 CI/CD 管道。
 
 
 
 首先，我们看到的是，将按照提供的顺序，在管道中运行的阶段：
 
-```
+```plain
 stages:
   - build
   - test
@@ -253,7 +253,7 @@ The **build** stage makes sure the application even builds before proceeding. If
 
 构建阶段，确保是在构建应用程序之前。如果您已经容器化了您的应用程序，那么在这个阶段，您最好也测试一下，是否可以构建容器镜像：
 
-```
+```plain
 build:
   image: golang:alpine
   stage: build
@@ -268,7 +268,7 @@ build:
 
 
 
-```
+```plain
 unit:
   image: golang:alpine
   stage: test
@@ -322,7 +322,7 @@ fuzz:
 
 
 
-这就是将单元测试、模糊测试和安全扫描器，集成到CI/CD管道中的方法。这让生活变的更轻松，并且无需每次都手动运行所有内容。
+这就是将单元测试、模糊测试和安全扫描器，集成到 CI/CD 管道中的方法。这让生活变的更轻松，并且无需每次都手动运行所有内容。
 
 # 代码审查和安全编码实践
 
@@ -362,5 +362,5 @@ fuzz:
 
 仪表板类型的视图将是理想的，这样您就可以有效地分类和管理漏洞，引导您找到应该首先解决的问题。
 
-好了，自动化检查Go代码中的漏洞！感谢阅读，希望您喜欢这篇文章。
+好了，自动化检查 Go 代码中的漏洞！感谢阅读，希望您喜欢这篇文章。
 

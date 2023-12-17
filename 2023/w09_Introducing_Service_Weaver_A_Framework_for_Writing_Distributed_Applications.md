@@ -54,7 +54,7 @@ func main() {
 
 要对上述应用程序进行更改，例如向 Add 方法添加无限数量的参数，您只需要更改 Add 的签名，更改其调用位置，然后重新部署应用程序。Service Weaver 确保新版本的 main() 仅与新版本的 Adder 通信，而不管它们是否共存。这种行为，结合使用语言原生的数据结构和方法调用，使您可以专注于编写应用程序逻辑，而不必担心部署拓扑和服务间通信（例如，在代码中没有 protos、stubs 或 RPC 通道）。
 
-当运行应用程序时，Service Weaver 允许您在任何地方运行它——在您的本地桌面环境、本地机架或云上——而不需要更改应用程序代码。这种可移植性是通过Service Weaver 框架内置的明确关注点分离实现的。在一端，我们有编程框架，用于应用程序开发。在另一端，我们有各种“**部署器**”实现，每个实现针对一种部署环境。
+当运行应用程序时，Service Weaver 允许您在任何地方运行它——在您的本地桌面环境、本地机架或云上——而不需要更改应用程序代码。这种可移植性是通过 Service Weaver 框架内置的明确关注点分离实现的。在一端，我们有编程框架，用于应用程序开发。在另一端，我们有各种“**部署器**”实现，每个实现针对一种部署环境。
 
 ![Flow chart depicting Service Weaver Libraries deployer implementations across three separate platforms in one single iteration](C:\Users\zhengxm\Documents\notes\翻译\Introducing Service Weaver A Framework for Writing Distributed Applications\2.png)
 
@@ -62,8 +62,8 @@ func main() {
 
 ## Service Weaver v0.1 包括什么?
 
-- 用于编写应用程序的[Go核心库](https://github.com/ServiceWeaver/weaver)。
-- 用于在本地或 GKE 上运行应用程序的一些部署器，如[本地部署器](https://github.com/ServiceWeaver/weaver/tree/main/cmd/weaver)或[ GKE 部署器](https://github.com/ServiceWeaver/weaver-gke)。
+- 用于编写应用程序的[Go 核心库](https://github.com/ServiceWeaver/weaver)。
+- 用于在本地或 GKE 上运行应用程序的一些部署器，如[本地部署器](https://github.com/ServiceWeaver/weaver/tree/main/cmd/weaver)或[GKE 部署器](https://github.com/ServiceWeaver/weaver-gke)。
 - 一组 API，允许您为任何其他平台编写自己的部署器。
 
 所有库都在 Apache 2.0 许可下发布。请注意，在发布 v1.0 版本之前，**我们可能会引入破坏性更改**。
@@ -79,6 +79,6 @@ func main() {
 ## 更多资源
 
 - 访问我们的网站[serviceweaver.dev](https://serviceweaver.dev/)，获取有关该项目的最新信息，例如入门指南、教程和博客文章。
-- 访问我们在GitHub上的其中一个Service Weaver [代码库](https://github.com/orgs/ServiceWeaver/repositories)。
+- 访问我们在 GitHub 上的其中一个 Service Weaver [代码库](https://github.com/orgs/ServiceWeaver/repositories)。
 
 *By Srdjan Petrovic and Garv Sawhney,  仅代表 Service Weaver team*

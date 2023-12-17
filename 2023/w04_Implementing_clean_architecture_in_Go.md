@@ -6,13 +6,13 @@
 - 译者：[zxmfke](https://github.com/zxmfke)
 - 校对：
 
-已经有很多关于 [简洁架构](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)的文章了。它的主要价值在于能够维护无副作用的领域层，使我们能够不需要利用沉重的mock来测试核心业务逻辑。
+已经有很多关于 [简洁架构](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)的文章了。它的主要价值在于能够维护无副作用的领域层，使我们能够不需要利用沉重的 mock 来测试核心业务逻辑。
 
 通过写一个无需依赖的核心领域逻辑，以及外部适配器(成为它的数据库存储或者 API 层)来实现的。这些适配器依赖于领域，而不是领域依赖适配器。
 
 在这篇文章，我们会看一下简洁架构是如何实现一个简单的 Go 项目。我们会提及一些额外的主题，例如容器化以及用 Swagger 实现 OpenAPI 规范。
 
-虽然我将在文章中高亮了感兴趣的点，但你可以在 [我的Github](https://github.com/Wkalmar/toggl-deck-management-api) 上看看整个项目。
+虽然我将在文章中高亮了感兴趣的点，但你可以在 [我的 Github](https://github.com/Wkalmar/toggl-deck-management-api) 上看看整个项目。
 
 ## 项目需求
 
@@ -268,7 +268,7 @@ func main() {
 
 
 
-一些读者可能对根据上述要求，创建牌组这个路由将参数作为URL请求的一部分感到困惑，可能会考虑让这个路由用 GET 请求而不是 POST。 然而，GET 请求的一个重要前提是，它们表现出[一致性](https://www.restapitutorial.com/lessons/idempotency.html)，即每次请求的结果是一致的，而这个路由不是这样的。这就是我们坚持使用 POST 的原因。
+一些读者可能对根据上述要求，创建牌组这个路由将参数作为 URL 请求的一部分感到困惑，可能会考虑让这个路由用 GET 请求而不是 POST。 然而，GET 请求的一个重要前提是，它们表现出[一致性](https://www.restapitutorial.com/lessons/idempotency.html)，即每次请求的结果是一致的，而这个路由不是这样的。这就是我们坚持使用 POST 的原因。
 
 路由对应的 Handler 遵循相同的模式。我们解析查询参数，根据这些参数创建一个领域实体，对其进行操作，更新存储并返回专属的 DTO。让我们来看看更多的细节。
 
@@ -455,7 +455,7 @@ r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 这些都完成之后，那我们现在可以运行我们的应用程序，看看通过 Swagger 生成的文档。
 
 
-## API容器化
+## API 容器化
 
 最后但并非最不重要的是我们将如何部署我们的应用程序。传统的方法是在一个专门的服务器上安装，并在安装的服务器上运行应用程序。
 
@@ -502,4 +502,4 @@ docker run -it --rm -p 8080:8080 <image-name>
 
 ## 总结
 
-在这篇文章中，我们已经介绍了在 Go 中编写简洁架构 API 的整体过程。从经过测试的领域开始，为其提供一个API 层，使用 OpenAPI 标准对其进行记录，并将我们的 runtime 与应用程序打包在一起，从而简化了部署过程。
+在这篇文章中，我们已经介绍了在 Go 中编写简洁架构 API 的整体过程。从经过测试的领域开始，为其提供一个 API 层，使用 OpenAPI 标准对其进行记录，并将我们的 runtime 与应用程序打包在一起，从而简化了部署过程。

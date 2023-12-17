@@ -1,12 +1,12 @@
-# Ristretto 简介： 一个高性能GO缓存
+# Ristretto 简介： 一个高性能 GO 缓存
 
 - 原文地址：[Introducing Ristretto: A High-Performance Go Cache](https://dgraph.io/blog/post/introducing-ristretto-high-perf-go-cache/)
 - 原文作者：[Dmitry Filimonov](https://github.com/petethepig)
-- 本文永久链接：[Ristretto 简介： 一个高性能GO缓存](https://github.com/gocn/translator/blob/master/2023/w05_Introducing%20Ristretto%20A%20High-Performance%20Go%20Cache%20-%20Dgraph%20Blog.md)
+- 本文永久链接：[Ristretto 简介： 一个高性能 GO 缓存](https://github.com/gocn/translator/blob/master/2023/w05_Introducing%20Ristretto%20A%20High-Performance%20Go%20Cache%20-%20Dgraph%20Blog.md)
 - 译者：[784909593](https://github.com/784909593)
 - 校对：[b8kings0ga](https://github.com/b8kings0ga)
 
-**这个博客登上了 Golang [subreddit](https://www.reddit.com/r/golang/comments/d6taoq/introducing_ristretto_a_highperformance_go_cache/) 的顶部，并且在 [Hacker News](https://news.ycombinator.com/item?id=21023949) 的trending上排在前十位。 一定要在那里参与讨论，并通过给我们一个 [star](https://github.com/dgraph-io/dgraph)，表达对我们的喜欢。**
+**这个博客登上了 Golang [subreddit](https://www.reddit.com/r/golang/comments/d6taoq/introducing_ristretto_a_highperformance_go_cache/) 的顶部，并且在 [Hacker News](https://news.ycombinator.com/item?id=21023949) 的 trending 上排在前十位。 一定要在那里参与讨论，并通过给我们一个 [star](https://github.com/dgraph-io/dgraph)，表达对我们的喜欢。**
 
 经过六个月的研发，我们自豪的宣布**缓存 [Ristretto](https://github.com/dgraph-io/ristretto)：一个高性能、并发、可设置内存上限的 Go 缓存**的初始版本。他是抗争用、扩展性好、提供稳定的高命中率。
 
@@ -21,7 +21,7 @@
 2.  缓存命中率高；
 3.  Memory-bounded (限制为可配置的最大内存使用量)；
 4.  随着核数和协程数量的增加而扩展；
-5.  在非随机key访问(例如 Zipf)分布下很好的扩展；
+5.  在非随机 key 访问(例如 Zipf)分布下很好的扩展；
 
 发布了[博客文章](https://blog.dgraph.io/post/caching-in-go/)之后，我们组建了一个团队来解决其中提到的挑战，并创建了一个值得与非 Go 语言缓存实现进行比较的 Go 缓存库。特别的，[Caffeine](https://github.com/ben-manes/caffeine) 这是一个基于 Java 8 的高性能、近乎最优的缓存库。许多基于 Java 8 的数据库都在使用它, 比如 Cassandra，HBase，和 Neo4j。[这里](http://highscalability.com/blog/2016/1/25/design-of-a-modern-cache.html)有一篇关于 Caffeine 设计的文章。
 
@@ -31,7 +31,7 @@
 
 在我们开始讲解 [Ristretto](https://github.com/dgraph-io/ristretto) 的设计之前, 这有一个代码片段展示了如何使用它：
 
-```
+```plain
 func main() {
 cache, err := ristretto.NewCache(&ristretto.Config{
 NumCounters: 1e7,     // key 跟踪频率为（10M）
@@ -71,13 +71,13 @@ cache.Del("key")
 
 缓存的核心是一个 hash map 和关于进入和出去的规则。如果 hash map 表现不佳，那么整个缓存将受到影响。 与 Java 不同, Go 没有无锁的并发 hashmap。相反，Go 的线程安全是必须通过显式获取互斥锁来达到。
 
-我们尝试了多种实现方式（使用 Ristretto 中的`store`接口），发现`sync.Map`在读取密集型工作负载方面表现良好，但在写入工作负载方面表现不佳。考虑没有 thread-local 存储，**我们发现使用分片的互斥锁包装的 Go map具有最佳的整体性能。** 特别是，我们选择使用 256 个分片，以确保即使在 64 核服务器上也能表现良好。
+我们尝试了多种实现方式（使用 Ristretto 中的`store`接口），发现`sync.Map`在读取密集型工作负载方面表现良好，但在写入工作负载方面表现不佳。考虑没有 thread-local 存储，**我们发现使用分片的互斥锁包装的 Go map 具有最佳的整体性能。** 特别是，我们选择使用 256 个分片，以确保即使在 64 核服务器上也能表现良好。
 
 使用基于分片的方法，我们还需要找到一种快速方法来计算 key 应该进入哪个分片。这个要求和对 key 太长消耗太多内存的担忧，导致我们对 key 使用 `uint64`，而不是存储整个 key。理由是我们需要在多个地方使用 key 的哈希值，并且在入口处执行一次允许我们重用该哈希值，避免任何更多的计算。
 
-**为了生成快速 hash，我们从 Go Runtime 借用了 [runtime.memhash](https://github.com/dgraph-io/ristretto/blob/master/z/rtutil.go#L42-L44)** 该函数使用汇编代码快速生成哈希。 请注意，这个 hash 有一个随机化器，每当进程启动时都会初始化，这意味着相同的key不会在下一次进程运行时生成相同的哈希。 但是，这对于非持久缓存来说没问题。 在我们的[实验](https://github.com/dgraph-io/ristretto/blob/master/z/rtutil_test.go#L11-L44), 我们发现它可以在 10ns 内散列 64 字节的 key。
+**为了生成快速 hash，我们从 Go Runtime 借用了 [runtime.memhash](https://github.com/dgraph-io/ristretto/blob/master/z/rtutil.go#L42-L44)** 该函数使用汇编代码快速生成哈希。 请注意，这个 hash 有一个随机化器，每当进程启动时都会初始化，这意味着相同的 key 不会在下一次进程运行时生成相同的哈希。 但是，这对于非持久缓存来说没问题。 在我们的[实验](https://github.com/dgraph-io/ristretto/blob/master/z/rtutil_test.go#L11-L44), 我们发现它可以在 10ns 内散列 64 字节的 key。
 
-```
+```plain
 BenchmarkMemHash-32 200000000 8.88 ns/op
 BenchmarkFarm-32    100000000 17.9 ns/op
 BenchmarkSip-32      30000000 41.1 ns/op
@@ -103,7 +103,7 @@ BenchmarkFnv-32      20000000 70.6 ns/op
 
 存储在 pool 中的任何 item 都可能随时自动删除，[不另行](https://golang.org/pkg/sync/#Pool)通知。_这引入了一个级别的有损行为。_ Pool 中的每个 item 实际上都是一批 key。当批次填满时，它会被推送到一个 chan。chan 大小故意保持较小，以避免消耗太多 CPU 周期来处理它。 如果 chan 已满，则丢弃该批次。_这引入了二级有损行为。_ 一个 goroutine 从内部 chan 中获取这批数据并处理这些 key，更新它们的命中计数器。
 
-```
+```plain
 AddToLossyBuffer(key):
   stripe := b.pool.Get().(*ringStripe)
   stripe.Push(key)
@@ -135,7 +135,7 @@ Set buffer 的要求与 Get 略有不同。在 Gets 中，我们缓冲 key，只
 
 与 Gets 一样，此方法旨在优化抗争用性。 但是，有一些注意事项，如下所述。
 
-```
+```plain
 select {
 case c.setBuf <- &item{key: hash, val: val, cost: cost}:
     return true
@@ -170,7 +170,7 @@ default:
 
 _无限大的缓存实际上是不可能的。_ 缓存的大小必须有界。许多缓存库会将缓存大小视为元素的数量。我们发现这种方法 _很幼稚_。当然，它适用于值大小相同的工作负载。然而，大多数工作负载具有可变大小的值。一个值可能需要几个字节，另一个可能需要几千字节，还有一个需要几兆字节。将它们视为具有相同的内存成本是不现实的。
 
-**在 [Ristretto](https://github.com/dgraph-io/ristretto) 中, 我们将成本附加到每个 key-value** 用户可以在调用 Set 时指定该成本是多少。我们将此成本计入缓存的 MaxCost。 当缓存满负荷运行时，一个 _重_ 的 item 可能会取代许多 _轻_ 的item。 这种机制很好，因为它适用于所有不同的工作负载，包括每个 key-value 成本为 1 的朴素方法。
+**在 [Ristretto](https://github.com/dgraph-io/ristretto) 中, 我们将成本附加到每个 key-value** 用户可以在调用 Set 时指定该成本是多少。我们将此成本计入缓存的 MaxCost。 当缓存满负荷运行时，一个 _重_ 的 item 可能会取代许多 _轻_ 的 item。 这种机制很好，因为它适用于所有不同的工作负载，包括每个 key-value 成本为 1 的朴素方法。
 
 #### 通过 TinyLFU 的准入策略
 
@@ -194,13 +194,13 @@ TinyLFU 还通过`重置`功能维护 key 访问的新近度。每 N 个 key 递
 
 #### 通过采样 LFU 的驱逐策略
 
-当缓存达到容量时，每个传入的 key 都应替换缓存中存在的一个或多个 key。 不仅如此，**传入 key 的 ε 应该高于被驱逐 key 的 ε。**为了找到一个 ε 低的 key，我们使用 Go map 迭代提供的自然[随机性](https://blog.golang.org/go-maps-in-action)来选择key样本并循环，在它们之上找到具有最低ε的key。
+当缓存达到容量时，每个传入的 key 都应替换缓存中存在的一个或多个 key。 不仅如此，**传入 key 的 ε 应该高于被驱逐 key 的 ε。**为了找到一个 ε 低的 key，我们使用 Go map 迭代提供的自然[随机性](https://blog.golang.org/go-maps-in-action)来选择 key 样本并循环，在它们之上找到具有最低ε的 key。
 
 然后我们将这个 key 的 ɛ 与传入的 key 进行比较。如果传入的 key 具有更高的 ε，则该 key 将被逐出（_驱逐策略_）。否则，传入的 key 将被拒绝（_准入策略_）。重复此机制，直到传入 key 的成本可以放入缓存中。因此，一个传入的 key 可能取代一个以上的 key。_注意，传入 key 的成本在选择驱逐 key 时不起作用。_
 
 **使用这种方法，在各种工作负载下，命中率与精确 LFU 策略的误差在 1% 以内。** 这意味着我们在同一个包中获得了准入策略、保守内存使用和较低争用的好处。
 
-```
+```plain
 // 准入和驱逐算法的片段
 incHits := p.admit.Estimate(key)
 for ; room < 0; room = p.evict.roomLeft(cost) {
@@ -238,7 +238,7 @@ for ; room < 0; room = p.evict.roomLeft(cost) {
 
 **为了实现可扩展性，我们确保每个原子计数器完全占据一个完整的 cache line。**所以，每个核在不同的 cache line 上工作。Ristretto 通过为每个 metric 分配 256 个 uint64 来使用它，在每个活动的 uint64 之间留下 9 个未使用的 uint 64。为了避免额外的计算，重用 key hash 值去决定要增加哪个 uint64。
 
-```
+```plain
 Add:
 valp := p.all[t]
 // 通过在两个将递增的原子计数器之间填充至少 64 字节的空间来避免 false sharing。
@@ -274,7 +274,7 @@ return total
 
 ##### 数据库
 
-这个 trace 被描述为“在一个商业数据库上，一个商业网站正运行一个ERP应用，一个数据库服务运行在上面“
+这个 trace 被描述为“在一个商业数据库上，一个商业网站正运行一个 ERP 应用，一个数据库服务运行在上面“
 
 ![命中率: 商业数据库](https://dgraph.io/blog/images/rt-hit-db.svg?sanitize=true)
 
@@ -322,5 +322,5 @@ return total
 
 ## 结论
 
-我们的目标是让缓存库与 Caffeine 竞争。虽然没有完全实现, 但我们确实通过使用其他人可以学习的一些新技术，创造了比目前Go世界中大多数其他人[**更好**](https://en.wikipedia.org/wiki/Ristretto)的东西。
+我们的目标是让缓存库与 Caffeine 竞争。虽然没有完全实现, 但我们确实通过使用其他人可以学习的一些新技术，创造了比目前 Go 世界中大多数其他人[**更好**](https://en.wikipedia.org/wiki/Ristretto)的东西。
 在 Dgraph 中使用此缓存的一些初步实验看起来很有希望。并且我们希望将 [Ristretto](https://github.com/dgraph-io/ristretto) 整合到 [Dgraph](https://github.com/dgraph-io/dgraph) 和 [Badger](https://github.com/dgraph-io/badger) 在接下来的几个月里. 一定要[查看它](https://github.com/dgraph-io/ristretto)，也许可以使用 Ristretto 来加快您的工作负载。

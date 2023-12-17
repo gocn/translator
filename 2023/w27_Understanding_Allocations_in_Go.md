@@ -4,7 +4,7 @@
 - 原文作者：James Kirk
 - 本文永久链接：https://github.com/gocn/translator/blob/master/2021/
 - 译者：[lsj1342](https://github.com/lsj1342)
-- 校对：[]()
+- 校对：[](https://example.com)
 ***
 
 ## Introduction
@@ -13,7 +13,7 @@ Thanks to efficient in-built memory management in the Go runtime, we’re genera
 
 Anyone who’s run a benchmark with the `-benchmem` flag will have seen the `allocs/op` stat in output like the below. In this post we’ll look at what counts as an alloc and what we can do to influence this number.
 
-```
+```plain
 BenchmarkFunc-8  67836464  16.0 ns/op  8 B/op  1 allocs/op
 ```
 
@@ -65,7 +65,7 @@ Since compiler implementations change over time, **there’s no way of knowing w
 
 For escape analysis results, the `-m` option (`print optimization decisions`) can be used. Let’s test this with a simple program that creates two stack frames for functions `main1` and `stackIt`.
 
-```
+```plain
 func main1() {
    _ = stackIt()
 }
@@ -78,21 +78,21 @@ func stackIt() int {
 
 Since we can can’t discuss stack behaviour if the compiler removes our function calls, the `noinline` [pragma](https://dave.cheney.net/2018/01/08/gos-hidden-pragmas) is used to prevent inlining when compiling the code. Let’s take a look at what the compiler has to say about its optimization decisions. The `-l` option is used to omit inlining decisions.
 
-```
+```plain
 $ go build -gcflags '-m -l'
 # github.com/Jimeux/go-samples/allocations
 ```
 
 Here we see that no decisions were made regarding escape analysis. In other words, variable `y` remained on the stack, and didn’t trigger any heap allocations. We can verify this with a benchmark.
 
-```
+```plain
 $ go test -bench . -benchmem
 BenchmarkStackIt-8  680439016  1.52 ns/op  0 B/op  0 allocs/op
 ```
 
 As expected, the `allocs/op` stat is `0`. An important observation we can make from this result is that **copying variables can allow us to keep them on the stack** and avoid allocation to the heap. Let’s verify this by modifying the program to avoid copying with use of a pointer.
 
-```
+```plain
 func main2() {
    _ = stackIt2()
 }
@@ -106,7 +106,7 @@ func stackIt2() *int {
 
 Let’s see the compiler output.
 
-```
+```plain
 go build -gcflags '-m -l'
 # github.com/Jimeux/go-samples/allocations
 ./main.go:10:2: moved to heap: res
@@ -114,14 +114,14 @@ go build -gcflags '-m -l'
 
 The compiler tells us it moved the pointer `res` to the heap, which triggers a heap allocation as verified in the benchmark below
 
-```
+```plain
 $ go test -bench . -benchmem
 BenchmarkStackIt2-8  70922517  16.0 ns/op  8 B/op  1 allocs/op
 ```
 
 So does this mean pointers are guaranteed to create allocations? Let’s modify the program again to this time pass a pointer down the stack.
 
-```
+```plain
 func main3() {
    y := 2
    _ = stackIt3(&y) // pass y down the stack as a pointer
@@ -136,14 +136,14 @@ func stackIt3(y *int) int {
 
 Yet running the benchmark shows nothing was allocated to the heap.
 
-```
+```plain
 $ go test -bench . -benchmem
 BenchmarkStackIt3-8  705347884  1.62 ns/op  0 B/op  0 allocs/op
 ```
 
 The compiler output tells us this explicitly.
 
-```
+```plain
 $ go build -gcflags '-m -l'
 # github.com/Jimeux/go-samples/allocations
 ./main.go:10:14: y does not escape
@@ -159,7 +159,7 @@ Why do we get this seeming inconsistency? `stackIt2` passes `res` _up the stack_
 
 We’ve learnt a little about what the `alloc` in `allocs/op` means, and how to verify if an allocation to the heap is triggered, but why should we care if this stat is non-zero in the first place? The benchmarks we’ve already done can begin to answer this question.
 
-```
+```plain
 BenchmarkStackIt-8   680439016  1.52 ns/op  0 B/op  0 allocs/op
 BenchmarkStackIt2-8  70922517   16.0 ns/op  8 B/op  1 allocs/op
 BenchmarkStackIt3-8  705347884  1.62 ns/op  0 B/op  0 allocs/op
@@ -183,7 +183,7 @@ Many aspects of performance don’t become apparent without production condition
 
 We’re not going to recreate an entire application in this post, but we will take a look at some more detailed performance diagnostics using the [trace tool](https://golang.org/cmd/trace/). Let’s begin by defining a (somewhat) big struct with nine fields.
 
-```
+```plain
 type BigStruct struct {
    A, B, C int
    D, E, F string
@@ -193,7 +193,7 @@ type BigStruct struct {
 
 Now we’ll define two functions: `CreateCopy`, which copies `BigStruct` instances between stack frames, and `CreatePointer`, which shares `BigStruct` pointers up the stack, avoiding copying, but resulting in heap allocations.
 
-```
+```plain
 //go:noinline
 func CreateCopy() BigStruct {
    return BigStruct{
@@ -214,7 +214,7 @@ func CreatePointer() *BigStruct {
 
 We can verify the explanation from above with the techniques used so far.
 
-```
+```plain
 $ go build -gcflags '-m -l'
 ./main.go:67:9: &BigStruct literal escapes to heap
 $ go test -bench . -benchmem
@@ -224,7 +224,7 @@ BenchmarkPointerIt-8  20393278   52.6 ns/op  80 B/op  1 allocs/op
 
 Here are the tests we’ll use for the `trace` tool. They each create 20,000,000 instances of `BigStruct` with their respective `Create` function.
 
-```
+```plain
 const creations = 20_000_000
 
 func TestCopyIt(t *testing.T) {
@@ -242,7 +242,7 @@ func TestPointerIt(t *testing.T) {
 
 Next we’ll save the trace output for `CreateCopy` to file `copy_trace.out`, and open it with the trace tool in the browser.
 
-```
+```plain
 $ go test -run TestCopyIt -trace=copy_trace.out
 PASS
 ok   github.com/Jimeux/go-samples/allocations 0.281s
@@ -260,7 +260,7 @@ Trace for 20,000,000 CreateCopy calls
 
 Let’s generate the trace data for the `CreatePointer` code.
 
-```
+```plain
 $ go test -run TestPointerIt -trace=pointer_trace.out
 PASS
 ok   github.com/Jimeux/go-samples/allocations 2.224s
@@ -296,7 +296,7 @@ Top-level goroutine analysis for CreatePointer
 
 A look at some of the stats available elsewhere in the trace data further illustrates the cost of heap allocation, with a stark difference in the number of goroutines generated, and almost 400 STW (stop the world) events for the `CreatePointer` test.
 
-```
+```plain
 +------------+------+---------+
 |            | Copy | Pointer |
 +------------+------+---------+

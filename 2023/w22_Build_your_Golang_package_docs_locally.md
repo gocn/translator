@@ -26,7 +26,7 @@
 
 [golang/pkgsite](https://github.com/golang/pkgsite) 托管了用于渲染文档的 `pkg.go.dev` 命令行界面。 `pkgsite` 命令的[注释](https://github.com/golang/pkgsite/blob/master/cmd/pkgsite/main.go#L5)虽然简洁，但可以让我们开始：
 
-```
+```plain
 // Pkgsite 提取和生成 Go 程序的文档。
 // 它作为 Web 服务器运行，将文档呈现为 Web 页面。
 //
@@ -35,13 +35,13 @@
 
 我们将使用它来设置一个本地服务器版本的 `pkg.go.dev`，其中包含 Golang 包的文档渲染功能。所以让我们安装它。我在其他地方看到的建议是本地克隆此存储库，构建它并将其安装在 `$PATH` 中的某个位置，但这个 `go install` 应该就可以工作：
 
-```
+```plain
 $ go install golang.org/x/pkgsite/cmd/pkgsite@latest
 ```
 
 一旦安装完成，只需将其运行在我们的 Go 包仓库所在的位置即可：
 
-```
+```plain
 $ cd /path/to/go/pkg
 $ pkgsite
 2022/06/16 10:13:55 Info: Listening on addr http://localhost:8080
@@ -55,7 +55,7 @@ $ pkgsite
 
 现在，类似于 pkg.go.dev，你可以通过将 `go.mod` 中的模块路径附加到 URL 上来检查本地模块的文档：
 
-```
+```plain
 http://localhost:8080/my/local/module/path
 ```
 
@@ -75,7 +75,7 @@ http://localhost:8080/my/local/module/path
 
 以下是我们将使用的关键命令。为每个进程打开一个新终端，或者只是将其中一个放在后台：
 
-```
+```plain
 $ browser-sync start --proxy "localhost:8080"
 [Browsersync] Proxying: http://localhost:8080
 [Browsersync] Access URLs:
@@ -90,7 +90,7 @@ $ browser-sync start --proxy "localhost:8080"
 
 我们需要设置这个代理的原因是，我们需要一种自动通知浏览器某些东西已经改变的方式。为此，`browser-sync` 在我们的请求中注入了一小段 JavaScript 代码，它会监听一个信号以确定何时重新加载。
 
-```
+```plain
 $ nodemon --signal SIGTERM --watch my-mod.go --exec "browser-sync reload && pkgsite ."
 [nodemon] 2.0.16
 [nodemon] to restart at any time, enter `rs`

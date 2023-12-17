@@ -18,7 +18,7 @@
 
 ## 设计模式的简史
 
-让我们回顾一下软件工程设计模式是如何产生的。 1994 年，四位作者——Erich Gamma、John Vlissides、Ralph Johnson 和 Richard Helm 出版了一本书“[设计模式：可复用面向对象软件的基础](https://www.oreilly.com/library/view/design-patterns-elements/0201633612/)”。 这本书赢得了“四人帮之书”的绰号，后来缩写为“GoF之书”。
+让我们回顾一下软件工程设计模式是如何产生的。 1994 年，四位作者——Erich Gamma、John Vlissides、Ralph Johnson 和 Richard Helm 出版了一本书“[设计模式：可复用面向对象软件的基础](https://www.oreilly.com/library/view/design-patterns-elements/0201633612/)”。 这本书赢得了“四人帮之书”的绰号，后来缩写为“GoF 之书”。
 
 GoF 书中包含 23 种设计模式，分为三种类型：创建型设计模式、结构型设计模式和行为型设计模式。 本书的示例是用 C++ 和 Smalltalk 编写的。 不出意外的，这本书所描述的模式受到这些特定语言和当时软件工程需求的影响。 然而，设计模式的概念被证明是持久的。
 
